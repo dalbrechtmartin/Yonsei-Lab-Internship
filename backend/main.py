@@ -1,5 +1,6 @@
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+import polars as pl
 
 app = FastAPI(title="Wavelength FOM API")
 
@@ -15,13 +16,12 @@ app.add_middleware(
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
-
-@app.post("/upload-excel/")
-async def upload_excel(file: UploadFile = File(...)):
-    content = await file.read()
     
-    return {
-        "filename": file.filename, 
-        "size_bytes": len(content), 
-        "message": "Fichier reçu avec succès par Python !"
-    }
+@app.post("/upload-excel/")
+async def process_excel(file: UploadFile = File(...)):
+    df = pl.read_excel(await file.read(), engine="calamine")
+    
+    print(df.columns)
+    print(df.head())
+    
+    return {"columns": df.columns, "data": df.to_dicts()}
