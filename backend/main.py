@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Wavelength FOM API")
@@ -15,3 +15,13 @@ app.add_middleware(
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
+
+@app.post("/upload-excel/")
+async def upload_excel(file: UploadFile = File(...)):
+    content = await file.read()
+    
+    return {
+        "filename": file.filename, 
+        "size_bytes": len(content), 
+        "message": "Fichier reçu avec succès par Python !"
+    }

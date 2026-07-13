@@ -1,0 +1,14 @@
+{
+  "app": {
+    "title": "FOM 提取器"
+  },
+  "dropzone": {
+    "title": "把Excel文件拖放在这里",
+    "subtitle": "点击找找看吧"
+  },
+  "status": {
+    "uploading": "文件上传中...",
+    "success": "文件上传成功.",
+    "error": "文件上传时发生错误."
+  }
+}

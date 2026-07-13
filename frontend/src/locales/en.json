@@ -1,0 +1,14 @@
+{
+  "app": {
+    "title": "FOM Extractor"
+  },
+  "dropzone": {
+    "title": "Drag and drop your Excel file here",
+    "subtitle": "or click to browse"
+  },
+  "status": {
+    "uploading": "Uploading file...",
+    "success": "File uploaded successfully.",
+    "error": "An error occurred while uploading the file."
+  }
+}
