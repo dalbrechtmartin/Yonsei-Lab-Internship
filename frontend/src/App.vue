@@ -12,6 +12,10 @@
       >
         {{ translatedStatus }}
       </div>
+
+      <div v-if="fomData.length > 0" class="w-full mt-10">
+        <FomChart :chartData="fomData" />
+      </div>
     </main>
   </div>
 </template>
@@ -22,10 +26,12 @@ import { useI18n } from "vue-i18n";
 import AppNavbar from "./components/AppNavbar.vue";
 import FileDropzone from "./components/FileDropzone.vue";
 import { apiService } from "./services/api";
+import FomChart from "./components/FomChart.vue";
 
 const { t } = useI18n();
 const statusKey = ref("");
 const statusClass = ref("");
+const fomData = ref([]);
 
 const translatedStatus = computed(() => {
   return statusKey.value ? t(statusKey.value) : "";
@@ -37,6 +43,7 @@ const handleUpload = async (file) => {
 
   try {
     const data = await apiService.uploadExcel(file);
+    fomData.value = data.data;
     statusKey.value = "status.success";
     statusClass.value = "bg-green-100 text-green-800";
   } catch (error) {
