@@ -11,7 +11,7 @@ cd C:\Users\albre\Documents\Dev\Stage\Yonsei-Lab-Internship
 In Windows:
 
 ```bash
-cd venv\Scripts\activate.bat
+.\venv\Scripts\activate.bat
 ```
 
 Start server:
