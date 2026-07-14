@@ -29,13 +29,18 @@
       }
     },
     "xAxis": {
-      "name": "Longueur d'onde de référence (nm)"
+      "name": "Classe de matériau"
     },
     "yAxis": {
-      "name": "FOM (/RIU)"
+      "name": "FOM (longueur d'onde) (/RIU)"
     },
     "medianLine": {
       "name": "Médiane"
+    },
+    "scale": {
+      "label": "Échelle:",
+      "log": "Log",
+      "linear": "Linéaire"
     }
   }
 }

@@ -29,13 +29,18 @@
       }
     },
     "xAxis": {
-      "name": "Reference Wavelength (nm)"
+      "name": "Material Class"
     },
     "yAxis": {
-      "name": "FOM (/RIU)"
+      "name": "FOM (wavelength) (/RIU)"
     },
     "medianLine": {
       "name": "Median"
+    },
+    "scale": {
+      "label": "Scale:",
+      "log": "Log",
+      "linear": "Linear"
     }
   }
 }

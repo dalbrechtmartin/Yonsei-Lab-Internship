@@ -29,13 +29,18 @@
       }
     },
     "xAxis": {
-      "name": "참고 파장 (nm)"
+      "name": "재료 분류"
     },
     "yAxis": {
-      "name": "FOM (/RIU)"
+      "name": "FOM (파장) (/RIU)"
     },
     "medianLine": {
       "name": "중위수"
+    },
+    "scale": {
+      "label": "스케일:",
+      "log": "로그",
+      "linear": "선형"
     }
   }
 }

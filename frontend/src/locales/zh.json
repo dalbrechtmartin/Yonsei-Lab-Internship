@@ -29,13 +29,18 @@
       }
     },
     "xAxis": {
-      "name": "参考波长 (nm)"
+      "name": "材料类别"
     },
     "yAxis": {
-      "name": "FOM (/RIU)"
+      "name": "FOM (波长) (/RIU)"
     },
     "medianLine": {
       "name": "中位数"
+    },
+    "scale": {
+      "label": "比例尺:",
+      "log": "对数",
+      "linear": "线性"
     }
   }
 }
