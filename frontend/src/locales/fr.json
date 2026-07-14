@@ -10,5 +10,32 @@
     "uploading": "Téléchargement du fichier...",
     "success": "Fichier téléchargé avec succès.",
     "error": "Erreur lors du téléchargement du fichier."
+  },
+  "fomcharts": {
+    "title": "Distribution du FOM dans le domaine des longueurs d'onde",
+    "sampleCount": "échantillons",
+    "toolbox": {
+      "feature": {
+        "saveAsImage": {
+          "title": "Enregistrer en tant qu'image"
+        },
+        "dataZoom": {
+          "title": {
+            "zoom": "Agrandir",
+            "back": "Annuler"
+          }
+        },
+        "restore": { "title": "Réinitialiser" }
+      }
+    },
+    "xAxis": {
+      "name": "Longueur d'onde de référence (nm)"
+    },
+    "yAxis": {
+      "name": "FOM (/RIU)"
+    },
+    "medianLine": {
+      "name": "Médiane"
+    }
   }
 }

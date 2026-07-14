@@ -1,0 +1,61 @@
+{
+  "_meta": {
+    "import-preview-at": "https://echarts.apache.org/en/theme-builder.html",
+    "notes": "This theme is based on the Okabe-Ito color palette, which is designed to be colorblind-friendly. It provides a set of distinct colors that are easily distinguishable for individuals with color vision deficiencies."
+  },
+  "version": "1",
+  "themeName": "Okabe-Ito-palette",
+  "theme": {
+    "color": [
+      "#E69F00",
+      "#56B4E9",
+      "#009E73",
+      "#F0E442",
+      "#0072B2",
+      "#CC79A7",
+      "#000000"
+    ],
+    "backgroundColor": "#ffffff",
+    "textStyle": {
+      "color": "#1c2541"
+    },
+    "title": {
+      "textStyle": { "color": "#0b132b", "fontWeight": "bold" },
+      "subtextStyle": { "color": "#3a506b" }
+    },
+    "legend": {
+      "textStyle": { "color": "#1c2541" }
+    },
+    "tooltip": {
+      "backgroundColor": "rgba(28, 37, 65, 0.9)",
+      "borderColor": "#0072B2",
+      "borderWidth": 1,
+      "textStyle": { "color": "#ffffff" }
+    },
+    "toolbox": {
+      "iconStyle": { "borderColor": "#0072B2" },
+      "emphasis": { "iconStyle": { "borderColor": "#1c2541" } }
+    },
+    "categoryAxis": {
+      "axisLine": { "show": true, "lineStyle": { "color": "#3a506b" } },
+      "axisTick": { "show": true, "lineStyle": { "color": "#3a506b" } },
+      "axisLabel": { "show": true, "color": "#3a506b" },
+      "splitLine": { "show": false, "lineStyle": { "color": ["#f1f1f1"] } }
+    },
+    "valueAxis": {
+      "axisLine": { "show": true, "lineStyle": { "color": "#3a506b" } },
+      "axisTick": { "show": true, "lineStyle": { "color": "#3a506b" } },
+      "axisLabel": { "show": true, "color": "#3a506b" },
+      "splitLine": { "show": true, "lineStyle": { "color": ["#f1f1f1"] } }
+    },
+    "logAxis": {
+      "axisLine": { "show": true, "lineStyle": { "color": "#3a506b" } },
+      "axisTick": { "show": true, "lineStyle": { "color": "#3a506b" } },
+      "axisLabel": { "show": true, "color": "#3a506b" },
+      "splitLine": { "show": true, "lineStyle": { "color": ["#f1f1f1"] } }
+    },
+    "_custom": {
+      "accentColor": "#D55E00"
+    }
+  }
+}

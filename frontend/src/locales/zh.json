@@ -10,5 +10,32 @@
     "uploading": "文件上传中...",
     "success": "文件上传成功.",
     "error": "文件上传时发生错误."
+  },
+  "fomcharts": {
+    "title": "波长域 FOM 分布",
+    "sampleCount": "样本",
+    "toolbox": {
+      "feature": {
+        "saveAsImage": {
+          "title": "保存为图片"
+        },
+        "dataZoom": {
+          "title": {
+            "zoom": "缩放",
+            "back": "后退"
+          }
+        },
+        "restore": { "title": "恢复" }
+      }
+    },
+    "xAxis": {
+      "name": "参考波长 (nm)"
+    },
+    "yAxis": {
+      "name": "FOM (/RIU)"
+    },
+    "medianLine": {
+      "name": "中位数"
+    }
   }
 }

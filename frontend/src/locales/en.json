@@ -10,5 +10,32 @@
     "uploading": "Uploading file...",
     "success": "File uploaded successfully.",
     "error": "An error occurred while uploading the file."
+  },
+  "fomcharts": {
+    "title": "Wavelength-Domain FOM Distribution",
+    "sampleCount": "samples",
+    "toolbox": {
+      "feature": {
+        "saveAsImage": {
+          "title": "Save as Image"
+        },
+        "dataZoom": {
+          "title": {
+            "zoom": "Zoom",
+            "back": "Back"
+          }
+        },
+        "restore": { "title": "Restore" }
+      }
+    },
+    "xAxis": {
+      "name": "Reference Wavelength (nm)"
+    },
+    "yAxis": {
+      "name": "FOM (/RIU)"
+    },
+    "medianLine": {
+      "name": "Median"
+    }
   }
 }

@@ -10,5 +10,32 @@
     "uploading": "파일 업로드 중...",
     "success": "파일이 성공적으로 업로드되었습니다.",
     "error": "파일 업로드 중 오류가 발생했습니다."
+  },
+  "fomcharts": {
+    "title": "파장 영역별 FOM 분포",
+    "sampleCount": "샘플",
+    "toolbox": {
+      "feature": {
+        "saveAsImage": {
+          "title": "이미지로 저장"
+        },
+        "dataZoom": {
+          "title": {
+            "zoom": "확대",
+            "back": "뒤로"
+          },
+          "restore": { "title": "복원" }
+        }
+      }
+    },
+    "xAxis": {
+      "name": "참고 파장 (nm)"
+    },
+    "yAxis": {
+      "name": "FOM (/RIU)"
+    },
+    "medianLine": {
+      "name": "중위수"
+    }
   }
 }
