@@ -5,13 +5,15 @@
 With a new terminal with python:
 
 ```bash
-cd C:\Users\albre\Documents\Dev\Stage\Yonsei-Lab-Internship
+cd C:\Users\albre\Documents\Dev\Stage\Yonsei-Lab-Internship\backend
 ```
 
 In Windows:
 
 ```bash
 .\venv\Scripts\activate.bat
+# powershell
+.\venv\Scripts\Activate.ps1
 ```
 
 Start server:

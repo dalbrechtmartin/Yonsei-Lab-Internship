@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+polars
+xlsxwriter
+PyMuPDF
+google-genai
+python-multipart
+python-dotenv
