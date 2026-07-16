@@ -55,7 +55,8 @@
       "splitLine": { "show": true, "lineStyle": { "color": ["#f1f1f1"] } }
     },
     "_custom": {
-      "accentColor": "#D55E00"
+      "accentColor": "#D55E00",
+      "legendColor": "#3a506b"
     }
   }
 }
