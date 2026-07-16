@@ -2,6 +2,14 @@
   "app": {
     "title": "λLens"
   },
+  "nav": {
+    "visualization": "可视化",
+    "extraction": "提取"
+  },
+  "actions": {
+    "import": "导入",
+    "export": "导出"
+  },
   "dropzone": {
     "title": "把Excel文件拖放在这里",
     "subtitle": "点击找找看吧"
@@ -10,6 +18,16 @@
     "uploading": "文件上传中...",
     "success": "文件上传成功.",
     "error": "文件上传时发生错误."
+  },
+  "extraction": {
+    "dropzone": {
+      "title": "把PDF论文拖放在这里",
+      "subtitle": "点击找找看吧（支持多个文件）"
+    },
+    "processing": "正在从 {count} 篇论文中提取数据，可能需要一些时间...",
+    "success": "提取完成，Excel 文件已下载。",
+    "error": "提取 PDF 时发生错误。",
+    "newBatch": "提取另一批"
   },
   "fomcharts": {
     "title": "波长域 FOM 分布",

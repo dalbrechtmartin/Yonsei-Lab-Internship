@@ -1,16 +1,19 @@
+export type DataRow = Record<string, unknown>;
+
+export interface ColumnTypes {
+  numeric: string[];
+  categorical: string[];
+}
+
 /**
  * Detects which columns are numeric vs categorical by sampling the data.
  * This is what makes the app work with ANY uploaded spreadsheet — the
  * golden 4-column file, the richer harmonized export, or anything a
  * researcher drags in — without hardcoding column names anywhere.
- *
- * @param {Array<Object>} rows - array of row objects (from the API response)
- * @param {Array<string>} columns - column names (from the API response)
- * @returns {{ numeric: string[], categorical: string[] }}
  */
-export function detectColumnTypes(rows, columns) {
-  const numeric = [];
-  const categorical = [];
+export function detectColumnTypes(rows: DataRow[], columns: string[]): ColumnTypes {
+  const numeric: string[] = [];
+  const categorical: string[] = [];
 
   for (const col of columns) {
     const sample = rows
@@ -44,7 +47,7 @@ export function detectColumnTypes(rows, columns) {
  * numeric column whose name contains "FOM", falls back to the first
  * numeric column found.
  */
-export function guessDefaultYAxis(numericColumns) {
+export function guessDefaultYAxis(numericColumns: string[]): string | null {
   const fomLike = numericColumns.find((c) => /fom/i.test(c));
   return fomLike || numericColumns[0] || null;
 }
@@ -54,7 +57,7 @@ export function guessDefaultYAxis(numericColumns) {
  * categorical column whose name suggests a structure/material grouping,
  * falls back to the first categorical column found.
  */
-export function guessDefaultGroup(categoricalColumns) {
+export function guessDefaultGroup(categoricalColumns: string[]): string | null {
   const preferred = categoricalColumns.find((c) =>
     /material|structure|layer|층|class/i.test(c),
   );

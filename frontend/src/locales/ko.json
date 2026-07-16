@@ -2,6 +2,14 @@
   "app": {
     "title": "λLens"
   },
+  "nav": {
+    "visualization": "시각화",
+    "extraction": "추출"
+  },
+  "actions": {
+    "import": "가져오기",
+    "export": "내보내기"
+  },
   "dropzone": {
     "title": "엑셀 파일을 여기에 끌어다 놓으십시오",
     "subtitle": "클릭해서 찾아보세요"
@@ -10,6 +18,16 @@
     "uploading": "파일 업로드 중...",
     "success": "파일이 성공적으로 업로드되었습니다.",
     "error": "파일 업로드 중 오류가 발생했습니다."
+  },
+  "extraction": {
+    "dropzone": {
+      "title": "PDF 논문을 여기에 끌어다 놓으십시오",
+      "subtitle": "클릭해서 찾아보세요 (여러 파일 가능)"
+    },
+    "processing": "{count}개의 논문에서 데이터 추출 중, 시간이 걸릴 수 있습니다...",
+    "success": "추출이 완료되었습니다. 엑셀 파일이 다운로드되었습니다.",
+    "error": "PDF 추출 중 오류가 발생했습니다.",
+    "newBatch": "다른 묶음 추출하기"
   },
   "fomcharts": {
     "title": "파장 영역별 FOM 분포",

@@ -2,6 +2,14 @@
   "app": {
     "title": "λLens"
   },
+  "nav": {
+    "visualization": "Visualization",
+    "extraction": "Extraction"
+  },
+  "actions": {
+    "import": "Import",
+    "export": "Export"
+  },
   "dropzone": {
     "title": "Drag and drop your Excel file here",
     "subtitle": "or click to browse"
@@ -10,6 +18,16 @@
     "uploading": "Uploading file...",
     "success": "File uploaded successfully.",
     "error": "An error occurred while uploading the file."
+  },
+  "extraction": {
+    "dropzone": {
+      "title": "Drag and drop your PDF papers here",
+      "subtitle": "or click to browse (multiple files supported)"
+    },
+    "processing": "Extracting data from {count} paper(s), this can take a while...",
+    "success": "Extraction complete. The Excel file has been downloaded.",
+    "error": "An error occurred while extracting the PDFs.",
+    "newBatch": "Extract another batch"
   },
   "fomcharts": {
     "title": "Wavelength-Domain FOM Distribution",

@@ -2,6 +2,14 @@
   "app": {
     "title": "λLens"
   },
+  "nav": {
+    "visualization": "Visualisation",
+    "extraction": "Extraction"
+  },
+  "actions": {
+    "import": "Importer",
+    "export": "Exporter"
+  },
   "dropzone": {
     "title": "Glissez-déposez votre fichier Excel ici",
     "subtitle": "ou cliquez pour parcourir"
@@ -10,6 +18,16 @@
     "uploading": "Téléchargement du fichier...",
     "success": "Fichier téléchargé avec succès.",
     "error": "Erreur lors du téléchargement du fichier."
+  },
+  "extraction": {
+    "dropzone": {
+      "title": "Glissez-déposez vos articles PDF ici",
+      "subtitle": "ou cliquez pour parcourir (plusieurs fichiers possibles)"
+    },
+    "processing": "Extraction des données de {count} article(s), cela peut prendre du temps...",
+    "success": "Extraction terminée. Le fichier Excel a été téléchargé.",
+    "error": "Une erreur est survenue lors de l'extraction des PDF.",
+    "newBatch": "Extraire un autre lot"
   },
   "fomcharts": {
     "title": "Distribution du FOM dans le domaine des longueurs d'onde",
