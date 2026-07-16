@@ -16,8 +16,9 @@
   },
   "status": {
     "uploading": "Uploading file...",
-    "success": "File uploaded successfully.",
-    "error": "An error occurred while uploading the file."
+    "success": "Excel imported successfully. You can now adjust the axes or export the CSV.",
+    "error": "We couldn't import that file. Please try another Excel file.",
+    "dismiss": "Dismiss message"
   },
   "extraction": {
     "dropzone": {
@@ -25,8 +26,8 @@
       "subtitle": "or click to browse (multiple files supported)"
     },
     "processing": "Extracting data from {count} paper(s), this can take a while...",
-    "success": "Extraction complete. The Excel file has been downloaded.",
-    "error": "An error occurred while extracting the PDFs.",
+    "success": "PDFs processed successfully. Your Excel export has been downloaded.",
+    "error": "We couldn't extract those PDFs. Please try again.",
     "newBatch": "Extract another batch"
   },
   "fomcharts": {

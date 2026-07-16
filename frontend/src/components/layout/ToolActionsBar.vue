@@ -1,6 +1,6 @@
 <template>
   <div
-    class="w-full flex justify-between items-center px-6 py-2 border-b border-secondary/10 bg-card/80 backdrop-blur-xl"
+    class="sticky top-16 z-10 w-full flex justify-between items-center px-6 py-2 border-b border-secondary/10 bg-card/80 backdrop-blur-xl"
   >
     <span class="text-sm font-semibold tracking-wide text-ink">{{
       toolName

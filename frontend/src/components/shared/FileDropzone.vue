@@ -70,4 +70,8 @@ const handleDrop = (event: DragEvent) => {
   const files = Array.from(event.dataTransfer?.files ?? []);
   if (files.length) emit("files-selected", props.multiple ? files : [files[0]]);
 };
+
+defineExpose({
+  triggerFileInput,
+});
 </script>

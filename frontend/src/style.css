@@ -144,6 +144,24 @@
     color-scheme: light;
   }
 
+  a,
+  button,
+  select,
+  summary,
+  [role="button"],
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"] {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  select:disabled,
+  input:disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+
   * {
     @apply border-border outline-ring/50;
   }
