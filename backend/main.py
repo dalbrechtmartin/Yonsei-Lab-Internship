@@ -45,16 +45,24 @@ def extract_text_from_pdf(file_bytes: bytes) -> str:
     return text
 
 
-# Expected column order in the final Excel, aligned with prompt.txt
-# (each value followed by its quote, Notes at the end)
+# Expected column order in the final Excel, aligned with prompt.txt.
+# One row per Mode/Case now (a paper can produce several rows).
+# Note: "Review Status" (Approve/Edit/Exclude) is NOT generated here —
+# that belongs to the Vue review workflow (Week 6-8), where the researcher
+# actually makes that decision. Adding a hardcoded placeholder here would
+# just be dead weight until that feature exists.
 COLUMN_ORDER = [
     "Ref",
     "Title",
+    "Mode/Case",
     "Material Class",
     "Base Materials",
     "Layer Structure",
     "Spectral Range",
-    "Method",
+    "Origin",
+    "FOM Reported",
+    "FOM Domain",
+    "FOM Definition",
     "Wavelength-based FOM (/RIU)",
     "FOM Quote",
     "FOM Page",
@@ -65,6 +73,7 @@ COLUMN_ORDER = [
     "Q-factor Quote",
     "Q-factor Page",
     "Notes",
+    "Model Used",
 ]
 
 
@@ -74,18 +83,36 @@ def normalize_result(result: dict) -> dict:
     return {col: result.get(col) for col in COLUMN_ORDER}
 
 
-def analyze_paper_with_llm(paper_text: str, filename: str) -> Optional[dict]:
+def analyze_paper_with_llm(paper_text: str, filename: str) -> Optional[List[dict]]:
+    """Returns a list of records (one per mode/case) for this paper,
+    or None if the call/parsing failed."""
     final_prompt = PROMPT_TEMPLATE.replace("{filename}", filename)
     final_prompt += f"\n\n--- PAPER TEXT ---\n{paper_text}"
 
     try:
+        # gemini-flash-latest: auto-updates to the newest Flash model
+        # (2-week notice before any swap). We log the resolved model name
+        # below so that if results ever drift between runs, we can check
+        # whether the underlying model actually changed.
+        # temperature=0: deterministic output for a given model, so we can
+        # still compare runs meaningfully as long as the model didn't change.
         response = client.models.generate_content(
-            model='gemini-3.1-flash-lite',
+            model='gemini-flash-latest',
             contents=final_prompt,
             config={"temperature": 0},
         )
+        resolved_model = getattr(response, "model_version", None)
+        print(f"  -> Answered by model: {resolved_model}")
         raw = (response.text or "").strip().replace("```json", "").replace("```", "")
-        return json.loads(raw.strip())
+        parsed = json.loads(raw.strip())
+        if isinstance(parsed, dict):
+            parsed = [parsed]
+        # Stamp every record with the model that actually answered, so
+        # results stay traceable even if 'latest' resolves differently
+        # across runs made on different days.
+        for record in parsed:
+            record["Model Used"] = resolved_model
+        return parsed
     except Exception as e:
         print(f"Error for {filename}: {e}")
         return None
@@ -109,10 +136,10 @@ async def extract_data_from_pdfs(files: List[UploadFile] = File(...)):
         pdf_content = await file.read()
         extracted_text = extract_text_from_pdf(pdf_content)
 
-        result = analyze_paper_with_llm(extracted_text, clean_name)
+        records = analyze_paper_with_llm(extracted_text, clean_name)
 
-        if result:
-            extracted_data.append(normalize_result(result))
+        if records:
+            extracted_data.extend(normalize_result(r) for r in records)
 
         # Stay within free-tier limits
         time.sleep(13)
