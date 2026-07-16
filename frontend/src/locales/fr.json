@@ -28,11 +28,10 @@
         "restore": { "title": "Réinitialiser" }
       }
     },
-    "xAxis": {
-      "name": "Classe de matériau"
-    },
-    "yAxis": {
-      "name": "FOM (longueur d'onde) (/RIU)"
+    "controls": {
+      "xAxis": "Axe X",
+      "yAxis": "Axe Y",
+      "exportCsv": "Exporter en CSV"
     },
     "medianLine": {
       "name": "Médiane"
@@ -41,6 +40,7 @@
       "label": "Échelle:",
       "log": "Log",
       "linear": "Linéaire"
-    }
+    },
+    "unknownGroup": "Inconnu"
   }
 }

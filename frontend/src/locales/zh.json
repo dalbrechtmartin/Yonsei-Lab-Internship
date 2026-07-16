@@ -28,19 +28,19 @@
         "restore": { "title": "恢复" }
       }
     },
-    "xAxis": {
-      "name": "材料类别"
-    },
-    "yAxis": {
-      "name": "FOM (波长) (/RIU)"
+    "controls": {
+      "xAxis": "X轴",
+      "yAxis": "Y轴",
+      "exportCsv": "导出为 CSV"
     },
     "medianLine": {
       "name": "中位数"
     },
     "scale": {
-      "label": "比例尺:",
+      "label": "尺度:",
       "log": "对数",
       "linear": "线性"
-    }
+    },
+    "unknownGroup": "未知"
   }
 }

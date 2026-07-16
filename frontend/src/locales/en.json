@@ -28,11 +28,10 @@
         "restore": { "title": "Restore" }
       }
     },
-    "xAxis": {
-      "name": "Material Class"
-    },
-    "yAxis": {
-      "name": "FOM (wavelength) (/RIU)"
+    "controls": {
+      "xAxis": "X-Axis",
+      "yAxis": "Y-Axis",
+      "exportCsv": "Export to CSV"
     },
     "medianLine": {
       "name": "Median"
@@ -41,6 +40,7 @@
       "label": "Scale:",
       "log": "Log",
       "linear": "Linear"
-    }
+    },
+    "unknownGroup": "Unknown"
   }
 }

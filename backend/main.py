@@ -119,6 +119,12 @@ def analyze_paper_with_llm(paper_text: str, filename: str) -> Optional[List[dict
 
 # --- 3. ROUTES ---
 
+@app.post("/upload-excel/")
+async def process_excel(file: UploadFile = File(...)):
+    content = await file.read()
+    df = pl.read_excel(io.BytesIO(content), engine="calamine")
+    return {"columns": df.columns, "data": df.to_dicts()}
+
 @app.post("/extract-pdfs/")
 async def extract_data_from_pdfs(files: List[UploadFile] = File(...)):
     extracted_data: list[dict] = []

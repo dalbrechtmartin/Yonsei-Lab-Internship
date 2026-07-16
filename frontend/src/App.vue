@@ -14,7 +14,7 @@
       </div>
 
       <div v-if="fomData.length > 0" class="w-full mt-10">
-        <FomChart :chartData="fomData" />
+        <FomChart :chartData="fomData" :columns="fomColumns" />
       </div>
     </main>
   </div>
@@ -32,6 +32,7 @@ const { t } = useI18n();
 const statusKey = ref("");
 const statusClass = ref("");
 const fomData = ref([]);
+const fomColumns = ref([]);
 
 const translatedStatus = computed(() => {
   return statusKey.value ? t(statusKey.value) : "";
@@ -44,6 +45,7 @@ const handleUpload = async (file) => {
   try {
     const data = await apiService.uploadExcel(file);
     fomData.value = data.data;
+    fomColumns.value = data.columns;
     statusKey.value = "status.success";
     statusClass.value = "bg-green-100 text-green-800";
   } catch (error) {
