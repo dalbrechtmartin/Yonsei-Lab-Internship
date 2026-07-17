@@ -6,6 +6,26 @@
     "visualization": "Visualization",
     "extraction": "Extraction"
   },
+  "view": {
+    "visualization": {
+      "description": "Visualize the FOM distribution of your data in the wavelength domain. You can import an Excel file or extract data from PDF papers."
+    },
+    "extraction": {
+      "batchExtraction": {
+        "legend": "Batch Extraction",
+        "title": "Extract paper data from PDFs",
+        "description": "Drop one or more PDFs to generate a structured Excel export. The extraction process may take a few minutes depending on the number of papers."
+      },
+      "pdfInput": {
+        "title": "PDF Input",
+        "description": "Upload up to 10 PDFs at once."
+      },
+      "excelOutput": {
+        "title": "Excel Output",
+        "description": "Auto-downloaded result"
+      }
+    }
+  },
   "actions": {
     "import": "Import",
     "export": "Export"

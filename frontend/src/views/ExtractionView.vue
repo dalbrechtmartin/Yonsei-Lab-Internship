@@ -8,22 +8,20 @@
   <main class="grow px-6 pb-10 sm:px-8 lg:px-10">
     <div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
       <section
-        class="mt-6 overflow-hidden rounded-[2rem] border border-white/50 bg-card/80 p-6 shadow-2xl shadow-slate-900/5 backdrop-blur-xl"
+        class="mt-6 overflow-hidden rounded-4xl border border-white/50 bg-card/80 p-6 shadow-2xl shadow-slate-900/5 backdrop-blur-xl"
       >
         <div
           class="flex flex-col gap-6 md:flex-row md:items-end md:justify-between"
         >
           <div class="max-w-2xl">
             <p class="text-xs uppercase tracking-[0.3em] text-secondary">
-              Batch extraction
+              {{ t("view.extraction.batchExtraction.legend") }}
             </p>
             <h2 class="mt-2 text-2xl font-semibold text-ink">
-              Extract paper data from PDFs
+              {{ t("view.extraction.batchExtraction.title") }}
             </h2>
             <p class="mt-2 text-sm leading-6 text-secondary">
-              Drop one or more PDFs to generate a structured Excel export. The
-              app stays focused on the research workflow, not generic file
-              handling.
+              {{ t("view.extraction.batchExtraction.description") }}
             </p>
           </div>
 
@@ -31,14 +29,18 @@
             <div
               class="rounded-2xl border border-secondary/10 bg-background/70 px-3 py-2"
             >
-              <div class="font-semibold text-ink">PDF input</div>
-              <div>Multiple files supported</div>
+              <div class="font-semibold text-ink">
+                {{ t("view.extraction.pdfInput.title") }}
+              </div>
+              <div>{{ t("view.extraction.pdfInput.description") }}</div>
             </div>
             <div
               class="rounded-2xl border border-secondary/10 bg-background/70 px-3 py-2"
             >
-              <div class="font-semibold text-ink">Excel output</div>
-              <div>Auto-downloaded result</div>
+              <div class="font-semibold text-ink">
+                {{ t("view.extraction.excelOutput.title") }}
+              </div>
+              <div>{{ t("view.extraction.excelOutput.description") }}</div>
             </div>
           </div>
         </div>
