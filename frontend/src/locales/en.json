@@ -2,18 +2,59 @@
   "app": {
     "title": "λLens"
   },
+  "nav": {
+    "visualization": "Visualization",
+    "extraction": "Extraction"
+  },
+  "view": {
+    "visualization": {
+      "description": "Visualize the FOM distribution of your data in the wavelength domain. You can import an Excel file or extract data from PDF papers."
+    },
+    "extraction": {
+      "batchExtraction": {
+        "legend": "Batch Extraction",
+        "title": "Extract paper data from PDFs",
+        "description": "Drop one or more PDFs to generate a structured Excel export. The extraction process may take a few minutes depending on the number of papers."
+      },
+      "pdfInput": {
+        "title": "PDF Input",
+        "description": "Upload up to 10 PDFs at once."
+      },
+      "excelOutput": {
+        "title": "Excel Output",
+        "description": "Auto-downloaded result"
+      }
+    }
+  },
+  "actions": {
+    "import": "Import",
+    "export": "Export"
+  },
   "dropzone": {
     "title": "Drag and drop your Excel file here",
     "subtitle": "or click to browse"
   },
   "status": {
     "uploading": "Uploading file...",
-    "success": "File uploaded successfully.",
-    "error": "An error occurred while uploading the file."
+    "success": "Excel imported successfully. You can now adjust the axes or export the CSV.",
+    "error": "We couldn't import that file. Please try another Excel file.",
+    "dismiss": "Dismiss message"
+  },
+  "extraction": {
+    "dropzone": {
+      "title": "Drag and drop your PDF papers here",
+      "subtitle": "or click to browse (multiple files supported)"
+    },
+    "processing": "Extracting data from {count} paper(s), this can take a while...",
+    "success": "PDFs processed successfully. Your Excel export has been downloaded.",
+    "error": "We couldn't extract those PDFs. Please try again.",
+    "newBatch": "Extract another batch"
   },
   "fomcharts": {
-    "title": "Wavelength-Domain FOM Distribution",
     "sampleCount": "samples",
+    "type": {
+      "scatter": "Scatter Plot"
+    },
     "toolbox": {
       "feature": {
         "saveAsImage": {
@@ -29,6 +70,8 @@
       }
     },
     "controls": {
+      "title": "Chart Title",
+      "titlePlaceholder": "No title",
       "xAxis": "X-Axis",
       "yAxis": "Y-Axis",
       "exportCsv": "Export to CSV"
