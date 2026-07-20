@@ -51,8 +51,10 @@
     "newBatch": "다른 묶음 추출하기"
   },
   "fomcharts": {
-    "title": "파장 영역별 FOM 분포",
     "sampleCount": "샘플",
+    "type": {
+      "scatter": "산점도"
+    },
     "toolbox": {
       "feature": {
         "saveAsImage": {
@@ -68,6 +70,8 @@
       }
     },
     "controls": {
+      "title": "그래프 제목",
+      "titlePlaceholder": "제목 없음",
       "xAxis": "선택된 X축",
       "yAxis": "선택된 Y축",
       "exportCsv": "CSV로 내보내기"

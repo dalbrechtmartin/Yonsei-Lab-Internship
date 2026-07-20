@@ -51,8 +51,10 @@
     "newBatch": "Extract another batch"
   },
   "fomcharts": {
-    "title": "Wavelength-Domain FOM Distribution",
     "sampleCount": "samples",
+    "type": {
+      "scatter": "Scatter Plot"
+    },
     "toolbox": {
       "feature": {
         "saveAsImage": {
@@ -68,6 +70,8 @@
       }
     },
     "controls": {
+      "title": "Chart Title",
+      "titlePlaceholder": "No title",
       "xAxis": "X-Axis",
       "yAxis": "Y-Axis",
       "exportCsv": "Export to CSV"

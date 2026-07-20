@@ -51,8 +51,10 @@
     "newBatch": "提取另一批"
   },
   "fomcharts": {
-    "title": "波长域 FOM 分布",
     "sampleCount": "样本",
+    "type": {
+      "scatter": "散点图"
+    },
     "toolbox": {
       "feature": {
         "saveAsImage": {
@@ -68,6 +70,8 @@
       }
     },
     "controls": {
+      "title": "图表标题",
+      "titlePlaceholder": "无标题",
       "xAxis": "X轴",
       "yAxis": "Y轴",
       "exportCsv": "导出为 CSV"

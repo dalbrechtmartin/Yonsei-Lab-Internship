@@ -2,7 +2,7 @@
   <div class="w-full">
     <div class="flex justify-between items-center mb-2 px-4">
       <h2 class="text-lg font-semibold text-ink">
-        {{ t("fomcharts.title") }}
+        {{ t("fomcharts.type.scatter") }}
       </h2>
       <span
         class="bg-primary/10 text-primary text-xs font-medium px-2.5 py-0.5 rounded"
@@ -64,13 +64,17 @@ const props = withDefaults(
     yAxis?: string | null;
     xAxis?: string | null;
     yAxisScale?: "log" | "value";
+    chartTitle?: string;
   }>(),
   {
     yAxis: null,
     xAxis: null,
     yAxisScale: "log",
+    chartTitle: "",
   },
 );
+
+const displayTitle = computed(() => props.chartTitle.trim());
 
 const palette: string[] = labTheme.theme.color;
 const medianLineColor: string = labTheme.theme._custom.accentColor;
@@ -92,7 +96,7 @@ const medianValue = computed(() => {
 });
 
 const chartOption = computed(() => ({
-  title: { text: t("fomcharts.title"), left: "center" },
+  title: { text: displayTitle.value, left: "center" },
   tooltip: {
     trigger: "item",
     formatter: (params: any) => {

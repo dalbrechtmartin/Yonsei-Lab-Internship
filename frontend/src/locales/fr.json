@@ -51,8 +51,10 @@
     "newBatch": "Extraire un autre lot"
   },
   "fomcharts": {
-    "title": "Distribution du FOM dans le domaine des longueurs d'onde",
     "sampleCount": "échantillons",
+    "type": {
+      "scatter": "Nuage de points"
+    },
     "toolbox": {
       "feature": {
         "saveAsImage": {
@@ -68,6 +70,8 @@
       }
     },
     "controls": {
+      "title": "Titre du graphique",
+      "titlePlaceholder": "Aucun titre",
       "xAxis": "Axe X",
       "yAxis": "Axe Y",
       "exportCsv": "Exporter en CSV"

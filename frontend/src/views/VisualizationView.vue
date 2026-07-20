@@ -90,6 +90,7 @@
           v-model:y-axis="selectedYAxis"
           v-model:x-axis="selectedXAxis"
           v-model:scale="yAxisScale"
+          v-model:chart-title="chartTitle"
           :numeric-columns="numericColumns"
           :categorical-columns="categoricalColumns"
         />
@@ -100,6 +101,7 @@
           :y-axis="selectedYAxis"
           :x-axis="selectedXAxis"
           :y-axis-scale="yAxisScale"
+          :chart-title="chartTitle"
         />
       </section>
     </div>
@@ -140,6 +142,7 @@ const dropzoneRef = ref<InstanceType<typeof FileDropzone> | null>(null);
 const selectedYAxis = ref<string | null>(null);
 const selectedXAxis = ref<string | null>(null);
 const yAxisScale = ref<"log" | "value">("log");
+const chartTitle = ref("");
 
 const columnTypes = computed(() =>
   detectColumnTypes(fomData.value, fomColumns.value),

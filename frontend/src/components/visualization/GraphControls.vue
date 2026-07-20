@@ -3,6 +3,16 @@
     class="flex flex-wrap items-center gap-4 mb-4 rounded-2xl border border-secondary/10 bg-card/80 px-4 py-3 shadow-sm backdrop-blur-sm"
   >
     <label class="flex items-center gap-2 text-sm text-secondary">
+      {{ t("fomcharts.controls.title") }}
+      <input
+        v-model="chartTitle"
+        type="text"
+        :placeholder="t('fomcharts.controls.titlePlaceholder')"
+        class="border border-secondary/20 rounded-lg px-2 py-1 text-sm bg-background/80 text-ink"
+      />
+    </label>
+
+    <label class="flex items-center gap-2 text-sm text-secondary">
       {{ t("fomcharts.controls.yAxis") }}
       <select
         v-model="yAxis"
@@ -77,4 +87,5 @@ defineProps<{
 const yAxis = defineModel<string | null>("yAxis");
 const xAxis = defineModel<string | null>("xAxis");
 const scale = defineModel<"log" | "value">("scale", { default: "log" });
+const chartTitle = defineModel<string>("chartTitle", { default: "" });
 </script>
