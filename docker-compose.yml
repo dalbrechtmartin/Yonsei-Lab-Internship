@@ -5,8 +5,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
-    env_file:
-      - backend/.env
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
     networks:
       - app-network
 
