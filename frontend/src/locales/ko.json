@@ -6,6 +6,26 @@
     "visualization": "시각화",
     "extraction": "추출"
   },
+  "view": {
+    "visualization": {
+      "description": "데이터의 FOM 분포를 파장 영역에서 시각화합니다. 엑셀 파일을 가져오거나 PDF 논문에서 데이터를 추출할 수 있습니다."
+    },
+    "extraction": {
+      "batchExtraction": {
+        "legend": "일괄 추출",
+        "title": "PDF에서 논문 데이터 추출",
+        "description": "하나 이상의 PDF를 놓으면 구조화된 엑셀 파일이 생성됩니다. 논문 수에 따라 추출 과정에 몇 분 정도 걸릴 수 있습니다."
+      },
+      "pdfInput": {
+        "title": "PDF 입력",
+        "description": "한 번에 최대 10개의 PDF를 업로드할 수 있습니다."
+      },
+      "excelOutput": {
+        "title": "엑셀 출력",
+        "description": "자동으로 다운로드된 결과"
+      }
+    }
+  },
   "actions": {
     "import": "가져오기",
     "export": "내보내기"
@@ -17,7 +37,8 @@
   "status": {
     "uploading": "파일 업로드 중...",
     "success": "파일이 성공적으로 업로드되었습니다.",
-    "error": "파일 업로드 중 오류가 발생했습니다."
+    "error": "파일 업로드 중 오류가 발생했습니다.",
+    "dismiss": "메시지 닫기"
   },
   "extraction": {
     "dropzone": {
@@ -41,9 +62,9 @@
           "title": {
             "zoom": "확대",
             "back": "뒤로"
-          },
-          "restore": { "title": "복원" }
-        }
+          }
+        },
+        "restore": { "title": "복원" }
       }
     },
     "controls": {

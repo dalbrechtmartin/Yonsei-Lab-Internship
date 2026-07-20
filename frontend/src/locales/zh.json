@@ -6,6 +6,26 @@
     "visualization": "可视化",
     "extraction": "提取"
   },
+  "view": {
+    "visualization": {
+      "description": "在波长域中可视化数据的 FOM 分布。您可以导入 Excel 文件或从 PDF 论文中提取数据。"
+    },
+    "extraction": {
+      "batchExtraction": {
+        "legend": "批量提取",
+        "title": "从 PDF 中提取论文数据",
+        "description": "拖放一个或多个 PDF 文件以生成结构化的 Excel 导出文件。提取过程可能需要几分钟，具体取决于论文数量。"
+      },
+      "pdfInput": {
+        "title": "PDF 输入",
+        "description": "一次最多可上传 10 个 PDF 文件。"
+      },
+      "excelOutput": {
+        "title": "Excel 输出",
+        "description": "结果自动下载"
+      }
+    }
+  },
   "actions": {
     "import": "导入",
     "export": "导出"
@@ -17,7 +37,8 @@
   "status": {
     "uploading": "文件上传中...",
     "success": "文件上传成功.",
-    "error": "文件上传时发生错误."
+    "error": "文件上传时发生错误.",
+    "dismiss": "关闭消息"
   },
   "extraction": {
     "dropzone": {

@@ -6,6 +6,26 @@
     "visualization": "Visualisation",
     "extraction": "Extraction"
   },
+  "view": {
+    "visualization": {
+      "description": "Visualisez la distribution du FOM de vos données dans le domaine des longueurs d'onde. Vous pouvez importer un fichier Excel ou extraire des données à partir d'articles PDF."
+    },
+    "extraction": {
+      "batchExtraction": {
+        "legend": "Extraction par lot",
+        "title": "Extraire les données d'articles depuis des PDF",
+        "description": "Déposez un ou plusieurs PDF pour générer un export Excel structuré. Le processus d'extraction peut prendre quelques minutes selon le nombre d'articles."
+      },
+      "pdfInput": {
+        "title": "Entrée PDF",
+        "description": "Téléversez jusqu'à 10 PDF à la fois."
+      },
+      "excelOutput": {
+        "title": "Sortie Excel",
+        "description": "Résultat téléchargé automatiquement"
+      }
+    }
+  },
   "actions": {
     "import": "Importer",
     "export": "Exporter"
@@ -17,7 +37,8 @@
   "status": {
     "uploading": "Téléchargement du fichier...",
     "success": "Fichier téléchargé avec succès.",
-    "error": "Erreur lors du téléchargement du fichier."
+    "error": "Erreur lors du téléchargement du fichier.",
+    "dismiss": "Fermer le message"
   },
   "extraction": {
     "dropzone": {
