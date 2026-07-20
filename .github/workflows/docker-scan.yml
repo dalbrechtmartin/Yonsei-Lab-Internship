@@ -1,0 +1,65 @@
+name: Docker Image Security Scan
+
+on:
+  push:
+    branches: [main, develop]
+    tags: ["v*"]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  scan-backend:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build backend image
+        run: docker build -t backend:scan -f Dockerfile .
+
+      - name: Scan backend image with Trivy
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: "backend:scan"
+          format: "sarif"
+          output: "trivy-backend.sarif"
+          severity: "CRITICAL"
+          ignore-unfixed: true
+          exit-code: "1"
+
+      - name: Upload backend scan results
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: "trivy-backend.sarif"
+          category: "backend"
+
+  scan-frontend:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build frontend image
+        run: docker build -t frontend:scan -f Dockerfile.frontend .
+
+      - name: Scan frontend image with Trivy
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: "frontend:scan"
+          format: "sarif"
+          output: "trivy-frontend.sarif"
+          severity: "CRITICAL"
+          ignore-unfixed: true
+          exit-code: "1"
+
+      - name: Upload frontend scan results
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: "trivy-frontend.sarif"
+          category: "frontend"

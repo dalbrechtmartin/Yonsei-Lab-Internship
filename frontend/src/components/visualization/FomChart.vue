@@ -65,12 +65,14 @@ const props = withDefaults(
     xAxis?: string | null;
     yAxisScale?: "log" | "value";
     chartTitle?: string;
+    showMedian?: boolean;
   }>(),
   {
     yAxis: null,
     xAxis: null,
     yAxisScale: "log",
     chartTitle: "",
+    showMedian: true,
   },
 );
 
@@ -155,9 +157,9 @@ const chartOption = computed(() => ({
       },
       markLine: {
         lineStyle: { type: "dashed", color: medianLineColor, width: 1 },
-        data: [
-          { yAxis: medianValue.value, name: t("fomcharts.medianLine.name") },
-        ],
+        data: props.showMedian
+          ? [{ yAxis: medianValue.value, name: t("fomcharts.medianLine.name") }]
+          : [],
         label: {
           formatter: t("fomcharts.medianLine.name") + "\n{c}",
           position: "middle",

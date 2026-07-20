@@ -77,7 +77,8 @@
       "exportCsv": "CSV로 내보내기"
     },
     "medianLine": {
-      "name": "중앙값"
+      "name": "중앙값",
+      "toggle": "중앙값 표시"
     },
     "scale": {
       "label": "스케일:",

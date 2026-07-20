@@ -91,6 +91,7 @@
           v-model:x-axis="selectedXAxis"
           v-model:scale="yAxisScale"
           v-model:chart-title="chartTitle"
+          v-model:show-median="showMedian"
           :numeric-columns="numericColumns"
           :categorical-columns="categoricalColumns"
         />
@@ -102,6 +103,7 @@
           :x-axis="selectedXAxis"
           :y-axis-scale="yAxisScale"
           :chart-title="chartTitle"
+          :show-median="showMedian"
         />
       </section>
     </div>
@@ -143,6 +145,7 @@ const selectedYAxis = ref<string | null>(null);
 const selectedXAxis = ref<string | null>(null);
 const yAxisScale = ref<"log" | "value">("log");
 const chartTitle = ref("");
+const showMedian = ref(true);
 
 const columnTypes = computed(() =>
   detectColumnTypes(fomData.value, fomColumns.value),
