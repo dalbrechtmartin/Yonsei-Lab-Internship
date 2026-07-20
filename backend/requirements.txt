@@ -6,3 +6,4 @@ PyMuPDF
 google-genai
 python-multipart
 python-dotenv
+fastexcel
