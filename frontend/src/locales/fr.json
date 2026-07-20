@@ -77,7 +77,8 @@
       "exportCsv": "Exporter en CSV"
     },
     "medianLine": {
-      "name": "Médiane"
+      "name": "Médiane",
+      "toggle": "Afficher la médiane"
     },
     "scale": {
       "label": "Échelle:",

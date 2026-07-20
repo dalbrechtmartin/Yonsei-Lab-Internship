@@ -69,6 +69,15 @@
         </button>
       </div>
     </div>
+
+    <label class="flex items-center gap-2 text-sm text-secondary">
+      <input
+        v-model="showMedian"
+        type="checkbox"
+        class="h-4 w-4 rounded border-secondary/30 text-primary focus:ring-primary/40"
+      />
+      {{ t("fomcharts.medianLine.toggle") }}
+    </label>
   </div>
 </template>
 
@@ -88,4 +97,5 @@ const yAxis = defineModel<string | null>("yAxis");
 const xAxis = defineModel<string | null>("xAxis");
 const scale = defineModel<"log" | "value">("scale", { default: "log" });
 const chartTitle = defineModel<string>("chartTitle", { default: "" });
+const showMedian = defineModel<boolean>("showMedian", { default: true });
 </script>
