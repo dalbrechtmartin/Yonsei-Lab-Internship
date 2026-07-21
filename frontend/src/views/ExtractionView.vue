@@ -110,12 +110,15 @@ import { useTransientStatus } from "@/composables/useTransientStatus";
 
 const STATUS_VISIBLE_MS = 15000;
 
-// Backend processes PDFs one at a time and sleeps 13s between each to stay
-// within the LLM free-tier rate limit (see backend/main.py), plus a few
-// seconds of actual model latency. There's no real progress feed from the
-// server (it's a single blocking request), so this is only an estimate used
-// to drive the progress bar — tune it if the backend's pace changes.
-const ESTIMATED_SECONDS_PER_FILE = 30;
+// Backend processes PDFs one at a time and sleeps between each to stay
+// within the active model's free-tier rate limit (see MODEL_SLEEP_SECONDS
+// in backend/main.py). Primary model is gemini-3.1-flash-lite (~4s model
+// latency + 5s sleep measured locally); it can fall back mid-batch to the
+// slower gemini-flash-latest (~77s latency + 13s sleep) once the lite
+// quota is exhausted, so this stays a rough estimate. There's no real
+// progress feed from the server (it's a single blocking request), so this
+// only drives the progress bar — tune it if the backend's pace changes.
+const ESTIMATED_SECONDS_PER_FILE = 9;
 // Never let the estimate alone show 100% before the response actually
 // arrives, so the bar doesn't look "done" while still waiting on the server.
 const MAX_ESTIMATED_PROGRESS_PERCENT = 96;
