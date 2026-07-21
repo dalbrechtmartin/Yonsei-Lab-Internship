@@ -16,14 +16,13 @@
         >
           <div class="max-w-2xl">
             <p class="text-xs uppercase tracking-[0.3em] text-secondary">
-              Analysis workspace
+              {{ t("view.visualization.hero.eyebrow") }}
             </p>
             <h2 class="mt-2 text-2xl font-semibold text-ink">
-              Visualize FOM data
+              {{ t("view.visualization.hero.title") }}
             </h2>
             <p class="mt-2 text-sm leading-6 text-secondary">
-              Import an Excel file to inspect the dataset, compare axes, and
-              export the scatter data as CSV.
+              {{ t("view.visualization.hero.description") }}
             </p>
           </div>
 
@@ -31,14 +30,18 @@
             <div
               class="rounded-2xl border border-secondary/10 bg-background/70 px-3 py-2"
             >
-              <div class="font-semibold text-ink">Excel</div>
-              <div>Upload .xlsx or .xls</div>
+              <div class="font-semibold text-ink">
+                {{ t("view.visualization.hero.cards.excel.title") }}
+              </div>
+              <div>{{ t("view.visualization.hero.cards.excel.subtitle") }}</div>
             </div>
             <div
               class="rounded-2xl border border-secondary/10 bg-background/70 px-3 py-2"
             >
-              <div class="font-semibold text-ink">Charts</div>
-              <div>Scatter + median line</div>
+              <div class="font-semibold text-ink">
+                {{ t("view.visualization.hero.cards.charts.title") }}
+              </div>
+              <div>{{ t("view.visualization.hero.cards.charts.subtitle") }}</div>
             </div>
           </div>
         </div>

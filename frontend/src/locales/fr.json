@@ -8,7 +8,22 @@
   },
   "view": {
     "visualization": {
-      "description": "Visualisez la distribution du FOM de vos données dans le domaine des longueurs d'onde. Vous pouvez importer un fichier Excel ou extraire des données à partir d'articles PDF."
+      "description": "Visualisez vos données dans des graphiques interactifs. Vous pouvez importer un fichier Excel ou extraire des données à partir d'articles PDF.",
+      "hero": {
+        "eyebrow": "Espace d'analyse",
+        "title": "Visualisez vos données",
+        "description": "Importez un fichier Excel pour explorer le jeu de données, comparer les axes et exporter les données au format CSV.",
+        "cards": {
+          "excel": {
+            "title": "Excel",
+            "subtitle": "Téléversez un fichier .xlsx ou .xls"
+          },
+          "charts": {
+            "title": "Graphiques",
+            "subtitle": "Interactifs et exportables"
+          }
+        }
+      }
     },
     "extraction": {
       "batchExtraction": {

@@ -8,7 +8,22 @@
   },
   "view": {
     "visualization": {
-      "description": "在波长域中可视化数据的 FOM 分布。您可以导入 Excel 文件或从 PDF 论文中提取数据。"
+      "description": "在交互式图表中可视化您的数据。您可以导入 Excel 文件或从 PDF 论文中提取数据。",
+      "hero": {
+        "eyebrow": "分析工作区",
+        "title": "可视化您的数据",
+        "description": "导入 Excel 文件以查看数据集、比较坐标轴，并将数据导出为 CSV。",
+        "cards": {
+          "excel": {
+            "title": "Excel",
+            "subtitle": "上传 .xlsx 或 .xls 文件"
+          },
+          "charts": {
+            "title": "图表",
+            "subtitle": "交互式，可导出"
+          }
+        }
+      }
     },
     "extraction": {
       "batchExtraction": {
