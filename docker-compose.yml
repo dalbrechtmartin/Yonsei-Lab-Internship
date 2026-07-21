@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8000:8000"
+      - "${BACKEND_HOST_PORT:-8000}:8000"
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
     networks:
@@ -15,7 +15,7 @@ services:
       context: .
       dockerfile: Dockerfile.frontend
     ports:
-      - "8081:8080"
+      - "${FRONTEND_HOST_PORT:-8081}:8080"
     depends_on:
       - backend
     networks:
