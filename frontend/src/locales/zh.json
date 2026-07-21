@@ -77,7 +77,8 @@
       "exportCsv": "导出为 CSV"
     },
     "medianLine": {
-      "name": "中位数"
+      "name": "中位数",
+      "toggle": "显示中位数"
     },
     "scale": {
       "label": "尺度:",
