@@ -1,4 +1,4 @@
-FROM python:3.11-slim-bookworm AS builder
+FROM python:3.14-slim-bookworm AS builder
 
 WORKDIR /app
 
@@ -9,7 +9,7 @@ RUN apt-get update \
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir --user -r requirements.txt
 
-FROM python:3.11-slim-bookworm
+FROM python:3.14-slim-bookworm
 
 RUN groupadd --system appuser && useradd --system --gid appuser appuser
 
