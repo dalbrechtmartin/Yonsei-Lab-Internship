@@ -8,7 +8,22 @@
   },
   "view": {
     "visualization": {
-      "description": "在波长域中可视化数据的 FOM 分布。您可以导入 Excel 文件或从 PDF 论文中提取数据。"
+      "description": "在交互式图表中可视化您的数据。您可以导入 Excel 文件或从 PDF 论文中提取数据。",
+      "hero": {
+        "eyebrow": "分析工作区",
+        "title": "可视化您的数据",
+        "description": "导入 Excel 文件以查看数据集、比较坐标轴，并将数据导出为 CSV。",
+        "cards": {
+          "excel": {
+            "title": "Excel",
+            "subtitle": "上传 .xlsx 或 .xls 文件"
+          },
+          "charts": {
+            "title": "图表",
+            "subtitle": "交互式，可导出"
+          }
+        }
+      }
     },
     "extraction": {
       "batchExtraction": {
@@ -47,8 +62,13 @@
     },
     "processing": "正在从 {count} 篇论文中提取数据，可能需要一些时间...",
     "success": "提取完成，Excel 文件已下载。",
+    "partialSuccess": "处理过程中已达到 Gemini 免费配额上限，Excel 导出仅包含此前已处理的文件。",
     "error": "提取 PDF 时发生错误。",
-    "newBatch": "提取另一批"
+    "quotaExceeded": "已达到 Gemini 免费配额上限。请稍后重试或减少文件数量。",
+    "progress": {
+      "remaining": "预计还剩 {time}",
+      "almostDone": "即将完成..."
+    }
   },
   "fomcharts": {
     "sampleCount": "样本",

@@ -8,7 +8,22 @@
   },
   "view": {
     "visualization": {
-      "description": "데이터의 FOM 분포를 파장 영역에서 시각화합니다. 엑셀 파일을 가져오거나 PDF 논문에서 데이터를 추출할 수 있습니다."
+      "description": "데이터를 인터랙티브 차트로 시각화합니다. 엑셀 파일을 가져오거나 PDF 논문에서 데이터를 추출할 수 있습니다.",
+      "hero": {
+        "eyebrow": "분석 작업 공간",
+        "title": "데이터 시각화",
+        "description": "엑셀 파일을 가져와 데이터셋을 살펴보고, 축을 비교하고, 데이터를 CSV로 내보내세요.",
+        "cards": {
+          "excel": {
+            "title": "엑셀",
+            "subtitle": ".xlsx 또는 .xls 업로드"
+          },
+          "charts": {
+            "title": "그래프",
+            "subtitle": "인터랙티브하고 내보내기 가능"
+          }
+        }
+      }
     },
     "extraction": {
       "batchExtraction": {
@@ -47,8 +62,13 @@
     },
     "processing": "{count}개의 논문에서 데이터 추출 중, 시간이 걸릴 수 있습니다...",
     "success": "추출이 완료되었습니다. 엑셀 파일이 다운로드되었습니다.",
+    "partialSuccess": "처리 도중 Gemini 무료 할당량에 도달했습니다. 엑셀 파일에는 그 전에 처리된 파일만 포함되어 있습니다.",
     "error": "PDF 추출 중 오류가 발생했습니다.",
-    "newBatch": "다른 묶음 추출하기"
+    "quotaExceeded": "Gemini 무료 할당량에 이미 도달했습니다. 나중에 다시 시도하거나 파일 수를 줄여주세요.",
+    "progress": {
+      "remaining": "약 {time} 남음",
+      "almostDone": "거의 다 됐습니다..."
+    }
   },
   "fomcharts": {
     "sampleCount": "샘플",

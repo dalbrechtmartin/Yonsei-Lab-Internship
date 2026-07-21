@@ -8,7 +8,22 @@
   },
   "view": {
     "visualization": {
-      "description": "Visualize the FOM distribution of your data in the wavelength domain. You can import an Excel file or extract data from PDF papers."
+      "description": "Visualize your data in interactive charts. You can import an Excel file or extract data from PDF papers.",
+      "hero": {
+        "eyebrow": "Analysis workspace",
+        "title": "Visualize your data",
+        "description": "Import an Excel file to inspect the dataset, compare axes, and export the data as CSV.",
+        "cards": {
+          "excel": {
+            "title": "Excel",
+            "subtitle": "Upload .xlsx or .xls"
+          },
+          "charts": {
+            "title": "Charts",
+            "subtitle": "Interactive & exportable"
+          }
+        }
+      }
     },
     "extraction": {
       "batchExtraction": {
@@ -47,8 +62,13 @@
     },
     "processing": "Extracting data from {count} paper(s), this can take a while...",
     "success": "PDFs processed successfully. Your Excel export has been downloaded.",
+    "partialSuccess": "Gemini's free-tier quota was reached partway through. Your Excel export only includes the files processed before that.",
     "error": "We couldn't extract those PDFs. Please try again.",
-    "newBatch": "Extract another batch"
+    "quotaExceeded": "Gemini's free-tier quota has already been reached. Try again later or with fewer files.",
+    "progress": {
+      "remaining": "About {time} remaining",
+      "almostDone": "Almost there, finishing up..."
+    }
   },
   "fomcharts": {
     "sampleCount": "samples",

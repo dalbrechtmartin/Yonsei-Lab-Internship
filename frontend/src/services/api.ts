@@ -5,6 +5,15 @@ export interface UploadExcelResponse {
   data: Record<string, unknown>[];
 }
 
+export interface ExtractPdfsResult {
+  blob: Blob;
+  /** True when Gemini's quota was hit partway through — the export only
+   * covers the files processed before that happened. */
+  partial: boolean;
+}
+
+export class QuotaExceededError extends Error {}
+
 export const apiService = {
   async uploadExcel(file: File): Promise<UploadExcelResponse> {
     const formData = new FormData();
@@ -29,7 +38,7 @@ export const apiService = {
    * StreamingResponse (an .xlsx file), not JSON, so this returns the raw
    * Blob for the caller to download or read further if needed.
    */
-  async extractPdfs(files: File[]): Promise<Blob> {
+  async extractPdfs(files: File[]): Promise<ExtractPdfsResult> {
     const formData = new FormData();
     for (const file of files) formData.append("files", file);
 
@@ -38,9 +47,15 @@ export const apiService = {
         method: "POST",
         body: formData,
       });
+      if (response.status === 429) {
+        throw new QuotaExceededError("Gemini quota exceeded.");
+      }
       if (!response.ok)
         throw new Error("Server error while extracting the PDFs.");
-      return await response.blob();
+      return {
+        blob: await response.blob(),
+        partial: response.headers.get("X-Extraction-Partial") === "true",
+      };
     } catch (error) {
       console.error("API Error:", error);
       throw error;
