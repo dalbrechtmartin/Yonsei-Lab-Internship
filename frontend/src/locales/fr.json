@@ -62,8 +62,13 @@
     },
     "processing": "Extraction des données de {count} article(s), cela peut prendre du temps...",
     "success": "Extraction terminée. Le fichier Excel a été téléchargé.",
+    "partialSuccess": "Le quota gratuit de Gemini a été atteint en cours de route. L'export Excel ne contient que les fichiers traités avant cela.",
     "error": "Une erreur est survenue lors de l'extraction des PDF.",
-    "newBatch": "Extraire un autre lot"
+    "quotaExceeded": "Le quota gratuit de Gemini est déjà atteint. Réessayez plus tard ou avec moins de fichiers.",
+    "progress": {
+      "remaining": "Environ {time} restantes",
+      "almostDone": "Presque terminé..."
+    }
   },
   "fomcharts": {
     "sampleCount": "échantillons",

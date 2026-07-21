@@ -11,6 +11,7 @@ from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from google import genai
+from google.genai import errors as genai_errors
 
 # --- 1. CONFIGURATION ---
 load_dotenv()
@@ -30,6 +31,9 @@ app.add_middleware(
     allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
+    # Custom response headers are hidden from browser JS unless explicitly
+    # exposed, even with allow_origins=["*"].
+    expose_headers=["X-Extraction-Partial"],
 )
 
 # --- 2. HELPERS ---
@@ -83,6 +87,13 @@ def normalize_result(result: dict) -> dict:
     return {col: result.get(col) for col in COLUMN_ORDER}
 
 
+class QuotaExceededError(Exception):
+    """Raised when Gemini's free-tier RPM/RPD quota is hit. Distinct from a
+    one-off parsing/API failure: every subsequent call will fail the same
+    way, so the caller should stop looping instead of burning the 13s sleep
+    on doomed requests for the remaining files."""
+
+
 def analyze_paper_with_llm(paper_text: str, filename: str) -> Optional[List[dict]]:
     """Returns a list of records (one per mode/case) for this paper,
     or None if the call/parsing failed."""
@@ -96,10 +107,17 @@ def analyze_paper_with_llm(paper_text: str, filename: str) -> Optional[List[dict
         # whether the underlying model actually changed.
         # temperature=0: deterministic output for a given model, so we can
         # still compare runs meaningfully as long as the model didn't change.
+        # thinking_budget=0: flash models default to dynamic thinking, which
+        # burns tens of seconds per call reasoning before answering. This is
+        # a fixed-schema extraction task, not a reasoning task, so we don't
+        # need it — disabling it cuts latency drastically.
         response = client.models.generate_content(
             model='gemini-flash-latest',
             contents=final_prompt,
-            config={"temperature": 0},
+            config={
+                "temperature": 0,
+                "thinking_config": {"thinking_budget": 0},
+            },
         )
         resolved_model = getattr(response, "model_version", None)
         print(f"  -> Answered by model: {resolved_model}")
@@ -113,6 +131,11 @@ def analyze_paper_with_llm(paper_text: str, filename: str) -> Optional[List[dict
         for record in parsed:
             record["Model Used"] = resolved_model
         return parsed
+    except genai_errors.ClientError as e:
+        if e.code == 429:
+            raise QuotaExceededError(str(e)) from e
+        print(f"Error for {filename}: {e}")
+        return None
     except Exception as e:
         print(f"Error for {filename}: {e}")
         return None
@@ -128,6 +151,7 @@ async def process_excel(file: UploadFile = File(...)):
 @app.post("/extract-pdfs/")
 async def extract_data_from_pdfs(files: List[UploadFile] = File(...)):
     extracted_data: list[dict] = []
+    quota_hit = False
 
     for file in files:
         filename = file.filename
@@ -142,7 +166,13 @@ async def extract_data_from_pdfs(files: List[UploadFile] = File(...)):
         pdf_content = await file.read()
         extracted_text = extract_text_from_pdf(pdf_content)
 
-        records = analyze_paper_with_llm(extracted_text, clean_name)
+        try:
+            records = analyze_paper_with_llm(extracted_text, clean_name)
+        except QuotaExceededError:
+            # Every remaining file would fail the same way — stop here
+            # instead of sleeping 13s per file for nothing.
+            quota_hit = True
+            break
 
         if records:
             extracted_data.extend(normalize_result(r) for r in records)
@@ -151,6 +181,11 @@ async def extract_data_from_pdfs(files: List[UploadFile] = File(...)):
         time.sleep(13)
 
     if not extracted_data:
+        if quota_hit:
+            raise HTTPException(
+                status_code=429,
+                detail="Gemini's free-tier quota (requests per minute/day) has been reached. Try again later or with fewer files.",
+            )
         raise HTTPException(status_code=400, detail="No data extracted.")
 
     df = pl.DataFrame(extracted_data).select(COLUMN_ORDER)
@@ -158,8 +193,14 @@ async def extract_data_from_pdfs(files: List[UploadFile] = File(...)):
     df.write_excel(output)
     output.seek(0)
 
+    headers = {'Content-Disposition': 'attachment; filename="Gold_Standard_Data.xlsx"'}
+    if quota_hit:
+        # Some files were processed before the quota hit — tell the caller
+        # this export is incomplete rather than staying silent about it.
+        headers['X-Extraction-Partial'] = 'true'
+
     return StreamingResponse(
         output,
         media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        headers={'Content-Disposition': 'attachment; filename="Gold_Standard_Data.xlsx"'}
+        headers=headers,
     )

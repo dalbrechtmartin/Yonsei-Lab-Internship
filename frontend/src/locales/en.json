@@ -62,8 +62,13 @@
     },
     "processing": "Extracting data from {count} paper(s), this can take a while...",
     "success": "PDFs processed successfully. Your Excel export has been downloaded.",
+    "partialSuccess": "Gemini's free-tier quota was reached partway through. Your Excel export only includes the files processed before that.",
     "error": "We couldn't extract those PDFs. Please try again.",
-    "newBatch": "Extract another batch"
+    "quotaExceeded": "Gemini's free-tier quota has already been reached. Try again later or with fewer files.",
+    "progress": {
+      "remaining": "About {time} remaining",
+      "almostDone": "Almost there, finishing up..."
+    }
   },
   "fomcharts": {
     "sampleCount": "samples",

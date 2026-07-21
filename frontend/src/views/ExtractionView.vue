@@ -2,7 +2,7 @@
   <ToolActionsBar
     :tool-name="t('nav.extraction')"
     :show-export="false"
-    @import="openImportDialog"
+    :show-import="false"
   />
 
   <main class="grow px-6 pb-10 sm:px-8 lg:px-10">
@@ -53,56 +53,41 @@
         <p class="text-sm text-secondary">
           {{ t("extraction.processing", { count: fileCount }) }}
         </p>
-      </div>
 
-      <div v-if="statusKey && !isProcessing" class="w-full">
-        <div
-          class="w-full rounded-2xl border px-4 py-3 text-sm font-medium shadow-sm transition-all duration-300 ease-out"
-          :class="statusClass"
-          :style="statusStyle"
-        >
-          <div class="flex items-start justify-between gap-4">
-            <p class="min-w-0 flex-1 leading-6">
-              {{ t(statusKey) }}
-            </p>
-            <button
-              type="button"
-              class="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-current/70 transition hover:bg-black/5 hover:text-current focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/25"
-              :aria-label="t('status.dismiss')"
-              @click="dismissStatus"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                class="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M18 6 6 18" />
-                <path d="m6 6 12 12" />
-              </svg>
-            </button>
+        <div class="w-full max-w-sm">
+          <div class="h-2 w-full overflow-hidden rounded-full bg-secondary/10">
+            <div
+              class="h-full rounded-full bg-primary transition-[width] duration-500 ease-out"
+              :style="{ width: `${progressPercent}%` }"
+            />
           </div>
+          <p class="mt-2 text-center text-xs text-secondary">
+            {{
+              remainingSeconds > 0
+                ? t("extraction.progress.remaining", {
+                    time: formatDuration(remainingSeconds),
+                  })
+                : t("extraction.progress.almostDone")
+            }}
+          </p>
         </div>
-
-        <button
-          type="button"
-          class="mt-4 inline-flex items-center rounded-full border border-primary/20 bg-background/80 px-4 py-2 text-sm font-medium text-primary transition hover:bg-primary/8"
-          @click="resetToDropzone"
-        >
-          {{ t("extraction.newBatch") }}
-        </button>
       </div>
+
+      <StatusToast
+        v-if="!isProcessing"
+        :status-key="statusKey"
+        :status-class="statusClass"
+        :fade-style="statusStyle"
+        :duration-ms="ringDurationMs"
+        :token="statusToken"
+        @dismiss="dismissStatus"
+      />
 
       <section
-        v-show="!isProcessing && !statusKey && fileCount === 0"
+        v-show="!isProcessing && fileCount === 0"
         class="flex justify-center py-6"
       >
         <FileDropzone
-          ref="dropzoneRef"
           accept=".pdf"
           multiple
           :title="t('extraction.dropzone.title')"
@@ -119,87 +104,99 @@ import { computed, onUnmounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import ToolActionsBar from "@/components/layout/ToolActionsBar.vue";
 import FileDropzone from "@/components/shared/FileDropzone.vue";
-import { apiService } from "@/services/api";
+import StatusToast from "@/components/shared/StatusToast.vue";
+import { apiService, QuotaExceededError } from "@/services/api";
+import { useTransientStatus } from "@/composables/useTransientStatus";
 
-const STATUS_VISIBLE_MS = 3200;
-const STATUS_FADE_MS = 250;
+const STATUS_VISIBLE_MS = 15000;
+
+// Backend processes PDFs one at a time and sleeps 13s between each to stay
+// within the LLM free-tier rate limit (see backend/main.py), plus a few
+// seconds of actual model latency. There's no real progress feed from the
+// server (it's a single blocking request), so this is only an estimate used
+// to drive the progress bar — tune it if the backend's pace changes.
+const ESTIMATED_SECONDS_PER_FILE = 30;
+// Never let the estimate alone show 100% before the response actually
+// arrives, so the bar doesn't look "done" while still waiting on the server.
+const MAX_ESTIMATED_PROGRESS_PERCENT = 96;
 
 const { t } = useI18n();
 
 const isProcessing = ref(false);
-const statusKey = ref("");
-const statusClass = ref("");
-const statusVisible = ref(false);
-const statusExiting = ref(false);
-const statusTimeout = ref<number | null>(null);
-const statusClearTimeout = ref<number | null>(null);
+const {
+  statusKey,
+  statusClass,
+  statusStyle,
+  statusToken,
+  ringDurationMs,
+  setTransientStatus,
+  dismissStatus,
+  clearStatus,
+} = useTransientStatus(STATUS_VISIBLE_MS);
 const fileCount = ref(0);
-const dropzoneRef = ref<InstanceType<typeof FileDropzone> | null>(null);
+const elapsedSeconds = ref(0);
+const progressTimer = ref<number | null>(null);
 
-const clearStatusTimeout = () => {
-  if (statusTimeout.value !== null) {
-    window.clearTimeout(statusTimeout.value);
-    statusTimeout.value = null;
-  }
-  if (statusClearTimeout.value !== null) {
-    window.clearTimeout(statusClearTimeout.value);
-    statusClearTimeout.value = null;
-  }
+const estimatedTotalSeconds = computed(
+  () => fileCount.value * ESTIMATED_SECONDS_PER_FILE,
+);
+
+const remainingSeconds = computed(() =>
+  Math.max(estimatedTotalSeconds.value - elapsedSeconds.value, 0),
+);
+
+const progressPercent = computed(() => {
+  if (estimatedTotalSeconds.value === 0) return 0;
+  const ratio = elapsedSeconds.value / estimatedTotalSeconds.value;
+  return Math.min(ratio, 1) * MAX_ESTIMATED_PROGRESS_PERCENT;
+});
+
+const formatDuration = (totalSeconds: number) => {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = Math.round(totalSeconds % 60);
+  return minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
 };
 
-const setTransientStatus = (key: string, className: string) => {
-  clearStatusTimeout();
-  statusVisible.value = true;
-  statusExiting.value = false;
-  statusKey.value = key;
-  statusClass.value = className;
-  statusTimeout.value = window.setTimeout(() => {
-    dismissStatus();
-  }, STATUS_VISIBLE_MS);
+const startProgressTimer = () => {
+  elapsedSeconds.value = 0;
+  progressTimer.value = window.setInterval(() => {
+    elapsedSeconds.value += 1;
+  }, 1000);
 };
 
-const dismissStatus = () => {
-  if (!statusVisible.value || statusExiting.value) {
-    return;
+const stopProgressTimer = () => {
+  if (progressTimer.value !== null) {
+    window.clearInterval(progressTimer.value);
+    progressTimer.value = null;
   }
-
-  clearStatusTimeout();
-  statusExiting.value = true;
-  statusVisible.value = true;
-  statusClearTimeout.value = window.setTimeout(() => {
-    statusKey.value = "";
-    statusClass.value = "";
-    statusVisible.value = false;
-    statusExiting.value = false;
-    statusClearTimeout.value = null;
-  }, STATUS_FADE_MS);
 };
-
-const statusStyle = computed(() => ({
-  opacity: statusExiting.value ? 0 : 1,
-  transform: statusExiting.value ? "translateY(-4px)" : "translateY(0)",
-}));
 
 const handleExtract = async (files: File[]) => {
   fileCount.value = files.length;
-  clearStatusTimeout();
+  clearStatus();
   isProcessing.value = true;
-  statusKey.value = "";
+  startProgressTimer();
 
   try {
-    const blob = await apiService.extractPdfs(files);
+    const { blob, partial } = await apiService.extractPdfs(files);
     downloadBlob(blob, "Gold_Standard_Data.xlsx");
     setTransientStatus(
-      "extraction.success",
-      "border-emerald-500/20 bg-emerald-500/12 text-emerald-950",
+      partial ? "extraction.partialSuccess" : "extraction.success",
+      partial
+        ? "border-amber-500/20 bg-amber-500/12 text-amber-950"
+        : "border-emerald-500/20 bg-emerald-500/12 text-emerald-950",
     );
   } catch (error) {
     setTransientStatus(
-      "extraction.error",
+      error instanceof QuotaExceededError
+        ? "extraction.quotaExceeded"
+        : "extraction.error",
       "border-rose-500/20 bg-rose-500/12 text-rose-950",
     );
   } finally {
     isProcessing.value = false;
+    stopProgressTimer();
+    fileCount.value = 0;
   }
 };
 
@@ -212,23 +209,7 @@ const downloadBlob = (blob: Blob, filename: string) => {
   URL.revokeObjectURL(url);
 };
 
-const resetToDropzone = () => {
-  clearStatusTimeout();
-  statusKey.value = "";
-  statusClass.value = "";
-  statusVisible.value = false;
-  statusExiting.value = false;
-  fileCount.value = 0;
-};
-
-const openImportDialog = () => {
-  if (fileCount.value > 0 || statusKey.value) {
-    resetToDropzone();
-  }
-  dropzoneRef.value?.triggerFileInput();
-};
-
 onUnmounted(() => {
-  clearStatusTimeout();
+  stopProgressTimer();
 });
 </script>
