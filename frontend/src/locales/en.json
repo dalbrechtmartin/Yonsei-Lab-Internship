@@ -4,7 +4,8 @@
   },
   "nav": {
     "visualization": "Visualization",
-    "extraction": "Extraction"
+    "extraction": "Extraction",
+    "comingSoon": "Under development"
   },
   "view": {
     "visualization": {

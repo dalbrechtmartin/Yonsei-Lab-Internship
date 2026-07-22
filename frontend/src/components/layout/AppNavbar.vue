@@ -12,29 +12,50 @@
     <div
       class="flex items-center gap-2 rounded-full border border-secondary/10 bg-background/70 p-1 shadow-sm"
     >
-      <RouterLink
-        v-for="tool in tools"
-        :key="tool.path"
-        :to="tool.path"
-        class="inline-flex items-center rounded-full px-4 py-2 text-sm font-medium text-secondary transition duration-200 hover:bg-secondary/10 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-        active-class="!bg-primary !text-primary-foreground shadow-md shadow-primary/15 hover:!bg-primary"
-      >
-        {{ $t(tool.labelKey) }}
-      </RouterLink>
+      <template v-for="tool in tools" :key="tool.path">
+        <RouterLink
+          v-if="!tool.locked"
+          :to="tool.path"
+          class="inline-flex items-center rounded-full px-4 py-2 text-sm font-medium text-secondary transition duration-200 hover:bg-secondary/10 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          active-class="!bg-primary !text-primary-foreground shadow-md shadow-primary/15 hover:!bg-primary"
+        >
+          {{ $t(tool.labelKey) }}
+        </RouterLink>
+
+        <div
+          v-else
+          class="group relative inline-flex cursor-not-allowed items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium text-secondary/50"
+        >
+          <span>{{ $t(tool.labelKey) }}</span>
+          <Lock class="size-3.5" />
+
+          <span
+            class="pointer-events-none absolute top-full left-1/2 z-30 mt-2 -translate-x-1/2 rounded-lg bg-ink px-2.5 py-1.5 text-xs font-medium whitespace-nowrap text-white opacity-0 shadow-lg transition duration-150 group-hover:opacity-100"
+          >
+            {{ $t("nav.comingSoon") }}
+          </span>
+        </div>
+      </template>
     </div>
   </nav>
 </template>
 
 <script setup lang="ts">
+import { Lock } from "@lucide/vue";
 import { RouterLink } from "vue-router";
 
 interface ToolTab {
   path: string;
   labelKey: string;
+  locked?: boolean;
 }
 
 const tools: ToolTab[] = [
   { path: "/", labelKey: "nav.visualization" },
-  { path: "/extraction", labelKey: "nav.extraction" },
+  // Extraction is locked in deployed builds (test + prod, both run through
+  // `vite build` per Dockerfile.frontend) while its next version is being
+  // reworked -- import.meta.env.PROD is false only under `vite dev`, which
+  // is exactly the local/dev-only access the app owner wants to keep.
+  { path: "/extraction", labelKey: "nav.extraction", locked: import.meta.env.PROD },
 ];
 </script>
