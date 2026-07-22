@@ -1,37 +1,14 @@
 # MEMO
 
-## For backend
+## Quick start
 
-With a new terminal with python:
+From the repo root, run:
 
-```bash
-cd C:\Users\albre\Documents\Dev\Stage\Yonsei-Lab-Internship\backend
+```powershell
+.\dev.ps1
 ```
 
-In Windows:
+You'll be asked to choose an environment:
 
-```bash
-.\venv\Scripts\activate.bat
-# powershell
-.\venv\Scripts\Activate.ps1
-```
-
-Start server:
-
-```bash
-uvicorn main:app --reload
-```
-
-## For frontend
-
-With a new terminal:
-
-```bash
-cd frontend
-```
-
-Start server:
-
-```bash
-npm run dev
-```
+- **[L]ocal** — opens the backend (`venv` activate + `pip install -r requirements.txt` + `uvicorn main:app --reload`) and the frontend (`npm install` + `npm run dev`), each in their own PowerShell window.
+- **[D]ocker** — stops any existing containers (`docker compose down`), then rebuilds and starts them (`docker compose up --build`). Requires Docker to be installed and running.
