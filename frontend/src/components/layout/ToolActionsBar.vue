@@ -28,21 +28,13 @@
         {{ $t("actions.export") }}
       </button>
 
-      <select
-        v-model="locale"
-        class="text-xs border border-secondary/20 rounded-lg px-2 py-1.5 bg-background/80 text-ink focus:ring-2 focus:ring-primary outline-none"
-      >
-        <option value="en">EN</option>
-        <option value="fr">FR</option>
-        <option value="ko">KO</option>
-        <option value="zh">ZH</option>
-      </select>
+      <LanguageSelector />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useI18n } from "vue-i18n";
+import LanguageSelector from "./LanguageSelector.vue";
 
 withDefaults(
   defineProps<{
@@ -61,8 +53,6 @@ defineEmits<{
   import: [];
   export: [];
 }>();
-
-const { locale } = useI18n();
 
 // Tiny inline icons so this component has zero extra dependency until
 // shadcn-vue's Button/lucide icons are wired in.

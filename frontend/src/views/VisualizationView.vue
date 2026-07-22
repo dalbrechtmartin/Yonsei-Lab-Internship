@@ -6,45 +6,30 @@
     @export="handleExport"
   />
 
-  <main class="grow px-6 pb-10 sm:px-8 lg:px-10">
-    <div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
+  <main class="grow px-3 pb-8 sm:px-4 lg:px-5">
+    <div class="mx-auto flex w-full max-w-7xl flex-col gap-4">
       <section
-        class="mt-6 overflow-hidden rounded-[2rem] border border-white/50 bg-card/80 p-6 shadow-2xl shadow-slate-900/5 backdrop-blur-xl"
+        class="mt-4 overflow-hidden rounded-4xl border border-white/50 bg-card/80 p-6 shadow-2xl shadow-slate-900/5 backdrop-blur-xl"
       >
-        <div
-          class="flex flex-col gap-6 md:flex-row md:items-end md:justify-between"
-        >
-          <div class="max-w-2xl">
-            <p class="text-xs uppercase tracking-[0.3em] text-secondary">
-              {{ t("view.visualization.hero.eyebrow") }}
-            </p>
-            <h2 class="mt-2 text-2xl font-semibold text-ink">
-              {{ t("view.visualization.hero.title") }}
-            </h2>
-            <p class="mt-2 text-sm leading-6 text-secondary">
-              {{ t("view.visualization.hero.description") }}
-            </p>
-          </div>
-
-          <div class="grid grid-cols-2 gap-3 text-xs text-secondary">
-            <div
-              class="rounded-2xl border border-secondary/10 bg-background/70 px-3 py-2"
-            >
-              <div class="font-semibold text-ink">
-                {{ t("view.visualization.hero.cards.excel.title") }}
-              </div>
-              <div>{{ t("view.visualization.hero.cards.excel.subtitle") }}</div>
-            </div>
-            <div
-              class="rounded-2xl border border-secondary/10 bg-background/70 px-3 py-2"
-            >
-              <div class="font-semibold text-ink">
-                {{ t("view.visualization.hero.cards.charts.title") }}
-              </div>
-              <div>{{ t("view.visualization.hero.cards.charts.subtitle") }}</div>
-            </div>
-          </div>
+        <div class="max-w-2xl">
+          <p class="text-xs uppercase tracking-[0.3em] text-secondary">
+            {{ t("view.visualization.hero.eyebrow") }}
+          </p>
+          <h2 class="mt-2 text-2xl font-semibold text-ink">
+            {{ t("view.visualization.hero.title") }}
+          </h2>
+          <p class="mt-2 text-sm leading-6 text-secondary">
+            {{ t("view.visualization.hero.description") }}
+          </p>
         </div>
+
+        <FileDropzone
+          v-show="fomData.length === 0"
+          compact
+          ref="dropzoneRef"
+          class="mt-4"
+          @files-selected="handleUpload"
+        />
       </section>
 
       <StatusToast
@@ -55,10 +40,6 @@
         :token="statusToken"
         @dismiss="dismissStatus"
       />
-
-      <section v-show="fomData.length === 0" class="flex justify-center py-6">
-        <FileDropzone ref="dropzoneRef" @files-selected="handleUpload" />
-      </section>
 
       <section
         v-if="fomData.length > 0"
@@ -160,10 +141,6 @@ const handleUpload = async ([file]: File[]) => {
     );
   }
 };
-
-// "Import" in the actions bar, once a file is already loaded, just clears
-// the current dataset so the dropzone reappears — simplest way to load a
-// different file without a separate modal/flow.
 const resetToDropzone = () => {
   clearStatus();
   fomData.value = [];

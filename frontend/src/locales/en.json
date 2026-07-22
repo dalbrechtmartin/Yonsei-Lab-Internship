@@ -12,17 +12,7 @@
       "hero": {
         "eyebrow": "Analysis workspace",
         "title": "Visualize your data",
-        "description": "Import an Excel file to inspect the dataset, compare axes, and export the data as CSV.",
-        "cards": {
-          "excel": {
-            "title": "Excel",
-            "subtitle": "Upload .xlsx or .xls"
-          },
-          "charts": {
-            "title": "Charts",
-            "subtitle": "Interactive & exportable"
-          }
-        }
+        "description": "Import an Excel file to inspect the dataset, compare axes, and export the data as CSV."
       }
     },
     "extraction": {
@@ -30,14 +20,6 @@
         "legend": "Batch Extraction",
         "title": "Extract paper data from PDFs",
         "description": "Drop one or more PDFs to generate a structured Excel export. The extraction process may take a few minutes depending on the number of papers."
-      },
-      "pdfInput": {
-        "title": "PDF Input",
-        "description": "Upload up to 10 PDFs at once."
-      },
-      "excelOutput": {
-        "title": "Excel Output",
-        "description": "Auto-downloaded result"
       }
     }
   },
@@ -58,16 +40,40 @@
   "extraction": {
     "dropzone": {
       "title": "Drag and drop your PDF papers here",
-      "subtitle": "or click to browse (multiple files supported)"
+      "subtitle": "or click to browse (up to 10 files supported)"
     },
     "processing": "Extracting data from {count} paper(s), this can take a while...",
     "success": "PDFs processed successfully. Your Excel export has been downloaded.",
-    "partialSuccess": "Gemini's free-tier quota was reached partway through. Your Excel export only includes the files processed before that.",
+    "partialSuccess": "Some files could not be processed and were skipped. Your Excel export only includes the ones that succeeded.",
     "error": "We couldn't extract those PDFs. Please try again.",
     "quotaExceeded": "Gemini's free-tier quota has already been reached. Try again later or with fewer files.",
+    "quotaHit": "Gemini's free-tier quota was reached partway through. You can resume once you're ready to continue -- nothing already processed is lost.",
+    "modelSelector": {
+      "title": "Extraction model",
+      "description": "Choose which Gemini model analyzes your papers.",
+      "default": {
+        "title": "Default",
+        "description": "Tries the newest, most capable model first, then automatically falls back to a faster or cheaper one if it runs out of quota mid-batch.",
+        "warning": "The model used can change partway through the batch due to rate limits — check the \"Model Used\" column in the export to see what actually ran on each paper."
+      },
+      "flash": {
+        "title": "gemini-3.5-flash",
+        "description": "The best balance of accuracy and speed. Recommended for most batches."
+      },
+      "lite": {
+        "title": "gemini-3.1-flash-lite",
+        "description": "Fastest and cheapest, but more prone to reasoning mistakes such as layer order or internal consistency."
+      }
+    },
     "progress": {
-      "remaining": "About {time} remaining",
-      "almostDone": "Almost there, finishing up..."
+      "file": {
+        "pending": "Waiting",
+        "processing": "Processing",
+        "done": "Done",
+        "failed": "Failed"
+      },
+      "overall": "{done} / {total} files processed",
+      "resume": "Resume"
     }
   },
   "fomcharts": {
