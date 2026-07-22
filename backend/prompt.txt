@@ -14,30 +14,42 @@ MULTIPLE MODES/CASES — ONE RECORD PER MODE:
 2. If the paper reports only ONE configuration overall, return a single-element array with "Mode/Case" set to "main" or a short descriptive label.
 3. Do NOT merge metrics from different modes/cases into one record. Each record's FOM, Sensitivity, and Q-factor must all come from the SAME mode/case.
 4. "Ref", "Title", "Material Class", "Base Materials", and "Layer Structure" are properties of the paper/device and should be repeated identically across all records for that paper, unless the structure itself genuinely differs between cases.
+5. COMPLETENESS SELF-CHECK: before finalizing your answer, re-scan the FULL document (all pages, not just the abstract/conclusion) specifically looking for additional numeric FOM/Sensitivity/Q-factor combinations you have not yet captured as a record — parametric sweeps, secondary cases, alternate configurations, results mentioned only in a table or a later section. Add a separate record for each distinct one you find. A paper reporting values for multiple named cases (e.g. "Δl=12nm", "n=0.3 change") must have one record per case, even if some cases only report one or two of the three metrics.
 
 Rules for "Material Class":
 1. Identify the base materials responsible for the resonance.
 2. Classify using ONLY these standard terms: "Metal", "Dielectric", "Semiconductor", "Polymer", "Phase-change".
 3. Sort alphabetically, joined with ";" (e.g., "Dielectric;Metal;Semiconductor").
+4. A material's class is determined by its own physical/chemical nature (e.g., Si3N4, SiO2, and Ta2O5 are dielectrics, not semiconductors — do not classify a compound as "Semiconductor" solely because it contains a semiconductor element). If genuinely unsure, prefer the classification the paper itself uses to describe the material (e.g., "phase-change material", "all-dielectric") over your own inference, and note the uncertainty in "Notes".
 
 Rules for "Base Materials":
 1. Use ONLY standard chemical formulas (e.g., Au, Ag, Si, SiO2, Si3N4, Ta2O5, Graphene, GST). Never use English names (no "Gold", "Silicon", etc.).
 2. Only include materials that are part of the optical resonator/metastructure itself and directly responsible for the resonance. EXCLUDE materials mentioned only in the context of fabrication, packaging, or process steps (e.g. wafer bonding, adhesive layers, electrodes/contacts used purely for measurement, substrates used only as a mechanical support with no optical role).
-3. Deduplicate identical materials.
-4. Sort alphabetically, joined with ";" (same format as Material Class, e.g., "Si3N4;SiO2;Ta2O5").
+3. DEFAULT TO INCLUDE: if a substrate or supporting material (e.g. glass, quartz, SiO2, Si) is explicitly named in the text as part of the described structure, include it in "Base Materials" by default. Only exclude it if the text gives an explicit reason to believe it plays no role in the resonance (e.g. explicitly described as a generic mechanical carrier/handle wafer unrelated to the optical design). If you exclude a named substrate/supporting material for this reason, you MUST state the specific justification (with a short supporting quote) in "Notes" — do not silently omit it.
+4. Every material listed in "Layer Structure" that is part of the resonant device (not purely mechanical) must also appear in "Base Materials". These two fields must stay consistent — do not list a material in one and drop it from the other without explaining why in "Notes".
+5. Deduplicate identical materials.
+6. Sort alphabetically, joined with ";" (same format as Material Class, e.g., "Si3N4;SiO2;Ta2O5").
 
 Rules for "Layer Structure":
 1. Describe the FULL layer stack of the resonant structure, in physical order, including each layer's thickness in nm as reported in the text — including substrates, even if they were excluded from "Base Materials" as non-resonant.
-2. Join layers with " + ". If a layer repeats N times (e.g. a DBR pair), note it as "(xN)".
-3. Example: "Ta2O5(107nm)/SiO2(150nm) (x10) + Si3N4(180nm) + SiO2(5nm) + Ta2O5(107nm)/SiO2(150nm) (x10)"
-4. If no thickness values are given for a layer, just name the material without a thickness. If unsure which material a given thickness parameter refers to, do not guess — describe it in "Notes" instead.
+2. ORDER CONVENTION: list layers starting from the side where light is incident (top, typically the patterned/resonating layer) down to the substrate at the bottom, matching the orientation shown in the paper's schematic figure(s). If the incidence direction is not stated, state your assumed order explicitly in "Notes".
+3. Join layers with " + ". If a layer repeats N times (e.g. a DBR pair), note it as "(xN)".
+4. Example: "Ta2O5(107nm)/SiO2(150nm) (x10) + Si3N4(180nm) + SiO2(5nm) + Ta2O5(107nm)/SiO2(150nm) (x10)"
+5. If no thickness values are given for a layer, just name the material without a thickness. If unsure which material a given thickness parameter refers to, do not guess — describe it in "Notes" instead.
+6. ONLY include actual physical, deposited/stacked material layers with a thickness. Do NOT include resonator geometry or design parameters that are not material layers — e.g. cavity length, gap size, period, pitch, or other in-plane dimensions — even if they are given in nm. Those belong in "Notes" if relevant, not in "Layer Structure".
+
+Rules for "Spectral Range":
+1. Classify using standard wavelength/frequency boundaries applied to the ACTUAL reported operating wavelength or frequency value in the text: Visible = 380–780nm, NIR = 780nm–2.5µm, MIR = 2.5–25µm, THz = >25µm (or <10 THz in frequency terms).
+2. If the authors' own label for the spectral range conflicts with the numeric wavelength/frequency they report (e.g. a paper reporting a 2–5 µm operating wavelength but calling it "near-infrared"), CLASSIFY BASED ON THE NUMERIC VALUE, not the authors' label. Note the discrepancy in "Notes" (e.g. "Paper self-describes this as NIR/THz, but the stated wavelength of X µm is MIR by standard convention").
+3. If no explicit numeric wavelength/frequency value is given anywhere in the text, fall back to the authors' own descriptive label.
 
 Rules for numerical values (FOM, Sensitivity, Q-factor):
 1. Each value MUST have its own supporting quote in the matching "*_Quote" field, and the page number it was found on in the matching "*_Page" field. If a value has no explicit textual evidence, return null for the value, its quote, AND its page — do NOT infer, estimate, or guess.
 2. If sensitivity is reported in µm/RIU, convert it to nm/RIU (multiply by 1000).
 3. PRIORITIZE THE AUTHORS' OWN HEADLINE RESULT for a given mode/case: if the abstract or conclusion explicitly states a specific combination of FOM/Sensitivity/Q-factor as the achieved result for that case, use those values — even if a higher individual value for one metric appears elsewhere in a secondary parametric study presented as a further/theoretical improvement rather than the achieved result.
-4. RESPECT POSITIONAL PAIRING: when a sentence reports multiple values using "respectively" (e.g. "FOM of X and Y, sensitivities of A and B, respectively"), treat them as strictly paired by position: (X,A) is one complete data point/mode, (Y,B) is another. NEVER mix values from different positions. Create separate records for each pair per the "Multiple modes/cases" rule above.
-5. Use the "Notes" field for any clarification: unit conversions performed, ambiguities, or why a value was excluded. Keep quotes strictly limited to the original text; put all commentary in "Notes" instead.
+4. MAXIMUM VS REPRESENTATIVE VALUE: if the abstract/conclusion reports a value as an explicit "maximum" (e.g. "maximum Q-factor of 4140"), but the results section separately reports a mean/typical value for that SAME case (e.g. with a "±" uncertainty, such as "3706 ± 290, maximum 4140"), prefer the mean/typical value as the primary reported number, and note the maximum value (and its source location) in "Notes" instead of using it as the primary value.
+5. RESPECT POSITIONAL PAIRING: when a sentence reports multiple values using "respectively" (e.g. "FOM of X and Y, sensitivities of A and B, respectively"), treat them as strictly paired by position: (X,A) is one complete data point/mode, (Y,B) is another. NEVER mix values from different positions. Create separate records for each pair per the "Multiple modes/cases" rule above.
+6. Use the "Notes" field for any clarification: unit conversions performed, ambiguities, layer-order or spectral-range judgment calls, or why a value was excluded. Keep quotes strictly limited to the original text; put all commentary in "Notes" instead.
 
 JSON ARRAY structure required (Pay attention to data types; use ONLY numbers, strings, or null):
 [
