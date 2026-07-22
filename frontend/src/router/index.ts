@@ -20,4 +20,14 @@ const router = createRouter({
   routes,
 });
 
+// Extraction is locked in deployed builds while its next version is being
+// reworked -- see the matching lock in AppNavbar.vue. This guard is what
+// actually blocks the route (typing /extraction directly, old bookmarks),
+// the navbar lock icon is just the visible hint.
+router.beforeEach((to) => {
+  if (import.meta.env.PROD && to.path === "/extraction") {
+    return { path: "/" };
+  }
+});
+
 export default router;

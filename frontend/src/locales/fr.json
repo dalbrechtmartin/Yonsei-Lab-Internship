@@ -4,7 +4,8 @@
   },
   "nav": {
     "visualization": "Visualisation",
-    "extraction": "Extraction"
+    "extraction": "Extraction",
+    "comingSoon": "En cours de développement"
   },
   "view": {
     "visualization": {
@@ -12,17 +13,7 @@
       "hero": {
         "eyebrow": "Espace d'analyse",
         "title": "Visualisez vos données",
-        "description": "Importez un fichier Excel pour explorer le jeu de données, comparer les axes et exporter les données au format CSV.",
-        "cards": {
-          "excel": {
-            "title": "Excel",
-            "subtitle": "Téléversez un fichier .xlsx ou .xls"
-          },
-          "charts": {
-            "title": "Graphiques",
-            "subtitle": "Interactifs et exportables"
-          }
-        }
+        "description": "Importez un fichier Excel pour explorer le jeu de données, comparer les axes et exporter les données au format CSV."
       }
     },
     "extraction": {
@@ -30,14 +21,6 @@
         "legend": "Extraction par lot",
         "title": "Extraire les données d'articles depuis des PDF",
         "description": "Déposez un ou plusieurs PDF pour générer un export Excel structuré. Le processus d'extraction peut prendre quelques minutes selon le nombre d'articles."
-      },
-      "pdfInput": {
-        "title": "Entrée PDF",
-        "description": "Téléversez jusqu'à 10 PDF à la fois."
-      },
-      "excelOutput": {
-        "title": "Sortie Excel",
-        "description": "Résultat téléchargé automatiquement"
       }
     }
   },
@@ -58,16 +41,40 @@
   "extraction": {
     "dropzone": {
       "title": "Glissez-déposez vos articles PDF ici",
-      "subtitle": "ou cliquez pour parcourir (plusieurs fichiers possibles)"
+      "subtitle": "ou cliquez pour parcourir (jusqu'à 10 fichiers)"
     },
     "processing": "Extraction des données de {count} article(s), cela peut prendre du temps...",
     "success": "Extraction terminée. Le fichier Excel a été téléchargé.",
-    "partialSuccess": "Le quota gratuit de Gemini a été atteint en cours de route. L'export Excel ne contient que les fichiers traités avant cela.",
+    "partialSuccess": "Certains fichiers n'ont pas pu être traités et ont été ignorés. L'export Excel ne contient que ceux qui ont réussi.",
     "error": "Une erreur est survenue lors de l'extraction des PDF.",
     "quotaExceeded": "Le quota gratuit de Gemini est déjà atteint. Réessayez plus tard ou avec moins de fichiers.",
+    "quotaHit": "Le quota gratuit de Gemini a été atteint en cours de route. Vous pourrez reprendre dès que vous serez prêt — rien de ce qui a déjà été traité n'est perdu.",
+    "modelSelector": {
+      "title": "Modèle d'extraction",
+      "description": "Choisissez quel modèle Gemini analyse vos articles.",
+      "default": {
+        "title": "Défaut",
+        "description": "Essaie d'abord le modèle le plus récent et le plus performant, puis bascule automatiquement vers un modèle plus rapide ou moins coûteux si le quota est atteint en cours de lot.",
+        "warning": "Le modèle utilisé peut changer en cours de lot à cause des limites de débit — consultez la colonne « Model Used » de l'export pour voir ce qui a réellement été utilisé pour chaque article."
+      },
+      "flash": {
+        "title": "gemini-3.5-flash",
+        "description": "Le meilleur équilibre entre précision et vitesse. Recommandé pour la plupart des lots."
+      },
+      "lite": {
+        "title": "gemini-3.1-flash-lite",
+        "description": "Le plus rapide et le moins coûteux, mais plus sujet aux erreurs de raisonnement comme l'ordre des couches ou la cohérence interne."
+      }
+    },
     "progress": {
-      "remaining": "Environ {time} restantes",
-      "almostDone": "Presque terminé..."
+      "file": {
+        "pending": "En attente",
+        "processing": "En cours",
+        "done": "Terminé",
+        "failed": "Échoué"
+      },
+      "overall": "{done} / {total} fichiers traités",
+      "resume": "Reprendre"
     }
   },
   "fomcharts": {

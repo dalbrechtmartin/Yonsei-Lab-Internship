@@ -4,7 +4,8 @@
   },
   "nav": {
     "visualization": "시각화",
-    "extraction": "추출"
+    "extraction": "추출",
+    "comingSoon": "개발 중입니다"
   },
   "view": {
     "visualization": {
@@ -12,17 +13,7 @@
       "hero": {
         "eyebrow": "분석 작업 공간",
         "title": "데이터 시각화",
-        "description": "엑셀 파일을 가져와 데이터셋을 살펴보고, 축을 비교하고, 데이터를 CSV로 내보내세요.",
-        "cards": {
-          "excel": {
-            "title": "엑셀",
-            "subtitle": ".xlsx 또는 .xls 업로드"
-          },
-          "charts": {
-            "title": "그래프",
-            "subtitle": "인터랙티브하고 내보내기 가능"
-          }
-        }
+        "description": "엑셀 파일을 가져와 데이터셋을 살펴보고, 축을 비교하고, 데이터를 CSV로 내보내세요."
       }
     },
     "extraction": {
@@ -30,14 +21,6 @@
         "legend": "일괄 추출",
         "title": "PDF에서 논문 데이터 추출",
         "description": "하나 이상의 PDF를 놓으면 구조화된 엑셀 파일이 생성됩니다. 논문 수에 따라 추출 과정에 몇 분 정도 걸릴 수 있습니다."
-      },
-      "pdfInput": {
-        "title": "PDF 입력",
-        "description": "한 번에 최대 10개의 PDF를 업로드할 수 있습니다."
-      },
-      "excelOutput": {
-        "title": "엑셀 출력",
-        "description": "자동으로 다운로드된 결과"
       }
     }
   },
@@ -58,16 +41,40 @@
   "extraction": {
     "dropzone": {
       "title": "PDF 논문을 여기에 끌어다 놓으십시오",
-      "subtitle": "클릭해서 찾아보세요 (여러 파일 가능)"
+      "subtitle": "클릭해서 찾아보세요 (최대 10개 파일)"
     },
     "processing": "{count}개의 논문에서 데이터 추출 중, 시간이 걸릴 수 있습니다...",
     "success": "추출이 완료되었습니다. 엑셀 파일이 다운로드되었습니다.",
-    "partialSuccess": "처리 도중 Gemini 무료 할당량에 도달했습니다. 엑셀 파일에는 그 전에 처리된 파일만 포함되어 있습니다.",
+    "partialSuccess": "일부 파일은 처리하지 못해 건너뛰었습니다. 엑셀 파일에는 성공적으로 처리된 파일만 포함되어 있습니다.",
     "error": "PDF 추출 중 오류가 발생했습니다.",
     "quotaExceeded": "Gemini 무료 할당량에 이미 도달했습니다. 나중에 다시 시도하거나 파일 수를 줄여주세요.",
+    "quotaHit": "처리 도중 Gemini 무료 할당량에 도달했습니다. 준비가 되면 이어서 진행할 수 있습니다 — 이미 처리된 내용은 사라지지 않습니다.",
+    "modelSelector": {
+      "title": "추출 모델",
+      "description": "논문을 분석할 Gemini 모델을 선택하세요.",
+      "default": {
+        "title": "기본값",
+        "description": "가장 최신의 강력한 모델을 먼저 시도하고, 배치 중간에 할당량이 소진되면 더 빠르거나 저렴한 모델로 자동 전환합니다.",
+        "warning": "속도 제한으로 인해 배치 처리 도중 사용되는 모델이 바뀔 수 있습니다 — 각 논문에 실제로 어떤 모델이 사용되었는지는 내보내기의 \"Model Used\" 열에서 확인하세요."
+      },
+      "flash": {
+        "title": "gemini-3.5-flash",
+        "description": "정확도와 속도의 균형이 가장 뛰어납니다. 대부분의 배치에 권장됩니다."
+      },
+      "lite": {
+        "title": "gemini-3.1-flash-lite",
+        "description": "가장 빠르고 저렴하지만, 레이어 순서나 내부 일관성 같은 추론 오류가 더 자주 발생합니다."
+      }
+    },
     "progress": {
-      "remaining": "약 {time} 남음",
-      "almostDone": "거의 다 됐습니다..."
+      "file": {
+        "pending": "대기 중",
+        "processing": "처리 중",
+        "done": "완료",
+        "failed": "실패"
+      },
+      "overall": "{done} / {total} 파일 처리됨",
+      "resume": "이어서 진행"
     }
   },
   "fomcharts": {

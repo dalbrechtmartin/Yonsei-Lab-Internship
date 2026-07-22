@@ -1,21 +1,17 @@
 <script setup lang="ts">
-import type { SelectItemProps } from "reka-ui"
-import type { HTMLAttributes } from "vue"
-import { Check } from "@lucide/vue"
-import { reactiveOmit } from "@vueuse/core"
-import {
-  SelectItem,
-  SelectItemIndicator,
-  SelectItemText,
-  useForwardProps,
-} from "reka-ui"
-import { cn } from "@/lib/utils"
+import type { SelectItemProps } from "reka-ui";
+import type { HTMLAttributes } from "vue";
+import { reactiveOmit } from "@vueuse/core";
+import { SelectItem, SelectItemText, useForwardProps } from "reka-ui";
+import { cn } from "@/lib/utils";
 
-const props = defineProps<SelectItemProps & { class?: HTMLAttributes["class"] }>()
+const props = defineProps<
+  SelectItemProps & { class?: HTMLAttributes["class"] }
+>();
 
-const delegatedProps = reactiveOmit(props, "class")
+const delegatedProps = reactiveOmit(props, "class");
 
-const forwardedProps = useForwardProps(delegatedProps)
+const forwardedProps = useForwardProps(delegatedProps);
 </script>
 
 <template>
@@ -24,21 +20,19 @@ const forwardedProps = useForwardProps(delegatedProps)
     v-bind="forwardedProps"
     :class="
       cn(
-        'focus:bg-accent focus:text-accent-foreground [&_svg:not([class*=\'text-\'])]:text-muted-foreground relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*=\'size-\'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2',
+        'relative flex w-full cursor-pointer items-start gap-2 rounded-lg px-2.5 py-2 text-sm outline-hidden select-none transition-colors',
+        'data-highlighted:bg-primary/8 data-highlighted:text-ink',
+        'data-[state=checked]:bg-primary/10 data-[state=checked]:text-primary data-[state=checked]:font-semibold',
+        'data-disabled:pointer-events-none data-disabled:opacity-50',
         props.class,
       )
     "
   >
-    <span class="absolute right-2 flex size-3.5 items-center justify-center">
-      <SelectItemIndicator>
-        <slot name="indicator-icon">
-          <Check class="size-4" />
-        </slot>
-      </SelectItemIndicator>
+    <span class="flex min-w-0 flex-col gap-0.5">
+      <SelectItemText>
+        <slot />
+      </SelectItemText>
+      <slot name="description" />
     </span>
-
-    <SelectItemText>
-      <slot />
-    </SelectItemText>
   </SelectItem>
 </template>

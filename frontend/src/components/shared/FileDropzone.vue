@@ -1,20 +1,21 @@
 <template>
   <div
-    class="w-full max-w-lg p-12 border-2 border-dashed rounded-2xl bg-card/85 text-center transition cursor-pointer shadow-xl shadow-slate-900/5 backdrop-blur-sm"
-    :class="
+    class="w-full border-2 border-dashed rounded-2xl bg-card/85 text-center transition cursor-pointer backdrop-blur-sm"
+    :class="[
+      compact ? 'p-8' : 'max-w-lg p-12',
       isDragging
-        ? 'border-primary bg-primary/8 shadow-primary/10'
-        : 'border-secondary/25 hover:border-primary hover:bg-background/80'
-    "
+        ? 'border-primary bg-primary/8'
+        : 'border-secondary/25 hover:border-primary hover:bg-background/80',
+    ]"
     @dragover.prevent="isDragging = true"
     @dragleave.prevent="isDragging = false"
     @drop.prevent="handleDrop"
     @click="triggerFileInput"
   >
-    <p class="text-ink font-semibold text-lg">
+    <p :class="compact ? 'text-base font-semibold text-ink' : 'text-ink font-semibold text-lg'">
       {{ title ?? $t("dropzone.title") }}
     </p>
-    <p class="text-sm text-secondary mt-2">
+    <p :class="compact ? 'text-sm text-secondary mt-1.5' : 'text-sm text-secondary mt-2'">
       {{ subtitle ?? $t("dropzone.subtitle") }}
     </p>
 
@@ -38,12 +39,17 @@ const props = withDefaults(
     multiple?: boolean;
     title?: string | null;
     subtitle?: string | null;
+    /** Denser padding/type scale for embedding inline within a card
+     * (e.g. between hero copy and info badges) instead of standing
+     * alone as a big centered drop target. */
+    compact?: boolean;
   }>(),
   {
     accept: ".xlsx, .xls",
     multiple: false,
     title: null,
     subtitle: null,
+    compact: false,
   },
 );
 
