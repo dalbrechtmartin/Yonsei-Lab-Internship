@@ -101,7 +101,13 @@
       "titlePlaceholder": "No title",
       "xAxis": "X-Axis",
       "yAxis": "Y-Axis",
+      "groupBy": "Group / Color by",
+      "none": "None",
       "exportCsv": "Export to CSV"
+    },
+    "filters": {
+      "domain": "Domain",
+      "origin": "Origin"
     },
     "medianLine": {
       "name": "Median",
@@ -112,6 +118,8 @@
       "log": "Log",
       "linear": "Linear"
     },
-    "unknownGroup": "Unknown"
+    "unknownGroup": "Unknown",
+    "unclearReported": "⚠ FOM reported: Unclear",
+    "unclearHint": "Dashed outline = FOM reported: Unclear"
   }
 }
