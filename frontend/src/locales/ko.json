@@ -101,7 +101,13 @@
       "titlePlaceholder": "제목 없음",
       "xAxis": "선택된 X축",
       "yAxis": "선택된 Y축",
+      "groupBy": "그룹 / 색상 기준",
+      "none": "없음",
       "exportCsv": "CSV로 내보내기"
+    },
+    "filters": {
+      "domain": "도메인",
+      "origin": "출처"
     },
     "medianLine": {
       "name": "중앙값",
@@ -112,6 +118,8 @@
       "log": "로그",
       "linear": "선형"
     },
-    "unknownGroup": "알 수 없음"
+    "unknownGroup": "알 수 없음",
+    "unclearReported": "⚠ FOM 보고: 불명확",
+    "unclearHint": "점선 테두리 = FOM 보고: 불명확"
   }
 }

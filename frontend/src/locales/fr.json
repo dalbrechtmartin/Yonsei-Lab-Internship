@@ -101,7 +101,13 @@
       "titlePlaceholder": "Aucun titre",
       "xAxis": "Axe X",
       "yAxis": "Axe Y",
+      "groupBy": "Grouper / Colorer par",
+      "none": "Aucun",
       "exportCsv": "Exporter en CSV"
+    },
+    "filters": {
+      "domain": "Domaine",
+      "origin": "Origine"
     },
     "medianLine": {
       "name": "Médiane",
@@ -112,6 +118,8 @@
       "log": "Log",
       "linear": "Linéaire"
     },
-    "unknownGroup": "Inconnu"
+    "unknownGroup": "Inconnu",
+    "unclearReported": "⚠ FOM signalée : Incertaine",
+    "unclearHint": "Contour pointillé = FOM signalée : Incertaine"
   }
 }

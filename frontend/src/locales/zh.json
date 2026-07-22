@@ -101,7 +101,13 @@
       "titlePlaceholder": "无标题",
       "xAxis": "X轴",
       "yAxis": "Y轴",
+      "groupBy": "分组 / 按颜色区分",
+      "none": "无",
       "exportCsv": "导出为 CSV"
+    },
+    "filters": {
+      "domain": "领域",
+      "origin": "来源"
     },
     "medianLine": {
       "name": "中位数",
@@ -112,6 +118,8 @@
       "log": "对数",
       "linear": "线性"
     },
-    "unknownGroup": "未知"
+    "unknownGroup": "未知",
+    "unclearReported": "⚠ FOM 报告：不明确",
+    "unclearHint": "虚线边框 = FOM 报告：不明确"
   }
 }

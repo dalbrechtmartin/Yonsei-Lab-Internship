@@ -48,18 +48,27 @@
         <GraphControls
           v-model:y-axis="selectedYAxis"
           v-model:x-axis="selectedXAxis"
+          v-model:group-by="groupBy"
           v-model:scale="yAxisScale"
           v-model:chart-title="chartTitle"
           v-model:show-median="showMedian"
+          v-model:selected-domains="selectedDomains"
+          v-model:selected-origins="selectedOrigins"
           :numeric-columns="numericColumns"
           :categorical-columns="categoricalColumns"
+          :group-by-columns="groupByColumns"
+          :domain-column="domainColumn"
+          :domain-values="domainValues"
+          :origin-column="originColumn"
+          :origin-values="originValues"
         />
 
         <FomChart
-          :chart-data="fomData"
+          :chart-data="filteredData"
           :columns="fomColumns"
           :y-axis="selectedYAxis"
           :x-axis="selectedXAxis"
+          :group-by="groupBy"
           :y-axis-scale="yAxisScale"
           :chart-title="chartTitle"
           :show-median="showMedian"
@@ -83,7 +92,13 @@ import { useTransientStatus } from "@/composables/useTransientStatus";
 import {
   detectColumnTypes,
   guessDefaultYAxis,
-  guessDefaultGroup,
+  guessDefaultXAxis,
+  guessDefaultColorGroup,
+  groupableColumns,
+  filterExportColumns,
+  findDomainColumn,
+  findOriginColumn,
+  distinctValues,
   type DataRow,
 } from "@/utils/columnTypes";
 
@@ -108,15 +123,54 @@ const dropzoneRef = ref<InstanceType<typeof FileDropzone> | null>(null);
 
 const selectedYAxis = ref<string | null>(null);
 const selectedXAxis = ref<string | null>(null);
+const groupBy = ref<string | null>(null);
 const yAxisScale = ref<"log" | "value">("log");
 const chartTitle = ref("");
 const showMedian = ref(true);
+const selectedDomains = ref<string[]>([]);
+const selectedOrigins = ref<string[]>([]);
 
 const columnTypes = computed(() =>
   detectColumnTypes(fomData.value, fomColumns.value),
 );
 const numericColumns = computed(() => columnTypes.value.numeric);
 const categoricalColumns = computed(() => columnTypes.value.categorical);
+
+// Domain (wavelength/frequency/unclear) and Origin (EXP/SIM) columns power
+// the Phase 1 "Domain control" / "Origin control" filters — they only show
+// up in richer harmonized exports, so these stay null for the plain
+// gold-standard file and the filter UI simply doesn't render.
+const domainColumn = computed(() => findDomainColumn(fomColumns.value));
+const originColumn = computed(() => findOriginColumn(fomColumns.value));
+const domainValues = computed(() =>
+  domainColumn.value ? distinctValues(fomData.value, domainColumn.value) : [],
+);
+const originValues = computed(() =>
+  originColumn.value ? distinctValues(fomData.value, originColumn.value) : [],
+);
+
+const filteredData = computed(() => {
+  return fomData.value.filter((row) => {
+    if (domainColumn.value) {
+      const v = row[domainColumn.value];
+      const isSet = v !== null && v !== undefined && v !== "";
+      if (isSet && !selectedDomains.value.includes(String(v))) return false;
+    }
+    if (originColumn.value) {
+      const v = row[originColumn.value];
+      const isSet = v !== null && v !== undefined && v !== "";
+      if (isSet && !selectedOrigins.value.includes(String(v))) return false;
+    }
+    return true;
+  });
+});
+
+// Only offer low-cardinality columns for "Group / Color by" — computed off
+// the post-filter data so the list adapts as Domain/Origin filtering
+// changes which values are actually still in play.
+const groupByColumns = computed(() =>
+  groupableColumns(filteredData.value, categoricalColumns.value),
+);
 
 const handleUpload = async ([file]: File[]) => {
   setStatus(
@@ -129,7 +183,17 @@ const handleUpload = async ([file]: File[]) => {
     fomData.value = data.data;
     fomColumns.value = data.columns;
     selectedYAxis.value = guessDefaultYAxis(numericColumns.value);
-    selectedXAxis.value = guessDefaultGroup(categoricalColumns.value);
+    selectedXAxis.value = guessDefaultXAxis(fomData.value, categoricalColumns.value);
+    // Domain defaults to wavelength-only records, matching Phase 1's
+    // "include wavelength-domain FOM records only" requirement — frequency
+    // domain / ambiguous rows stay available but opt-in via the checkboxes.
+    // Origin (EXP/SIM) has no such restriction, so it defaults to "all".
+    // Set before the groupBy default below, since groupByColumns is
+    // computed off the domain/origin-filtered data.
+    const wavelengthOnly = domainValues.value.filter((v) => /wavelength/i.test(v));
+    selectedDomains.value = wavelengthOnly.length > 0 ? wavelengthOnly : domainValues.value;
+    selectedOrigins.value = originValues.value;
+    groupBy.value = guessDefaultColorGroup(groupByColumns.value);
     setTransientStatus(
       "status.success",
       "border-emerald-500/20 bg-emerald-500/12 text-emerald-950",
@@ -145,6 +209,9 @@ const resetToDropzone = () => {
   clearStatus();
   fomData.value = [];
   fomColumns.value = [];
+  groupBy.value = null;
+  selectedDomains.value = [];
+  selectedOrigins.value = [];
 };
 
 const openImportDialog = () => {
@@ -155,6 +222,15 @@ const openImportDialog = () => {
 };
 
 const handleExport = () => {
-  exportRowsAsCsv(fomColumns.value, fomData.value, "fom_data_export.csv");
+  // Export the filtered dataset, not the raw upload — matches Phase 1's
+  // "export the filtered analysis dataset" requirement. Columns are also
+  // curated: quote paragraphs/page numbers/notes/model name are audit
+  // trail for one record's tooltip, not something you want repeated
+  // across dozens of exported rows in a spreadsheet.
+  exportRowsAsCsv(
+    filterExportColumns(fomColumns.value),
+    filteredData.value,
+    "fom_data_export.csv",
+  );
 };
 </script>
