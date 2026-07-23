@@ -8,9 +8,7 @@
 
   <main class="grow px-3 pb-8 sm:px-4 lg:px-5">
     <div class="mx-auto flex w-full max-w-7xl flex-col gap-4">
-      <section
-        class="mt-4 overflow-hidden rounded-4xl border border-white/50 bg-card/80 p-6 shadow-2xl shadow-slate-900/5 backdrop-blur-xl"
-      >
+      <Card class="mt-4 overflow-hidden rounded-4xl border-white/50 bg-card/80 p-6 shadow-2xl shadow-slate-900/5 backdrop-blur-xl">
         <div class="max-w-2xl">
           <p class="text-xs uppercase tracking-[0.3em] text-secondary">
             {{ t("view.visualization.hero.eyebrow") }}
@@ -30,7 +28,7 @@
           class="mt-4"
           @files-selected="handleUpload"
         />
-      </section>
+      </Card>
 
       <StatusToast
         :status-key="statusKey"
@@ -41,9 +39,9 @@
         @dismiss="dismissStatus"
       />
 
-      <section
+      <Card
         v-if="fomData.length > 0"
-        class="rounded-[2rem] border border-secondary/10 bg-card/70 p-5 shadow-xl shadow-slate-900/5 backdrop-blur-xl"
+        class="gap-0 rounded-4xl border-secondary/10 bg-card/70 p-5 shadow-xl shadow-slate-900/5 backdrop-blur-xl"
       >
         <GraphControls
           v-model:y-axis="selectedYAxis"
@@ -73,7 +71,7 @@
           :chart-title="chartTitle"
           :show-median="showMedian"
         />
-      </section>
+      </Card>
     </div>
   </main>
 </template>
@@ -81,6 +79,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import { Card } from "@/components/ui/card";
 import ToolActionsBar from "@/components/layout/ToolActionsBar.vue";
 import FileDropzone from "@/components/shared/FileDropzone.vue";
 import StatusToast from "@/components/shared/StatusToast.vue";

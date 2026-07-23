@@ -1,7 +1,5 @@
 <template>
-  <div
-    class="flex flex-wrap items-center gap-4 mb-4 rounded-2xl border border-secondary/10 bg-card/80 px-4 py-3 shadow-sm backdrop-blur-sm"
-  >
+  <Card class="mb-4 flex-row flex-wrap items-center gap-4 rounded-2xl border-secondary/10 bg-card/80 px-4 py-3 shadow-sm backdrop-blur-sm">
     <label class="flex items-center gap-2 text-sm text-secondary">
       {{ t("fomcharts.controls.title") }}
       <input
@@ -14,72 +12,68 @@
 
     <label class="flex items-center gap-2 text-sm text-secondary">
       {{ t("fomcharts.controls.yAxis") }}
-      <select
-        v-model="yAxis"
-        class="border border-secondary/20 rounded-lg px-2 py-1 text-sm bg-background/80 text-ink"
-      >
-        <option v-for="col in numericColumns" :key="col" :value="col">
-          {{ col }}
-        </option>
-      </select>
+      <Select v-model="yAxis">
+        <SelectTrigger size="sm" class="bg-background/80">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem v-for="col in numericColumns" :key="col" :value="col">
+            {{ col }}
+          </SelectItem>
+        </SelectContent>
+      </Select>
     </label>
 
     <label class="flex items-center gap-2 text-sm text-secondary">
       {{ t("fomcharts.controls.xAxis") }}
-      <select
-        v-model="xAxis"
-        class="border border-secondary/20 rounded-lg px-2 py-1 text-sm bg-background/80 text-ink"
-      >
-        <option v-for="col in categoricalColumns" :key="col" :value="col">
-          {{ col }}
-        </option>
-      </select>
+      <Select v-model="xAxis">
+        <SelectTrigger size="sm" class="bg-background/80">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem v-for="col in categoricalColumns" :key="col" :value="col">
+            {{ col }}
+          </SelectItem>
+        </SelectContent>
+      </Select>
     </label>
 
     <label class="flex items-center gap-2 text-sm text-secondary">
       {{ t("fomcharts.controls.groupBy") }}
-      <select
-        v-model="groupBy"
-        class="border border-secondary/20 rounded-lg px-2 py-1 text-sm bg-background/80 text-ink"
-      >
-        <option :value="null">{{ t("fomcharts.controls.none") }}</option>
-        <option v-for="col in groupByOptions" :key="col" :value="col">
-          {{ col }}
-        </option>
-      </select>
+      <Select v-model="groupBySelectValue">
+        <SelectTrigger size="sm" class="bg-background/80">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem :value="NONE_VALUE">{{ t("fomcharts.controls.none") }}</SelectItem>
+          <SelectItem v-for="col in groupByOptions" :key="col" :value="col">
+            {{ col }}
+          </SelectItem>
+        </SelectContent>
+      </Select>
     </label>
 
     <div class="flex items-center gap-2">
       <span class="text-sm text-secondary">{{
         t("fomcharts.scale.label")
       }}</span>
-      <div
-        class="inline-flex rounded-md border border-secondary/20 overflow-hidden bg-background/80"
-      >
-        <button
+      <div class="inline-flex gap-1">
+        <Button
           type="button"
-          class="px-3 py-1 text-sm"
-          :class="
-            scale === 'log'
-              ? 'bg-primary text-primary-foreground shadow-sm'
-              : 'bg-transparent text-secondary hover:bg-primary/8 hover:text-ink'
-          "
+          size="sm"
+          :variant="scale === 'log' ? 'default' : 'outline'"
           @click="scale = 'log'"
         >
           {{ t("fomcharts.scale.log") }}
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
-          class="px-3 py-1 text-sm border-l border-secondary/20"
-          :class="
-            scale === 'value'
-              ? 'bg-primary text-primary-foreground shadow-sm'
-              : 'bg-transparent text-secondary hover:bg-primary/8 hover:text-ink'
-          "
+          size="sm"
+          :variant="scale === 'value' ? 'default' : 'outline'"
           @click="scale = 'value'"
         >
           {{ t("fomcharts.scale.linear") }}
-        </button>
+        </Button>
       </div>
     </div>
 
@@ -131,14 +125,24 @@
         {{ val }}
       </label>
     </div>
-  </div>
+  </Card>
 </template>
 
 <script setup lang="ts">
 import { computed, watch } from "vue";
 import { useI18n } from "vue-i18n";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const { t } = useI18n();
+
+// The shadcn/Reka Select has no native concept of a null value (unlike a
+// plain <option :value="null">, which Vue's v-model specifically supports
+// on native <select>) -- so "no group-by column" is represented by this
+// sentinel string in the Select itself, and translated back to/from the
+// real null-based groupBy model just below.
+const NONE_VALUE = "__none__";
 
 const props = withDefaults(
   defineProps<{
@@ -163,6 +167,12 @@ const props = withDefaults(
 const yAxis = defineModel<string | null>("yAxis");
 const xAxis = defineModel<string | null>("xAxis");
 const groupBy = defineModel<string | null>("groupBy", { default: null });
+const groupBySelectValue = computed<string>({
+  get: () => groupBy.value ?? NONE_VALUE,
+  set: (value) => {
+    groupBy.value = value === NONE_VALUE ? null : value;
+  },
+});
 const scale = defineModel<"log" | "value">("scale", { default: "log" });
 const chartTitle = defineModel<string>("chartTitle", { default: "" });
 const showMedian = defineModel<boolean>("showMedian", { default: true });

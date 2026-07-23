@@ -7,26 +7,30 @@
     }}</span>
 
     <div class="flex items-center gap-2">
-      <button
+      <Button
         v-if="showImport"
         type="button"
-        class="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg border border-secondary/20 bg-background/80 text-ink transition hover:bg-primary/8 hover:border-primary/30"
+        variant="outline"
+        size="xs"
+        class="border-secondary/20 bg-background/80 text-ink hover:bg-primary/8 hover:border-primary/30"
         @click="$emit('import')"
       >
-        <UploadIcon />
+        <Upload />
         {{ $t("actions.import") }}
-      </button>
+      </Button>
 
-      <button
+      <Button
         v-if="showExport"
         type="button"
+        variant="outline"
+        size="xs"
         :disabled="exportDisabled"
-        class="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg border border-secondary/20 bg-background/80 text-ink transition hover:bg-primary/8 hover:border-primary/30 disabled:cursor-not-allowed disabled:opacity-40"
+        class="border-secondary/20 bg-background/80 text-ink hover:bg-primary/8 hover:border-primary/30"
         @click="$emit('export')"
       >
-        <DownloadIcon />
+        <Download />
         {{ $t("actions.export") }}
-      </button>
+      </Button>
 
       <LanguageSelector />
     </div>
@@ -34,6 +38,8 @@
 </template>
 
 <script setup lang="ts">
+import { Upload, Download } from "@lucide/vue";
+import { Button } from "@/components/ui/button";
 import LanguageSelector from "./LanguageSelector.vue";
 
 withDefaults(
@@ -53,13 +59,4 @@ defineEmits<{
   import: [];
   export: [];
 }>();
-
-// Tiny inline icons so this component has zero extra dependency until
-// shadcn-vue's Button/lucide icons are wired in.
-const UploadIcon = {
-  template: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 8 5-5 5 5"/><path d="M5 21h14"/></svg>`,
-};
-const DownloadIcon = {
-  template: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>`,
-};
 </script>

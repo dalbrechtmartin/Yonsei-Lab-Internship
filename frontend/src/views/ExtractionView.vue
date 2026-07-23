@@ -7,9 +7,7 @@
 
   <main class="grow px-3 pb-8 sm:px-4 lg:px-5">
     <div class="mx-auto flex w-full max-w-7xl flex-col gap-4">
-      <section
-        class="mt-4 overflow-hidden rounded-4xl border border-white/50 bg-card/80 p-6 shadow-2xl shadow-slate-900/5 backdrop-blur-xl"
-      >
+      <Card class="mt-4 overflow-hidden rounded-4xl border-white/50 bg-card/80 p-6 shadow-2xl shadow-slate-900/5 backdrop-blur-xl">
         <div class="flex flex-col gap-6 md:flex-row md:items-stretch md:gap-8">
           <div class="flex flex-col md:w-2/3">
             <p class="text-xs uppercase tracking-[0.3em] text-secondary">
@@ -40,7 +38,7 @@
             class="md:w-1/3 md:shrink-0 md:border-l md:border-secondary/10 md:pl-6"
           />
         </div>
-      </section>
+      </Card>
 
       <StatusToast
         v-if="!isBusy"
@@ -62,6 +60,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import { Card } from "@/components/ui/card";
 import ToolActionsBar from "@/components/layout/ToolActionsBar.vue";
 import FileDropzone from "@/components/shared/FileDropzone.vue";
 import StatusToast from "@/components/shared/StatusToast.vue";
