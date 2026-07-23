@@ -8,6 +8,12 @@ From the repo root, run:
 .\dev.ps1
 ```
 
+or:
+
+```powershell
+powershell.exe -File dev.ps1
+```
+
 You'll be asked to choose an environment:
 
 - **[L]ocal** — opens the backend (`venv` activate + `pip install -r requirements.txt` + `uvicorn main:app --reload`) and the frontend (`npm install` + `npm run dev`), each in their own PowerShell window.
