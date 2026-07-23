@@ -25,3 +25,7 @@ dist-ssr
 
 # TypeScript cache
 *.tsbuildinfo
+
+# Declaration file emitted by `vue-tsc -b` for the composite vite.config.ts
+# project (see tsconfig.node.json) -- regenerates on every build.
+vite.config.d.ts

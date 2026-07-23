@@ -103,7 +103,14 @@
       "yAxis": "Y-Axis",
       "groupBy": "Group / Color by",
       "none": "None",
-      "exportCsv": "Export to CSV"
+      "exportCsv": "Export to CSV",
+      "trendLine": "Trend line",
+      "trendLineHint": "Pick a numeric X axis (e.g. Sensitivity, Q-factor) to enable"
+    },
+    "sections": {
+      "chart": "Chart",
+      "display": "Display",
+      "filters": "Filters"
     },
     "filters": {
       "domain": "Domain",
@@ -120,6 +127,27 @@
     },
     "unknownGroup": "Unknown",
     "unclearReported": "⚠ FOM reported: Unclear",
-    "unclearHint": "Dashed outline = FOM reported: Unclear"
+    "unclearHint": "Dashed outline = FOM reported: Unclear",
+    "workspace": {
+      "title": "Analysis workspace",
+      "pinHint": "Click a point to pin an annotation"
+    },
+    "stats": {
+      "title": "Stats summary",
+      "all": "All",
+      "line1": "n={n} · mean {mean}",
+      "line2": "median {median} · σ {std}"
+    },
+    "annotations": {
+      "title": "Annotations",
+      "empty": "No pins yet — click any point on the chart to bookmark it for later comparison.",
+      "remove": "Remove annotation"
+    },
+    "tooltips": {
+      "groupBy": "Colors points by this column so you can compare groups at a glance. Pick a low-cardinality field like Origin or Material Class.",
+      "scale": "Log scale keeps FOM values that span several orders of magnitude readable. Linear keeps equal spacing between values.",
+      "median": "Draws a dashed line at the median Y value of the points currently plotted.",
+      "trendLine": "Fits a straight line through the plotted points to show the overall trend. Only available when the X axis is a numeric column (e.g. Sensitivity, Q-factor) — a trend against a category like Material Class wouldn't mean anything."
+    }
   }
 }

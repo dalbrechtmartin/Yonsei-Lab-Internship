@@ -103,7 +103,14 @@
       "yAxis": "Axe Y",
       "groupBy": "Grouper / Colorer par",
       "none": "Aucun",
-      "exportCsv": "Exporter en CSV"
+      "exportCsv": "Exporter en CSV",
+      "trendLine": "Ligne de tendance",
+      "trendLineHint": "Choisissez un axe X numérique (ex. Sensibilité, Facteur Q) pour l'activer"
+    },
+    "sections": {
+      "chart": "Graphique",
+      "display": "Affichage",
+      "filters": "Filtres"
     },
     "filters": {
       "domain": "Domaine",
@@ -120,6 +127,27 @@
     },
     "unknownGroup": "Inconnu",
     "unclearReported": "⚠ FOM signalée : Incertaine",
-    "unclearHint": "Contour pointillé = FOM signalée : Incertaine"
+    "unclearHint": "Contour pointillé = FOM signalée : Incertaine",
+    "workspace": {
+      "title": "Espace d'analyse",
+      "pinHint": "Cliquez sur un point pour l'épingler en annotation"
+    },
+    "stats": {
+      "title": "Résumé statistique",
+      "all": "Tous",
+      "line1": "n={n} · moyenne {mean}",
+      "line2": "médiane {median} · σ {std}"
+    },
+    "annotations": {
+      "title": "Annotations",
+      "empty": "Aucune épingle pour l'instant — cliquez sur un point du graphique pour le marquer en vue d'une comparaison ultérieure.",
+      "remove": "Supprimer l'annotation"
+    },
+    "tooltips": {
+      "groupBy": "Colore les points selon cette colonne pour comparer des groupes d'un coup d'œil. Choisissez une colonne à faible cardinalité comme Origin ou Material Class.",
+      "scale": "L'échelle log garde lisibles des valeurs de FOM qui s'étendent sur plusieurs ordres de grandeur. L'échelle linéaire garde un espacement égal entre les valeurs.",
+      "median": "Trace une ligne pointillée à la valeur médiane de l'axe Y des points actuellement affichés.",
+      "trendLine": "Ajuste une droite à travers les points affichés pour montrer la tendance générale. Disponible seulement quand l'axe X est une colonne numérique (ex. Sensitivity, Q-factor) — une tendance par rapport à une catégorie comme Material Class n'aurait pas de sens."
+    }
   }
 }
