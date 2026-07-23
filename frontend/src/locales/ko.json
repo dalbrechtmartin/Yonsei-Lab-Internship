@@ -103,7 +103,14 @@
       "yAxis": "선택된 Y축",
       "groupBy": "그룹 / 색상 기준",
       "none": "없음",
-      "exportCsv": "CSV로 내보내기"
+      "exportCsv": "CSV로 내보내기",
+      "trendLine": "추세선",
+      "trendLineHint": "숫자형 X축(예: 민감도, Q factor)을 선택하면 활성화됩니다"
+    },
+    "sections": {
+      "chart": "차트",
+      "display": "표시",
+      "filters": "필터"
     },
     "filters": {
       "domain": "도메인",
@@ -120,6 +127,27 @@
     },
     "unknownGroup": "알 수 없음",
     "unclearReported": "⚠ FOM 보고: 불명확",
-    "unclearHint": "점선 테두리 = FOM 보고: 불명확"
+    "unclearHint": "점선 테두리 = FOM 보고: 불명확",
+    "workspace": {
+      "title": "분석 작업 공간",
+      "pinHint": "점을 클릭하면 주석으로 고정됩니다"
+    },
+    "stats": {
+      "title": "통계 요약",
+      "all": "전체",
+      "line1": "n={n} · 평균 {mean}",
+      "line2": "중앙값 {median} · σ {std}"
+    },
+    "annotations": {
+      "title": "주석",
+      "empty": "고정된 항목이 없습니다 — 차트의 점을 클릭하면 나중에 비교할 수 있도록 저장됩니다.",
+      "remove": "주석 삭제"
+    },
+    "tooltips": {
+      "groupBy": "이 열을 기준으로 점에 색을 입혀 그룹을 한눈에 비교할 수 있습니다. Origin이나 Material Class처럼 값 종류가 적은 열을 선택하세요.",
+      "scale": "로그 스케일은 여러 자릿수에 걸친 FOM 값을 읽기 쉽게 유지합니다. 선형 스케일은 값 사이의 간격을 동일하게 유지합니다.",
+      "median": "현재 표시된 점들의 Y값 중앙값 위치에 점선을 그립니다.",
+      "trendLine": "표시된 점들을 관통하는 직선을 맞춰 전체적인 경향을 보여줍니다. X축이 숫자형 열(예: Sensitivity, Q-factor)일 때만 사용할 수 있습니다 — Material Class 같은 범주형 축에 대한 추세는 의미가 없습니다."
+    }
   }
 }

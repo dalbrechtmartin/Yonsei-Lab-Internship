@@ -103,7 +103,14 @@
       "yAxis": "Y轴",
       "groupBy": "分组 / 按颜色区分",
       "none": "无",
-      "exportCsv": "导出为 CSV"
+      "exportCsv": "导出为 CSV",
+      "trendLine": "趋势线",
+      "trendLineHint": "选择数值型 X 轴（如灵敏度、Q 因子）以启用"
+    },
+    "sections": {
+      "chart": "图表",
+      "display": "显示",
+      "filters": "筛选"
     },
     "filters": {
       "domain": "领域",
@@ -120,6 +127,27 @@
     },
     "unknownGroup": "未知",
     "unclearReported": "⚠ FOM 报告：不明确",
-    "unclearHint": "虚线边框 = FOM 报告：不明确"
+    "unclearHint": "虚线边框 = FOM 报告：不明确",
+    "workspace": {
+      "title": "分析工作区",
+      "pinHint": "点击一个点以将其固定为注释"
+    },
+    "stats": {
+      "title": "统计摘要",
+      "all": "全部",
+      "line1": "n={n} · 均值 {mean}",
+      "line2": "中位数 {median} · σ {std}"
+    },
+    "annotations": {
+      "title": "注释",
+      "empty": "暂无固定项 — 点击图表上的任意点即可将其收藏以便日后比较。",
+      "remove": "删除注释"
+    },
+    "tooltips": {
+      "groupBy": "按此列为数据点着色，便于一目了然地比较各组。请选择取值较少的列，如 Origin 或 Material Class。",
+      "scale": "对数刻度可以让跨越多个数量级的 FOM 值保持清晰可读。线性刻度则在各值之间保持相等间距。",
+      "median": "在当前绘制的数据点的 Y 值中位数处绘制一条虚线。",
+      "trendLine": "对已绘制的数据点拟合一条直线以显示总体趋势。仅当 X 轴为数值型列（例如 Sensitivity、Q-factor）时可用 — 对 Material Class 这样的分类轴而言，趋势没有意义。"
+    }
   }
 }
