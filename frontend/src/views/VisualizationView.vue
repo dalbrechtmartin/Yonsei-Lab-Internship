@@ -104,7 +104,7 @@ import FomChart from "@/components/visualization/FomChart.vue";
 import StatsSummaryPanel from "@/components/visualization/StatsSummaryPanel.vue";
 import AnnotationsPanel, { type Annotation } from "@/components/visualization/AnnotationsPanel.vue";
 import { apiService } from "@/services/api";
-import { exportRowsAsCsv } from "@/utils/csvExport";
+import { exportRowsAsExcel } from "@/utils/excelExport";
 import { useTransientStatus } from "@/composables/useTransientStatus";
 import { filterPlottable } from "@/utils/stats";
 import {
@@ -268,10 +268,10 @@ const handleExport = () => {
   // curated: quote paragraphs/page numbers/notes/model name are audit
   // trail for one record's tooltip, not something you want repeated
   // across dozens of exported rows in a spreadsheet.
-  exportRowsAsCsv(
+  exportRowsAsExcel(
     filterExportColumns(fomColumns.value),
     filteredData.value,
-    "fom_data_export.csv",
+    "fom_data_export.xlsx",
   );
 };
 

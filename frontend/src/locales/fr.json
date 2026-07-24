@@ -3,11 +3,51 @@
     "title": "λLens"
   },
   "nav": {
+    "home": "Accueil",
     "visualization": "Visualisation",
     "extraction": "Extraction",
     "comingSoon": "En cours de développement"
   },
   "view": {
+    "home": {
+      "hero": {
+        "eyebrow": "Projet de stage du laboratoire de Yonsei",
+        "title": "Extraction automatisée et visualisation interactive de données FOM en photonique",
+        "description": "Extrayez des données structurées de facteur de mérite (FOM) à partir d'articles, puis explorez les tendances de longueur d'onde, de facteur Q et de sensibilité dans un seul espace de travail.",
+        "cta": "Visualisez vos données"
+      },
+      "tools": {
+        "visualization": {
+          "eyebrow": "Disponible dès maintenant",
+          "title": "Visualisation",
+          "body": "Importez un jeu de données Excel ou CSV, choisissez vos axes et une colonne de regroupement, puis explorez la distribution des FOM sur un nuage de points logarithmique ou linéaire. Épinglez des annotations, exportez le sous-ensemble filtré."
+        },
+        "extraction": {
+          "eyebrow": "Verrouillé",
+          "eyebrowUnlocked": "Disponible dès maintenant",
+          "title": "Extraction",
+          "body": "Déposez un ou plusieurs articles PDF, choisissez un modèle Gemini, et obtenez un export Excel structuré.",
+          "lockedNote": "Fonctionnalité en cours de refonte -- indisponible dans cette version."
+        }
+      },
+      "howItWorks": [
+        {
+          "n": "01",
+          "title": "Importez votre jeu de données",
+          "body": "Déposez un export Excel ou CSV de données FOM extraites dans l'espace de travail."
+        },
+        {
+          "n": "02",
+          "title": "Choisissez les axes et le regroupement",
+          "body": "Choisissez les colonnes X/Y et un champ de regroupement pour comparer matériaux, domaines ou sources."
+        },
+        {
+          "n": "03",
+          "title": "Épinglez et exportez",
+          "body": "Marquez les points intéressants en annotations, puis exportez le jeu de données filtré au format CSV."
+        }
+      ]
+    },
     "visualization": {
       "description": "Visualisez vos données dans des graphiques interactifs. Vous pouvez importer un fichier Excel ou extraire des données à partir d'articles PDF.",
       "hero": {
@@ -29,7 +69,7 @@
     "export": "Exporter"
   },
   "dropzone": {
-    "title": "Glissez-déposez votre fichier Excel ici",
+    "title": "Glissez-déposez votre fichier Excel ou CSV ici",
     "subtitle": "ou cliquez pour parcourir"
   },
   "status": {
@@ -86,14 +126,7 @@
       "feature": {
         "saveAsImage": {
           "title": "Enregistrer en tant qu'image"
-        },
-        "dataZoom": {
-          "title": {
-            "zoom": "Agrandir",
-            "back": "Annuler"
-          }
-        },
-        "restore": { "title": "Réinitialiser" }
+        }
       }
     },
     "controls": {
@@ -103,7 +136,6 @@
       "yAxis": "Axe Y",
       "groupBy": "Grouper / Colorer par",
       "none": "Aucun",
-      "exportCsv": "Exporter en CSV",
       "trendLine": "Ligne de tendance",
       "trendLineHint": "Choisissez un axe X numérique (ex. Sensibilité, Facteur Q) pour l'activer"
     },

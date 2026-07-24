@@ -3,11 +3,51 @@
     "title": "λLens"
   },
   "nav": {
+    "home": "홈",
     "visualization": "시각화",
     "extraction": "추출",
     "comingSoon": "개발 중입니다"
   },
   "view": {
+    "home": {
+      "hero": {
+        "eyebrow": "연세대학교 연구실 인턴십 프로젝트",
+        "title": "포토닉스 FOM 데이터의 자동 추출 및 인터랙티브 시각화",
+        "description": "논문에서 구조화된 FOM(성능 지표) 데이터를 추출한 다음, 하나의 작업 공간에서 파장, Q factor, 민감도 경향을 살펴보세요.",
+        "cta": "데이터 시각화"
+      },
+      "tools": {
+        "visualization": {
+          "eyebrow": "지금 사용 가능",
+          "title": "시각화",
+          "body": "엑셀 또는 CSV 데이터셋을 가져와 축과 그룹 기준 열을 선택하고, 로그 또는 선형 산점도로 FOM 분포를 살펴보세요. 주석을 고정하고 필터링된 데이터를 내보낼 수 있습니다."
+        },
+        "extraction": {
+          "eyebrow": "잠김",
+          "eyebrowUnlocked": "지금 사용 가능",
+          "title": "추출",
+          "body": "하나 이상의 PDF 논문을 놓고 Gemini 모델을 선택하면 구조화된 엑셀 파일을 받을 수 있습니다.",
+          "lockedNote": "현재 개편 중으로 이 빌드에서는 사용할 수 없습니다."
+        }
+      },
+      "howItWorks": [
+        {
+          "n": "01",
+          "title": "데이터셋 가져오기",
+          "body": "추출된 FOM 레코드의 엑셀 또는 CSV 파일을 작업 공간에 놓으세요."
+        },
+        {
+          "n": "02",
+          "title": "축과 그룹 기준 선택",
+          "body": "X/Y 열과 그룹 기준 필드를 선택해 소재, 도메인, 출처를 비교하세요."
+        },
+        {
+          "n": "03",
+          "title": "고정 및 내보내기",
+          "body": "관심 있는 점을 주석으로 고정한 뒤 필터링된 데이터셋을 CSV로 내보내세요."
+        }
+      ]
+    },
     "visualization": {
       "description": "데이터를 인터랙티브 차트로 시각화합니다. 엑셀 파일을 가져오거나 PDF 논문에서 데이터를 추출할 수 있습니다.",
       "hero": {
@@ -29,7 +69,7 @@
     "export": "내보내기"
   },
   "dropzone": {
-    "title": "엑셀 파일을 여기에 끌어다 놓으십시오",
+    "title": "엑셀 또는 CSV 파일을 여기에 끌어다 놓으십시오",
     "subtitle": "클릭해서 찾아보세요"
   },
   "status": {
@@ -86,14 +126,7 @@
       "feature": {
         "saveAsImage": {
           "title": "이미지로 저장"
-        },
-        "dataZoom": {
-          "title": {
-            "zoom": "확대",
-            "back": "뒤로"
-          }
-        },
-        "restore": { "title": "복원" }
+        }
       }
     },
     "controls": {
@@ -103,7 +136,6 @@
       "yAxis": "선택된 Y축",
       "groupBy": "그룹 / 색상 기준",
       "none": "없음",
-      "exportCsv": "CSV로 내보내기",
       "trendLine": "추세선",
       "trendLineHint": "숫자형 X축(예: 민감도, Q factor)을 선택하면 활성화됩니다"
     },

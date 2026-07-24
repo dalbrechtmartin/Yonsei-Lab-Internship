@@ -45,7 +45,7 @@ const props = withDefaults(
     compact?: boolean;
   }>(),
   {
-    accept: ".xlsx, .xls",
+    accept: ".xlsx, .xls, .csv",
     multiple: false,
     title: null,
     subtitle: null,

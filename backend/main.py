@@ -69,7 +69,12 @@ def _build_xlsx_response(job: dict) -> StreamingResponse:
 @app.post("/upload-excel/")
 async def process_excel(file: UploadFile = File(...)):
     content = await file.read()
-    df = pl.read_excel(io.BytesIO(content), engine="calamine")
+    is_csv = (file.filename or "").lower().endswith(".csv")
+    df = (
+        pl.read_csv(io.BytesIO(content))
+        if is_csv
+        else pl.read_excel(io.BytesIO(content), engine="calamine")
+    )
     return {"columns": df.columns, "data": df.to_dicts()}
 
 

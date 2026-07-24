@@ -3,11 +3,51 @@
     "title": "λLens"
   },
   "nav": {
+    "home": "主页",
     "visualization": "可视化",
     "extraction": "提取",
     "comingSoon": "开发中"
   },
   "view": {
+    "home": {
+      "hero": {
+        "eyebrow": "延世大学实验室实习项目",
+        "title": "光子学 FOM 数据的自动提取与交互式可视化",
+        "description": "从论文中提取结构化的品质因数（FOM）数据，然后在同一个工作区中查看波长、Q 因子和灵敏度趋势。",
+        "cta": "可视化您的数据"
+      },
+      "tools": {
+        "visualization": {
+          "eyebrow": "现已可用",
+          "title": "可视化",
+          "body": "导入 Excel 或 CSV 数据集，选择坐标轴和分组列，在对数或线性散点图上探索 FOM 分布。固定注释，导出筛选后的数据集。"
+        },
+        "extraction": {
+          "eyebrow": "已锁定",
+          "eyebrowUnlocked": "现已可用",
+          "title": "提取",
+          "body": "拖放一篇或多篇 PDF 论文，选择 Gemini 模型，即可获得结构化的 Excel 导出文件。",
+          "lockedNote": "该功能正在重新开发 —— 此版本中暂不可用。"
+        }
+      },
+      "howItWorks": [
+        {
+          "n": "01",
+          "title": "导入数据集",
+          "body": "将提取的 FOM 记录的 Excel 或 CSV 导出文件拖放到工作区中。"
+        },
+        {
+          "n": "02",
+          "title": "选择坐标轴和分组",
+          "body": "选择 X/Y 列和分组字段，以比较材料、领域或来源。"
+        },
+        {
+          "n": "03",
+          "title": "固定并导出",
+          "body": "将感兴趣的点固定为注释，然后将筛选后的数据集导出为 CSV。"
+        }
+      ]
+    },
     "visualization": {
       "description": "在交互式图表中可视化您的数据。您可以导入 Excel 文件或从 PDF 论文中提取数据。",
       "hero": {
@@ -29,7 +69,7 @@
     "export": "导出"
   },
   "dropzone": {
-    "title": "把Excel文件拖放在这里",
+    "title": "把Excel或CSV文件拖放在这里",
     "subtitle": "点击找找看吧"
   },
   "status": {
@@ -86,14 +126,7 @@
       "feature": {
         "saveAsImage": {
           "title": "保存为图片"
-        },
-        "dataZoom": {
-          "title": {
-            "zoom": "缩放",
-            "back": "后退"
-          }
-        },
-        "restore": { "title": "恢复" }
+        }
       }
     },
     "controls": {
@@ -103,7 +136,6 @@
       "yAxis": "Y轴",
       "groupBy": "分组 / 按颜色区分",
       "none": "无",
-      "exportCsv": "导出为 CSV",
       "trendLine": "趋势线",
       "trendLineHint": "选择数值型 X 轴（如灵敏度、Q 因子）以启用"
     },

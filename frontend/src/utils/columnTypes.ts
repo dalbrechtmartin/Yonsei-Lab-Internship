@@ -27,7 +27,7 @@ export function isMetadataColumn(column: string): boolean {
 }
 
 /**
- * Columns worth dropping specifically from the CSV *export* — narrower
+ * Columns worth dropping specifically from the *export* — narrower
  * than isMetadataColumn on purpose. A researcher exporting "the filtered
  * dataset" still wants Ref/Title (which record is this?), Domain/Origin/
  * FOM Reported (why was it included/excluded?), and FOM Definition (what
@@ -44,7 +44,7 @@ export function isExportNoiseColumn(column: string): boolean {
   return EXPORT_NOISE_PATTERN.test(column);
 }
 
-/** Columns to include in the exported CSV — the full column list minus export noise (see isExportNoiseColumn). */
+/** Columns to include in the exported file — the full column list minus export noise (see isExportNoiseColumn). */
 export function filterExportColumns(columns: string[]): string[] {
   return columns.filter((col) => !isExportNoiseColumn(col));
 }

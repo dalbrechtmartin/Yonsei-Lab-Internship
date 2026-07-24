@@ -452,18 +452,12 @@ const chartOption = computed(() => ({
   toolbox: {
     feature: {
       saveAsImage: { title: t("fomcharts.toolbox.feature.saveAsImage.title") },
-      dataZoom: {
-        title: {
-          zoom: t("fomcharts.toolbox.feature.dataZoom.title.zoom"),
-          back: t("fomcharts.toolbox.feature.dataZoom.title.back"),
-        },
-      },
-      restore: { title: t("fomcharts.toolbox.feature.restore.title") },
     },
   },
   // The visible slider bar sat right under the x-axis name and would
-  // overlap it for long names -- "inside" (scroll-wheel/pinch zoom) plus
-  // the toolbox's own zoom button already cover zooming without it.
+  // overlap it for long names -- "inside" (scroll-wheel/pinch zoom) covers
+  // zooming without it; scrolling back out is the only way to un-zoom now
+  // that the toolbox's own zoom/restore buttons are gone.
   dataZoom: [{ type: "inside" }],
   xAxis: props.xAxisNumeric
     ? { type: "value", name: props.xAxis, nameLocation: "middle", nameGap: 32 }

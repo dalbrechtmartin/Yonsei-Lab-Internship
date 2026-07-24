@@ -3,11 +3,51 @@
     "title": "λLens"
   },
   "nav": {
+    "home": "Home",
     "visualization": "Visualization",
     "extraction": "Extraction",
     "comingSoon": "Under development"
   },
   "view": {
+    "home": {
+      "hero": {
+        "eyebrow": "Yonsei lab internship project",
+        "title": "Automated extraction and interactive visualization of photonics FOM data",
+        "description": "Pull structured figure-of-merit data out of papers, then inspect wavelength, Q-factor, and sensitivity trends in one workspace.",
+        "cta": "Visualize your data"
+      },
+      "tools": {
+        "visualization": {
+          "eyebrow": "Available now",
+          "title": "Visualization",
+          "body": "Import an Excel or CSV dataset, choose your axes and group-by column, and explore the FOM distribution on a log or linear scatter plot. Pin annotations, export the filtered set."
+        },
+        "extraction": {
+          "eyebrow": "Locked",
+          "eyebrowUnlocked": "Available now",
+          "title": "Extraction",
+          "body": "Drop one or more PDF papers, pick a Gemini model, and get back a structured Excel export.",
+          "lockedNote": "Being reworked -- unavailable in this build."
+        }
+      },
+      "howItWorks": [
+        {
+          "n": "01",
+          "title": "Import your dataset",
+          "body": "Drop an Excel or CSV export of extracted FOM records into the workspace."
+        },
+        {
+          "n": "02",
+          "title": "Pick axes and grouping",
+          "body": "Choose X/Y columns and a group-by field to compare materials, domains, or sources."
+        },
+        {
+          "n": "03",
+          "title": "Pin and export",
+          "body": "Bookmark interesting points as annotations, then export the filtered dataset as CSV."
+        }
+      ]
+    },
     "visualization": {
       "description": "Visualize your data in interactive charts. You can import an Excel file or extract data from PDF papers.",
       "hero": {
@@ -29,13 +69,13 @@
     "export": "Export"
   },
   "dropzone": {
-    "title": "Drag and drop your Excel file here",
+    "title": "Drag and drop your Excel or CSV file here",
     "subtitle": "or click to browse"
   },
   "status": {
     "uploading": "Uploading file...",
-    "success": "Excel imported successfully. You can now adjust the axes or export the CSV.",
-    "error": "We couldn't import that file. Please try another Excel file.",
+    "success": "File imported successfully. You can now adjust the axes or export the data.",
+    "error": "We couldn't import that file. Please try another Excel or CSV file.",
     "dismiss": "Dismiss message"
   },
   "extraction": {
@@ -86,14 +126,7 @@
       "feature": {
         "saveAsImage": {
           "title": "Save as Image"
-        },
-        "dataZoom": {
-          "title": {
-            "zoom": "Zoom",
-            "back": "Back"
-          }
-        },
-        "restore": { "title": "Restore" }
+        }
       }
     },
     "controls": {
@@ -103,7 +136,6 @@
       "yAxis": "Y-Axis",
       "groupBy": "Group / Color by",
       "none": "None",
-      "exportCsv": "Export to CSV",
       "trendLine": "Trend line",
       "trendLineHint": "Pick a numeric X axis (e.g. Sensitivity, Q-factor) to enable"
     },
