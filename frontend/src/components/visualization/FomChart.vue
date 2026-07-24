@@ -22,39 +22,17 @@
       </div>
     </div>
 
-    <!-- One chip per group value when a "Group / color by" column is set --
-         clicking a chip isolates that group by dimming the rest, letting a
-         researcher pick a single series out of a busy plot without having
-         to change the Domain/Origin filters. -->
-    <div v-if="groupValues" class="mb-2 flex flex-wrap items-center gap-2 px-4">
-      <button
-        v-for="(name, idx) in groupValues"
-        :key="name"
-        type="button"
-        class="inline-flex items-center gap-1.5 rounded-full border border-secondary/15 px-2.5 py-1 text-[11.5px] font-medium transition duration-150"
-        :class="
-          highlightGroup && highlightGroup !== name
-            ? 'bg-secondary/5 text-muted-foreground opacity-60'
-            : 'bg-white/80 text-ink shadow-sm'
-        "
-        @click="toggleHighlight(name)"
-      >
-        <span class="inline-block size-2 rounded-full" :style="{ background: palette[idx % palette.length] }" />
-        {{ name }}
-      </button>
-    </div>
-
     <div
       class="w-full h-125 rounded-2xl border border-secondary/10 bg-card/90 p-4 shadow-xl shadow-slate-900/5 backdrop-blur-sm"
     >
-      <v-chart class="chart" :option="chartOption" autoresize @click="handleChartClick" />
+      <v-chart ref="chartRef" class="chart" :option="chartOption" autoresize @click="handleChartClick" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
-import { computed, provide } from "vue";
+import { computed, provide, ref } from "vue";
 import { use, registerTheme } from "echarts/core";
 import { CanvasRenderer } from "echarts/renderers";
 import { ScatterChart, LineChart } from "echarts/charts";
@@ -108,7 +86,11 @@ const props = withDefaults(
     chartTitle?: string;
     showMedian?: boolean;
     showTrend?: boolean;
+    showLegend?: boolean;
     xAxisNumeric?: boolean;
+    // Isolating a group is now driven externally (clicking a card in
+    // StatsSummaryPanel) -- this component only reads it to dim the rest.
+    highlightGroup?: string | null;
   }>(),
   {
     yAxis: null,
@@ -118,7 +100,9 @@ const props = withDefaults(
     chartTitle: "",
     showMedian: true,
     showTrend: false,
+    showLegend: true,
     xAxisNumeric: false,
+    highlightGroup: null,
   },
 );
 
@@ -131,14 +115,12 @@ const emit = defineEmits<{
       yLabel: string;
       yValue: unknown;
       extras: Record<string, unknown>;
+      row: DataRow;
     },
   ];
 }>();
 
-// Isolating a group by clicking its chip (below) is chart-local UI state,
-// not something the rest of the page needs to persist or react to beyond
-// resetting it when groupBy itself changes -- see VisualizationView.
-const highlightGroup = defineModel<string | null>("highlightGroup", { default: null });
+const chartRef = ref<InstanceType<typeof VChart> | null>(null);
 
 const displayTitle = computed(() => props.chartTitle.trim());
 
@@ -246,10 +228,6 @@ const groupValues = computed(() => {
   return Array.from(values).sort();
 });
 
-const toggleHighlight = (name: string) => {
-  highlightGroup.value = highlightGroup.value === name ? null : name;
-};
-
 const pointLabel = {
   show: true,
   position: "top",
@@ -277,16 +255,17 @@ const buildPoint = (item: DataRow) => {
     refLabel: item.ref ?? item.Ref,
     extras,
     isUnclear,
+    row: item,
   };
 };
 
 // A dashed outline flags points whose FOM Reported flag is "Unclear" —
 // a data-quality signal, not a category, so it rides on top of whatever
 // fill color the group/series already assigned rather than replacing it.
-// Clicking a chip (above) to isolate one group dims the rest instead of
+// Isolating one group (via StatsSummaryPanel) dims the rest instead of
 // hiding them, so the overall shape of the dataset stays visible.
 const withItemStyle = (point: ReturnType<typeof buildPoint>, color: string, groupName: string | null) => {
-  const dimmed = highlightGroup.value !== null && groupName !== null && groupName !== highlightGroup.value;
+  const dimmed = props.highlightGroup !== null && groupName !== null && groupName !== props.highlightGroup;
   const opacity = dimmed ? 0.15 : 0.88;
   return {
     ...point,
@@ -393,8 +372,25 @@ const handleChartClick = (params: any) => {
     yLabel: props.yAxis ?? "",
     yValue: params.data.value?.[1],
     extras: params.data.extras ?? {},
+    row: params.data.row,
   });
 };
+
+/** Downloads the current chart render as a PNG -- used by the workspace's
+ * Export menu. Mirrors echarts' own toolbox "save as image" action, just
+ * triggerable from outside the chart. */
+const exportPng = (filename = "fom_chart.png") => {
+  const url = chartRef.value?.getDataURL({ type: "png", pixelRatio: 2, backgroundColor: "#fff" });
+  if (!url) return;
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+};
+
+defineExpose({ exportPng });
 
 const chartOption = computed(() => ({
   // Changing an axis, groupBy, or the trend-line toggle usually reshapes the
@@ -407,11 +403,18 @@ const chartOption = computed(() => ({
   // control-driven changes should be instant on a data tool like this one.
   animation: false,
   title: { text: displayTitle.value, left: "center" },
-  // The group chips above the chart (see template) already show every
-  // group's color and name, and additionally let you isolate one by
-  // clicking it -- echarts' own legend would just repeat that mapping in
-  // the chart itself, so it stays off.
-  legend: { show: false },
+  // Controlled by Display > Show legend (GraphControls) -- on by default so
+  // exporting the chart as an image (see exportPng below) still carries a
+  // key for which color is which group.
+  legend: {
+    show: props.showLegend,
+    top: 4,
+    left: "center",
+    selectedMode: false,
+    textStyle: { color: legendColor, fontSize: 11 },
+    itemWidth: 14,
+    itemHeight: 8,
+  },
   // left/right stay modest (containLabel still grows them further if an
   // unusually wide tick label needs it) instead of the ~10% default on
   // both sides, which left a dead strip on the left and — combined with
@@ -420,7 +423,7 @@ const chartOption = computed(() => ({
   // rotated name (see yAxis.nameGap below); too tight and a numeric
   // (value-type) x-axis, which has no category buckets holding points
   // away from x=0, ends up drawing points/labels right through that area.
-  grid: { top: 40, left: 56, right: 32, containLabel: true },
+  grid: { top: props.showLegend ? 64 : 40, left: 56, right: 32, containLabel: true },
   tooltip: {
     trigger: "item",
     formatter: (params: any) => {

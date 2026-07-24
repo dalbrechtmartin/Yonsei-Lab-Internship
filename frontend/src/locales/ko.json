@@ -102,7 +102,7 @@
         "description": "정확도와 속도의 균형이 가장 뛰어납니다. 대부분의 배치에 권장됩니다."
       },
       "lite": {
-        "title": "gemini-3.1-flash-lite",
+        "title": "gemini-3.5-flash-lite",
         "description": "가장 빠르고 저렴하지만, 레이어 순서나 내부 일관성 같은 추론 오류가 더 자주 발생합니다."
       }
     },
@@ -113,6 +113,7 @@
         "done": "완료",
         "failed": "실패"
       },
+      "heading": "논문에서 데이터를 추출하는 중…",
       "overall": "{done} / {total} 파일 처리됨",
       "resume": "이어서 진행"
     }
@@ -146,7 +147,14 @@
     },
     "filters": {
       "domain": "도메인",
-      "origin": "출처"
+      "origin": "출처",
+      "selectAll": "전체 선택",
+      "selectOne": "하나만 선택",
+      "remove": "{label} 제거",
+      "add": "{label} 추가"
+    },
+    "legend": {
+      "toggle": "범례 표시"
     },
     "medianLine": {
       "name": "중앙값",
@@ -162,22 +170,57 @@
     "unclearHint": "점선 테두리 = FOM 보고: 불명확",
     "workspace": {
       "title": "분석 작업 공간",
-      "pinHint": "점을 클릭하면 주석으로 고정됩니다"
+      "pinHint": "점을 클릭하면 주석으로 고정됩니다",
+      "reset": "초기화"
+    },
+    "export": {
+      "csv": "CSV (.csv)",
+      "xlsx": "엑셀 (.xlsx)",
+      "png": "차트 이미지 (.png)"
     },
     "stats": {
       "title": "통계 요약",
       "all": "전체",
-      "line1": "n={n} · 평균 {mean}",
-      "line2": "중앙값 {median} · σ {std}"
+      "n": "n",
+      "mean": "평균",
+      "median": "중앙값",
+      "std": "σ",
+      "tooltips": {
+        "n": "이 그룹에서 유효하게 표시된 Y축 값을 가진 점의 개수입니다 — 차트에 그려진 점과 동일합니다.",
+        "mean": "이 그룹에서 표시된 Y축 값들의 평균입니다.",
+        "median": "이 그룹에서 표시된 Y축 값들을 정렬했을 때의 중앙값입니다 — 이 그룹만 있거나 격리되어 있을 때 차트의 점선 중앙값 선과 일치합니다.",
+        "std": "이 그룹에서 표시된 Y축 값들의 표준편차입니다 — 점들이 평균을 중심으로 얼마나 퍼져 있는지를 나타냅니다."
+      }
     },
     "annotations": {
       "title": "주석",
+      "tooltip": "차트의 점을 클릭하면 여기에 고정됩니다. 두 개 이상의 고정 항목을 선택하면 차트 아래 표에서 값을 나란히 비교할 수 있습니다.",
       "empty": "고정된 항목이 없습니다 — 차트의 점을 클릭하면 나중에 비교할 수 있도록 저장됩니다.",
-      "remove": "주석 삭제"
+      "remove": "주석 삭제",
+      "clearAll": "모두 지우기",
+      "compareLabel": "비교하려면 선택하세요",
+      "notePlaceholder": "메모 추가...",
+      "sort": {
+        "newest": "최신순",
+        "oldest": "오래된순",
+        "ref": "참조 기준"
+      }
+    },
+    "compare": {
+      "title": "고정된 점 비교",
+      "clearSelection": "선택 해제",
+      "titleRow": "제목",
+      "noteRow": "메모",
+      "export": {
+        "csv": "CSV (.csv)",
+        "xlsx": "엑셀 (.xlsx)",
+        "png": "표 이미지 (.png)"
+      }
     },
     "tooltips": {
       "groupBy": "이 열을 기준으로 점에 색을 입혀 그룹을 한눈에 비교할 수 있습니다. Origin이나 Material Class처럼 값 종류가 적은 열을 선택하세요.",
       "scale": "로그 스케일은 여러 자릿수에 걸친 FOM 값을 읽기 쉽게 유지합니다. 선형 스케일은 값 사이의 간격을 동일하게 유지합니다.",
+      "legend": "차트 자체에 계열 범례(그룹, 중앙값, 추세선)를 표시하여 차트를 이미지로 내보낼 때도 함께 포함되도록 합니다.",
       "median": "현재 표시된 점들의 Y값 중앙값 위치에 점선을 그립니다.",
       "trendLine": "표시된 점들을 관통하는 직선을 맞춰 전체적인 경향을 보여줍니다. X축이 숫자형 열(예: Sensitivity, Q-factor)일 때만 사용할 수 있습니다 — Material Class 같은 범주형 축에 대한 추세는 의미가 없습니다."
     }

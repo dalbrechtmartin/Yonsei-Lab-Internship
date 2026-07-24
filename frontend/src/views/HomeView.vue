@@ -4,6 +4,7 @@
       <Card
         class="overflow-hidden rounded-4xl border-white/50 bg-card/80 px-6 py-12 text-center shadow-2xl shadow-slate-900/5 backdrop-blur-xl sm:px-12 sm:py-14"
       >
+        <img :src="yonseiSymbol" alt="Yonsei University" class="mx-auto mb-3.5 block h-14 w-14" />
         <p class="text-xs uppercase tracking-[0.3em] text-secondary">
           {{ t("view.home.hero.eyebrow") }}
         </p>
@@ -94,6 +95,7 @@ import { RouterLink } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import yonseiSymbol from "@/assets/yonsei-symbol.png";
 
 interface HowItWorksStep {
   n: string;

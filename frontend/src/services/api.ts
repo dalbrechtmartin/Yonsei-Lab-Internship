@@ -5,7 +5,7 @@ export interface UploadExcelResponse {
   data: Record<string, unknown>[];
 }
 
-export type ModelChoice = "default" | "gemini-3.5-flash" | "gemini-3.1-flash-lite";
+export type ModelChoice = "default" | "gemini-3.5-flash" | "gemini-3.5-flash-lite";
 
 export type JobStatus =
   | "pending"

@@ -102,7 +102,7 @@
         "description": "The best balance of accuracy and speed. Recommended for most batches."
       },
       "lite": {
-        "title": "gemini-3.1-flash-lite",
+        "title": "gemini-3.5-flash-lite",
         "description": "Fastest and cheapest, but more prone to reasoning mistakes such as layer order or internal consistency."
       }
     },
@@ -113,6 +113,7 @@
         "done": "Done",
         "failed": "Failed"
       },
+      "heading": "Extracting data from your papers…",
       "overall": "{done} / {total} files processed",
       "resume": "Resume"
     }
@@ -146,7 +147,14 @@
     },
     "filters": {
       "domain": "Domain",
-      "origin": "Origin"
+      "origin": "Origin",
+      "selectAll": "Select all",
+      "selectOne": "Select one",
+      "remove": "Remove {label}",
+      "add": "Add {label}"
+    },
+    "legend": {
+      "toggle": "Show legend"
     },
     "medianLine": {
       "name": "Median",
@@ -162,22 +170,57 @@
     "unclearHint": "Dashed outline = FOM reported: Unclear",
     "workspace": {
       "title": "Analysis workspace",
-      "pinHint": "Click a point to pin an annotation"
+      "pinHint": "Click a point to pin an annotation",
+      "reset": "Reset"
+    },
+    "export": {
+      "csv": "CSV (.csv)",
+      "xlsx": "Excel (.xlsx)",
+      "png": "Chart image (.png)"
     },
     "stats": {
       "title": "Stats summary",
       "all": "All",
-      "line1": "n={n} · mean {mean}",
-      "line2": "median {median} · σ {std}"
+      "n": "n",
+      "mean": "Mean",
+      "median": "Median",
+      "std": "σ",
+      "tooltips": {
+        "n": "Count of points with a valid, plotted Y-axis value in this group — the same points the chart draws.",
+        "mean": "Average of the plotted Y-axis values for this group.",
+        "median": "Middle value once the plotted Y-axis values for this group are sorted — matches the dashed median line on the chart when this is the only or isolated group.",
+        "std": "Standard deviation of the plotted Y-axis values for this group — how spread out the points are around the mean."
+      }
     },
     "annotations": {
       "title": "Annotations",
+      "tooltip": "Click any point on the chart to pin it here. Check two or more pins below to compare their values side by side in a table under the chart.",
       "empty": "No pins yet — click any point on the chart to bookmark it for later comparison.",
-      "remove": "Remove annotation"
+      "remove": "Remove annotation",
+      "clearAll": "Clear all",
+      "compareLabel": "Select to compare",
+      "notePlaceholder": "Add a note...",
+      "sort": {
+        "newest": "Newest first",
+        "oldest": "Oldest first",
+        "ref": "By reference"
+      }
+    },
+    "compare": {
+      "title": "Compare pinned points",
+      "clearSelection": "Clear selection",
+      "titleRow": "Title",
+      "noteRow": "Note",
+      "export": {
+        "csv": "CSV (.csv)",
+        "xlsx": "Excel (.xlsx)",
+        "png": "Table image (.png)"
+      }
     },
     "tooltips": {
       "groupBy": "Colors points by this column so you can compare groups at a glance. Pick a low-cardinality field like Origin or Material Class.",
       "scale": "Log scale keeps FOM values that span several orders of magnitude readable. Linear keeps equal spacing between values.",
+      "legend": "Draws the series legend (groups, median, trend line) on the chart itself, so it's included when exporting the chart as an image.",
       "median": "Draws a dashed line at the median Y value of the points currently plotted.",
       "trendLine": "Fits a straight line through the plotted points to show the overall trend. Only available when the X axis is a numeric column (e.g. Sensitivity, Q-factor) — a trend against a category like Material Class wouldn't mean anything."
     }

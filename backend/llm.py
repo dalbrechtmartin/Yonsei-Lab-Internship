@@ -46,13 +46,13 @@ class QuotaExceededError(Exception):
 # shared by every model, which is what broke 'gemini-flash-latest':
 # that alias now resolves to gemini-3.6-flash, which REJECTS
 # thinking_config: {thinking_budget: 0} with a 400 on every call.
-# gemini-3.1-flash-lite and the explicit gemini-3.5-flash id both work
+# gemini-3.5-flash-lite and the explicit gemini-3.5-flash id both work
 # fine with it (and it cuts their latency drastically -- see prior
 # comment history). temperature=0 is used everywhere for determinism
 # per-model (multi-run reconciliation in jobs.py/reconcile.py is what
 # actually handles the residual cross-run non-determinism).
 MODEL_CONFIG: dict[str, dict] = {
-    "gemini-3.1-flash-lite": {"temperature": 0, "thinking_config": {"thinking_budget": 0}},
+    "gemini-3.5-flash-lite": {"temperature": 0, "thinking_config": {"thinking_budget": 0}},
     "gemini-3.5-flash": {"temperature": 0, "thinking_config": {"thinking_budget": 0}},
     "gemini-flash-latest": {"temperature": 0},  # current alias target (3.6) rejects thinking_budget=0
 }
@@ -68,10 +68,10 @@ def get_model_config(model: str) -> dict:
 # time (gemini-3.6-flash today) -- slower (dynamic thinking) and prone
 # to a tight daily quota, which is exactly why it's first-try, not
 # only-try.
-MODEL_FALLBACK_CHAIN = ["gemini-flash-latest", "gemini-3.5-flash", "gemini-3.1-flash-lite"]
+MODEL_FALLBACK_CHAIN = ["gemini-flash-latest", "gemini-3.5-flash", "gemini-3.5-flash-lite"]
 
 # Explicit, pinned choices offered in the UI -- no fallback chain at all.
-EXPLICIT_MODEL_CHOICES = ["gemini-3.5-flash", "gemini-3.1-flash-lite"]
+EXPLICIT_MODEL_CHOICES = ["gemini-3.5-flash", "gemini-3.5-flash-lite"]
 
 MODEL_CHOICES = ["default", *EXPLICIT_MODEL_CHOICES]
 
@@ -98,7 +98,7 @@ def build_available_models(model_choice: str) -> list[str]:
 # existing conservative default) until it's explicitly verified and
 # added here.
 MODEL_SLEEP_SECONDS = {
-    "gemini-3.1-flash-lite": 5,  # 15 RPM
+    "gemini-3.5-flash-lite": 5,  # 15 RPM
     "gemini-flash-latest": 13,  # 5 RPM
 }
 DEFAULT_SLEEP_SECONDS = 13

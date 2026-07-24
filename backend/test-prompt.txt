@@ -1,0 +1,55 @@
+Role: You are an expert researcher in nanophotonics. Your task is to extract Wavelength-Domain Figure-of-Merit (FOM) data from the scientific paper provided within the <paper_text> tags.
+
+CRITICAL EXTRACTION RULES:
+1. SCOPE (Wavelength Domain ONLY): We strictly target wavelength-domain FOM. If the paper uses a frequency-domain FOM or an ambiguous definition, extract it but flag it via the "Domain" and "Review status" fields.
+2. MULTIPLE MODES/CASES: If the paper reports multiple distinct configurations (e.g., Mode 1 vs Mode 2, or EXP vs SIM), create ONE separate JSON object per mode. Do NOT merge metrics.
+3. MATERIALS & STRUCTURE:
+   - "Material Class": Use ONLY "Dielectric", "Metal", "Phase-change", "Polymer", "Semiconductor". Sort alphabetically, join with ";".
+   - "Base Materials": Use standard chemical formulas ONLY (e.g., Au, Si3N4). Exclude non-resonant packaging/substrates unless explicitly part of the optical design. Sort, join with ";".
+   - "Layer Structure": Format from top (incident light) to bottom (substrate). Use physical thicknesses and join with " + " (e.g., "Ta2O5(107nm) + SiO2(150nm)").
+4. STRICT FIELD MAPPING:
+   - "FOM reported": "Yes", "No", or "Unclear".
+   - "FOM value": Numeric value, or null.
+   - "Definition": Author's exact definition (e.g., "FOM = S/FWHM"), or null.
+   - "Domain": "Wavelength", "Frequency", "Other", or "Unclear".
+   - "Origin": "EXP", "SIM", or "UNCLEAR".
+   - "Sensitivity": Numeric value ONLY. Convert to nm/RIU if necessary.
+   - "FWHM": Numeric value ONLY (in nm).
+   - "Q-factor": Numeric value or null.
+   - "Mode/case": Short descriptive label (e.g., "Mode 1").
+   - "Evidence": Short supporting text directly from the paper. EVERY accepted record requires traceable evidence.
+   - "Location": Page, figure, or table location (e.g., "Page 6; Fig. 4").
+   - "Review status":
+       * "Approve": Wavelength-domain record with complete, confident data.
+       * "Edit": Wavelength-domain record missing some numeric values, or needing human review.
+       * "Exclude": Frequency-domain, "Other" domain, or completely unsupported/ambiguous records.
+
+OUTPUT FORMAT:
+Respond STRICTLY with a valid JSON ARRAY matching the structure below. Do NOT wrap the JSON in markdown blocks (e.g., no ```json). Do NOT add any preamble or conclusion.
+
+[
+  {
+    "Ref": "filename.pdf",
+    "Title": "Full title of the paper",
+    "Mode/case": "Mode 1 - Experimental",
+    "Material Class": "Dielectric;Metal",
+    "Base Materials": "Au;Si3N4;SiO2",
+    "Layer Structure": "Si3N4(180nm) + SiO2(5nm) + Au(50nm)",
+    "Origin": "EXP",
+    "Domain": "Wavelength",
+    "FOM reported": "Yes",
+    "FOM value": 214,
+    "Definition": "FOM = S/FWHM",
+    "Sensitivity": 642,
+    "FWHM": 3,
+    "Q-factor": 3668,
+    "Evidence": "The sensor achieves a sensitivity of 642 nm/RIU and a FWHM of 3 nm, yielding a FOM of 214.",
+    "Location": "Page 6; Fig 4",
+    "Review status": "Approve",
+    "Notes": "Converted sensitivity from um/RIU to nm/RIU."
+  }
+]
+
+<paper_text>
+{paper_content}
+</paper_text>

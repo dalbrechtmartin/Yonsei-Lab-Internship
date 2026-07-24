@@ -102,7 +102,7 @@
         "description": "Le meilleur équilibre entre précision et vitesse. Recommandé pour la plupart des lots."
       },
       "lite": {
-        "title": "gemini-3.1-flash-lite",
+        "title": "gemini-3.5-flash-lite",
         "description": "Le plus rapide et le moins coûteux, mais plus sujet aux erreurs de raisonnement comme l'ordre des couches ou la cohérence interne."
       }
     },
@@ -113,6 +113,7 @@
         "done": "Terminé",
         "failed": "Échoué"
       },
+      "heading": "Extraction des données de vos articles…",
       "overall": "{done} / {total} fichiers traités",
       "resume": "Reprendre"
     }
@@ -146,7 +147,14 @@
     },
     "filters": {
       "domain": "Domaine",
-      "origin": "Origine"
+      "origin": "Origine",
+      "selectAll": "Tout sélectionner",
+      "selectOne": "Sélectionner un seul",
+      "remove": "Retirer {label}",
+      "add": "Ajouter {label}"
+    },
+    "legend": {
+      "toggle": "Afficher la légende"
     },
     "medianLine": {
       "name": "Médiane",
@@ -162,22 +170,57 @@
     "unclearHint": "Contour pointillé = FOM signalée : Incertaine",
     "workspace": {
       "title": "Espace d'analyse",
-      "pinHint": "Cliquez sur un point pour l'épingler en annotation"
+      "pinHint": "Cliquez sur un point pour l'épingler en annotation",
+      "reset": "Réinitialiser"
+    },
+    "export": {
+      "csv": "CSV (.csv)",
+      "xlsx": "Excel (.xlsx)",
+      "png": "Image du graphique (.png)"
     },
     "stats": {
       "title": "Résumé statistique",
       "all": "Tous",
-      "line1": "n={n} · moyenne {mean}",
-      "line2": "médiane {median} · σ {std}"
+      "n": "n",
+      "mean": "Moyenne",
+      "median": "Médiane",
+      "std": "σ",
+      "tooltips": {
+        "n": "Nombre de points ayant une valeur d'axe Y valide et affichée dans ce groupe — les mêmes points que ceux tracés sur le graphique.",
+        "mean": "Moyenne des valeurs d'axe Y affichées pour ce groupe.",
+        "median": "Valeur médiane des valeurs d'axe Y affichées pour ce groupe une fois triées — correspond à la ligne médiane pointillée du graphique lorsque ce groupe est seul ou isolé.",
+        "std": "Écart-type des valeurs d'axe Y affichées pour ce groupe — mesure la dispersion des points autour de la moyenne."
+      }
     },
     "annotations": {
       "title": "Annotations",
+      "tooltip": "Cliquez sur un point du graphique pour l'épingler ici. Cochez deux épingles ou plus pour comparer leurs valeurs côte à côte dans un tableau sous le graphique.",
       "empty": "Aucune épingle pour l'instant — cliquez sur un point du graphique pour le marquer en vue d'une comparaison ultérieure.",
-      "remove": "Supprimer l'annotation"
+      "remove": "Supprimer l'annotation",
+      "clearAll": "Tout effacer",
+      "compareLabel": "Sélectionner pour comparer",
+      "notePlaceholder": "Ajoutez une note...",
+      "sort": {
+        "newest": "Plus récentes",
+        "oldest": "Plus anciennes",
+        "ref": "Par référence"
+      }
+    },
+    "compare": {
+      "title": "Comparer les points épinglés",
+      "clearSelection": "Effacer la sélection",
+      "titleRow": "Titre",
+      "noteRow": "Note",
+      "export": {
+        "csv": "CSV (.csv)",
+        "xlsx": "Excel (.xlsx)",
+        "png": "Image du tableau (.png)"
+      }
     },
     "tooltips": {
       "groupBy": "Colore les points selon cette colonne pour comparer des groupes d'un coup d'œil. Choisissez une colonne à faible cardinalité comme Origin ou Material Class.",
       "scale": "L'échelle log garde lisibles des valeurs de FOM qui s'étendent sur plusieurs ordres de grandeur. L'échelle linéaire garde un espacement égal entre les valeurs.",
+      "legend": "Trace la légende des séries (groupes, médiane, ligne de tendance) directement sur le graphique, afin qu'elle soit incluse lors de l'export du graphique en image.",
       "median": "Trace une ligne pointillée à la valeur médiane de l'axe Y des points actuellement affichés.",
       "trendLine": "Ajuste une droite à travers les points affichés pour montrer la tendance générale. Disponible seulement quand l'axe X est une colonne numérique (ex. Sensitivity, Q-factor) — une tendance par rapport à une catégorie comme Material Class n'aurait pas de sens."
     }

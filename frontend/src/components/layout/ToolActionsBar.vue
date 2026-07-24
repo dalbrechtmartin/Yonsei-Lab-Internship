@@ -31,8 +31,6 @@
         <Download />
         {{ $t("actions.export") }}
       </Button>
-
-      <LanguageSelector />
     </div>
   </div>
 </template>
@@ -40,7 +38,6 @@
 <script setup lang="ts">
 import { Upload, Download } from "@lucide/vue";
 import { Button } from "@/components/ui/button";
-import LanguageSelector from "./LanguageSelector.vue";
 
 withDefaults(
   defineProps<{

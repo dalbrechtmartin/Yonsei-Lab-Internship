@@ -102,7 +102,7 @@
         "description": "准确性与速度的最佳平衡，推荐用于大多数批处理。"
       },
       "lite": {
-        "title": "gemini-3.1-flash-lite",
+        "title": "gemini-3.5-flash-lite",
         "description": "最快且最经济，但更容易出现推理错误，例如层结构顺序或内部一致性问题。"
       }
     },
@@ -113,6 +113,7 @@
         "done": "已完成",
         "failed": "失败"
       },
+      "heading": "正在从论文中提取数据…",
       "overall": "已处理 {done} / {total} 个文件",
       "resume": "继续"
     }
@@ -146,7 +147,14 @@
     },
     "filters": {
       "domain": "领域",
-      "origin": "来源"
+      "origin": "来源",
+      "selectAll": "全选",
+      "selectOne": "仅选一个",
+      "remove": "移除 {label}",
+      "add": "添加 {label}"
+    },
+    "legend": {
+      "toggle": "显示图例"
     },
     "medianLine": {
       "name": "中位数",
@@ -162,22 +170,57 @@
     "unclearHint": "虚线边框 = FOM 报告：不明确",
     "workspace": {
       "title": "分析工作区",
-      "pinHint": "点击一个点以将其固定为注释"
+      "pinHint": "点击一个点以将其固定为注释",
+      "reset": "重置"
+    },
+    "export": {
+      "csv": "CSV (.csv)",
+      "xlsx": "Excel (.xlsx)",
+      "png": "图表图片 (.png)"
     },
     "stats": {
       "title": "统计摘要",
       "all": "全部",
-      "line1": "n={n} · 均值 {mean}",
-      "line2": "中位数 {median} · σ {std}"
+      "n": "n",
+      "mean": "均值",
+      "median": "中位数",
+      "std": "σ",
+      "tooltips": {
+        "n": "该组中具有有效、已绘制 Y 轴值的点的数量 — 与图表中绘制的点相同。",
+        "mean": "该组已绘制 Y 轴值的平均值。",
+        "median": "该组已绘制 Y 轴值排序后的中间值 — 当该组为唯一或被单独隔离显示时，与图表上的虚线中位数线一致。",
+        "std": "该组已绘制 Y 轴值的标准差 — 表示各点相对均值的离散程度。"
+      }
     },
     "annotations": {
       "title": "注释",
+      "tooltip": "点击图表上的任意点即可将其固定于此处。勾选两个或以上的固定项，即可在图表下方的表格中并排比较它们的数值。",
       "empty": "暂无固定项 — 点击图表上的任意点即可将其收藏以便日后比较。",
-      "remove": "删除注释"
+      "remove": "删除注释",
+      "clearAll": "全部清除",
+      "compareLabel": "选中以进行比较",
+      "notePlaceholder": "添加备注...",
+      "sort": {
+        "newest": "最新优先",
+        "oldest": "最早优先",
+        "ref": "按编号"
+      }
+    },
+    "compare": {
+      "title": "比较已固定的点",
+      "clearSelection": "清除选择",
+      "titleRow": "标题",
+      "noteRow": "备注",
+      "export": {
+        "csv": "CSV (.csv)",
+        "xlsx": "Excel (.xlsx)",
+        "png": "表格图片 (.png)"
+      }
     },
     "tooltips": {
       "groupBy": "按此列为数据点着色，便于一目了然地比较各组。请选择取值较少的列，如 Origin 或 Material Class。",
       "scale": "对数刻度可以让跨越多个数量级的 FOM 值保持清晰可读。线性刻度则在各值之间保持相等间距。",
+      "legend": "在图表上直接绘制系列图例（分组、中位数、趋势线），以便将图表导出为图片时也包含图例。",
       "median": "在当前绘制的数据点的 Y 值中位数处绘制一条虚线。",
       "trendLine": "对已绘制的数据点拟合一条直线以显示总体趋势。仅当 X 轴为数值型列（例如 Sensitivity、Q-factor）时可用 — 对 Material Class 这样的分类轴而言，趋势没有意义。"
     }
