@@ -15,9 +15,10 @@ from schema import COLUMN_ORDER
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Any job left 'running' from a killed previous process becomes
-    # 'interrupted' here, so it doesn't look silently stuck forever.
-    state.load_jobs_from_disk()
+    # Any job left unfinished by a killed previous process picks back up
+    # on its own -- no "resume" click needed, see jobs.py/state.py.
+    for job_id in state.load_jobs_from_disk():
+        jobs.start_job(job_id)
     yield
 
 
@@ -53,7 +54,7 @@ def _build_xlsx_response(job: dict) -> StreamingResponse:
 
     any_file_failed = any(f["status"] == "failed" for f in state.list_job_files(job["id"]))
     headers = {"Content-Disposition": 'attachment; filename="Gold_Standard_Data.xlsx"'}
-    if job["status"] == "quota_hit" or any_file_failed:
+    if any_file_failed:
         headers["X-Extraction-Partial"] = "true"
 
     return StreamingResponse(
@@ -122,6 +123,8 @@ async def get_job_status(job_id: str):
         "total_files": job["total_files"],
         "completed_count": completed_count,
         "error_message": job["error_message"],
+        "created_at": job["created_at"],
+        "notice": job.get("notice"),
         "files": [
             {
                 "id": f["id"],
@@ -130,6 +133,7 @@ async def get_job_status(job_id: str):
                 "model_used": f["model_used"],
                 "record_count": len(f.get("records") or []),
                 "error_reason": f["error_reason"],
+                "started_at": f.get("started_at"),
             }
             for f in files
         ],
@@ -142,28 +146,6 @@ async def download_job_result(job_id: str):
     if job["status"] in ("pending", "running"):
         raise HTTPException(status_code=409, detail="Job is still processing.")
     return _build_xlsx_response(job)
-
-
-@app.post("/jobs/{job_id}/resume", status_code=202)
-async def resume_job(job_id: str):
-    job = _job_or_404(job_id)
-    if job["status"] not in ("quota_hit", "interrupted", "error"):
-        raise HTTPException(
-            status_code=409,
-            detail=f"Job status '{job['status']}' is not resumable.",
-        )
-    pending = state.list_job_files(job_id, status="pending")
-    if not pending:
-        raise HTTPException(status_code=400, detail="No pending files left to process.")
-
-    # Give every model in the chain a fresh chance again rather than
-    # reusing whatever was left exhausted last time -- there's no way to
-    # programmatically check whether a model's quota has since reset.
-    fresh_models = llm.build_available_models(job["model_choice"])
-    state.set_available_models(job_id, fresh_models)
-
-    jobs.start_job(job_id)
-    return {"job_id": job_id, "total_files": job["total_files"]}
 
 
 @app.get("/usage")

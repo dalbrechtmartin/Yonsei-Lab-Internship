@@ -84,11 +84,20 @@
       "subtitle": "ou cliquez pour parcourir (jusqu'à 10 fichiers)"
     },
     "processing": "Extraction des données de {count} article(s), cela peut prendre du temps...",
-    "success": "Extraction terminée. Le fichier Excel a été téléchargé.",
+    "success": "Extraction terminée. Le fichier Excel a été enregistré.",
     "partialSuccess": "Certains fichiers n'ont pas pu être traités et ont été ignorés. L'export Excel ne contient que ceux qui ont réussi.",
     "error": "Une erreur est survenue lors de l'extraction des PDF.",
     "quotaExceeded": "Le quota gratuit de Gemini est déjà atteint. Réessayez plus tard ou avec moins de fichiers.",
-    "quotaHit": "Le quota gratuit de Gemini a été atteint en cours de route. Vous pourrez reprendre dès que vous serez prêt — rien de ce qui a déjà été traité n'est perdu.",
+    "ready": {
+      "heading": "Votre export est prêt",
+      "save": "Enregistrer sous…"
+    },
+    "notice": {
+      "quota": "Le quota gratuit de Gemini a été atteint pour {count} fichier(s).",
+      "unavailable": "Le modèle était temporairement indisponible pour {count} fichier(s).",
+      "error": "Une erreur inattendue est survenue pour {count} fichier(s).",
+      "retryIn": "Nouvelle tentative automatique dans {seconds}s — rien de ce qui a déjà été traité n'est perdu."
+    },
     "modelSelector": {
       "title": "Modèle d'extraction",
       "description": "Choisissez quel modèle Gemini analyse vos articles.",
@@ -109,13 +118,15 @@
     "progress": {
       "file": {
         "pending": "En attente",
+        "retrying": "Nouvelle tentative",
         "processing": "En cours",
+        "almostDone": "Bientôt terminé",
         "done": "Terminé",
         "failed": "Échoué"
       },
       "heading": "Extraction des données de vos articles…",
       "overall": "{done} / {total} fichiers traités",
-      "resume": "Reprendre"
+      "etaRemaining": "~{eta} restant(es)"
     }
   },
   "fomcharts": {

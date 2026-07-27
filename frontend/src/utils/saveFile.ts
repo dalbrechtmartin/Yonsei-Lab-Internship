@@ -1,0 +1,64 @@
+const PICKER_TYPES: Record<"xlsx" | "csv", { description: string; mime: string }> = {
+  xlsx: {
+    description: "Excel Workbook",
+    mime: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  },
+  csv: { description: "CSV file", mime: "text/csv" },
+};
+
+/** Saves a blob letting the user pick the name and location, via the File
+ * System Access API where available (must be called directly from a user
+ * gesture, e.g. a button click -- browsers reject it otherwise). Falls
+ * back to a classic same-origin download (saved to the browser's default
+ * downloads folder under `suggestedName`) on browsers without support. */
+export async function saveBlobWithPicker(
+  blob: Blob,
+  suggestedName: string,
+  ext: "xlsx" | "csv" = "xlsx",
+): Promise<void> {
+  const showSaveFilePicker = (window as unknown as { showSaveFilePicker?: (options: unknown) => Promise<FileSystemFileHandleLike> }).showSaveFilePicker;
+  const { description, mime } = PICKER_TYPES[ext];
+
+  if (typeof showSaveFilePicker === "function") {
+    try {
+      const handle = await showSaveFilePicker({
+        suggestedName,
+        types: [{ description, accept: { [mime]: [`.${ext}`] } }],
+      });
+      const writable = await handle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      return;
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        throw error; // user cancelled the picker -- caller decides what to do
+      }
+      // Any other failure (permission, unsupported flow, ...) -- fall
+      // through to the classic download below instead of losing the file.
+    }
+  }
+
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = suggestedName;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+interface FileSystemFileHandleLike {
+  createWritable(): Promise<{
+    write(data: Blob): Promise<void>;
+    close(): Promise<void>;
+  }>;
+}
+
+/** Converts the backend's .xlsx export blob to a .csv blob (first sheet)
+ * client-side, so offering a CSV format doesn't need a separate backend
+ * endpoint. */
+export async function convertXlsxBlobToCsv(blob: Blob): Promise<Blob> {
+  const { read, utils } = await import("xlsx");
+  const workbook = read(await blob.arrayBuffer(), { type: "array" });
+  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+  return new Blob([utils.sheet_to_csv(sheet)], { type: "text/csv" });
+}

@@ -84,11 +84,20 @@
       "subtitle": "or click to browse (up to 10 files supported)"
     },
     "processing": "Extracting data from {count} paper(s), this can take a while...",
-    "success": "PDFs processed successfully. Your Excel export has been downloaded.",
+    "success": "PDFs processed successfully. Your Excel export has been saved.",
     "partialSuccess": "Some files could not be processed and were skipped. Your Excel export only includes the ones that succeeded.",
     "error": "We couldn't extract those PDFs. Please try again.",
     "quotaExceeded": "Gemini's free-tier quota has already been reached. Try again later or with fewer files.",
-    "quotaHit": "Gemini's free-tier quota was reached partway through. You can resume once you're ready to continue -- nothing already processed is lost.",
+    "ready": {
+      "heading": "Your export is ready",
+      "save": "Save as…"
+    },
+    "notice": {
+      "quota": "Gemini's free-tier quota was reached for {count} file(s).",
+      "unavailable": "The model was temporarily unavailable for {count} file(s).",
+      "error": "An unexpected error occurred for {count} file(s).",
+      "retryIn": "Retrying automatically in {seconds}s -- nothing already processed is lost."
+    },
     "modelSelector": {
       "title": "Extraction model",
       "description": "Choose which Gemini model analyzes your papers.",
@@ -109,13 +118,15 @@
     "progress": {
       "file": {
         "pending": "Waiting",
+        "retrying": "Retrying",
         "processing": "Processing",
+        "almostDone": "Almost done",
         "done": "Done",
         "failed": "Failed"
       },
       "heading": "Extracting data from your papers…",
       "overall": "{done} / {total} files processed",
-      "resume": "Resume"
+      "etaRemaining": "~{eta} remaining"
     }
   },
   "fomcharts": {

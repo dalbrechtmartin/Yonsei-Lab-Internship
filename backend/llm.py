@@ -35,11 +35,27 @@ def extract_text_from_pdf(file_bytes: bytes) -> str:
     return text
 
 
-class QuotaExceededError(Exception):
-    """Raised when every model in a fallback chain has hit its free-tier
-    RPM/RPD quota. Distinct from a one-off parsing/API failure: every
-    subsequent call would fail the same way, so the caller should stop
-    looping instead of burning a sleep on doomed requests."""
+class ModelChainExhaustedError(Exception):
+    """Raised when every model in the fallback chain failed for a paper --
+    quota (429), transient unavailability (5xx/timeout), or a hard
+    per-model error. `reason` classifies the LAST failure so the caller
+    (jobs.py) can decide whether/how to retry this file automatically
+    later instead of stopping the whole batch for it."""
+
+    def __init__(self, message: str, reason: str) -> None:
+        super().__init__(message)
+        self.reason = reason
+
+
+def _classify_error(e: Exception) -> str:
+    code = getattr(e, "code", None)
+    if code == 429:
+        return "quota"
+    if isinstance(code, int) and code >= 500:
+        return "unavailable"
+    if isinstance(e, (TimeoutError, OSError)):
+        return "unavailable"
+    return "error"
 
 
 # Per-model generation config. This used to be one global config dict
@@ -105,9 +121,9 @@ DEFAULT_SLEEP_SECONDS = 13
 
 
 def _call_model(model: str, final_prompt: str) -> Optional[list[dict]]:
-    """One raw call to `model`. Returns parsed+model-stamped records, or
-    None on any non-retryable failure. Raises genai_errors.ClientError
-    (429 or otherwise) so callers can decide how to react."""
+    """One raw call to `model`. Returns parsed+model-stamped records.
+    Lets any failure (genai_errors.APIError, a JSON parse error, a
+    network timeout, ...) propagate so callers can classify and react."""
     response = client.models.generate_content(
         model=model,
         contents=final_prompt,
@@ -126,30 +142,31 @@ def _call_model(model: str, final_prompt: str) -> Optional[list[dict]]:
 def analyze_paper_with_llm(
     paper_text: str, filename: str, models: list[str]
 ) -> Optional[list[dict]]:
-    """Returns a list of records (one per mode/case) for this paper, or
-    None if the call/parsing failed. `models` is the caller's remaining
-    fallback chain -- models that hit their quota are popped from it in
-    place, so later calls in the same job skip straight past them
-    instead of re-discovering the same 429."""
+    """Returns a list of records (one per mode/case) for this paper.
+    `models` is the caller's remaining fallback chain -- ANY failure
+    (quota, a timed-out/overloaded model, a malformed response, ...)
+    pops the current model and tries the next one in place, so later
+    calls in the same job skip straight past a model that's already
+    shown trouble. Raises ModelChainExhaustedError only once every model
+    in the chain has failed -- the caller decides whether that's worth
+    retrying later (see jobs.py's automatic backoff-and-retry)."""
     final_prompt = PROMPT_TEMPLATE.replace("{filename}", filename)
     final_prompt += f"\n\n--- PAPER TEXT ---\n{paper_text}"
 
+    last_reason = "error"
     while models:
         model = models[0]
         try:
             return _call_model(model, final_prompt)
-        except genai_errors.ClientError as e:
-            if e.code == 429:
-                print(f"  -> {model} quota exhausted, falling back...")
-                models.pop(0)
-                continue
-            print(f"Error for {filename}: {e}")
-            return None
         except Exception as e:
-            print(f"Error for {filename}: {e}")
-            return None
+            last_reason = _classify_error(e)
+            print(f"  -> {model} failed ({last_reason}) for {filename}, falling back: {e}")
+            models.pop(0)
+            continue
 
-    raise QuotaExceededError(f"All models in fallback chain exhausted for {filename}")
+    raise ModelChainExhaustedError(
+        f"All models in fallback chain failed for {filename}", reason=last_reason
+    )
 
 
 def analyze_paper_with_llm_pinned(

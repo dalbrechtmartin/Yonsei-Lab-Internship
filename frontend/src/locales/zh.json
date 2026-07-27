@@ -84,11 +84,20 @@
       "subtitle": "点击找找看吧（最多支持 10 个文件）"
     },
     "processing": "正在从 {count} 篇论文中提取数据，可能需要一些时间...",
-    "success": "提取完成，Excel 文件已下载。",
+    "success": "提取完成，Excel 文件已保存。",
     "partialSuccess": "部分文件处理失败并已跳过，Excel 导出仅包含处理成功的文件。",
     "error": "提取 PDF 时发生错误。",
     "quotaExceeded": "已达到 Gemini 免费配额上限。请稍后重试或减少文件数量。",
-    "quotaHit": "处理过程中已达到 Gemini 免费配额上限。准备好后即可继续 — 已处理的内容不会丢失。",
+    "ready": {
+      "heading": "导出已准备就绪",
+      "save": "另存为…"
+    },
+    "notice": {
+      "quota": "{count} 个文件已达到 Gemini 免费配额上限。",
+      "unavailable": "{count} 个文件的模型暂时不可用。",
+      "error": "{count} 个文件发生意外错误。",
+      "retryIn": "将在 {seconds} 秒后自动重试 — 已处理的内容不会丢失。"
+    },
     "modelSelector": {
       "title": "提取模型",
       "description": "选择用于分析论文的 Gemini 模型。",
@@ -109,13 +118,15 @@
     "progress": {
       "file": {
         "pending": "等待中",
+        "retrying": "重试中",
         "processing": "处理中",
+        "almostDone": "即将完成",
         "done": "已完成",
         "failed": "失败"
       },
       "heading": "正在从论文中提取数据…",
       "overall": "已处理 {done} / {total} 个文件",
-      "resume": "继续"
+      "etaRemaining": "约剩 {eta}"
     }
   },
   "fomcharts": {
