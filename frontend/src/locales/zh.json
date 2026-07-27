@@ -135,7 +135,8 @@
       "groupBy": "分组 / 按颜色区分",
       "none": "无",
       "trendLine": "趋势线",
-      "trendLineHint": "选择数值型 X 轴（如灵敏度、Q 因子）以启用"
+      "trendLineHint": "选择数值型 X 轴（如灵敏度、Q 因子）以启用",
+      "pareto": "Pareto frontier"
     },
     "sections": {
       "chart": "图表",
@@ -145,6 +146,8 @@
     "filters": {
       "domain": "领域",
       "origin": "来源",
+      "materialClass": "Material Class",
+      "baseMaterials": "Base Materials",
       "selectAll": "全选",
       "selectOne": "仅选一个",
       "remove": "移除 {label}",
@@ -164,7 +167,9 @@
     },
     "unknownGroup": "未知",
     "unclearReported": "⚠ FOM 报告：不明确",
-    "unclearHint": "虚线边框 = FOM 报告：不明确",
+    "needsReview": "⚠ 审核状态：待修改",
+    "flaggedHint": "虚线边框 = 已标记待审核",
+    "reviewWarning": "{count} 项待审核",
     "workspace": {
       "title": "分析工作区",
       "pinHint": "点击一个点以将其固定为注释",
@@ -178,6 +183,7 @@
     "stats": {
       "title": "统计摘要",
       "all": "全部",
+      "lowN": "样本太少，无法计算均值/中位数/σ",
       "n": "n",
       "mean": "均值",
       "median": "中位数",
@@ -219,7 +225,8 @@
       "scale": "对数刻度可以让跨越多个数量级的 FOM 值保持清晰可读。线性刻度则在各值之间保持相等间距。",
       "legend": "在图表上直接绘制系列图例（分组、中位数、趋势线），以便将图表导出为图片时也包含图例。",
       "median": "在当前绘制的数据点的 Y 值中位数处绘制一条虚线。",
-      "trendLine": "对已绘制的数据点拟合一条直线以显示总体趋势。仅当 X 轴为数值型列（例如 Sensitivity、Q-factor）时可用 — 对 Material Class 这样的分类轴而言，趋势没有意义。"
+      "trendLine": "对已绘制的数据点拟合一条直线以显示总体趋势。仅当 X 轴为数值型列（例如 Sensitivity、Q-factor）时可用 — 对 Material Class 这样的分类轴而言，趋势没有意义。",
+      "pareto": "Pareto frontier"
     }
   }
 }

@@ -19,7 +19,7 @@
             <span class="inline-block size-2.5 shrink-0 rounded-full" :style="{ background: group.color }" />
             {{ group.label }}
           </div>
-          <div class="grid grid-cols-2 gap-1.5">
+          <div :class="group.tiles.length > 1 ? 'grid grid-cols-2 gap-1.5' : 'flex'">
             <div v-for="tile in group.tiles" :key="tile.key" class="rounded-md bg-white/60 px-2 py-1.5">
               <div class="flex items-center gap-1 text-[9.5px] tracking-wide text-muted-foreground uppercase">
                 {{ tile.label }}
@@ -28,6 +28,9 @@
               <div class="font-mono text-[13px] text-ink">{{ tile.value }}</div>
             </div>
           </div>
+          <span v-if="group.tiles.length === 1" class="text-[10.5px] italic text-muted-foreground">
+            {{ t("fomcharts.stats.lowN") }}
+          </span>
         </button>
       </div>
     </CollapsibleSection>
@@ -35,48 +38,73 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 import labTheme from "@/assets/themes/okabe-ito-palette.json";
 import { computeStats, formatStat } from "@/utils/stats";
-import type { DataRow } from "@/utils/columnTypes";
+import { tokenizeValue, tokenizedDistinctValues, type DataRow } from "@/utils/columnTypes";
 import InfoTooltip from "@/components/shared/InfoTooltip.vue";
 import CollapsibleSection from "@/components/shared/CollapsibleSection.vue";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 const { t } = useI18n();
 
-const props = defineProps<{
-  // Already filtered to rows with a plottable (numeric) yAxis value — see
-  // filterPlottable in utils/stats.ts, applied upstream in
-  // VisualizationView so the stats here always match what the chart draws.
-  rows: DataRow[];
-  yAxis: string | null;
-  groupBy: string | null;
-  // Clicking a group card (only enabled when groupBy is set) toggles this,
-  // isolating that group on the chart — see VisualizationView, which owns
-  // the ref and also passes it to FomChart for the actual dimming.
-  highlightGroup: string | null;
-}>();
+const props = withDefaults(
+  defineProps<{
+    // Already filtered to rows with a plottable (numeric) yAxis value — see
+    // filterPlottable in utils/stats.ts, applied upstream in
+    // VisualizationView so the stats here always match what the chart draws.
+    rows: DataRow[];
+    yAxis: string | null;
+    groupBy: string | null;
+    // Clicking a group card (only enabled when groupBy is set) toggles this,
+    // isolating that group on the chart — see VisualizationView, which owns
+    // the ref and also passes it to FomChart for the actual dimming.
+    highlightGroup: string | null;
+    // Composite column names (Material Class, Base Materials), if the sheet
+    // has them -- when groupBy matches one, composite cells
+    // ("Dielectric;Metal") must be split into their individual tokens the
+    // same way FomChart does (see isGroupingByCompositeColumn there), or
+    // these cards would show raw combinations as their own groups while the
+    // chart's legend shows the clean, split-out values.
+    compositeColumns?: string[];
+    // Fixed label -> color assignment from VisualizationView (see
+    // utils/palette.ts) -- keeps a group's card color identical to its
+    // dot/legend color on the chart, and stable across filter changes.
+    groupColorMap?: Record<string, string>;
+  }>(),
+  { compositeColumns: () => [], groupColorMap: () => ({}) },
+);
 defineEmits<{
   "toggle-highlight": [group: string];
 }>();
 
-const open = ref(true);
+const open = defineModel<boolean>("open", { default: true });
 
 const palette: string[] = labTheme.theme.color;
+
+// Mean/median/std of 1-2 points aren't statistics, they're just those
+// points -- below this count, a card shows N only instead of three tiles
+// that look precise but don't mean anything. High-cardinality groupings
+// (e.g. Base Materials) hit this constantly, since most materials only
+// appear in a handful of records.
+const MIN_STATS_N = 3;
 
 const groups = computed(() => {
   const yAxis = props.yAxis;
   const values = (rows: DataRow[]) =>
     yAxis ? rows.map((row) => Number(row[yAxis])).filter((v) => !isNaN(v)) : [];
 
-  const tilesFor = (stats: ReturnType<typeof computeStats>) => [
-    { key: "n", label: t("fomcharts.stats.n"), tooltip: t("fomcharts.stats.tooltips.n"), value: String(stats.n) },
-    { key: "mean", label: t("fomcharts.stats.mean"), tooltip: t("fomcharts.stats.tooltips.mean"), value: formatStat(stats.mean) },
-    { key: "median", label: t("fomcharts.stats.median"), tooltip: t("fomcharts.stats.tooltips.median"), value: formatStat(stats.median) },
-    { key: "std", label: t("fomcharts.stats.std"), tooltip: t("fomcharts.stats.tooltips.std"), value: formatStat(stats.std) },
-  ];
+  const tilesFor = (stats: ReturnType<typeof computeStats>) => {
+    const nTile = { key: "n", label: t("fomcharts.stats.n"), tooltip: t("fomcharts.stats.tooltips.n"), value: String(stats.n) };
+    if (stats.n < MIN_STATS_N) return [nTile];
+    return [
+      nTile,
+      { key: "mean", label: t("fomcharts.stats.mean"), tooltip: t("fomcharts.stats.tooltips.mean"), value: formatStat(stats.mean) },
+      { key: "median", label: t("fomcharts.stats.median"), tooltip: t("fomcharts.stats.tooltips.median"), value: formatStat(stats.median) },
+      { key: "std", label: t("fomcharts.stats.std"), tooltip: t("fomcharts.stats.tooltips.std"), value: formatStat(stats.std) },
+    ];
+  };
 
   const groupBy = props.groupBy;
   if (!groupBy) {
@@ -89,6 +117,19 @@ const groups = computed(() => {
     ];
   }
 
+  const isCompositeGroup = props.compositeColumns.includes(groupBy);
+
+  if (isCompositeGroup) {
+    const labels = tokenizedDistinctValues(props.rows, groupBy);
+    return labels.map((label, idx) => ({
+      label,
+      color: props.groupColorMap[label] ?? palette[idx % palette.length],
+      tiles: tilesFor(
+        computeStats(values(props.rows.filter((row) => tokenizeValue(row[groupBy]).includes(label)))),
+      ),
+    }));
+  }
+
   const labelFor = (row: DataRow) => {
     const v = row[groupBy];
     return v === null || v === undefined || v === "" ? t("fomcharts.unknownGroup") : String(v);
@@ -97,7 +138,7 @@ const groups = computed(() => {
 
   return labels.map((label, idx) => ({
     label,
-    color: palette[idx % palette.length],
+    color: props.groupColorMap[label] ?? palette[idx % palette.length],
     tiles: tilesFor(computeStats(values(props.rows.filter((row) => labelFor(row) === label)))),
   }));
 });

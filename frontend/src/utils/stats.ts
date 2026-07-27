@@ -57,3 +57,36 @@ export function linearRegression(points: Array<[number, number]>): LinearFit | n
   const intercept = (sy - slope * sx) / n;
   return { slope, intercept };
 }
+
+export interface ParetoPoint {
+  x: number;
+  y: number;
+  row: DataRow;
+}
+
+/**
+ * Maximize-X/maximize-Y non-dominated frontier. A point is on the frontier
+ * iff no other point has both x' >= x and y' >= y with at least one strictly
+ * greater (standard Pareto dominance). Returns the frontier points sorted
+ * ascending by x, ready to draw as a step/line series left-to-right.
+ *
+ * Algorithm: O(n log n) sort-then-sweep. Sort by x descending (tie-break y descending),
+ * then sweep keeping a running max y — a point survives only if its y beats every
+ * point with x >= it seen so far. Reverse at the end for ascending-x output.
+ *
+ * Note: if two points share identical x and y, both non-dominated logically, but only
+ * the first-in-sort-order one is kept (acceptable for drawing a line).
+ */
+export function computeParetoFrontier(points: ParetoPoint[]): ParetoPoint[] {
+  if (points.length === 0) return [];
+  const sorted = [...points].sort((a, b) => (b.x - a.x) || (b.y - a.y));
+  const frontier: ParetoPoint[] = [];
+  let bestY = -Infinity;
+  for (const p of sorted) {
+    if (p.y > bestY) {
+      frontier.push(p);
+      bestY = p.y;
+    }
+  }
+  return frontier.reverse();
+}

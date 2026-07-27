@@ -63,6 +63,7 @@ import { useI18n } from "vue-i18n";
 import { ChevronDown, Download } from "@lucide/vue";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { annotationFieldColumns } from "@/utils/annotationFields";
+import { findShortTitleColumn } from "@/utils/columnTypes";
 import { exportCompareCsv, exportCompareXlsx, exportComparePng, type CompareRow } from "@/utils/compareExport";
 import type { Annotation } from "./AnnotationsPanel.vue";
 
@@ -84,10 +85,18 @@ const display = (v: unknown) => (v === null || v === undefined || v === "" ? EMP
 
 const refs = computed(() => props.annotations.map((a) => a.ref));
 
+// Short Title (a <=6-word summary meant for compact UI) reads better in a
+// dense side-by-side comparison table than the full paper Title -- fall
+// back to the full title when the sheet doesn't have that column.
+const shortTitleColumn = computed(() => findShortTitleColumn(props.columns));
+
 const rows = computed<CompareRow[]>(() => {
   const fieldCols = annotationFieldColumns(props.columns, props.xAxis, props.yAxis, props.groupBy);
   const defs: { label: string; get: (a: Annotation) => unknown }[] = [
-    { label: t("fomcharts.compare.titleRow"), get: (a) => a.title },
+    {
+      label: t("fomcharts.compare.titleRow"),
+      get: (a) => (shortTitleColumn.value ? a.row[shortTitleColumn.value] : null) ?? a.title,
+    },
     ...fieldCols.map((col) => ({ label: col, get: (a: Annotation) => a.row[col] })),
     { label: t("fomcharts.compare.noteRow"), get: (a) => a.note },
   ];

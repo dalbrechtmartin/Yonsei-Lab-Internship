@@ -135,7 +135,8 @@
       "groupBy": "Grouper / Colorer par",
       "none": "Aucun",
       "trendLine": "Ligne de tendance",
-      "trendLineHint": "Choisissez un axe X numérique (ex. Sensibilité, Facteur Q) pour l'activer"
+      "trendLineHint": "Choisissez un axe X numérique (ex. Sensibilité, Facteur Q) pour l'activer",
+      "pareto": "Frontière de Pareto"
     },
     "sections": {
       "chart": "Graphique",
@@ -145,6 +146,8 @@
     "filters": {
       "domain": "Domaine",
       "origin": "Origine",
+      "materialClass": "Classe de matériau",
+      "baseMaterials": "Matériaux de base",
       "selectAll": "Tout sélectionner",
       "selectOne": "Sélectionner un seul",
       "remove": "Retirer {label}",
@@ -164,7 +167,9 @@
     },
     "unknownGroup": "Inconnu",
     "unclearReported": "⚠ FOM signalée : Incertaine",
-    "unclearHint": "Contour pointillé = FOM signalée : Incertaine",
+    "needsReview": "⚠ Statut de révision : À modifier",
+    "flaggedHint": "Contour pointillé = signalé pour révision",
+    "reviewWarning": "{count} à vérifier",
     "workspace": {
       "title": "Espace d'analyse",
       "pinHint": "Cliquez sur un point pour l'épingler en annotation",
@@ -178,6 +183,7 @@
     "stats": {
       "title": "Résumé statistique",
       "all": "Tous",
+      "lowN": "Trop peu d'échantillons pour moyenne/médiane/σ",
       "n": "n",
       "mean": "Moyenne",
       "median": "Médiane",
@@ -219,7 +225,8 @@
       "scale": "L'échelle log garde lisibles des valeurs de FOM qui s'étendent sur plusieurs ordres de grandeur. L'échelle linéaire garde un espacement égal entre les valeurs.",
       "legend": "Trace la légende des séries (groupes, médiane, ligne de tendance) directement sur le graphique, afin qu'elle soit incluse lors de l'export du graphique en image.",
       "median": "Trace une ligne pointillée à la valeur médiane de l'axe Y des points actuellement affichés.",
-      "trendLine": "Ajuste une droite à travers les points affichés pour montrer la tendance générale. Disponible seulement quand l'axe X est une colonne numérique (ex. Sensitivity, Q-factor) — une tendance par rapport à une catégorie comme Material Class n'aurait pas de sens."
+      "trendLine": "Ajuste une droite à travers les points affichés pour montrer la tendance générale. Disponible seulement quand l'axe X est une colonne numérique (ex. Sensitivity, Q-factor) — une tendance par rapport à une catégorie comme Material Class n'aurait pas de sens.",
+      "pareto": "Met en surbrillance l'ensemble de points non dominés — les enregistrements non surpassés sur les deux axes par aucun autre point — en tant que ligne, en supposant que des valeurs X et Y plus élevées sont meilleures."
     }
   }
 }

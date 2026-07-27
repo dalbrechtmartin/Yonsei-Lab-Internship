@@ -115,7 +115,7 @@ defineEmits<{
 }>();
 
 const compareIds = defineModel<string[]>("compareIds", { default: () => [] });
-const open = ref(true);
+const open = defineModel<boolean>("open", { default: true });
 const sort = ref<"newest" | "oldest" | "ref">("newest");
 
 const toggleCompare = (id: string) => {

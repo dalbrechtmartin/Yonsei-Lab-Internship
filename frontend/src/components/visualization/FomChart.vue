@@ -5,8 +5,11 @@
         {{ t("fomcharts.type.scatter") }}
       </h2>
       <div class="flex items-center gap-2">
-        <span v-if="hasUnclearReported" class="text-xs text-secondary italic">
-          {{ t("fomcharts.unclearHint") }}
+        <span v-if="needsReviewCount > 0" class="bg-amber-500/15 text-amber-800 text-xs font-medium px-2.5 py-0.5 rounded">
+          {{ t("fomcharts.reviewWarning", { count: needsReviewCount }) }}
+        </span>
+        <span v-if="hasFlaggedPoints" class="text-xs text-secondary italic">
+          {{ t("fomcharts.flaggedHint") }}
         </span>
         <span
           v-if="originSummary"
@@ -50,10 +53,15 @@ import VChart, { THEME_KEY } from "vue-echarts";
 import {
   findOriginColumn,
   findReportedColumn,
+  findReviewStatusColumn,
   findTooltipExtraColumns,
+  findMaterialClassColumn,
+  findBaseMaterialsColumn,
+  findFomValueColumn,
+  tokenizeValue,
   type DataRow,
 } from "@/utils/columnTypes";
-import { computeStats, filterPlottable, linearRegression } from "@/utils/stats";
+import { computeStats, filterPlottable, linearRegression, computeParetoFrontier } from "@/utils/stats";
 
 use([
   CanvasRenderer,
@@ -87,10 +95,16 @@ const props = withDefaults(
     showMedian?: boolean;
     showTrend?: boolean;
     showLegend?: boolean;
+    showPareto?: boolean;
     xAxisNumeric?: boolean;
     // Isolating a group is now driven externally (clicking a card in
     // StatsSummaryPanel) -- this component only reads it to dim the rest.
     highlightGroup?: string | null;
+    // Fixed label -> color assignment computed by VisualizationView off the
+    // full unfiltered dataset (see utils/palette.ts) -- used instead of a
+    // locally-computed index so a group's color never shifts just because a
+    // filter temporarily hid some of its rows.
+    groupColorMap?: Record<string, string>;
   }>(),
   {
     yAxis: null,
@@ -98,11 +112,13 @@ const props = withDefaults(
     groupBy: null,
     yAxisScale: "log",
     chartTitle: "",
-    showMedian: true,
+    showMedian: false,
     showTrend: false,
-    showLegend: true,
+    showLegend: false,
+    showPareto: false,
     xAxisNumeric: false,
     highlightGroup: null,
+    groupColorMap: () => ({}),
   },
 );
 
@@ -155,6 +171,27 @@ const escapeHtml = (value: unknown): string => {
   });
 };
 
+const MIN_BUBBLE_SIZE = 6;
+const MAX_BUBBLE_SIZE = 16;
+
+const fomValueRange = computed(() => {
+  const col = fomValueColumn.value;
+  if (!col) return null;
+  const values = plottableData.value
+    .map((r) => Number(r[col]))
+    .filter((v) => !isNaN(v));
+  if (values.length === 0) return null;
+  return { min: Math.min(...values), max: Math.max(...values) };
+});
+
+const bubbleSizeFor = (value: number): number => {
+  const range = fomValueRange.value;
+  if (range === null || isNaN(value)) return 10;
+  if (range.max === range.min) return (MIN_BUBBLE_SIZE + MAX_BUBBLE_SIZE) / 2;
+  const t = (value - range.min) / (range.max - range.min);
+  return MIN_BUBBLE_SIZE + t * (MAX_BUBBLE_SIZE - MIN_BUBBLE_SIZE);
+};
+
 // Rows with a missing/blank Y value must be dropped, not plotted — a naive
 // Number(item[yAxis]) coerces null/"" to 0, which would silently draw a
 // fake data point at y=0 for every record whose FOM value wasn't reported
@@ -166,10 +203,18 @@ const plottableData = computed(() => {
   return props.xAxisNumeric ? filterPlottable(yFiltered, props.xAxis) : yFiltered;
 });
 
-const sampleCount = computed(() => plottableData.value.length);
+// Reflects the highlighted subset (when a group is isolated) rather than
+// the full plotted dataset -- same reasoning as highlightedRows below: a
+// badge reading "13 samples" next to a median computed from 5 would be its
+// own inconsistency.
+const sampleCount = computed(() => highlightedRows.value.length);
 
 const originColumn = computed(() => findOriginColumn(props.columns));
 const reportedColumn = computed(() => findReportedColumn(props.columns));
+const reviewStatusColumn = computed(() => findReviewStatusColumn(props.columns));
+const materialClassColumn = computed(() => findMaterialClassColumn(props.columns));
+const baseMaterialsColumn = computed(() => findBaseMaterialsColumn(props.columns));
+const fomValueColumn = computed(() => findFomValueColumn(props.columns));
 // Extra tooltip fields shouldn't repeat whatever's already on an axis/
 // group-by — e.g. picking Origin as "Group / Color by" already shows it
 // via the legend and the group line below, no need to print it twice.
@@ -186,7 +231,7 @@ const originSummary = computed(() => {
   const column = originColumn.value;
   if (!column) return null;
   const counts: Record<string, number> = {};
-  for (const item of plottableData.value) {
+  for (const item of highlightedRows.value) {
     const v: unknown = item[column];
     if (v === null || v === undefined || v === "") continue;
     const key = String(v);
@@ -201,15 +246,77 @@ const originSummary = computed(() => {
 const hasUnclearReported = computed(() => {
   const column = reportedColumn.value;
   if (!column) return false;
-  return plottableData.value.some((item) => {
+  return highlightedRows.value.some((item) => {
     const v: unknown = item[column];
     return typeof v === "string" && /unclear/i.test(v);
   });
 });
 
+const isEditStatus = (item: DataRow): boolean => {
+  const column = reviewStatusColumn.value;
+  if (!column) return false;
+  const v = item[column];
+  return typeof v === "string" && /^edit$/i.test(v.trim());
+};
+
+// "3 to review" next to the sample-count badge -- Review status: Edit means
+// a value (usually FWHM) was calculated or estimated rather than read
+// directly from the paper, so it's worth a researcher's attention before
+// the record is trusted at face value.
+const needsReviewCount = computed(() => highlightedRows.value.filter(isEditStatus).length);
+
+// Both signals put a dashed outline on a point (see withItemStyle): an
+// "Unclear" FOM Reported flag, or a "Review status: Edit" flag. Different
+// root causes, same "don't fully trust this point without checking"
+// meaning, so one shared hint covers both instead of two near-duplicate
+// messages competing for space next to the sample count.
+const hasFlaggedPoints = computed(() => hasUnclearReported.value || needsReviewCount.value > 0);
+
+// Grouping by a composite column (Material Class or Base Materials) is a
+// special case: a composite cell like "Dielectric;Metal" should not become
+// its own third bucket distinct from "Dielectric" and "Metal" — it should
+// count toward *both* of those groups (the same point plotted twice, once
+// per token) so the groups stay legible and match the corresponding filter
+// chips exactly.
+const isGroupingByCompositeColumn = computed(
+  () =>
+    !!props.groupBy &&
+    (props.groupBy === materialClassColumn.value || props.groupBy === baseMaterialsColumn.value),
+);
+
+// Single source of truth for "does this row belong to this group" — used
+// both to build each series' data (below) and to decide which rows feed
+// the median/trend/Pareto overlays (see highlightedRows). Having two
+// separate copies of this logic is exactly how the median line drifted out
+// of sync with the highlighted group: the series filter respected
+// highlightGroup's *dimming*, but the overlays kept reading unfiltered
+// plottableData.
+const matchesGroup = (item: DataRow, groupName: string): boolean => {
+  if (!props.groupBy) return false;
+  if (isGroupingByCompositeColumn.value) {
+    const tokens = tokenizeValue(item[props.groupBy as string]);
+    return tokens.length === 0 ? groupName === t("fomcharts.unknownGroup") : tokens.includes(groupName);
+  }
+  const v = item[props.groupBy as string];
+  const normalized = v === null || v === undefined || v === "" ? t("fomcharts.unknownGroup") : String(v);
+  return normalized === groupName;
+};
+
+// When a group is isolated (clicking its card in StatsSummaryPanel), every
+// stat/overlay derived from "the plotted points" -- median line, trend
+// line, Pareto frontier -- must read from that group's rows only, or they
+// silently keep describing the whole dataset while the chart visually
+// dims everything else, which is exactly the "median always says 42"
+// inconsistency this fixes.
+const highlightedRows = computed(() =>
+  props.highlightGroup !== null && props.groupBy
+    ? plottableData.value.filter((item) => matchesGroup(item, props.highlightGroup as string))
+    : plottableData.value,
+);
+
 const yValues = computed(() =>
   props.yAxis
-    ? plottableData.value.map((item) => Number(item[props.yAxis as string])).filter((v) => !isNaN(v))
+    ? highlightedRows.value.map((item) => Number(item[props.yAxis as string])).filter((v) => !isNaN(v))
     : [],
 );
 const medianValue = computed(() => computeStats(yValues.value).median);
@@ -222,8 +329,14 @@ const groupValues = computed(() => {
   if (!props.groupBy) return null;
   const values = new Set<string>();
   for (const row of plottableData.value) {
-    const v = row[props.groupBy as string];
-    values.add(v === null || v === undefined || v === "" ? t("fomcharts.unknownGroup") : String(v));
+    if (isGroupingByCompositeColumn.value) {
+      const tokens = tokenizeValue(row[props.groupBy as string]);
+      if (tokens.length === 0) values.add(t("fomcharts.unknownGroup"));
+      else tokens.forEach((tok) => values.add(tok));
+    } else {
+      const v = row[props.groupBy as string];
+      values.add(v === null || v === undefined || v === "" ? t("fomcharts.unknownGroup") : String(v));
+    }
   }
   return Array.from(values).sort();
 });
@@ -244,7 +357,9 @@ const buildPoint = (item: DataRow) => {
   }
   const reportedValue = reportedColumn.value ? item[reportedColumn.value] : null;
   const isUnclear = typeof reportedValue === "string" && /unclear/i.test(reportedValue);
+  const needsReview = isEditStatus(item);
   const rawX = props.xAxis ? item[props.xAxis] : undefined;
+  const rawFomValue = fomValueColumn.value ? Number(item[fomValueColumn.value]) : NaN;
 
   return {
     value: [
@@ -255,22 +370,31 @@ const buildPoint = (item: DataRow) => {
     refLabel: item.ref ?? item.Ref,
     extras,
     isUnclear,
+    needsReview,
+    isFlagged: isUnclear || needsReview,
     row: item,
+    symbolSize: bubbleSizeFor(rawFomValue),
+    symbolOffset: undefined as [number, number] | undefined,
   };
 };
 
-// A dashed outline flags points whose FOM Reported flag is "Unclear" —
-// a data-quality signal, not a category, so it rides on top of whatever
+// A dashed outline flags points that need a second look — either the FOM
+// Reported flag is "Unclear", or Review status is "Edit" (a value like
+// FWHM was calculated/estimated rather than read directly from the paper)
+// — a data-quality signal, not a category, so it rides on top of whatever
 // fill color the group/series already assigned rather than replacing it.
 // Isolating one group (via StatsSummaryPanel) dims the rest instead of
-// hiding them, so the overall shape of the dataset stays visible.
+// hiding them, so the overall shape of the dataset stays visible. Every
+// point's color always matches the series/legend it belongs to — see
+// isGroupingByCompositeColumn above for how Material Class points land in
+// the right (possibly several) series to begin with.
 const withItemStyle = (point: ReturnType<typeof buildPoint>, color: string, groupName: string | null) => {
   const dimmed = props.highlightGroup !== null && groupName !== null && groupName !== props.highlightGroup;
   const opacity = dimmed ? 0.15 : 0.88;
   return {
     ...point,
-    itemStyle: point.isUnclear
-      ? { color, opacity, borderType: "dashed" as const, borderWidth: 2, borderColor: legendColor }
+    itemStyle: point.isFlagged
+      ? { color, opacity, borderType: "dashed" as const, borderWidth: 1, borderColor: legendColor }
       : { color, opacity },
   };
 };
@@ -307,18 +431,40 @@ const seriesList = computed(() => {
     });
   } else {
     groupValues.value.forEach((groupName, idx) => {
+      const color = props.groupColorMap[groupName] ?? palette[idx % palette.length];
       series.push({
         name: groupName,
         symbolSize: 10,
         type: "scatter",
+        // A series-level color is what the legend icon actually reads —
+        // without it, echarts falls back to auto-cycling its own theme
+        // colors by series position, which drifts out of sync with our
+        // fixed groupColorMap the moment a filter hides an entire category
+        // (shrinking the series list and shifting every later series'
+        // auto-assigned position/color).
+        color,
+        itemStyle: { color },
         data: plottableData.value
-          .filter((item) => {
-            const v = item[props.groupBy as string];
-            const normalized =
-              v === null || v === undefined || v === "" ? t("fomcharts.unknownGroup") : String(v);
-            return normalized === groupName;
-          })
-          .map((item) => withItemStyle(buildPoint(item), palette[idx % palette.length], groupName)),
+          .filter((item) => matchesGroup(item, groupName))
+          .map((item) => {
+            const point = buildPoint(item);
+            // A row with several materials (e.g. "Dielectric;Metal") plots
+            // once per material at the exact same x/y -- without an offset
+            // the duplicates stack perfectly on top of each other and only
+            // the last-drawn series' color is ever visible, which is what
+            // made the chart's colors look arbitrary/wrong. symbolOffset
+            // shifts each duplicate a few pixels apart (screen space, not
+            // data space) so every material's dot stays visible without
+            // moving the point off its real coordinate.
+            if (isGroupingByCompositeColumn.value) {
+              const tokens = tokenizeValue(item[props.groupBy as string]);
+              const n = Math.max(tokens.length, 1);
+              const i = Math.max(tokens.indexOf(groupName), 0);
+              const offsetStep = 7;
+              point.symbolOffset = [(i - (n - 1) / 2) * offsetStep, 0];
+            }
+            return withItemStyle(point, color, groupName);
+          }),
         label: pointLabel,
         labelLayout: { hideOverlap: true },
         // Only the first series carries the median markLine — echarts draws it
@@ -333,7 +479,7 @@ const seriesList = computed(() => {
   // when the X axis is itself a numeric quantity (e.g. Sensitivity), not a
   // category label like Material Class.
   if (props.showTrend && props.xAxisNumeric && props.xAxis && props.yAxis) {
-    const points = plottableData.value
+    const points = highlightedRows.value
       .map((item): [number, number] => [Number(item[props.xAxis as string]), Number(item[props.yAxis as string])])
       .filter(([x, y]) => !isNaN(x) && !isNaN(y));
     const fit = linearRegression(points);
@@ -356,7 +502,49 @@ const seriesList = computed(() => {
     }
   }
 
+  // Pareto frontier (maximize-both-axes non-dominated set) — only meaningful
+  // when both X and Y axes are numeric.
+  if (props.showPareto && props.xAxisNumeric && props.xAxis && props.yAxis) {
+    const points = highlightedRows.value
+      .map((item) => ({
+        x: Number(item[props.xAxis as string]),
+        y: Number(item[props.yAxis as string]),
+        row: item,
+      }))
+      .filter((p) => !isNaN(p.x) && !isNaN(p.y));
+    const frontier = computeParetoFrontier(points);
+    if (frontier.length > 0) {
+      series.push({
+        name: t("fomcharts.controls.pareto"),
+        type: "line",
+        data: frontier.map((p) => [p.x, p.y]),
+        showSymbol: false,
+        silent: true,
+        step: false,
+        z: 6,
+        lineStyle: { type: "solid", width: 2, color: "#009E73" },
+      });
+    }
+  }
+
   return series;
+});
+
+// The legend should only list names a user can actually make sense of.
+// With no groupBy, all points share one series internally named after the
+// generic "Scatter Plot" chart type — showing that as a legend chip reads
+// as a meaningless label, so it's left out; only real group names (or the
+// median/trend/Pareto overlays, when active) are listed.
+const legendData = computed(() => {
+  const names: string[] = [];
+  if (props.groupBy && groupValues.value) names.push(...groupValues.value);
+  if (props.showTrend && props.xAxisNumeric && props.xAxis && props.yAxis) {
+    names.push(t("fomcharts.controls.trendLine"));
+  }
+  if (props.showPareto && props.xAxisNumeric && props.xAxis && props.yAxis) {
+    names.push(t("fomcharts.controls.pareto"));
+  }
+  return names;
 });
 
 // Pinning a point is meant for comparing metrics across papers, not for
@@ -408,6 +596,7 @@ const chartOption = computed(() => ({
   // key for which color is which group.
   legend: {
     show: props.showLegend,
+    data: legendData.value,
     top: 4,
     left: "center",
     selectedMode: false,
@@ -439,12 +628,16 @@ const chartOption = computed(() => ({
       const unclearLine = params.data.isUnclear
         ? `<span style="color:${medianLineColor}">${t("fomcharts.unclearReported")}</span><br/>`
         : "";
+      const needsReviewLine = params.data.needsReview
+        ? `<span style="color:${medianLineColor}">${t("fomcharts.needsReview")}</span><br/>`
+        : "";
       const extraLines = Object.entries(params.data.extras ?? {})
         .map(([key, val]) => `${escapeHtml(key)}: <strong>${escapeHtml(val)}</strong><br/>`)
         .join("");
       return `<div style="max-width: 300px; white-space: normal;">
                 <strong>${escapeHtml(params.data.refLabel ?? "")}</strong> ${escapeHtml(params.data.title ?? "")}<br/><br/>
                 ${unclearLine}
+                ${needsReviewLine}
                 ${groupLine}
                 ${escapeHtml(props.xAxis)}: <strong>${escapeHtml(params.data.value[0])}</strong><br/>
                 ${escapeHtml(props.yAxis)}: <strong>${escapeHtml(params.data.value[1])}</strong><br/>
