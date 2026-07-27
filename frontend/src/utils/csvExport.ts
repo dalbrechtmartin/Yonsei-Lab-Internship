@@ -1,34 +1,23 @@
 import type { DataRow } from "./columnTypes";
 
 /**
- * Exports rows as a downloaded CSV file. Given the same shape the API
- * already returns ({ columns, data }), so both VisualizationView and any
- * future extraction export can call this directly.
+ * Exports rows as a downloaded .csv file. Cells are JSON-stringified before
+ * joining so commas/quotes/newlines inside a cell (e.g. a pasted abstract
+ * sentence) round-trip safely instead of corrupting the CSV structure.
  */
-export function exportRowsAsCsv(
-  columns: string[],
-  rows: DataRow[],
-  filename = "export.csv",
-): void {
+export function exportRowsAsCsv(columns: string[], rows: DataRow[], filename = "export.csv"): void {
   if (!rows.length) return;
 
-  const header = columns.join(",");
-  const csvRows = rows.map((row) =>
-    columns
-      .map((col) => {
-        const val = row[col] ?? "";
-        const escaped = String(val).replace(/"/g, '""');
-        return /[",\n]/.test(escaped) ? `"${escaped}"` : escaped;
-      })
-      .join(","),
+  const lines = [columns.map((c) => JSON.stringify(c)).join(",")].concat(
+    rows.map((row) => columns.map((c) => JSON.stringify(row[c] ?? "")).join(",")),
   );
-  const csvContent = [header, ...csvRows].join("\n");
-
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const blob = new Blob([lines.join("\n")], { type: "text/csv" });
   const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  link.click();
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }

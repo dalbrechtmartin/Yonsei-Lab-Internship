@@ -3,11 +3,37 @@
     "title": "λLens"
   },
   "nav": {
+    "home": "홈",
     "visualization": "시각화",
     "extraction": "추출",
     "comingSoon": "개발 중입니다"
   },
   "view": {
+    "home": {
+      "hero": {
+        "eyebrow": "연세대학교 연구실 인턴십 프로젝트",
+        "title": "포토닉스 FOM 데이터의 자동 추출 및 인터랙티브 시각화",
+        "description": "논문에서 구조화된 FOM(성능 지표) 데이터를 추출한 다음, 하나의 작업 공간에서 파장, Q factor, 민감도 경향을 살펴보세요.",
+        "cta": "데이터 시각화",
+        "manual": "사용자 매뉴얼 다운로드"
+      },
+      "tools": {
+        "visualization": {
+          "eyebrow": "지금 사용 가능",
+          "title": "시각화",
+          "body": "엑셀 또는 CSV 데이터셋을 가져와 축과 그룹 기준 열을 선택하고, 로그 또는 선형 산점도로 FOM 분포를 살펴보세요. 주석을 고정하고 필터링된 데이터를 내보낼 수 있습니다.",
+          "cta": "워크스페이스 열기"
+        },
+        "extraction": {
+          "eyebrow": "잠김",
+          "eyebrowUnlocked": "지금 사용 가능",
+          "title": "추출",
+          "body": "하나 이상의 PDF 논문을 놓고 Gemini 모델을 선택하면 구조화된 엑셀 파일을 받을 수 있습니다.",
+          "lockedNote": "현재 개편 중으로 이 빌드에서는 사용할 수 없습니다.",
+          "cta": "추출 시작"
+        }
+      }
+    },
     "visualization": {
       "description": "데이터를 인터랙티브 차트로 시각화합니다. 엑셀 파일을 가져오거나 PDF 논문에서 데이터를 추출할 수 있습니다.",
       "hero": {
@@ -29,7 +55,7 @@
     "export": "내보내기"
   },
   "dropzone": {
-    "title": "엑셀 파일을 여기에 끌어다 놓으십시오",
+    "title": "엑셀 또는 CSV 파일을 여기에 끌어다 놓으십시오",
     "subtitle": "클릭해서 찾아보세요"
   },
   "status": {
@@ -44,11 +70,20 @@
       "subtitle": "클릭해서 찾아보세요 (최대 10개 파일)"
     },
     "processing": "{count}개의 논문에서 데이터 추출 중, 시간이 걸릴 수 있습니다...",
-    "success": "추출이 완료되었습니다. 엑셀 파일이 다운로드되었습니다.",
+    "success": "추출이 완료되었습니다. 엑셀 파일이 저장되었습니다.",
     "partialSuccess": "일부 파일은 처리하지 못해 건너뛰었습니다. 엑셀 파일에는 성공적으로 처리된 파일만 포함되어 있습니다.",
     "error": "PDF 추출 중 오류가 발생했습니다.",
     "quotaExceeded": "Gemini 무료 할당량에 이미 도달했습니다. 나중에 다시 시도하거나 파일 수를 줄여주세요.",
-    "quotaHit": "처리 도중 Gemini 무료 할당량에 도달했습니다. 준비가 되면 이어서 진행할 수 있습니다 — 이미 처리된 내용은 사라지지 않습니다.",
+    "ready": {
+      "heading": "내보내기 준비 완료",
+      "save": "다른 이름으로 저장…"
+    },
+    "notice": {
+      "quota": "{count}개 파일에서 Gemini 무료 할당량에 도달했습니다.",
+      "unavailable": "{count}개 파일에서 모델을 일시적으로 사용할 수 없습니다.",
+      "error": "{count}개 파일에서 예기치 않은 오류가 발생했습니다.",
+      "retryIn": "{seconds}초 후 자동으로 다시 시도합니다 — 이미 처리된 내용은 사라지지 않습니다."
+    },
     "modelSelector": {
       "title": "추출 모델",
       "description": "논문을 분석할 Gemini 모델을 선택하세요.",
@@ -62,19 +97,22 @@
         "description": "정확도와 속도의 균형이 가장 뛰어납니다. 대부분의 배치에 권장됩니다."
       },
       "lite": {
-        "title": "gemini-3.1-flash-lite",
+        "title": "gemini-3.5-flash-lite",
         "description": "가장 빠르고 저렴하지만, 레이어 순서나 내부 일관성 같은 추론 오류가 더 자주 발생합니다."
       }
     },
     "progress": {
       "file": {
         "pending": "대기 중",
+        "retrying": "재시도 중",
         "processing": "처리 중",
+        "almostDone": "거의 완료",
         "done": "완료",
         "failed": "실패"
       },
+      "heading": "논문에서 데이터를 추출하는 중…",
       "overall": "{done} / {total} 파일 처리됨",
-      "resume": "이어서 진행"
+      "etaRemaining": "약 {eta} 남음"
     }
   },
   "fomcharts": {
@@ -86,14 +124,7 @@
       "feature": {
         "saveAsImage": {
           "title": "이미지로 저장"
-        },
-        "dataZoom": {
-          "title": {
-            "zoom": "확대",
-            "back": "뒤로"
-          }
-        },
-        "restore": { "title": "복원" }
+        }
       }
     },
     "controls": {
@@ -103,9 +134,9 @@
       "yAxis": "선택된 Y축",
       "groupBy": "그룹 / 색상 기준",
       "none": "없음",
-      "exportCsv": "CSV로 내보내기",
       "trendLine": "추세선",
-      "trendLineHint": "숫자형 X축(예: 민감도, Q factor)을 선택하면 활성화됩니다"
+      "trendLineHint": "숫자형 X축(예: 민감도, Q factor)을 선택하면 활성화됩니다",
+      "pareto": "Pareto frontier"
     },
     "sections": {
       "chart": "차트",
@@ -114,7 +145,16 @@
     },
     "filters": {
       "domain": "도메인",
-      "origin": "출처"
+      "origin": "출처",
+      "materialClass": "Material Class",
+      "baseMaterials": "Base Materials",
+      "selectAll": "전체 선택",
+      "selectOne": "하나만 선택",
+      "remove": "{label} 제거",
+      "add": "{label} 추가"
+    },
+    "legend": {
+      "toggle": "범례 표시"
     },
     "medianLine": {
       "name": "중앙값",
@@ -127,27 +167,66 @@
     },
     "unknownGroup": "알 수 없음",
     "unclearReported": "⚠ FOM 보고: 불명확",
-    "unclearHint": "점선 테두리 = FOM 보고: 불명확",
+    "needsReview": "⚠ 검토 상태: 수정 필요",
+    "flaggedHint": "점선 테두리 = 검토 필요 표시",
+    "reviewWarning": "{count}건 검토 필요",
     "workspace": {
       "title": "분석 작업 공간",
-      "pinHint": "점을 클릭하면 주석으로 고정됩니다"
+      "pinHint": "점을 클릭하면 주석으로 고정됩니다",
+      "reset": "초기화"
+    },
+    "export": {
+      "csv": "CSV (.csv)",
+      "xlsx": "엑셀 (.xlsx)",
+      "png": "차트 이미지 (.png)"
     },
     "stats": {
       "title": "통계 요약",
       "all": "전체",
-      "line1": "n={n} · 평균 {mean}",
-      "line2": "중앙값 {median} · σ {std}"
+      "lowN": "평균/중앙값/σ를 계산하기에 표본이 부족합니다",
+      "n": "n",
+      "mean": "평균",
+      "median": "중앙값",
+      "std": "σ",
+      "tooltips": {
+        "n": "이 그룹에서 유효하게 표시된 Y축 값을 가진 점의 개수입니다 — 차트에 그려진 점과 동일합니다.",
+        "mean": "이 그룹에서 표시된 Y축 값들의 평균입니다.",
+        "median": "이 그룹에서 표시된 Y축 값들을 정렬했을 때의 중앙값입니다 — 이 그룹만 있거나 격리되어 있을 때 차트의 점선 중앙값 선과 일치합니다.",
+        "std": "이 그룹에서 표시된 Y축 값들의 표준편차입니다 — 점들이 평균을 중심으로 얼마나 퍼져 있는지를 나타냅니다."
+      }
     },
     "annotations": {
       "title": "주석",
+      "tooltip": "차트의 점을 클릭하면 여기에 고정됩니다. 두 개 이상의 고정 항목을 선택하면 차트 아래 표에서 값을 나란히 비교할 수 있습니다.",
       "empty": "고정된 항목이 없습니다 — 차트의 점을 클릭하면 나중에 비교할 수 있도록 저장됩니다.",
-      "remove": "주석 삭제"
+      "remove": "주석 삭제",
+      "clearAll": "모두 지우기",
+      "compareLabel": "비교하려면 선택하세요",
+      "notePlaceholder": "메모 추가...",
+      "sort": {
+        "newest": "최신순",
+        "oldest": "오래된순",
+        "ref": "참조 기준"
+      }
+    },
+    "compare": {
+      "title": "고정된 점 비교",
+      "clearSelection": "선택 해제",
+      "titleRow": "제목",
+      "noteRow": "메모",
+      "export": {
+        "csv": "CSV (.csv)",
+        "xlsx": "엑셀 (.xlsx)",
+        "png": "표 이미지 (.png)"
+      }
     },
     "tooltips": {
       "groupBy": "이 열을 기준으로 점에 색을 입혀 그룹을 한눈에 비교할 수 있습니다. Origin이나 Material Class처럼 값 종류가 적은 열을 선택하세요.",
       "scale": "로그 스케일은 여러 자릿수에 걸친 FOM 값을 읽기 쉽게 유지합니다. 선형 스케일은 값 사이의 간격을 동일하게 유지합니다.",
+      "legend": "차트 자체에 계열 범례(그룹, 중앙값, 추세선)를 표시하여 차트를 이미지로 내보낼 때도 함께 포함되도록 합니다.",
       "median": "현재 표시된 점들의 Y값 중앙값 위치에 점선을 그립니다.",
-      "trendLine": "표시된 점들을 관통하는 직선을 맞춰 전체적인 경향을 보여줍니다. X축이 숫자형 열(예: Sensitivity, Q-factor)일 때만 사용할 수 있습니다 — Material Class 같은 범주형 축에 대한 추세는 의미가 없습니다."
+      "trendLine": "표시된 점들을 관통하는 직선을 맞춰 전체적인 경향을 보여줍니다. X축이 숫자형 열(예: Sensitivity, Q-factor)일 때만 사용할 수 있습니다 — Material Class 같은 범주형 축에 대한 추세는 의미가 없습니다.",
+      "pareto": "Pareto frontier"
     }
   }
 }

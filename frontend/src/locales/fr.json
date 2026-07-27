@@ -3,11 +3,37 @@
     "title": "λLens"
   },
   "nav": {
+    "home": "Accueil",
     "visualization": "Visualisation",
     "extraction": "Extraction",
     "comingSoon": "En cours de développement"
   },
   "view": {
+    "home": {
+      "hero": {
+        "eyebrow": "Projet de stage du laboratoire de Yonsei",
+        "title": "Extraction automatisée et visualisation interactive de données FOM en photonique",
+        "description": "Extrayez des données structurées de facteur de mérite (FOM) à partir d'articles, puis explorez les tendances de longueur d'onde, de facteur Q et de sensibilité dans un seul espace de travail.",
+        "cta": "Visualisez vos données",
+        "manual": "Télécharger le manuel utilisateur"
+      },
+      "tools": {
+        "visualization": {
+          "eyebrow": "Disponible dès maintenant",
+          "title": "Visualisation",
+          "body": "Importez un jeu de données Excel ou CSV, choisissez vos axes et une colonne de regroupement, puis explorez la distribution des FOM sur un nuage de points logarithmique ou linéaire. Épinglez des annotations, exportez le sous-ensemble filtré.",
+          "cta": "Ouvrir l'espace de travail"
+        },
+        "extraction": {
+          "eyebrow": "Verrouillé",
+          "eyebrowUnlocked": "Disponible dès maintenant",
+          "title": "Extraction",
+          "body": "Déposez un ou plusieurs articles PDF, choisissez un modèle Gemini, et obtenez un export Excel structuré.",
+          "lockedNote": "Fonctionnalité en cours de refonte -- indisponible dans cette version.",
+          "cta": "Démarrer l'extraction"
+        }
+      }
+    },
     "visualization": {
       "description": "Visualisez vos données dans des graphiques interactifs. Vous pouvez importer un fichier Excel ou extraire des données à partir d'articles PDF.",
       "hero": {
@@ -29,7 +55,7 @@
     "export": "Exporter"
   },
   "dropzone": {
-    "title": "Glissez-déposez votre fichier Excel ici",
+    "title": "Glissez-déposez votre fichier Excel ou CSV ici",
     "subtitle": "ou cliquez pour parcourir"
   },
   "status": {
@@ -44,11 +70,20 @@
       "subtitle": "ou cliquez pour parcourir (jusqu'à 10 fichiers)"
     },
     "processing": "Extraction des données de {count} article(s), cela peut prendre du temps...",
-    "success": "Extraction terminée. Le fichier Excel a été téléchargé.",
+    "success": "Extraction terminée. Le fichier Excel a été enregistré.",
     "partialSuccess": "Certains fichiers n'ont pas pu être traités et ont été ignorés. L'export Excel ne contient que ceux qui ont réussi.",
     "error": "Une erreur est survenue lors de l'extraction des PDF.",
     "quotaExceeded": "Le quota gratuit de Gemini est déjà atteint. Réessayez plus tard ou avec moins de fichiers.",
-    "quotaHit": "Le quota gratuit de Gemini a été atteint en cours de route. Vous pourrez reprendre dès que vous serez prêt — rien de ce qui a déjà été traité n'est perdu.",
+    "ready": {
+      "heading": "Votre export est prêt",
+      "save": "Enregistrer sous…"
+    },
+    "notice": {
+      "quota": "Le quota gratuit de Gemini a été atteint pour {count} fichier(s).",
+      "unavailable": "Le modèle était temporairement indisponible pour {count} fichier(s).",
+      "error": "Une erreur inattendue est survenue pour {count} fichier(s).",
+      "retryIn": "Nouvelle tentative automatique dans {seconds}s — rien de ce qui a déjà été traité n'est perdu."
+    },
     "modelSelector": {
       "title": "Modèle d'extraction",
       "description": "Choisissez quel modèle Gemini analyse vos articles.",
@@ -62,19 +97,22 @@
         "description": "Le meilleur équilibre entre précision et vitesse. Recommandé pour la plupart des lots."
       },
       "lite": {
-        "title": "gemini-3.1-flash-lite",
+        "title": "gemini-3.5-flash-lite",
         "description": "Le plus rapide et le moins coûteux, mais plus sujet aux erreurs de raisonnement comme l'ordre des couches ou la cohérence interne."
       }
     },
     "progress": {
       "file": {
         "pending": "En attente",
+        "retrying": "Nouvelle tentative",
         "processing": "En cours",
+        "almostDone": "Bientôt terminé",
         "done": "Terminé",
         "failed": "Échoué"
       },
+      "heading": "Extraction des données de vos articles…",
       "overall": "{done} / {total} fichiers traités",
-      "resume": "Reprendre"
+      "etaRemaining": "~{eta} restant(es)"
     }
   },
   "fomcharts": {
@@ -86,14 +124,7 @@
       "feature": {
         "saveAsImage": {
           "title": "Enregistrer en tant qu'image"
-        },
-        "dataZoom": {
-          "title": {
-            "zoom": "Agrandir",
-            "back": "Annuler"
-          }
-        },
-        "restore": { "title": "Réinitialiser" }
+        }
       }
     },
     "controls": {
@@ -103,9 +134,9 @@
       "yAxis": "Axe Y",
       "groupBy": "Grouper / Colorer par",
       "none": "Aucun",
-      "exportCsv": "Exporter en CSV",
       "trendLine": "Ligne de tendance",
-      "trendLineHint": "Choisissez un axe X numérique (ex. Sensibilité, Facteur Q) pour l'activer"
+      "trendLineHint": "Choisissez un axe X numérique (ex. Sensibilité, Facteur Q) pour l'activer",
+      "pareto": "Frontière de Pareto"
     },
     "sections": {
       "chart": "Graphique",
@@ -114,7 +145,16 @@
     },
     "filters": {
       "domain": "Domaine",
-      "origin": "Origine"
+      "origin": "Origine",
+      "materialClass": "Classe de matériau",
+      "baseMaterials": "Matériaux de base",
+      "selectAll": "Tout sélectionner",
+      "selectOne": "Sélectionner un seul",
+      "remove": "Retirer {label}",
+      "add": "Ajouter {label}"
+    },
+    "legend": {
+      "toggle": "Afficher la légende"
     },
     "medianLine": {
       "name": "Médiane",
@@ -127,27 +167,66 @@
     },
     "unknownGroup": "Inconnu",
     "unclearReported": "⚠ FOM signalée : Incertaine",
-    "unclearHint": "Contour pointillé = FOM signalée : Incertaine",
+    "needsReview": "⚠ Statut de révision : À modifier",
+    "flaggedHint": "Contour pointillé = signalé pour révision",
+    "reviewWarning": "{count} à vérifier",
     "workspace": {
       "title": "Espace d'analyse",
-      "pinHint": "Cliquez sur un point pour l'épingler en annotation"
+      "pinHint": "Cliquez sur un point pour l'épingler en annotation",
+      "reset": "Réinitialiser"
+    },
+    "export": {
+      "csv": "CSV (.csv)",
+      "xlsx": "Excel (.xlsx)",
+      "png": "Image du graphique (.png)"
     },
     "stats": {
       "title": "Résumé statistique",
       "all": "Tous",
-      "line1": "n={n} · moyenne {mean}",
-      "line2": "médiane {median} · σ {std}"
+      "lowN": "Trop peu d'échantillons pour moyenne/médiane/σ",
+      "n": "n",
+      "mean": "Moyenne",
+      "median": "Médiane",
+      "std": "σ",
+      "tooltips": {
+        "n": "Nombre de points ayant une valeur d'axe Y valide et affichée dans ce groupe — les mêmes points que ceux tracés sur le graphique.",
+        "mean": "Moyenne des valeurs d'axe Y affichées pour ce groupe.",
+        "median": "Valeur médiane des valeurs d'axe Y affichées pour ce groupe une fois triées — correspond à la ligne médiane pointillée du graphique lorsque ce groupe est seul ou isolé.",
+        "std": "Écart-type des valeurs d'axe Y affichées pour ce groupe — mesure la dispersion des points autour de la moyenne."
+      }
     },
     "annotations": {
       "title": "Annotations",
+      "tooltip": "Cliquez sur un point du graphique pour l'épingler ici. Cochez deux épingles ou plus pour comparer leurs valeurs côte à côte dans un tableau sous le graphique.",
       "empty": "Aucune épingle pour l'instant — cliquez sur un point du graphique pour le marquer en vue d'une comparaison ultérieure.",
-      "remove": "Supprimer l'annotation"
+      "remove": "Supprimer l'annotation",
+      "clearAll": "Tout effacer",
+      "compareLabel": "Sélectionner pour comparer",
+      "notePlaceholder": "Ajoutez une note...",
+      "sort": {
+        "newest": "Plus récentes",
+        "oldest": "Plus anciennes",
+        "ref": "Par référence"
+      }
+    },
+    "compare": {
+      "title": "Comparer les points épinglés",
+      "clearSelection": "Effacer la sélection",
+      "titleRow": "Titre",
+      "noteRow": "Note",
+      "export": {
+        "csv": "CSV (.csv)",
+        "xlsx": "Excel (.xlsx)",
+        "png": "Image du tableau (.png)"
+      }
     },
     "tooltips": {
       "groupBy": "Colore les points selon cette colonne pour comparer des groupes d'un coup d'œil. Choisissez une colonne à faible cardinalité comme Origin ou Material Class.",
       "scale": "L'échelle log garde lisibles des valeurs de FOM qui s'étendent sur plusieurs ordres de grandeur. L'échelle linéaire garde un espacement égal entre les valeurs.",
+      "legend": "Trace la légende des séries (groupes, médiane, ligne de tendance) directement sur le graphique, afin qu'elle soit incluse lors de l'export du graphique en image.",
       "median": "Trace une ligne pointillée à la valeur médiane de l'axe Y des points actuellement affichés.",
-      "trendLine": "Ajuste une droite à travers les points affichés pour montrer la tendance générale. Disponible seulement quand l'axe X est une colonne numérique (ex. Sensitivity, Q-factor) — une tendance par rapport à une catégorie comme Material Class n'aurait pas de sens."
+      "trendLine": "Ajuste une droite à travers les points affichés pour montrer la tendance générale. Disponible seulement quand l'axe X est une colonne numérique (ex. Sensitivity, Q-factor) — une tendance par rapport à une catégorie comme Material Class n'aurait pas de sens.",
+      "pareto": "Met en surbrillance l'ensemble de points non dominés — les enregistrements non surpassés sur les deux axes par aucun autre point — en tant que ligne, en supposant que des valeurs X et Y plus élevées sont meilleures."
     }
   }
 }

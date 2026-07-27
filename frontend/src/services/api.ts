@@ -5,15 +5,13 @@ export interface UploadExcelResponse {
   data: Record<string, unknown>[];
 }
 
-export type ModelChoice = "default" | "gemini-3.5-flash" | "gemini-3.1-flash-lite";
+export type ModelChoice = "default" | "gemini-3.5-flash" | "gemini-3.5-flash-lite";
 
-export type JobStatus =
-  | "pending"
-  | "running"
-  | "done"
-  | "quota_hit"
-  | "error"
-  | "interrupted";
+// A job only ever sits in one of these three states now -- a file whose
+// whole model chain fails (quota, timeout, ...) is deferred and retried
+// automatically in the background (see the backend's jobs.py), so there's
+// no "stuck, needs a click" state to represent here.
+export type JobStatus = "pending" | "running" | "done";
 
 export type JobFileStatusValue = "pending" | "processing" | "done" | "failed";
 
@@ -24,6 +22,18 @@ export interface JobFileStatus {
   modelUsed: string | null;
   recordCount: number;
   errorReason: string | null;
+  startedAt: string | null;
+}
+
+// A transient reason the job isn't just steadily processing right now --
+// e.g. cooling down before the next automatic retry pass after every
+// model failed for one or more files.
+export type JobNoticeReason = "quota" | "unavailable" | "error";
+
+export interface JobNotice {
+  reason: JobNoticeReason;
+  pendingCount: number;
+  retryAt: string;
 }
 
 export interface JobStatusResponse {
@@ -33,6 +43,8 @@ export interface JobStatusResponse {
   totalFiles: number;
   completedCount: number;
   errorMessage: string | null;
+  createdAt: string;
+  notice: JobNotice | null;
   files: JobFileStatus[];
 }
 
@@ -51,6 +63,14 @@ function toJobStatusResponse(raw: any): JobStatusResponse {
     totalFiles: raw.total_files,
     completedCount: raw.completed_count,
     errorMessage: raw.error_message,
+    createdAt: raw.created_at,
+    notice: raw.notice
+      ? {
+          reason: raw.notice.reason,
+          pendingCount: raw.notice.pending_count,
+          retryAt: raw.notice.retry_at,
+        }
+      : null,
     files: (raw.files ?? []).map((f: any) => ({
       id: f.id,
       filename: f.filename,
@@ -58,6 +78,7 @@ function toJobStatusResponse(raw: any): JobStatusResponse {
       modelUsed: f.model_used,
       recordCount: f.record_count,
       errorReason: f.error_reason,
+      startedAt: f.started_at,
     })),
   };
 }
@@ -102,8 +123,9 @@ export const apiService = {
         body: formData,
       });
       if (response.status === 429) {
-        // Defensive fallback -- the primary quota signal is now a
-        // 'quota_hit' job status discovered via polling, not this POST.
+        // Defensive fallback for a quota hit before the job could even
+        // be created -- once running, per-file quota hits are retried
+        // automatically in the background instead of surfacing here.
         throw new QuotaExceededError("Gemini quota exceeded.");
       }
       if (!response.ok)
@@ -128,11 +150,5 @@ export const apiService = {
       blob: await response.blob(),
       partial: response.headers.get("X-Extraction-Partial") === "true",
     };
-  },
-
-  async resumeJob(jobId: string): Promise<CreateJobResponse> {
-    const response = await fetch(`${API_URL}jobs/${jobId}/resume`, { method: "POST" });
-    if (!response.ok) throw new Error("Server error while resuming the job.");
-    return toCreateJobResponse(await response.json());
   },
 };

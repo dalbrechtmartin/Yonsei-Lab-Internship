@@ -3,11 +3,37 @@
     "title": "λLens"
   },
   "nav": {
+    "home": "Home",
     "visualization": "Visualization",
     "extraction": "Extraction",
     "comingSoon": "Under development"
   },
   "view": {
+    "home": {
+      "hero": {
+        "eyebrow": "Yonsei lab internship project",
+        "title": "Automated extraction and interactive visualization of photonics FOM data",
+        "description": "Pull structured figure-of-merit data out of papers, then inspect wavelength, Q-factor, and sensitivity trends in one workspace.",
+        "cta": "Visualize your data",
+        "manual": "Download user manual"
+      },
+      "tools": {
+        "visualization": {
+          "eyebrow": "Available now",
+          "title": "Visualization",
+          "body": "Import an Excel or CSV dataset, choose your axes and group-by column, and explore the FOM distribution on a log or linear scatter plot. Pin annotations, export the filtered set.",
+          "cta": "Open workspace"
+        },
+        "extraction": {
+          "eyebrow": "Locked",
+          "eyebrowUnlocked": "Available now",
+          "title": "Extraction",
+          "body": "Drop one or more PDF papers, pick a Gemini model, and get back a structured Excel export.",
+          "lockedNote": "Being reworked -- unavailable in this build.",
+          "cta": "Start extraction"
+        }
+      }
+    },
     "visualization": {
       "description": "Visualize your data in interactive charts. You can import an Excel file or extract data from PDF papers.",
       "hero": {
@@ -29,13 +55,13 @@
     "export": "Export"
   },
   "dropzone": {
-    "title": "Drag and drop your Excel file here",
+    "title": "Drag and drop your Excel or CSV file here",
     "subtitle": "or click to browse"
   },
   "status": {
     "uploading": "Uploading file...",
-    "success": "Excel imported successfully. You can now adjust the axes or export the CSV.",
-    "error": "We couldn't import that file. Please try another Excel file.",
+    "success": "File imported successfully. You can now adjust the axes or export the data.",
+    "error": "We couldn't import that file. Please try another Excel or CSV file.",
     "dismiss": "Dismiss message"
   },
   "extraction": {
@@ -44,11 +70,20 @@
       "subtitle": "or click to browse (up to 10 files supported)"
     },
     "processing": "Extracting data from {count} paper(s), this can take a while...",
-    "success": "PDFs processed successfully. Your Excel export has been downloaded.",
+    "success": "PDFs processed successfully. Your Excel export has been saved.",
     "partialSuccess": "Some files could not be processed and were skipped. Your Excel export only includes the ones that succeeded.",
     "error": "We couldn't extract those PDFs. Please try again.",
     "quotaExceeded": "Gemini's free-tier quota has already been reached. Try again later or with fewer files.",
-    "quotaHit": "Gemini's free-tier quota was reached partway through. You can resume once you're ready to continue -- nothing already processed is lost.",
+    "ready": {
+      "heading": "Your export is ready",
+      "save": "Save as…"
+    },
+    "notice": {
+      "quota": "Gemini's free-tier quota was reached for {count} file(s).",
+      "unavailable": "The model was temporarily unavailable for {count} file(s).",
+      "error": "An unexpected error occurred for {count} file(s).",
+      "retryIn": "Retrying automatically in {seconds}s -- nothing already processed is lost."
+    },
     "modelSelector": {
       "title": "Extraction model",
       "description": "Choose which Gemini model analyzes your papers.",
@@ -62,19 +97,22 @@
         "description": "The best balance of accuracy and speed. Recommended for most batches."
       },
       "lite": {
-        "title": "gemini-3.1-flash-lite",
+        "title": "gemini-3.5-flash-lite",
         "description": "Fastest and cheapest, but more prone to reasoning mistakes such as layer order or internal consistency."
       }
     },
     "progress": {
       "file": {
         "pending": "Waiting",
+        "retrying": "Retrying",
         "processing": "Processing",
+        "almostDone": "Almost done",
         "done": "Done",
         "failed": "Failed"
       },
+      "heading": "Extracting data from your papers…",
       "overall": "{done} / {total} files processed",
-      "resume": "Resume"
+      "etaRemaining": "~{eta} remaining"
     }
   },
   "fomcharts": {
@@ -86,14 +124,7 @@
       "feature": {
         "saveAsImage": {
           "title": "Save as Image"
-        },
-        "dataZoom": {
-          "title": {
-            "zoom": "Zoom",
-            "back": "Back"
-          }
-        },
-        "restore": { "title": "Restore" }
+        }
       }
     },
     "controls": {
@@ -103,9 +134,9 @@
       "yAxis": "Y-Axis",
       "groupBy": "Group / Color by",
       "none": "None",
-      "exportCsv": "Export to CSV",
       "trendLine": "Trend line",
-      "trendLineHint": "Pick a numeric X axis (e.g. Sensitivity, Q-factor) to enable"
+      "trendLineHint": "Pick a numeric X axis (e.g. Sensitivity, Q-factor) to enable",
+      "pareto": "Pareto frontier"
     },
     "sections": {
       "chart": "Chart",
@@ -114,7 +145,16 @@
     },
     "filters": {
       "domain": "Domain",
-      "origin": "Origin"
+      "origin": "Origin",
+      "materialClass": "Material Class",
+      "baseMaterials": "Base Materials",
+      "selectAll": "Select all",
+      "selectOne": "Select one",
+      "remove": "Remove {label}",
+      "add": "Add {label}"
+    },
+    "legend": {
+      "toggle": "Show legend"
     },
     "medianLine": {
       "name": "Median",
@@ -127,27 +167,66 @@
     },
     "unknownGroup": "Unknown",
     "unclearReported": "⚠ FOM reported: Unclear",
-    "unclearHint": "Dashed outline = FOM reported: Unclear",
+    "needsReview": "⚠ Review status: Edit",
+    "flaggedHint": "Dashed outline = flagged for review",
+    "reviewWarning": "{count} to review",
     "workspace": {
       "title": "Analysis workspace",
-      "pinHint": "Click a point to pin an annotation"
+      "pinHint": "Click a point to pin an annotation",
+      "reset": "Reset"
+    },
+    "export": {
+      "csv": "CSV (.csv)",
+      "xlsx": "Excel (.xlsx)",
+      "png": "Chart image (.png)"
     },
     "stats": {
       "title": "Stats summary",
       "all": "All",
-      "line1": "n={n} · mean {mean}",
-      "line2": "median {median} · σ {std}"
+      "lowN": "Too few samples for mean/median/σ",
+      "n": "n",
+      "mean": "Mean",
+      "median": "Median",
+      "std": "σ",
+      "tooltips": {
+        "n": "Count of points with a valid, plotted Y-axis value in this group — the same points the chart draws.",
+        "mean": "Average of the plotted Y-axis values for this group.",
+        "median": "Middle value once the plotted Y-axis values for this group are sorted — matches the dashed median line on the chart when this is the only or isolated group.",
+        "std": "Standard deviation of the plotted Y-axis values for this group — how spread out the points are around the mean."
+      }
     },
     "annotations": {
       "title": "Annotations",
+      "tooltip": "Click any point on the chart to pin it here. Check two or more pins below to compare their values side by side in a table under the chart.",
       "empty": "No pins yet — click any point on the chart to bookmark it for later comparison.",
-      "remove": "Remove annotation"
+      "remove": "Remove annotation",
+      "clearAll": "Clear all",
+      "compareLabel": "Select to compare",
+      "notePlaceholder": "Add a note...",
+      "sort": {
+        "newest": "Newest first",
+        "oldest": "Oldest first",
+        "ref": "By reference"
+      }
+    },
+    "compare": {
+      "title": "Compare pinned points",
+      "clearSelection": "Clear selection",
+      "titleRow": "Title",
+      "noteRow": "Note",
+      "export": {
+        "csv": "CSV (.csv)",
+        "xlsx": "Excel (.xlsx)",
+        "png": "Table image (.png)"
+      }
     },
     "tooltips": {
       "groupBy": "Colors points by this column so you can compare groups at a glance. Pick a low-cardinality field like Origin or Material Class.",
       "scale": "Log scale keeps FOM values that span several orders of magnitude readable. Linear keeps equal spacing between values.",
+      "legend": "Draws the series legend (groups, median, trend line) on the chart itself, so it's included when exporting the chart as an image.",
       "median": "Draws a dashed line at the median Y value of the points currently plotted.",
-      "trendLine": "Fits a straight line through the plotted points to show the overall trend. Only available when the X axis is a numeric column (e.g. Sensitivity, Q-factor) — a trend against a category like Material Class wouldn't mean anything."
+      "trendLine": "Fits a straight line through the plotted points to show the overall trend. Only available when the X axis is a numeric column (e.g. Sensitivity, Q-factor) — a trend against a category like Material Class wouldn't mean anything.",
+      "pareto": "Highlights the non-dominated set of points — records not beaten on both axes by any other point — as a line, assuming higher X and higher Y are both better."
     }
   }
 }

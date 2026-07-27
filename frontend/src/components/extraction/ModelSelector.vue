@@ -43,12 +43,20 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { ModelChoice } from "@/services/api";
 
 const { t } = useI18n();
 
-const modelChoice = defineModel<ModelChoice>("modelChoice", { default: "default" });
+const modelChoice = defineModel<ModelChoice>("modelChoice", {
+  default: "default",
+});
 
 const options: {
   value: ModelChoice;
@@ -68,13 +76,14 @@ const options: {
     descriptionKey: "extraction.modelSelector.flash.description",
   },
   {
-    value: "gemini-3.1-flash-lite",
+    value: "gemini-3.5-flash-lite",
     titleKey: "extraction.modelSelector.lite.title",
     descriptionKey: "extraction.modelSelector.lite.description",
   },
 ];
 
 const selectedOption = computed(
-  () => options.find((option) => option.value === modelChoice.value) ?? options[0],
+  () =>
+    options.find((option) => option.value === modelChoice.value) ?? options[0],
 );
 </script>

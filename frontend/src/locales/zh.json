@@ -3,11 +3,37 @@
     "title": "λLens"
   },
   "nav": {
+    "home": "主页",
     "visualization": "可视化",
     "extraction": "提取",
     "comingSoon": "开发中"
   },
   "view": {
+    "home": {
+      "hero": {
+        "eyebrow": "延世大学实验室实习项目",
+        "title": "光子学 FOM 数据的自动提取与交互式可视化",
+        "description": "从论文中提取结构化的品质因数（FOM）数据，然后在同一个工作区中查看波长、Q 因子和灵敏度趋势。",
+        "cta": "可视化您的数据",
+        "manual": "下载用户手册"
+      },
+      "tools": {
+        "visualization": {
+          "eyebrow": "现已可用",
+          "title": "可视化",
+          "body": "导入 Excel 或 CSV 数据集，选择坐标轴和分组列，在对数或线性散点图上探索 FOM 分布。固定注释，导出筛选后的数据集。",
+          "cta": "打开工作区"
+        },
+        "extraction": {
+          "eyebrow": "已锁定",
+          "eyebrowUnlocked": "现已可用",
+          "title": "提取",
+          "body": "拖放一篇或多篇 PDF 论文，选择 Gemini 模型，即可获得结构化的 Excel 导出文件。",
+          "lockedNote": "该功能正在重新开发 —— 此版本中暂不可用。",
+          "cta": "开始提取"
+        }
+      }
+    },
     "visualization": {
       "description": "在交互式图表中可视化您的数据。您可以导入 Excel 文件或从 PDF 论文中提取数据。",
       "hero": {
@@ -29,7 +55,7 @@
     "export": "导出"
   },
   "dropzone": {
-    "title": "把Excel文件拖放在这里",
+    "title": "把Excel或CSV文件拖放在这里",
     "subtitle": "点击找找看吧"
   },
   "status": {
@@ -44,11 +70,20 @@
       "subtitle": "点击找找看吧（最多支持 10 个文件）"
     },
     "processing": "正在从 {count} 篇论文中提取数据，可能需要一些时间...",
-    "success": "提取完成，Excel 文件已下载。",
+    "success": "提取完成，Excel 文件已保存。",
     "partialSuccess": "部分文件处理失败并已跳过，Excel 导出仅包含处理成功的文件。",
     "error": "提取 PDF 时发生错误。",
     "quotaExceeded": "已达到 Gemini 免费配额上限。请稍后重试或减少文件数量。",
-    "quotaHit": "处理过程中已达到 Gemini 免费配额上限。准备好后即可继续 — 已处理的内容不会丢失。",
+    "ready": {
+      "heading": "导出已准备就绪",
+      "save": "另存为…"
+    },
+    "notice": {
+      "quota": "{count} 个文件已达到 Gemini 免费配额上限。",
+      "unavailable": "{count} 个文件的模型暂时不可用。",
+      "error": "{count} 个文件发生意外错误。",
+      "retryIn": "将在 {seconds} 秒后自动重试 — 已处理的内容不会丢失。"
+    },
     "modelSelector": {
       "title": "提取模型",
       "description": "选择用于分析论文的 Gemini 模型。",
@@ -62,19 +97,22 @@
         "description": "准确性与速度的最佳平衡，推荐用于大多数批处理。"
       },
       "lite": {
-        "title": "gemini-3.1-flash-lite",
+        "title": "gemini-3.5-flash-lite",
         "description": "最快且最经济，但更容易出现推理错误，例如层结构顺序或内部一致性问题。"
       }
     },
     "progress": {
       "file": {
         "pending": "等待中",
+        "retrying": "重试中",
         "processing": "处理中",
+        "almostDone": "即将完成",
         "done": "已完成",
         "failed": "失败"
       },
+      "heading": "正在从论文中提取数据…",
       "overall": "已处理 {done} / {total} 个文件",
-      "resume": "继续"
+      "etaRemaining": "约剩 {eta}"
     }
   },
   "fomcharts": {
@@ -86,14 +124,7 @@
       "feature": {
         "saveAsImage": {
           "title": "保存为图片"
-        },
-        "dataZoom": {
-          "title": {
-            "zoom": "缩放",
-            "back": "后退"
-          }
-        },
-        "restore": { "title": "恢复" }
+        }
       }
     },
     "controls": {
@@ -103,9 +134,9 @@
       "yAxis": "Y轴",
       "groupBy": "分组 / 按颜色区分",
       "none": "无",
-      "exportCsv": "导出为 CSV",
       "trendLine": "趋势线",
-      "trendLineHint": "选择数值型 X 轴（如灵敏度、Q 因子）以启用"
+      "trendLineHint": "选择数值型 X 轴（如灵敏度、Q 因子）以启用",
+      "pareto": "Pareto frontier"
     },
     "sections": {
       "chart": "图表",
@@ -114,7 +145,16 @@
     },
     "filters": {
       "domain": "领域",
-      "origin": "来源"
+      "origin": "来源",
+      "materialClass": "Material Class",
+      "baseMaterials": "Base Materials",
+      "selectAll": "全选",
+      "selectOne": "仅选一个",
+      "remove": "移除 {label}",
+      "add": "添加 {label}"
+    },
+    "legend": {
+      "toggle": "显示图例"
     },
     "medianLine": {
       "name": "中位数",
@@ -127,27 +167,66 @@
     },
     "unknownGroup": "未知",
     "unclearReported": "⚠ FOM 报告：不明确",
-    "unclearHint": "虚线边框 = FOM 报告：不明确",
+    "needsReview": "⚠ 审核状态：待修改",
+    "flaggedHint": "虚线边框 = 已标记待审核",
+    "reviewWarning": "{count} 项待审核",
     "workspace": {
       "title": "分析工作区",
-      "pinHint": "点击一个点以将其固定为注释"
+      "pinHint": "点击一个点以将其固定为注释",
+      "reset": "重置"
+    },
+    "export": {
+      "csv": "CSV (.csv)",
+      "xlsx": "Excel (.xlsx)",
+      "png": "图表图片 (.png)"
     },
     "stats": {
       "title": "统计摘要",
       "all": "全部",
-      "line1": "n={n} · 均值 {mean}",
-      "line2": "中位数 {median} · σ {std}"
+      "lowN": "样本太少，无法计算均值/中位数/σ",
+      "n": "n",
+      "mean": "均值",
+      "median": "中位数",
+      "std": "σ",
+      "tooltips": {
+        "n": "该组中具有有效、已绘制 Y 轴值的点的数量 — 与图表中绘制的点相同。",
+        "mean": "该组已绘制 Y 轴值的平均值。",
+        "median": "该组已绘制 Y 轴值排序后的中间值 — 当该组为唯一或被单独隔离显示时，与图表上的虚线中位数线一致。",
+        "std": "该组已绘制 Y 轴值的标准差 — 表示各点相对均值的离散程度。"
+      }
     },
     "annotations": {
       "title": "注释",
+      "tooltip": "点击图表上的任意点即可将其固定于此处。勾选两个或以上的固定项，即可在图表下方的表格中并排比较它们的数值。",
       "empty": "暂无固定项 — 点击图表上的任意点即可将其收藏以便日后比较。",
-      "remove": "删除注释"
+      "remove": "删除注释",
+      "clearAll": "全部清除",
+      "compareLabel": "选中以进行比较",
+      "notePlaceholder": "添加备注...",
+      "sort": {
+        "newest": "最新优先",
+        "oldest": "最早优先",
+        "ref": "按编号"
+      }
+    },
+    "compare": {
+      "title": "比较已固定的点",
+      "clearSelection": "清除选择",
+      "titleRow": "标题",
+      "noteRow": "备注",
+      "export": {
+        "csv": "CSV (.csv)",
+        "xlsx": "Excel (.xlsx)",
+        "png": "表格图片 (.png)"
+      }
     },
     "tooltips": {
       "groupBy": "按此列为数据点着色，便于一目了然地比较各组。请选择取值较少的列，如 Origin 或 Material Class。",
       "scale": "对数刻度可以让跨越多个数量级的 FOM 值保持清晰可读。线性刻度则在各值之间保持相等间距。",
+      "legend": "在图表上直接绘制系列图例（分组、中位数、趋势线），以便将图表导出为图片时也包含图例。",
       "median": "在当前绘制的数据点的 Y 值中位数处绘制一条虚线。",
-      "trendLine": "对已绘制的数据点拟合一条直线以显示总体趋势。仅当 X 轴为数值型列（例如 Sensitivity、Q-factor）时可用 — 对 Material Class 这样的分类轴而言，趋势没有意义。"
+      "trendLine": "对已绘制的数据点拟合一条直线以显示总体趋势。仅当 X 轴为数值型列（例如 Sensitivity、Q-factor）时可用 — 对 Material Class 这样的分类轴而言，趋势没有意义。",
+      "pareto": "Pareto frontier"
     }
   }
 }

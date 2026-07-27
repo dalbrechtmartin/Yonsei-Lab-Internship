@@ -1,33 +1,22 @@
 <template>
   <TooltipProvider :delay-duration="200">
-    <aside class="flex w-full flex-col gap-4 lg:w-56 lg:shrink-0">
-      <div>
-        <button
-          type="button"
-          class="flex w-full items-center justify-between py-0.5 text-left select-none"
-          @click="sectionOpen.chart = !sectionOpen.chart"
-        >
-          <span class="text-[11px] font-bold tracking-[0.08em] text-secondary uppercase">{{
-            t("fomcharts.sections.chart")
-          }}</span>
-          <component :is="sectionOpen.chart ? ChevronDown : ChevronRight" class="size-3.5 text-secondary" />
-        </button>
-
-        <div v-if="sectionOpen.chart" class="mt-2.5 flex flex-col gap-2.5">
+    <aside class="flex w-full flex-col gap-3.5 lg:w-56 lg:shrink-0">
+      <CollapsibleSection v-model:open="chartSectionOpen" :title="t('fomcharts.sections.chart')">
+        <div class="mt-2.5 flex flex-col gap-2.5 rounded-[10px] border border-secondary/15 bg-secondary/5 p-3">
           <label class="flex flex-col gap-1 text-xs text-secondary">
             {{ t("fomcharts.controls.title") }}
             <input
               v-model="chartTitle"
               type="text"
               :placeholder="t('fomcharts.controls.titlePlaceholder')"
-              class="rounded-lg border border-secondary/20 bg-background/80 px-2 py-1.5 text-sm text-ink"
+              class="rounded-lg border border-secondary/20 bg-card px-2 py-1.5 text-sm text-ink"
             />
           </label>
 
           <label class="flex flex-col gap-1 text-xs text-secondary">
             {{ t("fomcharts.controls.yAxis") }}
             <Select v-model="yAxis">
-              <SelectTrigger size="sm" class="w-full bg-background/80">
+              <SelectTrigger size="sm" class="w-full bg-card">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -41,7 +30,7 @@
           <label class="flex flex-col gap-1 text-xs text-secondary">
             {{ t("fomcharts.controls.xAxis") }}
             <Select v-model="xAxis">
-              <SelectTrigger size="sm" class="w-full bg-background/80">
+              <SelectTrigger size="sm" class="w-full bg-card">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -58,7 +47,7 @@
               <InfoTooltip :text="t('fomcharts.tooltips.groupBy')" />
             </span>
             <Select v-model="groupBySelectValue">
-              <SelectTrigger size="sm" class="w-full bg-background/80">
+              <SelectTrigger size="sm" class="w-full bg-card">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -70,124 +59,184 @@
             </Select>
           </div>
         </div>
-      </div>
+      </CollapsibleSection>
 
       <div class="h-px bg-secondary/10" />
 
-      <div>
-        <button
-          type="button"
-          class="flex w-full items-center justify-between py-0.5 text-left select-none"
-          @click="sectionOpen.display = !sectionOpen.display"
-        >
-          <span class="text-[11px] font-bold tracking-[0.08em] text-secondary uppercase">{{
-            t("fomcharts.sections.display")
-          }}</span>
-          <component :is="sectionOpen.display ? ChevronDown : ChevronRight" class="size-3.5 text-secondary" />
-        </button>
-
-        <div v-if="sectionOpen.display" class="mt-2.5 flex flex-col gap-3">
+      <CollapsibleSection v-model:open="displaySectionOpen" :title="t('fomcharts.sections.display')">
+        <div class="mt-2.5 flex flex-col gap-3 rounded-[10px] border border-secondary/15 bg-secondary/5 p-3">
           <div class="flex items-center justify-between">
             <span class="flex items-center gap-1 text-xs text-secondary">
               {{ t("fomcharts.scale.label") }}
               <InfoTooltip :text="t('fomcharts.tooltips.scale')" />
             </span>
-            <RadioGroup v-model="scale" class="flex flex-row gap-3">
-              <label class="flex cursor-pointer items-center gap-1.5 text-xs text-ink">
-                <RadioGroupItem id="scale-log" value="log" />
+            <div class="inline-flex overflow-hidden rounded-lg border border-secondary/20 bg-card">
+              <button
+                type="button"
+                class="px-3 py-1.5 text-[11.5px] font-semibold transition-colors"
+                :class="scale === 'log' ? 'bg-primary text-primary-foreground' : 'bg-transparent text-secondary'"
+                @click="scale = 'log'"
+              >
                 {{ t("fomcharts.scale.log") }}
-              </label>
-              <label class="flex cursor-pointer items-center gap-1.5 text-xs text-ink">
-                <RadioGroupItem id="scale-linear" value="value" />
+              </button>
+              <button
+                type="button"
+                class="px-3 py-1.5 text-[11.5px] font-medium transition-colors"
+                :class="scale === 'value' ? 'bg-primary text-primary-foreground' : 'bg-transparent text-secondary'"
+                @click="scale = 'value'"
+              >
                 {{ t("fomcharts.scale.linear") }}
-              </label>
-            </RadioGroup>
+              </button>
+            </div>
           </div>
 
-          <div class="flex items-center gap-2 text-xs text-ink">
-            <label class="flex cursor-pointer items-center gap-2">
-              <Checkbox v-model="showMedian" />
-              {{ t("fomcharts.medianLine.toggle") }}
-            </label>
-            <InfoTooltip :text="t('fomcharts.tooltips.median')" />
-          </div>
+          <div class="h-px bg-secondary/10" />
 
-          <div class="flex items-center gap-2 text-xs" :class="trendDisabled ? 'text-muted-foreground' : 'text-ink'">
-            <label class="flex items-center gap-2" :class="trendDisabled ? 'cursor-not-allowed' : 'cursor-pointer'">
-              <Checkbox v-model="showTrend" :disabled="trendDisabled" />
+          <div class="flex items-center justify-between">
+            <span class="flex items-center gap-1 text-xs" :class="trendDisabled ? 'text-muted-foreground' : 'text-ink'">
               {{ t("fomcharts.controls.trendLine") }}
-            </label>
-            <InfoTooltip :text="t('fomcharts.tooltips.trendLine')" />
+              <InfoTooltip :text="t('fomcharts.tooltips.trendLine')" />
+            </span>
+            <Switch v-model="showTrend" :disabled="trendDisabled" />
           </div>
+
+          <div class="flex items-center justify-between">
+            <span class="flex items-center gap-1 text-xs" :class="paretoDisabled ? 'text-muted-foreground' : 'text-ink'">
+              {{ t("fomcharts.controls.pareto") }}
+              <InfoTooltip :text="t('fomcharts.tooltips.pareto')" />
+            </span>
+            <Switch v-model="showPareto" :disabled="paretoDisabled" />
+          </div>
+          <!-- Trend line and Pareto share the same precondition (a numeric X
+               axis) -- one shared hint instead of repeating the same
+               sentence under each toggle. -->
           <Alert v-if="trendDisabled" variant="info" class="py-2">
             <Info />
             <AlertDescription class="text-[11px] text-ink/80">
               {{ t("fomcharts.controls.trendLineHint") }}
             </AlertDescription>
           </Alert>
-        </div>
-      </div>
 
-      <template v-if="domainColumn || originColumn">
+          <div class="h-px bg-secondary/10" />
+
+          <div class="flex items-center justify-between">
+            <span class="flex items-center gap-1 text-xs text-ink">
+              {{ t("fomcharts.legend.toggle") }}
+              <InfoTooltip :text="t('fomcharts.tooltips.legend')" />
+            </span>
+            <Switch v-model="showLegend" />
+          </div>
+
+          <div class="flex items-center justify-between">
+            <span class="flex items-center gap-1 text-xs text-ink">
+              {{ t("fomcharts.medianLine.toggle") }}
+              <InfoTooltip :text="t('fomcharts.tooltips.median')" />
+            </span>
+            <Switch v-model="showMedian" />
+          </div>
+        </div>
+      </CollapsibleSection>
+
+      <template v-if="domainColumn || originColumn || materialClassColumn || baseMaterialsColumn">
         <div class="h-px bg-secondary/10" />
 
-        <div>
-          <button
-            type="button"
-            class="flex w-full items-center justify-between py-0.5 text-left select-none"
-            @click="sectionOpen.filters = !sectionOpen.filters"
-          >
-            <span class="text-[11px] font-bold tracking-[0.08em] text-secondary uppercase">{{
-              t("fomcharts.sections.filters")
-            }}</span>
-            <component :is="sectionOpen.filters ? ChevronDown : ChevronRight" class="size-3.5 text-secondary" />
-          </button>
-
-          <div v-if="sectionOpen.filters" class="mt-2.5 flex flex-col gap-3">
+        <CollapsibleSection v-model:open="filtersSectionOpen" :title="t('fomcharts.sections.filters')">
+          <div class="mt-2.5 flex flex-col gap-3.5 rounded-[10px] border border-secondary/15 bg-secondary/5 p-3">
             <div v-if="domainColumn && domainValues.length > 0">
-              <div class="mb-1.5 text-[11px] text-muted-foreground">{{ t("fomcharts.filters.domain") }}</div>
-              <div class="flex flex-col gap-1.5">
-                <label
+              <div class="mb-2 flex items-center justify-between">
+                <span class="text-[11px] font-semibold text-secondary">{{ t("fomcharts.filters.domain") }}</span>
+                <button type="button" class="text-[10.5px] text-primary" @click="toggleAllDomains">
+                  {{ domainToggleAllLabel }}
+                </button>
+              </div>
+              <div class="flex flex-wrap gap-1.5">
+                <FilterChip
                   v-for="val in domainValues"
                   :key="val"
-                  class="flex cursor-pointer items-center gap-2 text-xs text-ink"
-                >
-                  <Checkbox :model-value="selectedDomains.includes(val)" @update:model-value="toggleDomain(val)" />
-                  {{ val }}
-                </label>
+                  :label="val"
+                  :active="selectedDomains.includes(val)"
+                  @toggle="toggleDomain(val)"
+                />
               </div>
             </div>
 
+            <div v-if="domainColumn && originColumn" class="h-px bg-secondary/10" />
+
             <div v-if="originColumn && originValues.length > 0">
-              <div class="mb-1.5 text-[11px] text-muted-foreground">{{ t("fomcharts.filters.origin") }}</div>
-              <div class="flex flex-col gap-1.5">
-                <label
+              <div class="mb-2 flex items-center justify-between">
+                <span class="text-[11px] font-semibold text-secondary">{{ t("fomcharts.filters.origin") }}</span>
+                <button type="button" class="text-[10.5px] text-primary" @click="toggleAllOrigins">
+                  {{ originToggleAllLabel }}
+                </button>
+              </div>
+              <div class="flex flex-wrap gap-1.5">
+                <FilterChip
                   v-for="val in originValues"
                   :key="val"
-                  class="flex cursor-pointer items-center gap-2 text-xs text-ink"
-                >
-                  <Checkbox :model-value="selectedOrigins.includes(val)" @update:model-value="toggleOrigin(val)" />
-                  {{ val }}
-                </label>
+                  :label="val"
+                  :active="selectedOrigins.includes(val)"
+                  @toggle="toggleOrigin(val)"
+                />
+              </div>
+            </div>
+
+            <div v-if="originColumn && materialClassColumn" class="h-px bg-secondary/10" />
+
+            <div v-if="materialClassColumn && materialClassValues.length > 0">
+              <div class="mb-2 flex items-center justify-between">
+                <span class="text-[11px] font-semibold text-secondary">{{ t("fomcharts.filters.materialClass") }}</span>
+                <button type="button" class="text-[10.5px] text-primary" @click="toggleAllMaterialClasses">
+                  {{ materialClassToggleAllLabel }}
+                </button>
+              </div>
+              <div class="flex flex-wrap gap-1.5">
+                <FilterChip
+                  v-for="val in materialClassValues"
+                  :key="val"
+                  :label="val"
+                  :active="selectedMaterialClasses.includes(val)"
+                  @toggle="toggleMaterialClass(val)"
+                />
+              </div>
+            </div>
+
+            <div v-if="materialClassColumn && baseMaterialsColumn" class="h-px bg-secondary/10" />
+
+            <div v-if="baseMaterialsColumn && baseMaterialsValues.length > 0">
+              <div class="mb-2 flex items-center justify-between">
+                <span class="text-[11px] font-semibold text-secondary">{{ t("fomcharts.filters.baseMaterials") }}</span>
+                <button type="button" class="text-[10.5px] text-primary" @click="toggleAllBaseMaterials">
+                  {{ baseMaterialsToggleAllLabel }}
+                </button>
+              </div>
+              <div class="flex flex-wrap gap-1.5">
+                <FilterChip
+                  v-for="val in baseMaterialsValues"
+                  :key="val"
+                  :label="val"
+                  :active="selectedBaseMaterials.includes(val)"
+                  @toggle="toggleBaseMaterial(val)"
+                />
               </div>
             </div>
           </div>
-        </div>
+        </CollapsibleSection>
       </template>
     </aside>
   </TooltipProvider>
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
-import { ChevronDown, ChevronRight, Info } from "@lucide/vue";
+import { Info } from "@lucide/vue";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import InfoTooltip from "@/components/shared/InfoTooltip.vue";
+import CollapsibleSection from "@/components/shared/CollapsibleSection.vue";
+import FilterChip from "@/components/shared/FilterChip.vue";
 
 const { t } = useI18n();
 
@@ -207,12 +256,20 @@ const props = withDefaults(
     domainValues?: string[];
     originColumn?: string | null;
     originValues?: string[];
+    materialClassColumn?: string | null;
+    materialClassValues?: string[];
+    baseMaterialsColumn?: string | null;
+    baseMaterialsValues?: string[];
   }>(),
   {
     domainColumn: null,
     domainValues: () => [],
     originColumn: null,
     originValues: () => [],
+    materialClassColumn: null,
+    materialClassValues: () => [],
+    baseMaterialsColumn: null,
+    baseMaterialsValues: () => [],
   },
 );
 
@@ -229,14 +286,22 @@ const groupBySelectValue = computed<string>({
 });
 const scale = defineModel<"log" | "value">("scale", { default: "log" });
 const chartTitle = defineModel<string>("chartTitle", { default: "" });
-const showMedian = defineModel<boolean>("showMedian", { default: true });
-const showTrend = defineModel<boolean>("showTrend", { default: true });
+const showLegend = defineModel<boolean>("showLegend", { default: false });
+const showMedian = defineModel<boolean>("showMedian", { default: false });
+const showTrend = defineModel<boolean>("showTrend", { default: false });
 const selectedDomains = defineModel<string[]>("selectedDomains", {
   default: () => [],
 });
 const selectedOrigins = defineModel<string[]>("selectedOrigins", {
   default: () => [],
 });
+const selectedMaterialClasses = defineModel<string[]>("selectedMaterialClasses", {
+  default: () => [],
+});
+const selectedBaseMaterials = defineModel<string[]>("selectedBaseMaterials", {
+  default: () => [],
+});
+const showPareto = defineModel<boolean>("showPareto", { default: false });
 
 const toggleDomain = (val: string) => {
   selectedDomains.value = selectedDomains.value.includes(val)
@@ -248,8 +313,70 @@ const toggleOrigin = (val: string) => {
     ? selectedOrigins.value.filter((v) => v !== val)
     : [...selectedOrigins.value, val];
 };
+const toggleMaterialClass = (val: string) => {
+  selectedMaterialClasses.value = selectedMaterialClasses.value.includes(val)
+    ? selectedMaterialClasses.value.filter((v) => v !== val)
+    : [...selectedMaterialClasses.value, val];
+};
+const toggleBaseMaterial = (val: string) => {
+  selectedBaseMaterials.value = selectedBaseMaterials.value.includes(val)
+    ? selectedBaseMaterials.value.filter((v) => v !== val)
+    : [...selectedBaseMaterials.value, val];
+};
 
-const sectionOpen = reactive({ chart: true, display: true, filters: true });
+// "Select all" collapses back to "Select one" (just the first value) once
+// every value is already selected, and vice versa -- a single link doing
+// double duty instead of two separate buttons.
+const domainToggleAllLabel = computed(() =>
+  selectedDomains.value.length >= props.domainValues.length ? t("fomcharts.filters.selectOne") : t("fomcharts.filters.selectAll"),
+);
+const toggleAllDomains = () => {
+  if (props.domainValues.length === 0) return;
+  selectedDomains.value =
+    selectedDomains.value.length >= props.domainValues.length ? [props.domainValues[0]] : [...props.domainValues];
+};
+const originToggleAllLabel = computed(() =>
+  selectedOrigins.value.length >= props.originValues.length ? t("fomcharts.filters.selectOne") : t("fomcharts.filters.selectAll"),
+);
+const toggleAllOrigins = () => {
+  if (props.originValues.length === 0) return;
+  selectedOrigins.value =
+    selectedOrigins.value.length >= props.originValues.length ? [props.originValues[0]] : [...props.originValues];
+};
+const materialClassToggleAllLabel = computed(() =>
+  selectedMaterialClasses.value.length >= props.materialClassValues.length ? t("fomcharts.filters.selectOne") : t("fomcharts.filters.selectAll"),
+);
+const toggleAllMaterialClasses = () => {
+  if (props.materialClassValues.length === 0) return;
+  selectedMaterialClasses.value =
+    selectedMaterialClasses.value.length >= props.materialClassValues.length ? [props.materialClassValues[0]] : [...props.materialClassValues];
+};
+const baseMaterialsToggleAllLabel = computed(() =>
+  selectedBaseMaterials.value.length >= props.baseMaterialsValues.length ? t("fomcharts.filters.selectOne") : t("fomcharts.filters.selectAll"),
+);
+const toggleAllBaseMaterials = () => {
+  if (props.baseMaterialsValues.length === 0) return;
+  selectedBaseMaterials.value =
+    selectedBaseMaterials.value.length >= props.baseMaterialsValues.length ? [props.baseMaterialsValues[0]] : [...props.baseMaterialsValues];
+};
+
+// The three sections behave as an accordion -- opening one collapses the
+// others, so the sidebar never grows tall enough to force the whole
+// workspace into a long scroll. A single active-key ref backs all three
+// v-model:open bindings instead of three independent booleans.
+type SectionKey = "chart" | "display" | "filters" | null;
+const activeSection = ref<SectionKey>("chart");
+function sectionModel(key: Exclude<SectionKey, null>) {
+  return computed({
+    get: () => activeSection.value === key,
+    set: (v: boolean) => {
+      activeSection.value = v ? key : activeSection.value === key ? null : activeSection.value;
+    },
+  });
+}
+const chartSectionOpen = sectionModel("chart");
+const displaySectionOpen = sectionModel("display");
+const filtersSectionOpen = sectionModel("filters");
 
 // A trend line needs an X axis that's actually a coordinate, not a category
 // label -- offering it against, say, Material Class would draw a
@@ -259,9 +386,15 @@ const trendDisabled = computed(() => !props.numericColumns.includes(xAxis.value 
 
 // Switching the X axis away from a numeric column makes any active trend
 // line meaningless -- turn it off rather than leave a stale checked-but-
-// disabled checkbox.
+// disabled control.
 watch(trendDisabled, (disabled) => {
   if (disabled && showTrend.value) showTrend.value = false;
+});
+
+// Pareto frontier also requires a numeric X axis (same precondition as trend line).
+const paretoDisabled = trendDisabled;
+watch(paretoDisabled, (disabled) => {
+  if (disabled && showPareto.value) showPareto.value = false;
 });
 
 // Group-by exists to split points into color categories *distinct* from

@@ -20,14 +20,14 @@ export interface ColumnTypes {
  * from SIM records visually.
  */
 const METADATA_COLUMN_PATTERN =
-  /\b(ref|id|title|quotes?|evidence|page|notes?|model(\s*used)?|comments?|source|location|domain|reported|definition)\b/i;
+  /\b(ref|id|title|quotes?|evidence|page|notes?|model(\s*used)?|comments?|source|location|domain|reported|review(\s*status)?|definition)\b/i;
 
 export function isMetadataColumn(column: string): boolean {
   return METADATA_COLUMN_PATTERN.test(column);
 }
 
 /**
- * Columns worth dropping specifically from the CSV *export* — narrower
+ * Columns worth dropping specifically from the *export* — narrower
  * than isMetadataColumn on purpose. A researcher exporting "the filtered
  * dataset" still wants Ref/Title (which record is this?), Domain/Origin/
  * FOM Reported (why was it included/excluded?), and FOM Definition (what
@@ -44,7 +44,7 @@ export function isExportNoiseColumn(column: string): boolean {
   return EXPORT_NOISE_PATTERN.test(column);
 }
 
-/** Columns to include in the exported CSV — the full column list minus export noise (see isExportNoiseColumn). */
+/** Columns to include in the exported file — the full column list minus export noise (see isExportNoiseColumn). */
 export function filterExportColumns(columns: string[]): string[] {
   return columns.filter((col) => !isExportNoiseColumn(col));
 }
@@ -91,20 +91,24 @@ export function detectColumnTypes(rows: DataRow[], columns: string[]): ColumnTyp
 }
 
 /**
- * Best-effort guess for a sensible default Y-axis column: prefers a
- * numeric column whose name contains "FOM", falls back to the first
+ * Best-effort guess for a sensible default Y-axis column: prioritizes
+ * FOM value when present, then Q-factor, then falls back to the first
  * numeric column found.
  */
 export function guessDefaultYAxis(numericColumns: string[]): string | null {
-  const fomLike = numericColumns.find((c) => /fom/i.test(c));
-  return fomLike || numericColumns[0] || null;
+  const fomValueLike = numericColumns.find((c) => /fom\s*value/i.test(c));
+  const fomLike = fomValueLike || numericColumns.find((c) => /fom/i.test(c));
+  if (fomLike) return fomLike;
+  const qFactorLike = numericColumns.find((c) => /q[-\s]?factor/i.test(c));
+  return qFactorLike || numericColumns[0] || null;
 }
 
 /**
- * Best-effort guess for a sensible default X-axis column: among the
- * structure/material-like columns (falling back to all categorical columns
- * if none match), picks the most granular one — the one with the most
- * distinct values relative to row count.
+ * Best-effort guess for a sensible default X-axis column: prioritizes the
+ * structure/material categorical-column logic (Layer Structure, when
+ * present, gives the intended one-dot-per-sample layout), falling back to
+ * a numeric Sensitivity column only when no categorical column exists at
+ * all.
  *
  * Cardinality matters here, not just name: on a harmonized export,
  * "Material Class" (a handful of coarse buckets like "Dielectric;Metal")
@@ -117,35 +121,39 @@ export function guessDefaultYAxis(numericColumns: string[]): string | null {
 export function guessDefaultXAxis(
   rows: DataRow[],
   categoricalColumns: string[],
+  numericColumns: string[] = [],
 ): string | null {
-  if (categoricalColumns.length === 0) return null;
+  if (categoricalColumns.length > 0) {
+    const structureLike = categoricalColumns.filter((c) =>
+      /material|structure|layer|층|class/i.test(c),
+    );
+    const candidates = structureLike.length > 0 ? structureLike : categoricalColumns;
 
-  const structureLike = categoricalColumns.filter((c) =>
-    /material|structure|layer|층|class/i.test(c),
-  );
-  const candidates = structureLike.length > 0 ? structureLike : categoricalColumns;
-
-  let best = candidates[0];
-  let bestCount = -1;
-  for (const col of candidates) {
-    const count = distinctValues(rows, col).length;
-    if (count > bestCount) {
-      bestCount = count;
-      best = col;
+    let best = candidates[0];
+    let bestCount = -1;
+    for (const col of candidates) {
+      const count = distinctValues(rows, col).length;
+      if (count > bestCount) {
+        bestCount = count;
+        best = col;
+      }
     }
+    return best;
   }
-  return best;
+
+  const sensitivityLike = numericColumns.find((c) => /sensitivity/i.test(c));
+  return sensitivityLike || numericColumns[0] || null;
 }
 
 /**
- * Best-effort guess for a sensible default "Group / Color by" column.
- * Only defaults to Origin (EXP vs SIM) — the one grouping Phase 1 actually
- * requires researchers be able to tell apart — rather than picking any
- * arbitrary categorical column, which would just duplicate whatever was
- * chosen for the X-axis.
+ * Best-effort guess for a sensible default "Group / Color by" column: none.
+ * Auto-grouping by Material Class or Origin made the legend and per-point
+ * colors hard to reason about (a single ungrouped series suddenly split
+ * into several colors with no obvious cause) — grouping is now always an
+ * explicit, opt-in choice from the "Group / Color by" dropdown.
  */
-export function guessDefaultColorGroup(categoricalColumns: string[]): string | null {
-  return categoricalColumns.find((c) => /\borigin\b/i.test(c)) ?? null;
+export function guessDefaultColorGroup(_categoricalColumns: string[]): string | null {
+  return null;
 }
 
 /**
@@ -163,6 +171,56 @@ export function findOriginColumn(columns: string[]): string | null {
   return columns.find((c) => /\borigin\b/i.test(c)) ?? null;
 }
 
+export function findMaterialClassColumn(columns: string[]): string | null {
+  return columns.find((c) => /material\s*class/i.test(c)) ?? null;
+}
+
+/**
+ * "Base Materials" (e.g. "Au;SiO2") is the same shape of problem as
+ * Material Class: a composite, semicolon/comma-separated cell that should
+ * filter and group by its individual tokens rather than the raw combined
+ * string. Matched separately from findMaterialClassColumn so a sheet with
+ * both columns keeps them as distinct filters/groupings.
+ */
+export function findBaseMaterialsColumn(columns: string[]): string | null {
+  return columns.find((c) => /base\s*materials?/i.test(c)) ?? null;
+}
+
+export function findSensitivityColumn(columns: string[]): string | null {
+  return columns.find((c) => /sensitivity/i.test(c)) ?? null;
+}
+
+export function findQFactorColumn(columns: string[]): string | null {
+  return columns.find((c) => /q[-\s]?factor/i.test(c)) ?? null;
+}
+
+export function findFomValueColumn(columns: string[]): string | null {
+  return columns.find((c) => /fom\s*value/i.test(c)) ?? null;
+}
+
+export function findLayerStructureColumn(columns: string[]): string | null {
+  return columns.find((c) => /layer\s*structure/i.test(c)) ?? null;
+}
+
+/**
+ * Locates the "Evidence" column (the exact quoted text fragment backing the
+ * extracted metrics), if present. Kept out of the chart tooltip (too much
+ * text for a hover popup) -- used instead to pre-fill an annotation's note
+ * field when a point gets pinned (see VisualizationView's handlePointClick).
+ */
+export function findEvidenceColumn(columns: string[]): string | null {
+  return columns.find((c) => /\bevidence\b/i.test(c)) ?? null;
+}
+
+/**
+ * Locates the "Notes" column (short clarifications, e.g. "FWHM calculated
+ * from S/FOM"), if present -- same treatment as Evidence: not shown in the
+ * hover tooltip, pre-filled into an annotation's note field on pin instead.
+ */
+export function findNotesColumn(columns: string[]): string | null {
+  return columns.find((c) => /\bnotes?\b/i.test(c)) ?? null;
+}
+
 /**
  * Locates the "FOM reported" QA flag column (Yes/No/Unclear), if present —
  * drives the dashed-outline data-quality marker on uncertain points.
@@ -172,13 +230,34 @@ export function findReportedColumn(columns: string[]): string | null {
 }
 
 /**
+ * Locates the "Review status" column (Approve/Edit/Exclude), if present —
+ * a human-review workflow flag, not a plottable category (see
+ * METADATA_COLUMN_PATTERN, which excludes it from axis/group-by choices).
+ * "Edit" marks a record whose FWHM was calculated/estimated rather than
+ * read directly from the paper, so it drives the same dashed-outline
+ * data-quality marker as an "Unclear" FOM Reported flag.
+ */
+export function findReviewStatusColumn(columns: string[]): string | null {
+  return columns.find((c) => /review\s*status/i.test(c)) ?? null;
+}
+
+/**
+ * Locates the "Short Title" column, if present — a concise (<=6 word)
+ * version of the paper's title meant for compact UI display (e.g. the
+ * Compare pinned points table), as opposed to the full "Title" column.
+ */
+export function findShortTitleColumn(columns: string[]): string | null {
+  return columns.find((c) => /short\s*title/i.test(c)) ?? null;
+}
+
+/**
  * Columns worth surfacing in the point tooltip beyond the axes already on
  * display — a researcher comparing FOM records usually wants Sensitivity/
- * Q-factor/Spectral Range/Origin alongside it without re-plotting. Matched
- * by keyword since exact header text varies across harmonized exports.
+ * Q-factor/FOM Value/Layer Structure/Spectral Range/Origin alongside it without re-plotting.
+ * Matched by keyword since exact header text varies across harmonized exports.
  */
 export function findTooltipExtraColumns(columns: string[]): string[] {
-  const patterns = [/sensitivity/i, /q[-\s]?factor/i, /spectral\s*range/i, /\borigin\b/i];
+  const patterns = [/sensitivity/i, /q[-\s]?factor/i, /fom\s*value/i, /layer\s*structure/i, /spectral\s*range/i, /\borigin\b/i];
   const found: string[] = [];
   for (const pattern of patterns) {
     const col = columns.find((c) => pattern.test(c));
@@ -199,6 +278,33 @@ export function distinctValues(rows: DataRow[], column: string): string[] {
 }
 
 /**
+ * Splits a composite cell value like "Dielectric;Metal" or "Dielectric, Metal"
+ * on ; or , into trimmed, non-empty tokens. Single-value cells return a
+ * one-element array unchanged.
+ */
+export function tokenizeValue(value: unknown): string[] {
+  if (value === null || value === undefined || value === "") return [];
+  return String(value)
+    .split(/[;,]/)
+    .map((t) => t.trim())
+    .filter((t) => t.length > 0);
+}
+
+/**
+ * Sorted, de-duplicated set of individual tokens across a column, splitting
+ * composite cells (see tokenizeValue) — the chip list for a filter like
+ * Material Class must offer "Dielectric" and "Metal" separately even when
+ * every row that has "Metal" stores it combined as "Dielectric;Metal".
+ */
+export function tokenizedDistinctValues(rows: DataRow[], column: string): string[] {
+  const values = new Set<string>();
+  for (const row of rows) {
+    for (const token of tokenizeValue(row[column])) values.add(token);
+  }
+  return Array.from(values).sort();
+}
+
+/**
  * The chart's color palette (Okabe-Ito, colorblind-safe) has 7 distinct
  * series colors — see okabe-ito-palette.json. Past that many groups, colors
  * start repeating and the legend actively lies: two unrelated categories
@@ -213,9 +319,23 @@ export const MAX_GROUPABLE_CATEGORIES = 7;
  * column like "Mode/Case" — often near one distinct value per row — is
  * exactly what makes a good X-axis (see guessDefaultXAxis) but a useless,
  * cluttered legend.
+ *
+ * Composite columns (Material Class, Base Materials — see
+ * findMaterialClassColumn/findBaseMaterialsColumn) are always offered
+ * regardless of cardinality: grouping by one of them splits composite cells
+ * like "Dielectric;Metal" into their individual tokens (see FomChart's
+ * isGroupingByCompositeColumn), and a sheet can legitimately have more
+ * than MAX_GROUPABLE_CATEGORIES distinct base materials (Au, Ag, SiO2,
+ * Si3N4, Ta2O5, ...) — excluding the option entirely would be worse than
+ * the accepted tradeoff of the palette repeating colors past 7 groups.
  */
-export function groupableColumns(rows: DataRow[], categoricalColumns: string[]): string[] {
-  return categoricalColumns.filter(
-    (col) => distinctValues(rows, col).length <= MAX_GROUPABLE_CATEGORIES,
-  );
+export function groupableColumns(
+  rows: DataRow[],
+  categoricalColumns: string[],
+  compositeColumns: (string | null)[] = [],
+): string[] {
+  return categoricalColumns.filter((col) => {
+    if (compositeColumns.includes(col)) return true;
+    return distinctValues(rows, col).length <= MAX_GROUPABLE_CATEGORIES;
+  });
 }

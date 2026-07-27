@@ -58,22 +58,43 @@ def _persist_job(job_id: str) -> None:
     os.replace(tmp, target)  # atomic on both POSIX and Windows
 
 
-def load_jobs_from_disk() -> None:
+def load_jobs_from_disk() -> list[str]:
     """Called once at FastAPI startup. Repopulates JOBS from the on-disk
-    snapshots, and marks any job that was 'running' when the process
-    died as 'interrupted' so it doesn't look silently stuck forever."""
+    snapshots and returns the ids of jobs that still have work left to
+    do, so the caller (main.py's lifespan) can restart their background
+    processing automatically -- extraction never needs a person to click
+    anything to recover from a killed/restarted process, the same way
+    jobs.py's own backoff-and-retry needs no click to recover from a
+    slow/unavailable model while the process stays alive.
+
+    A file can be caught mid-flight, frozen at 'processing' in the last
+    snapshot written before the crash -- run_job() only ever moves a
+    file OUT of 'processing' from within the same coroutine that put it
+    there, so a killed process leaves it stuck there forever otherwise.
+    It's rewound to 'pending' here so the restarted job picks it back up;
+    nothing about that file's data was actually lost (its PDF is still
+    on disk).
+    """
     JOBS.clear()
+    resumable: list[str] = []
     if not JOBS_DIR.exists():
-        return
+        return resumable
     for job_json in JOBS_DIR.glob("*/job.json"):
         try:
             job = json.loads(job_json.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, OSError):
             continue
-        if job.get("status") == "running":
-            job["status"] = "interrupted"
+        job.setdefault("notice", None)
+        for file_state in job["files"].values():
+            file_state.setdefault("started_at", None)
+            if file_state["status"] == "processing":
+                file_state["status"] = "pending"
         JOBS[job["id"]] = job
         _persist_job(job["id"])
+        has_pending = any(f["status"] == "pending" for f in job["files"].values())
+        if job.get("status") != "done" and has_pending:
+            resumable.append(job["id"])
+    return resumable
 
 
 def create_job(model_choice: str, available_models: list[str], filenames: list[str]) -> dict:
@@ -88,6 +109,7 @@ def create_job(model_choice: str, available_models: list[str], filenames: list[s
             "status": "pending",
             "error_reason": None,
             "model_used": None,
+            "started_at": None,
             "pdf_path": str(pdf_path(job_id, file_id)),
             "runs": [],
             "records": [],
@@ -101,6 +123,7 @@ def create_job(model_choice: str, available_models: list[str], filenames: list[s
         "created_at": _now(),
         "updated_at": _now(),
         "error_message": None,
+        "notice": None,
         "files": files,
     }
     JOBS[job_id] = job
@@ -129,6 +152,11 @@ def update_job_file_status(
 ) -> None:
     file_state = JOBS[job_id]["files"][file_id]
     file_state["status"] = status
+    if status == "processing":
+        # Reset on every attempt (not just the first) so a file that got
+        # deferred and retried later shows a fresh countdown, not one
+        # still counting from its first, abandoned attempt.
+        file_state["started_at"] = _now()
     if error_reason is not None:
         file_state["error_reason"] = error_reason
     if model_used is not None:
@@ -172,6 +200,15 @@ def set_job_status(job_id: str, status: str, error_message: Optional[str] = None
     job["status"] = status
     if error_message is not None:
         job["error_message"] = error_message
+    _persist_job(job_id)
+
+
+def set_job_notice(job_id: str, notice: Optional[dict]) -> None:
+    """A transient, user-facing explanation of what the job is doing
+    right now when it isn't just steadily processing -- e.g. waiting out
+    a quota cooldown before its next automatic retry pass. `None` clears
+    it (there's nothing unusual to report)."""
+    JOBS[job_id]["notice"] = notice
     _persist_job(job_id)
 
 
