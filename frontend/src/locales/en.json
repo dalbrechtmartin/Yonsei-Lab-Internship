@@ -14,39 +14,25 @@
         "eyebrow": "Yonsei lab internship project",
         "title": "Automated extraction and interactive visualization of photonics FOM data",
         "description": "Pull structured figure-of-merit data out of papers, then inspect wavelength, Q-factor, and sensitivity trends in one workspace.",
-        "cta": "Visualize your data"
+        "cta": "Visualize your data",
+        "manual": "Download user manual"
       },
       "tools": {
         "visualization": {
           "eyebrow": "Available now",
           "title": "Visualization",
-          "body": "Import an Excel or CSV dataset, choose your axes and group-by column, and explore the FOM distribution on a log or linear scatter plot. Pin annotations, export the filtered set."
+          "body": "Import an Excel or CSV dataset, choose your axes and group-by column, and explore the FOM distribution on a log or linear scatter plot. Pin annotations, export the filtered set.",
+          "cta": "Open workspace"
         },
         "extraction": {
           "eyebrow": "Locked",
           "eyebrowUnlocked": "Available now",
           "title": "Extraction",
           "body": "Drop one or more PDF papers, pick a Gemini model, and get back a structured Excel export.",
-          "lockedNote": "Being reworked -- unavailable in this build."
+          "lockedNote": "Being reworked -- unavailable in this build.",
+          "cta": "Start extraction"
         }
-      },
-      "howItWorks": [
-        {
-          "n": "01",
-          "title": "Import your dataset",
-          "body": "Drop an Excel or CSV export of extracted FOM records into the workspace."
-        },
-        {
-          "n": "02",
-          "title": "Pick axes and grouping",
-          "body": "Choose X/Y columns and a group-by field to compare materials, domains, or sources."
-        },
-        {
-          "n": "03",
-          "title": "Pin and export",
-          "body": "Bookmark interesting points as annotations, then export the filtered dataset as CSV."
-        }
-      ]
+      }
     },
     "visualization": {
       "description": "Visualize your data in interactive charts. You can import an Excel file or extract data from PDF papers.",
