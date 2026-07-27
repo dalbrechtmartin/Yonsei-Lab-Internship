@@ -37,14 +37,22 @@ def start_job(job_id: str) -> None:
 
 
 async def _sleep_for(model: Optional[str]) -> None:
-    seconds = llm.MODEL_SLEEP_SECONDS.get(model, llm.DEFAULT_SLEEP_SECONDS)
+    if model is None:
+        seconds = llm.DEFAULT_SLEEP_SECONDS
+    else:
+        seconds = llm.MODEL_SLEEP_SECONDS.get(model, llm.DEFAULT_SLEEP_SECONDS)
+        
     await asyncio.sleep(seconds)
 
 
 async def _process_one_file(job_id: str, job_file: dict, any_call_made: bool) -> tuple[bool, bool]:
     file_id = job_file["id"]
     filename = job_file["filename"]
+    
     job = state.get_job(job_id)
+    if not job:
+        return False, any_call_made 
+        
     available_models = list(job["available_models"])
 
     state.update_job_file_status(job_id, file_id, "processing")
@@ -110,6 +118,10 @@ async def run_job(job_id: str) -> None:
         attempt = 0
         while True:
             job = state.get_job(job_id)
+            if not job:
+                print(f"Job {job_id} introuvable.")
+                break
+                
             state.set_available_models(job_id, llm.build_available_models(job["model_choice"]))
             state.set_job_notice(job_id, None)
 

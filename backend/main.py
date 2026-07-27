@@ -15,8 +15,6 @@ from schema import COLUMN_ORDER
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Any job left unfinished by a killed previous process picks back up
-    # on its own -- no "resume" click needed, see jobs.py/state.py.
     for job_id in state.load_jobs_from_disk():
         jobs.start_job(job_id)
     yield
@@ -29,8 +27,6 @@ app.add_middleware(
     allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
-    # Custom response headers are hidden from browser JS unless explicitly
-    # exposed, even with allow_origins=["*"].
     expose_headers=["X-Extraction-Partial"],
 )
 
@@ -65,8 +61,6 @@ def _build_xlsx_response(job: dict) -> StreamingResponse:
 
 
 # --- ROUTES ---
-
-
 @app.post("/upload-excel/")
 async def process_excel(file: UploadFile = File(...)):
     content = await file.read()
@@ -112,8 +106,6 @@ async def extract_data_from_pdfs(
 async def get_job_status(job_id: str):
     job = _job_or_404(job_id)
     files = state.list_job_files(job_id)
-    # "Completed" = no longer being worked on (succeeded OR failed) --
-    # what a progress bar needs to show overall batch progress.
     completed_count = sum(1 for f in files if f["status"] in ("done", "failed"))
 
     return {
