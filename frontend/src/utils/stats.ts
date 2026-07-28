@@ -38,6 +38,19 @@ export function formatStat(value: number): string {
   return Math.abs(value) >= 100 ? Math.round(value).toString() : (Math.round(value * 10) / 10).toString();
 }
 
+/**
+ * Pulls the parenthesized unit out of a column name, e.g. "Sensitivity
+ * (nm/RIU)" -> "nm/RIU", "FOM (RIU^-1)" -> "RIU^-1" -- used to label
+ * mean/median/σ tiles with the same unit as the Y-axis column, since those
+ * are actual measurements in that unit (unlike "n", a plain count).
+ * Columns with no parenthesized unit (e.g. "Q-factor") return null.
+ */
+export function extractUnit(columnName: string | null): string | null {
+  if (!columnName) return null;
+  const match = columnName.match(/\(([^)]+)\)\s*$/);
+  return match ? match[1] : null;
+}
+
 export interface LinearFit {
   slope: number;
   intercept: number;

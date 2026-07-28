@@ -2,6 +2,9 @@
   "app": {
     "title": "λLens"
   },
+  "footer": {
+    "copyright": "© {year} λLens — Yonsei University Photonics Lab. 保留所有权利。"
+  },
   "nav": {
     "home": "主页",
     "visualization": "可视化",
@@ -62,6 +65,7 @@
     "uploading": "文件上传中...",
     "success": "文件上传成功.",
     "error": "文件上传时发生错误.",
+    "noMatchingPins": "没有任何已固定的点符合当前的筛选条件或坐标轴，因此已关闭“仅显示已固定的点”。",
     "dismiss": "关闭消息"
   },
   "extraction": {
@@ -130,13 +134,16 @@
     "controls": {
       "title": "图表标题",
       "titlePlaceholder": "无标题",
+      "clearTitle": "清除标题",
       "xAxis": "X轴",
       "yAxis": "Y轴",
       "groupBy": "分组 / 按颜色区分",
       "none": "无",
       "trendLine": "趋势线",
-      "trendLineHint": "选择数值型 X 轴（如灵敏度、Q 因子）以启用",
-      "pareto": "Pareto frontier"
+      "trendLineHint": "需要数值型 X 轴",
+      "trendUnavailable": "趋势线：点数不足",
+      "pareto": "Pareto frontier",
+      "axisNames": "显示 X/Y 标记"
     },
     "sections": {
       "chart": "图表",
@@ -148,8 +155,6 @@
       "origin": "来源",
       "materialClass": "Material Class",
       "baseMaterials": "Base Materials",
-      "selectAll": "全选",
-      "selectOne": "仅选一个",
       "remove": "移除 {label}",
       "add": "添加 {label}"
     },
@@ -166,7 +171,6 @@
       "linear": "线性"
     },
     "unknownGroup": "未知",
-    "unclearReported": "⚠ FOM 报告：不明确",
     "needsReview": "⚠ 审核状态：待修改",
     "flaggedHint": "虚线边框 = 已标记待审核",
     "reviewWarning": "{count} 项待审核",
@@ -181,7 +185,7 @@
       "png": "图表图片 (.png)"
     },
     "stats": {
-      "title": "统计摘要",
+      "title": "比较分组",
       "all": "全部",
       "lowN": "样本太少，无法计算均值/中位数/σ",
       "n": "n",
@@ -193,7 +197,11 @@
         "mean": "该组已绘制 Y 轴值的平均值。",
         "median": "该组已绘制 Y 轴值排序后的中间值 — 当该组为唯一或被单独隔离显示时，与图表上的虚线中位数线一致。",
         "std": "该组已绘制 Y 轴值的标准差 — 表示各点相对均值的离散程度。"
-      }
+      },
+      "isolate": "在图表中单独突出显示该组（不影响统计数据）",
+      "isolateActive": "点击可取消突出显示",
+      "showDetails": "显示详情",
+      "hideDetails": "隐藏详情"
     },
     "annotations": {
       "title": "注释",
@@ -201,6 +209,9 @@
       "empty": "暂无固定项 — 点击图表上的任意点即可将其收藏以便日后比较。",
       "remove": "删除注释",
       "clearAll": "全部清除",
+      "showOnlyPinned": "仅显示已固定的点",
+      "showOnlyPinnedTooltip": "隐藏图表中除以下已固定项之外的所有点 —\"比较分组\"面板的统计数据也会相应缩小到这个选择范围。",
+      "pinSiblings": "+ 固定另外 {count} 个点",
       "compareLabel": "选中以进行比较",
       "notePlaceholder": "添加备注...",
       "sort": {
@@ -226,7 +237,9 @@
       "legend": "在图表上直接绘制系列图例（分组、中位数、趋势线），以便将图表导出为图片时也包含图例。",
       "median": "在当前绘制的数据点的 Y 值中位数处绘制一条虚线。",
       "trendLine": "对已绘制的数据点拟合一条直线以显示总体趋势。仅当 X 轴为数值型列（例如 Sensitivity、Q-factor）时可用 — 对 Material Class 这样的分类轴而言，趋势没有意义。",
-      "pareto": "Pareto frontier"
+      "pareto": "Pareto frontier",
+      "axisNames": "在每个坐标轴名称前加上一个小的“X ·”/“Y ·”标记，方便区分是哪个轴 -- 坐标轴名称本身始终显示。",
+      "trendUnavailable": "趋势线至少需要 2 个 X 值不同的点 -- 点数不足时（例如只剩一个点的孤立分组），开关已打开但没有可绘制的内容。"
     }
   }
 }

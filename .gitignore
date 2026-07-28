@@ -1,2 +1,3 @@
 .env
 docs/notes.md
+backend/tests/*.png

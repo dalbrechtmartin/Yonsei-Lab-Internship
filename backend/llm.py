@@ -6,6 +6,7 @@ or an explicit single-model job) and pinned/single-attempt (runs 2 and
 
 import json
 import os
+import time
 from typing import Optional, cast
 
 import fitz  # PyMuPDF
@@ -94,12 +95,58 @@ def _call_model(model: str, final_prompt: str, filename: str) -> Optional[list[d
     parsed = json.loads(raw.strip())
     if isinstance(parsed, dict):
         parsed = [parsed]
-        
+
     for record in parsed:
         record["Model Used"] = resolved_model
-        record["Ref"] = filename 
-    
+        record["Ref"] = filename
+
     return parsed
+
+
+# A paper with many distinct modes/peaks makes the model return a much
+# longer JSON array in a single response -- that one call can burn through
+# a large chunk of the per-minute *token* quota even though it's still just
+# one request. MODEL_SLEEP_SECONDS is tuned for request-per-minute limits
+# only, so it does nothing to prevent this. Retrying the SAME model with a
+# proper backoff (instead of immediately falling back to a weaker model, or
+# on pinned runs just giving up the vote) is what actually recovers once the
+# quota window resets.
+MAX_429_RETRIES = 3
+BASE_429_BACKOFF_SECONDS = 30
+
+
+def _retry_delay_seconds(e: Exception, attempt: int) -> float:
+    """Prefers the API's own RetryInfo ("retry in 34s") when the 429
+    response includes one -- it reflects the actual remaining quota window,
+    which is far more accurate than a fixed guess. Falls back to
+    exponential backoff otherwise.
+    """
+    details = getattr(e, "details", None)
+    error_details = (details or {}).get("error", {}).get("details", []) if isinstance(details, dict) else []
+    for detail in error_details or []:
+        retry_delay = detail.get("retryDelay") if isinstance(detail, dict) else None
+        if isinstance(retry_delay, str) and retry_delay.endswith("s"):
+            try:
+                return float(retry_delay[:-1])
+            except ValueError:
+                pass
+    return BASE_429_BACKOFF_SECONDS * (2**attempt)
+
+
+def _call_model_with_429_retry(model: str, final_prompt: str, filename: str) -> Optional[list[dict]]:
+    for attempt in range(MAX_429_RETRIES + 1):
+        try:
+            return _call_model(model, final_prompt, filename)
+        except genai_errors.ClientError as e:
+            if e.code != 429 or attempt == MAX_429_RETRIES:
+                raise
+            delay = _retry_delay_seconds(e, attempt)
+            print(
+                f"  -> {model} hit 429 for {filename} "
+                f"(attempt {attempt + 1}/{MAX_429_RETRIES + 1}), retrying in {delay:.0f}s"
+            )
+            time.sleep(delay)
+    raise AssertionError("unreachable")  # loop always returns or raises
 
 
 def analyze_paper_with_llm(
@@ -112,7 +159,7 @@ def analyze_paper_with_llm(
     while models:
         model = models[0]
         try:
-            return _call_model(model, final_prompt, filename)
+            return _call_model_with_429_retry(model, final_prompt, filename)
         except Exception as e:
             last_reason = _classify_error(e)
             print(f"  -> {model} failed ({last_reason}) for {filename}, falling back: {e}")
@@ -131,7 +178,7 @@ def analyze_paper_with_llm_pinned(
     final_prompt += f"\n\n--- PAPER TEXT ---\n{paper_text}"
 
     try:
-        return _call_model(model, final_prompt, filename)
+        return _call_model_with_429_retry(model, final_prompt, filename)
     except genai_errors.ClientError as e:
         if e.code == 429:
             print(f"  -> {model} quota exhausted on a reconciliation run for {filename}")

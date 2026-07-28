@@ -5,19 +5,30 @@
         <div class="mt-2.5 flex flex-col gap-2.5 rounded-[10px] border border-secondary/15 bg-secondary/5 p-3">
           <label class="flex flex-col gap-1 text-xs text-secondary">
             {{ t("fomcharts.controls.title") }}
-            <input
-              v-model="chartTitle"
-              type="text"
-              :placeholder="t('fomcharts.controls.titlePlaceholder')"
-              class="rounded-lg border border-secondary/20 bg-card px-2 py-1.5 text-sm text-ink"
-            />
+            <span class="relative">
+              <Input
+                v-model="chartTitle"
+                type="text"
+                :placeholder="t('fomcharts.controls.titlePlaceholder')"
+                class="h-auto bg-card py-1.5 pr-7 pl-2 text-sm text-ink"
+              />
+              <button
+                v-if="chartTitle"
+                type="button"
+                class="absolute top-1/2 right-1.5 flex size-5 -translate-y-1/2 items-center justify-center rounded text-muted-foreground hover:bg-secondary/10 hover:text-ink"
+                :aria-label="t('fomcharts.controls.clearTitle')"
+                @click="chartTitle = ''"
+              >
+                <X class="size-3.5" />
+              </button>
+            </span>
           </label>
 
           <label class="flex flex-col gap-1 text-xs text-secondary">
             {{ t("fomcharts.controls.yAxis") }}
             <Select v-model="yAxis">
-              <SelectTrigger size="sm" class="w-full bg-card">
-                <SelectValue />
+              <SelectTrigger size="sm" class="w-full min-w-0 bg-card">
+                <SelectValue class="min-w-0 truncate" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem v-for="col in numericColumns" :key="col" :value="col">
@@ -30,8 +41,8 @@
           <label class="flex flex-col gap-1 text-xs text-secondary">
             {{ t("fomcharts.controls.xAxis") }}
             <Select v-model="xAxis">
-              <SelectTrigger size="sm" class="w-full bg-card">
-                <SelectValue />
+              <SelectTrigger size="sm" class="w-full min-w-0 bg-card">
+                <SelectValue class="min-w-0 truncate" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem v-for="col in xAxisColumns" :key="col" :value="col">
@@ -41,23 +52,6 @@
             </Select>
           </label>
 
-          <div class="flex flex-col gap-1 text-xs text-secondary">
-            <span class="flex items-center gap-1">
-              {{ t("fomcharts.controls.groupBy") }}
-              <InfoTooltip :text="t('fomcharts.tooltips.groupBy')" />
-            </span>
-            <Select v-model="groupBySelectValue">
-              <SelectTrigger size="sm" class="w-full bg-card">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem :value="NONE_VALUE">{{ t("fomcharts.controls.none") }}</SelectItem>
-                <SelectItem v-for="col in groupByOptions" :key="col" :value="col">
-                  {{ col }}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
         </div>
       </CollapsibleSection>
 
@@ -71,22 +65,26 @@
               <InfoTooltip :text="t('fomcharts.tooltips.scale')" />
             </span>
             <div class="inline-flex overflow-hidden rounded-lg border border-secondary/20 bg-card">
-              <button
+              <Button
                 type="button"
-                class="px-3 py-1.5 text-[11.5px] font-semibold transition-colors"
-                :class="scale === 'log' ? 'bg-primary text-primary-foreground' : 'bg-transparent text-secondary'"
+                variant="ghost"
+                size="xs"
+                class="rounded-none text-[11.5px] hover:bg-primary/10"
+                :class="scale === 'log' ? 'bg-primary font-semibold text-primary-foreground hover:bg-primary hover:text-primary-foreground' : 'text-secondary'"
                 @click="scale = 'log'"
               >
                 {{ t("fomcharts.scale.log") }}
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
-                class="px-3 py-1.5 text-[11.5px] font-medium transition-colors"
-                :class="scale === 'value' ? 'bg-primary text-primary-foreground' : 'bg-transparent text-secondary'"
+                variant="ghost"
+                size="xs"
+                class="rounded-none text-[11.5px] hover:bg-primary/10"
+                :class="scale === 'value' ? 'bg-primary font-semibold text-primary-foreground hover:bg-primary hover:text-primary-foreground' : 'text-secondary'"
                 @click="scale = 'value'"
               >
                 {{ t("fomcharts.scale.linear") }}
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -110,9 +108,9 @@
           <!-- Trend line and Pareto share the same precondition (a numeric X
                axis) -- one shared hint instead of repeating the same
                sentence under each toggle. -->
-          <Alert v-if="trendDisabled" variant="info" class="py-2">
-            <Info />
-            <AlertDescription class="text-[11px] text-ink/80">
+          <Alert v-if="trendDisabled" variant="info" class="gap-1.5 py-1.5">
+            <Info class="size-3.5" />
+            <AlertDescription class="text-[10.5px] text-ink/80">
               {{ t("fomcharts.controls.trendLineHint") }}
             </AlertDescription>
           </Alert>
@@ -120,11 +118,11 @@
           <div class="h-px bg-secondary/10" />
 
           <div class="flex items-center justify-between">
-            <span class="flex items-center gap-1 text-xs text-ink">
+            <span class="flex items-center gap-1 text-xs" :class="legendDisabled ? 'text-muted-foreground' : 'text-ink'">
               {{ t("fomcharts.legend.toggle") }}
               <InfoTooltip :text="t('fomcharts.tooltips.legend')" />
             </span>
-            <Switch v-model="showLegend" />
+            <Switch v-model="showLegend" :disabled="legendDisabled" />
           </div>
 
           <div class="flex items-center justify-between">
@@ -133,6 +131,14 @@
               <InfoTooltip :text="t('fomcharts.tooltips.median')" />
             </span>
             <Switch v-model="showMedian" />
+          </div>
+
+          <div class="flex items-center justify-between">
+            <span class="flex items-center gap-1 text-xs text-ink">
+              {{ t("fomcharts.controls.axisNames") }}
+              <InfoTooltip :text="t('fomcharts.tooltips.axisNames')" />
+            </span>
+            <Switch v-model="showAxisNames" />
           </div>
         </div>
       </CollapsibleSection>
@@ -143,17 +149,15 @@
         <CollapsibleSection v-model:open="filtersSectionOpen" :title="t('fomcharts.sections.filters')">
           <div class="mt-2.5 flex flex-col gap-3.5 rounded-[10px] border border-secondary/15 bg-secondary/5 p-3">
             <div v-if="domainColumn && domainValues.length > 0">
-              <div class="mb-2 flex items-center justify-between">
+              <div class="mb-2">
                 <span class="text-[11px] font-semibold text-secondary">{{ t("fomcharts.filters.domain") }}</span>
-                <button type="button" class="text-[10.5px] text-primary" @click="toggleAllDomains">
-                  {{ domainToggleAllLabel }}
-                </button>
               </div>
               <div class="flex flex-wrap gap-1.5">
                 <FilterChip
                   v-for="val in domainValues"
                   :key="val"
                   :label="val"
+                  :count="domainCounts[val]"
                   :active="selectedDomains.includes(val)"
                   @toggle="toggleDomain(val)"
                 />
@@ -163,17 +167,15 @@
             <div v-if="domainColumn && originColumn" class="h-px bg-secondary/10" />
 
             <div v-if="originColumn && originValues.length > 0">
-              <div class="mb-2 flex items-center justify-between">
+              <div class="mb-2">
                 <span class="text-[11px] font-semibold text-secondary">{{ t("fomcharts.filters.origin") }}</span>
-                <button type="button" class="text-[10.5px] text-primary" @click="toggleAllOrigins">
-                  {{ originToggleAllLabel }}
-                </button>
               </div>
               <div class="flex flex-wrap gap-1.5">
                 <FilterChip
                   v-for="val in originValues"
                   :key="val"
                   :label="val"
+                  :count="originCounts[val]"
                   :active="selectedOrigins.includes(val)"
                   @toggle="toggleOrigin(val)"
                 />
@@ -183,17 +185,15 @@
             <div v-if="originColumn && materialClassColumn" class="h-px bg-secondary/10" />
 
             <div v-if="materialClassColumn && materialClassValues.length > 0">
-              <div class="mb-2 flex items-center justify-between">
+              <div class="mb-2">
                 <span class="text-[11px] font-semibold text-secondary">{{ t("fomcharts.filters.materialClass") }}</span>
-                <button type="button" class="text-[10.5px] text-primary" @click="toggleAllMaterialClasses">
-                  {{ materialClassToggleAllLabel }}
-                </button>
               </div>
               <div class="flex flex-wrap gap-1.5">
                 <FilterChip
                   v-for="val in materialClassValues"
                   :key="val"
                   :label="val"
+                  :count="materialClassCounts[val]"
                   :active="selectedMaterialClasses.includes(val)"
                   @toggle="toggleMaterialClass(val)"
                 />
@@ -203,17 +203,15 @@
             <div v-if="materialClassColumn && baseMaterialsColumn" class="h-px bg-secondary/10" />
 
             <div v-if="baseMaterialsColumn && baseMaterialsValues.length > 0">
-              <div class="mb-2 flex items-center justify-between">
+              <div class="mb-2">
                 <span class="text-[11px] font-semibold text-secondary">{{ t("fomcharts.filters.baseMaterials") }}</span>
-                <button type="button" class="text-[10.5px] text-primary" @click="toggleAllBaseMaterials">
-                  {{ baseMaterialsToggleAllLabel }}
-                </button>
               </div>
               <div class="flex flex-wrap gap-1.5">
                 <FilterChip
                   v-for="val in baseMaterialsValues"
                   :key="val"
                   :label="val"
+                  :count="baseMaterialsCounts[val]"
                   :active="selectedBaseMaterials.includes(val)"
                   @toggle="toggleBaseMaterial(val)"
                 />
@@ -229,47 +227,54 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
-import { Info } from "@lucide/vue";
+import { Info, X } from "@lucide/vue";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import InfoTooltip from "@/components/shared/InfoTooltip.vue";
 import CollapsibleSection from "@/components/shared/CollapsibleSection.vue";
 import FilterChip from "@/components/shared/FilterChip.vue";
 
 const { t } = useI18n();
 
-// The shadcn/Reka Select has no native concept of a null value (unlike a
-// plain <option :value="null">, which Vue's v-model specifically supports
-// on native <select>) -- so "no group-by column" is represented by this
-// sentinel string in the Select itself, and translated back to/from the
-// real null-based groupBy model just below.
-const NONE_VALUE = "__none__";
-
 const props = withDefaults(
   defineProps<{
     numericColumns: string[];
     categoricalColumns: string[];
-    groupByColumns: string[];
     domainColumn?: string | null;
     domainValues?: string[];
+    domainCounts?: Record<string, number>;
     originColumn?: string | null;
     originValues?: string[];
+    originCounts?: Record<string, number>;
     materialClassColumn?: string | null;
     materialClassValues?: string[];
+    materialClassCounts?: Record<string, number>;
     baseMaterialsColumn?: string | null;
     baseMaterialsValues?: string[];
+    baseMaterialsCounts?: Record<string, number>;
+    // True when the chart's legend would have nothing to show (no group-by,
+    // and no numeric-axis trend/Pareto overlay active) -- see
+    // VisualizationView's hasLegendContent.
+    legendDisabled?: boolean;
   }>(),
   {
     domainColumn: null,
     domainValues: () => [],
+    domainCounts: () => ({}),
     originColumn: null,
     originValues: () => [],
+    originCounts: () => ({}),
     materialClassColumn: null,
     materialClassValues: () => [],
+    materialClassCounts: () => ({}),
     baseMaterialsColumn: null,
     baseMaterialsValues: () => [],
+    baseMaterialsCounts: () => ({}),
+    legendDisabled: false,
   },
 );
 
@@ -277,18 +282,12 @@ const props = withDefaults(
 // these is a real two-way v-model from the parent (VisualizationView).
 const yAxis = defineModel<string | null>("yAxis");
 const xAxis = defineModel<string | null>("xAxis");
-const groupBy = defineModel<string | null>("groupBy", { default: null });
-const groupBySelectValue = computed<string>({
-  get: () => groupBy.value ?? NONE_VALUE,
-  set: (value) => {
-    groupBy.value = value === NONE_VALUE ? null : value;
-  },
-});
 const scale = defineModel<"log" | "value">("scale", { default: "log" });
 const chartTitle = defineModel<string>("chartTitle", { default: "" });
-const showLegend = defineModel<boolean>("showLegend", { default: false });
+const showLegend = defineModel<boolean>("showLegend", { default: true });
 const showMedian = defineModel<boolean>("showMedian", { default: false });
 const showTrend = defineModel<boolean>("showTrend", { default: false });
+const showAxisNames = defineModel<boolean>("showAxisNames", { default: true });
 const selectedDomains = defineModel<string[]>("selectedDomains", {
   default: () => [],
 });
@@ -322,42 +321,6 @@ const toggleBaseMaterial = (val: string) => {
   selectedBaseMaterials.value = selectedBaseMaterials.value.includes(val)
     ? selectedBaseMaterials.value.filter((v) => v !== val)
     : [...selectedBaseMaterials.value, val];
-};
-
-// "Select all" collapses back to "Select one" (just the first value) once
-// every value is already selected, and vice versa -- a single link doing
-// double duty instead of two separate buttons.
-const domainToggleAllLabel = computed(() =>
-  selectedDomains.value.length >= props.domainValues.length ? t("fomcharts.filters.selectOne") : t("fomcharts.filters.selectAll"),
-);
-const toggleAllDomains = () => {
-  if (props.domainValues.length === 0) return;
-  selectedDomains.value =
-    selectedDomains.value.length >= props.domainValues.length ? [props.domainValues[0]] : [...props.domainValues];
-};
-const originToggleAllLabel = computed(() =>
-  selectedOrigins.value.length >= props.originValues.length ? t("fomcharts.filters.selectOne") : t("fomcharts.filters.selectAll"),
-);
-const toggleAllOrigins = () => {
-  if (props.originValues.length === 0) return;
-  selectedOrigins.value =
-    selectedOrigins.value.length >= props.originValues.length ? [props.originValues[0]] : [...props.originValues];
-};
-const materialClassToggleAllLabel = computed(() =>
-  selectedMaterialClasses.value.length >= props.materialClassValues.length ? t("fomcharts.filters.selectOne") : t("fomcharts.filters.selectAll"),
-);
-const toggleAllMaterialClasses = () => {
-  if (props.materialClassValues.length === 0) return;
-  selectedMaterialClasses.value =
-    selectedMaterialClasses.value.length >= props.materialClassValues.length ? [props.materialClassValues[0]] : [...props.materialClassValues];
-};
-const baseMaterialsToggleAllLabel = computed(() =>
-  selectedBaseMaterials.value.length >= props.baseMaterialsValues.length ? t("fomcharts.filters.selectOne") : t("fomcharts.filters.selectAll"),
-);
-const toggleAllBaseMaterials = () => {
-  if (props.baseMaterialsValues.length === 0) return;
-  selectedBaseMaterials.value =
-    selectedBaseMaterials.value.length >= props.baseMaterialsValues.length ? [props.baseMaterialsValues[0]] : [...props.baseMaterialsValues];
 };
 
 // The three sections behave as an accordion -- opening one collapses the
@@ -397,23 +360,12 @@ watch(paretoDisabled, (disabled) => {
   if (disabled && showPareto.value) showPareto.value = false;
 });
 
-// Group-by exists to split points into color categories *distinct* from
-// their X-axis position — picking the same column for both just repeats
-// the X-axis labels as a legend and adds nothing. groupByColumns (from
-// VisualizationView) is already capped to low-cardinality columns so the
-// palette never has to repeat colors; excluding the current X-axis choice
-// on top of that stops the redundant, chart-cluttering combination too.
-const groupByOptions = computed(() =>
-  props.groupByColumns.filter((col) => col !== xAxis.value),
+// Same reasoning as trend/Pareto above -- once nothing would actually show
+// up in the legend, leave it off rather than a checked-but-inert switch.
+watch(
+  () => props.legendDisabled,
+  (disabled) => {
+    if (disabled && showLegend.value) showLegend.value = false;
+  },
 );
-
-// If the X-axis changes onto the current group-by column, or the group-by
-// column stops qualifying (e.g. a Domain/Origin filter change pushes its
-// cardinality over the cap), fall back to "None" instead of silently
-// keeping an invalid/misleading selection.
-watch([xAxis, groupByOptions], ([, options]) => {
-  if (groupBy.value && !options.includes(groupBy.value)) {
-    groupBy.value = null;
-  }
-});
 </script>

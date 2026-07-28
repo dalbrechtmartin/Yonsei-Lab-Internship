@@ -7,7 +7,7 @@
         : 'border border-dashed border-secondary/30 text-muted-foreground'
     "
   >
-    <span class="truncate whitespace-nowrap">{{ label }}</span>
+    <span class="truncate whitespace-nowrap">{{ label }}<span v-if="count !== undefined" class="text-muted-foreground"> ({{ count }})</span></span>
     <button
       type="button"
       class="ml-1 flex size-4 shrink-0 items-center justify-center rounded"
@@ -30,6 +30,7 @@ const { t } = useI18n();
 defineProps<{
   label: string;
   active: boolean;
+  count?: number;
 }>();
 defineEmits<{
   toggle: [];

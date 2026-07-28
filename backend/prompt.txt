@@ -2,57 +2,69 @@ Role: You are an expert researcher in nanophotonics. Your task is to extract Wav
 
 CRITICAL EXTRACTION RULES:
 1. SCOPE (Wavelength Domain ONLY): We strictly target wavelength-domain FOM. If the paper uses a frequency-domain FOM, a different definition ("Other"), or is ambiguous, you MUST still extract it but forcefully flag it with "Review status": "Exclude".
-2. MULTIPLE MODES/CASES: If the paper reports multiple distinct configurations (e.g., Mode 1 vs Mode 2, or EXP vs SIM), create ONE separate JSON object per mode. Do NOT merge metrics.
+2. MULTIPLE MODES/CASES: If the paper reports multiple distinct configurations or resonance peaks (e.g., Mode 1 vs Mode 2, or Peak 1 to Peak 9, or EXP vs SIM), create ONE separate JSON object per mode/peak. Do NOT merge metrics. Keep all reported peaks/modes.
+   - DUPLICATE DETECTION: Before finalizing separate mode objects, check whether they are actually the SAME underlying measurement restated in a different part of the text (e.g., once in Results, again in Abstract) rather than a genuinely distinct configuration. If two candidate modes would end up with IDENTICAL numeric values (Sensitivity, FWHM, Q-factor, FOM value) and identical structure/materials, merge them into a single object.
+
 3. MATERIALS & STRUCTURE:
-  - "Material Class": Use ONLY "Dielectric", "Metal", "Phase-change", "Polymer", "Semiconductor". Sort alphabetically, join with ";".
-  - "Base Materials": Use standard chemical formulas ONLY (e.g., Au, Si3N4). STRICTLY EXCLUDE inert substrates like "glass", "quartz", "SiO2 substrate", or packaging unless they are the actively resonant layers. Sort, join with ";".
-  - "Layer Structure": Format from top (incident light) to bottom. Use physical thicknesses and join with " + " (e.g., "Ta2O5(107nm) + SiO2(150nm)"). Omit thick inert substrates (like glass/quartz).
-4. RULES FOR "FWHM", "Review status", AND VALUES:
+  - "Material Class": Use ONLY "Dielectric", "Metal", "Phase-change", "Polymer", "Semiconductor", "2D Material". Sort alphabetically, join with ";".
+  - "Base Materials": Use standard chemical formulas (e.g., Au, Si3N4). EXCEPTIONS: 
+      * For 2D materials, use common names (e.g., "Graphene", DO NOT use "C"). 
+      * For Polymers, use standard short abbreviations (e.g., "PMMA", "PDMS", "PTFE") instead of long chemical names (e.g. use standard polymer abbreviations or short generic terms).
+  STRICTLY EXCLUDE inert substrates (like "glass", "quartz", "SiO2 substrate"), packaging layers, or bonding layers (e.g., "Cu-Cu bonding") unless they are the actively resonant functional layers.
+  - "Layer Structure": Format from top (incident light) to bottom. Use physical thicknesses if available and join with " + " (e.g., "Ta2O5(107nm) + SiO2(150nm)"). If thickness is not mentioned in text, omit parentheses (e.g., "Ta2O5 + SiO2"). Omit thick inert substrates (like glass/quartz).
+
+4. RULES FOR "FWHM", VALUES, AND REVIEW STATUS:
   - Primary Source: Extract FWHM (Full Width at Half Maximum, Δλ, or linewidth) in nm directly from text or tables.
-  - Calculation Fallback: If FWHM is missing but Sensitivity (S) and FOM are stated, calculate FWHM = S / FOM.
-  - Figure Fallback: If neither applies, inspect figures, captions, or axis labels to estimate the FWHM. 
-  - Do NOT hallucinate. If FWHM is completely unfindable, leave it null.
-  - Review status logic: If the FWHM is calculated mathematically or estimated from a figure, set "Review status" strictly to "Edit", and explain the source in "Notes" (e.g., "FWHM calculated from S/FOM", "FWHM estimated from Figure 4"). Otherwise, set "Review status" to "Approve".
-5. STRICT FIELD MAPPING:
+  - Calculation Fallback: If FWHM is missing in text but Sensitivity (S) and FOM are explicitly stated, calculate FWHM = S / FOM. This exact mathematical derivation is fully reliable.
+  - Figure Fallback: If neither applies, inspect figures, captions, or axis labels to estimate the FWHM visually.
+  - Review Status Logic (BE STRICT AND DECISIVE):
+    * "Approve": Use for all valid wavelength-domain records where core values (FOM, Sensitivity, FWHM) are directly extracted OR mathematically calculated (FWHM = S / FOM), OR converted with standard unit factors (e.g. um/RIU to nm/RIU). Missing optional metrics like Q-factor do NOT downgrade status to Edit.
+    * "Edit": Use ONLY if:
+        1. FWHM or Sensitivity was estimated visually from a figure/graph/axis label.
+        2. Sensitivity is in incompatible units (e.g., deg/RIU) that cannot be converted to nm/RIU.
+        3. Core metrics are genuinely ambiguous or missing.
+    * "Exclude": Frequency-domain, "Other" domain, or completely unsupported/ambiguous records.
+
+5. STRICT FIELD MAPPING AND UNITS:
+   - "Ref": The exact filename of the parsed document (e.g., "47.pdf").
    - "Short Title": A concise version of the paper's title (maximum 6 words) for UI display.
-   - "FOM reported": "Yes", "No", or "Unclear".
-   - "FOM value": Numeric value, or null.
-   - "Definition": Standardize strictly to a mathematical formula (e.g., "FOM = S / FWHM"). Do NOT output descriptive text. If the author explains it in words, you must translate it to the standard formula.
+   - "Mode ID": A strict numbered identifier for the configuration (e.g., "Mode 1", "Mode 2", "Peak 1").
+   - "Mode Description": A brief description of this specific configuration or peak (maximum 7 words).
+   - "Resonance Wavelength (nm)": Numeric value of the resonance peak position in nm, or null.
+   - "FOM (RIU^-1)": Numeric value, or the JSON primitive null (not "null", not 0).
+   - "Definition": Standardize strictly to a mathematical formula (e.g., "FOM = S / FWHM"). Do NOT output descriptive text.
    - "Domain": "Wavelength", "Frequency", "Other", or "Unclear".
    - "Origin": "EXP", "SIM", or "UNCLEAR".
-   - "Sensitivity": Numeric value ONLY. Convert to nm/RIU if necessary.
-   - "FWHM": Numeric value ONLY (in nm).
-   - "Q-factor": Numeric value or null.
-   - "Mode/case": Short descriptive label (e.g., "Mode 1").
-   - "Evidence": Extract the EXACT text fragment proving the metrics. Do NOT paraphrase. Use "[...]" to skip irrelevant words in a sentence (e.g., "The proposed sensor showed [...] a sensitivity of 642 nm/RIU [...] yielding a FOM of 214.").
+   - "Sensitivity (nm/RIU)": Numeric value ONLY. Convert from um/RIU to nm/RIU if needed (x1000). If the unit cannot be converted to nm/RIU (e.g. deg/RIU), set to null, explain in "Notes", and set "Review status" to "Edit".
+   - "FWHM (nm)": Numeric value ONLY, or the JSON primitive null.
+   - "Q-factor": Numeric value ONLY, or the JSON primitive null.
+   - "Evidence": Extract the EXACT text fragment proving the metrics. Do NOT paraphrase. Use "[...]".
    - "Location": Be extremely precise: Page AND Figure/Table AND Paragraph (e.g., "Page 6; Fig. 4; Para 2").
-   - "Review status":
-       * "Approve": Wavelength-domain record with complete, confident data.
-       * "Edit": Wavelength-domain record missing some numeric values, or needing human review.
-       * "Exclude": Frequency-domain, "Other" domain, or completely unsupported/ambiguous records.
-   - "Notes": Any clarification, including calculation or figure fallback justification, or null if nothing to note.
+   - "Review status": "Approve", "Edit", or "Exclude".
+   - "Notes": Any clarification (e.g. "FWHM mathematically derived from S/FOM"), or null if nothing to note.
 
 OUTPUT FORMAT:
 Respond STRICTLY with a valid JSON ARRAY matching the structure below. Do NOT wrap the JSON in markdown blocks (e.g., no ```json). Do NOT add any preamble or conclusion.
 
 [
   {
-    "Ref": "filename.pdf",
+    "Ref": "Use the actual filename provided in the context (e.g., '47.pdf')",
     "Title": "Full title of the paper",
     "Short Title": "Short title for UI",
-    "Mode/case": "Mode 1 - Experimental",
+    "Mode ID": "Mode 1",
+    "Mode Description": "Resonance peak P1",
     "Material Class": "Dielectric;Metal",
     "Base Materials": "Au;Si3N4;Ta2O5",
     "Layer Structure": "Si3N4(180nm) + Ta2O5(5nm) + Au(50nm)",
     "Origin": "EXP",
     "Domain": "Wavelength",
-    "FOM reported": "Yes",
-    "FOM value": 214,
+    "Resonance Wavelength (nm)": 1550,
+    "FOM (RIU^-1)": 214,
     "Definition": "FOM = S / FWHM",
-    "Sensitivity": 642,
-    "FWHM": 3,
+    "Sensitivity (nm/RIU)": 642,
+    "FWHM (nm)": 3,
     "Q-factor": 3668,
-    "Evidence": "The sensor achieves [...] 642 nm/RIU and a FWHM of 3 nm [...] FOM of 214.",
+    "Evidence": "The sensor achieves [...] 642 nm/RIU and a FWHM of 3 nm at 1550 nm [...] FOM of 214.",
     "Location": "Page 6; Fig 4; Para 2",
     "Review status": "Approve",
     "Notes": "Converted sensitivity from um/RIU to nm/RIU."

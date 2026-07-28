@@ -2,12 +2,12 @@
   <nav
     class="sticky top-0 z-20 flex h-16 w-full items-center justify-between border-b border-secondary/15 bg-card/90 px-6 shadow-[0_1px_0_rgba(58,80,107,0.08)] backdrop-blur-xl"
   >
-    <div class="flex items-center gap-2">
+    <RouterLink to="/" class="flex items-center gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
       <img src="@/assets/logo.svg" class="h-7 w-7" alt="" />
       <h1 class="text-lg font-semibold tracking-wide text-ink">
         {{ $t("app.title") }}
       </h1>
-    </div>
+    </RouterLink>
 
     <div class="flex items-center gap-4">
       <div

@@ -5,7 +5,7 @@
     :show-import="false"
   />
 
-  <main class="grow px-3 pb-8 sm:px-4 lg:px-5">
+  <main class="animate-in fade-in grow px-3 pb-8 duration-300 sm:px-4 lg:px-5">
     <div class="mx-auto flex w-full max-w-7xl flex-col gap-4">
       <Card class="mt-4 overflow-hidden rounded-4xl border-white/50 bg-card/80 p-6 shadow-2xl shadow-slate-900/5 backdrop-blur-xl">
         <div class="flex flex-col gap-6 md:flex-row md:items-stretch md:gap-8">
