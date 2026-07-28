@@ -279,17 +279,24 @@ export function findShortTitleColumn(columns: string[]): string | null {
 
 /**
  * Columns worth surfacing in the point tooltip beyond the axes already on
- * display — a researcher comparing FOM records usually wants Sensitivity/
- * Q-factor/FOM/Resonance Wavelength/Layer Structure/Origin alongside it
- * without re-plotting. Matched by keyword since exact header text varies
- * across harmonized exports.
+ * display — a researcher comparing FOM records usually wants Resonance
+ * Wavelength/FOM/Sensitivity/FWHM/Q-factor/Layer Structure/Origin alongside
+ * it without re-plotting. Ordered to match the extraction schema's own
+ * COLUMN_ORDER (see backend/schema.py) rather than an arbitrary order --
+ * peak position, then the FOM value itself, then the two quantities it's
+ * derived from (Sensitivity, FWHM), then Q-factor -- so this list (and
+ * everything downstream that renders it top to bottom: the annotation
+ * card's Metrics box, the compare table) reads in the same logical order
+ * every time. Matched by keyword since exact header text varies across
+ * harmonized exports.
  */
 export function findTooltipExtraColumns(columns: string[]): string[] {
   const patterns = [
-    /sensitivity/i,
-    /q[-\s]?factor/i,
-    /\bfom\b/i,
     /resonance\s*wavelength/i,
+    /\bfom\b/i,
+    /sensitivity/i,
+    /\bfwhm\b/i,
+    /q[-\s]?factor/i,
     /layer\s*structure/i,
     /\borigin\b/i,
   ];

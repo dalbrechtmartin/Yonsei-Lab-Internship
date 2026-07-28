@@ -218,7 +218,17 @@
         "newest": "최신순",
         "oldest": "오래된순",
         "ref": "참조 기준"
-      }
+      },
+      "notes": "메모",
+      "downloadTxt": "TXT로 다운로드",
+      "expandDetails": "세부 정보 표시",
+      "collapseDetails": "세부 정보 숨기기",
+      "zoomLayers": "레이어 구조 보기",
+      "metrics": "측정값",
+      "zoomMetrics": "측정값 보기",
+      "downloadPng": "PNG로 다운로드",
+      "mode": "모드",
+      "exportPin": "이 핀 내보내기"
     },
     "compare": {
       "title": "고정된 점 비교",

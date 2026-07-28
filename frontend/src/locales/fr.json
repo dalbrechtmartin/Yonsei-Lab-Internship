@@ -218,7 +218,17 @@
         "newest": "Plus récentes",
         "oldest": "Plus anciennes",
         "ref": "Par référence"
-      }
+      },
+      "notes": "Notes",
+      "downloadTxt": "Télécharger en .txt",
+      "expandDetails": "Afficher les détails",
+      "collapseDetails": "Masquer les détails",
+      "zoomLayers": "Voir la structure des couches",
+      "metrics": "Mesures",
+      "zoomMetrics": "Voir les mesures",
+      "downloadPng": "Télécharger en PNG",
+      "mode": "Mode",
+      "exportPin": "Exporter ce point"
     },
     "compare": {
       "title": "Comparer les points épinglés",

@@ -9,6 +9,8 @@ import math
 from collections import Counter
 from typing import Optional
 
+from schema import spectral_range
+
 # Free-text fields are never voted on: comparing structurally-unstable
 # free text (different valid phrasings of the same real thing, e.g.
 # "R1 mode (Simulation)" vs "Simulation - Peak R1 (TD)") across runs would
@@ -153,6 +155,10 @@ def _reconcile_slot(contributing: list[dict], total_runs: int, is_extra_row: boo
         result[field] = value
         if note:
             annotations.append(note)
+
+    # Derived from Resonance Wavelength, which the loop above may just have
+    # changed via majority vote -- recompute rather than keep primary's copy.
+    result["Spectral Range"] = spectral_range(result["Resonance Wavelength (nm)"])
 
     result[_NOTES_FIELD] = _merge_notes(primary.get(_NOTES_FIELD), annotations)
     return result

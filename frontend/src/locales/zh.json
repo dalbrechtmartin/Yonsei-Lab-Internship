@@ -218,7 +218,17 @@
         "newest": "最新优先",
         "oldest": "最早优先",
         "ref": "按编号"
-      }
+      },
+      "notes": "备注",
+      "downloadTxt": "下载 .txt",
+      "expandDetails": "显示详情",
+      "collapseDetails": "隐藏详情",
+      "zoomLayers": "查看层结构",
+      "metrics": "指标",
+      "zoomMetrics": "查看指标",
+      "downloadPng": "下载 PNG",
+      "mode": "模式",
+      "exportPin": "导出此引脚"
     },
     "compare": {
       "title": "比较已固定的点",

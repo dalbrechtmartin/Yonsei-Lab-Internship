@@ -218,7 +218,17 @@
         "newest": "Newest first",
         "oldest": "Oldest first",
         "ref": "By reference"
-      }
+      },
+      "notes": "Notes",
+      "downloadTxt": "Download .txt",
+      "expandDetails": "Show details",
+      "collapseDetails": "Hide details",
+      "zoomLayers": "View layer structure",
+      "metrics": "Metrics",
+      "zoomMetrics": "View metrics",
+      "downloadPng": "Download PNG",
+      "mode": "Mode",
+      "exportPin": "Export this pin"
     },
     "compare": {
       "title": "Compare pinned points",
