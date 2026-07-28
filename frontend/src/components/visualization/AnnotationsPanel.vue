@@ -13,17 +13,27 @@
 
       <div class="mt-2.5 rounded-[10px] border border-secondary/15 bg-secondary/5 p-3">
         <div v-if="annotations.length > 0" class="mb-2.5 flex items-center justify-between gap-2">
-          <select
-            v-model="sort"
-            class="rounded-md border border-secondary/20 bg-card px-1.5 py-1 font-sans text-[10.5px] text-secondary"
-          >
-            <option value="newest">{{ t("fomcharts.annotations.sort.newest") }}</option>
-            <option value="oldest">{{ t("fomcharts.annotations.sort.oldest") }}</option>
-            <option value="ref">{{ t("fomcharts.annotations.sort.ref") }}</option>
-          </select>
-          <button type="button" class="text-[10.5px] text-primary" @click="$emit('clear')">
+          <Select v-model="sort">
+            <SelectTrigger size="sm" class="w-auto bg-card text-[10.5px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">{{ t("fomcharts.annotations.sort.newest") }}</SelectItem>
+              <SelectItem value="oldest">{{ t("fomcharts.annotations.sort.oldest") }}</SelectItem>
+              <SelectItem value="ref">{{ t("fomcharts.annotations.sort.ref") }}</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button variant="link" size="xs" class="h-auto p-0 text-[10.5px]" @click="$emit('clear')">
             {{ t("fomcharts.annotations.clearAll") }}
-          </button>
+          </Button>
+        </div>
+
+        <div v-if="annotations.length > 0" class="mb-2.5 flex items-center justify-between gap-2">
+          <span class="flex items-center gap-1 text-xs text-ink">
+            {{ t("fomcharts.annotations.showOnlyPinned") }}
+            <InfoTooltip :text="t('fomcharts.annotations.showOnlyPinnedTooltip')" />
+          </span>
+          <Switch v-model="showOnlyAnnotated" />
         </div>
 
         <div v-if="annotations.length > 0" class="flex max-h-105 flex-col gap-2 overflow-y-auto">
@@ -42,29 +52,74 @@
                 <span class="shrink-0 font-mono text-xs font-bold text-primary">{{ note.ref }}</span>
                 <span class="truncate text-xs text-secondary">{{ note.title }}</span>
               </label>
-              <button
-                type="button"
+              <Button
+                variant="ghost"
+                size="icon-xs"
                 class="shrink-0 text-muted-foreground hover:text-ink"
                 :aria-label="t('fomcharts.annotations.remove')"
                 @click="$emit('remove', note.id)"
               >
                 <X class="size-3.5" />
-              </button>
+              </Button>
             </div>
 
-            <div v-if="fieldsFor(note).length" class="grid grid-cols-[auto_1fr] gap-x-2.5 gap-y-1.5 text-xs">
-              <template v-for="f in fieldsFor(note)" :key="f.key">
+            <Button
+              v-if="siblingsFor(note).length > 0"
+              variant="link"
+              size="xs"
+              class="h-auto justify-start p-0 text-left text-[10.5px]"
+              @click="$emit('pin-rows', siblingsFor(note))"
+            >
+              {{ t("fomcharts.annotations.pinSiblings", { count: siblingsFor(note).length }) }}
+            </Button>
+
+            <!-- Mode ID first, then its own Mode Description right below it
+                 (see leadingFieldsFor/restFieldsFor) -- the two are directly
+                 related (which configuration this pin is, and what it is),
+                 so they read together instead of Mode ID being separated
+                 from its description by unrelated fields like Domain/Origin. -->
+            <div v-if="leadingFieldsFor(note).length" class="grid grid-cols-[auto_1fr] gap-x-2.5 gap-y-1.5 text-xs">
+              <template v-for="f in leadingFieldsFor(note)" :key="f.key">
                 <span class="text-muted-foreground">{{ f.key }}</span>
                 <span class="font-mono" :class="f.bold ? 'font-semibold text-ink' : 'text-secondary'">{{ f.value }}</span>
               </template>
             </div>
 
-            <textarea
-              :value="note.note"
+            <div v-if="modeDescriptionFor(note)">
+              <button
+                type="button"
+                class="flex w-full items-center justify-between text-left select-none"
+                @click="toggleDescription(note.id)"
+              >
+                <span class="text-xs text-muted-foreground">{{ modeDescriptionColumnName }}</span>
+                <ChevronDown
+                  class="size-3.5 text-muted-foreground transition-transform duration-200"
+                  :class="isDescriptionExpanded(note.id) ? 'rotate-0' : '-rotate-90'"
+                />
+              </button>
+              <div
+                class="grid transition-[grid-template-rows] duration-200 ease-out"
+                :style="{ gridTemplateRows: isDescriptionExpanded(note.id) ? '1fr' : '0fr' }"
+              >
+                <div class="min-h-0 overflow-hidden">
+                  <p class="pt-1 font-mono text-xs text-secondary">{{ modeDescriptionFor(note) }}</p>
+                </div>
+              </div>
+            </div>
+
+            <div v-if="restFieldsFor(note).length" class="grid grid-cols-[auto_1fr] gap-x-2.5 gap-y-1.5 text-xs">
+              <template v-for="f in restFieldsFor(note)" :key="f.key">
+                <span class="text-muted-foreground">{{ f.key }}</span>
+                <span class="font-mono" :class="f.bold ? 'font-semibold text-ink' : 'text-secondary'">{{ f.value }}</span>
+              </template>
+            </div>
+
+            <Textarea
+              :model-value="note.note"
               :placeholder="t('fomcharts.annotations.notePlaceholder')"
-              class="w-full resize-y rounded-lg border border-secondary/20 bg-card px-2.5 py-2 font-sans text-xs text-ink"
+              class="w-full resize-y text-xs"
               rows="2"
-              @change="$emit('update-note', note.id, ($event.target as HTMLTextAreaElement).value)"
+              @update:model-value="(value) => $emit('update-note', note.id, String(value))"
             />
           </div>
         </div>
@@ -79,13 +134,17 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
-import { X } from "@lucide/vue";
+import { ChevronDown, X } from "@lucide/vue";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import InfoTooltip from "@/components/shared/InfoTooltip.vue";
 import CollapsibleSection from "@/components/shared/CollapsibleSection.vue";
 import { annotationFieldColumns } from "@/utils/annotationFields";
-import type { DataRow } from "@/utils/columnTypes";
+import { findModeDescriptionColumn, findModeIdColumn, type DataRow } from "@/utils/columnTypes";
 
 const { t } = useI18n();
 
@@ -104,6 +163,11 @@ export interface Annotation {
 const props = defineProps<{
   annotations: Annotation[];
   columns: string[];
+  // Candidate rows to search for pin-able siblings (see siblingsFor) --
+  // always the full plottable set, independent of showOnlyAnnotated, so
+  // "pin the other modes of this paper" keeps finding them even while the
+  // chart itself is narrowed down to just the pinned points.
+  rows: DataRow[];
   xAxis: string | null;
   yAxis: string | null;
   groupBy: string | null;
@@ -112,10 +176,12 @@ defineEmits<{
   remove: [id: string];
   clear: [];
   "update-note": [id: string, note: string];
+  "pin-rows": [rows: DataRow[]];
 }>();
 
 const compareIds = defineModel<string[]>("compareIds", { default: () => [] });
 const open = defineModel<boolean>("open", { default: true });
+const showOnlyAnnotated = defineModel<boolean>("showOnlyAnnotated", { default: false });
 const sort = ref<"newest" | "oldest" | "ref">("newest");
 
 const toggleCompare = (id: string) => {
@@ -136,12 +202,71 @@ const sortedAnnotations = computed(() => {
   return sorted;
 });
 
-const fieldColumns = computed(() => annotationFieldColumns(props.columns, props.xAxis, props.yAxis, props.groupBy));
+// Mode Description is a longer free-text field -- shown collapsed by
+// default (see expandedDescriptions below) in its own toggle instead of
+// alongside the compact key/value field grid, so a long description
+// doesn't push every other field down the card.
+const modeDescriptionColumnName = computed(() => findModeDescriptionColumn(props.columns));
+const modeDescriptionFor = (note: Annotation): string | null => {
+  const col = modeDescriptionColumnName.value;
+  if (!col) return null;
+  const v = note.row[col];
+  return v === null || v === undefined || v === "" ? null : String(v);
+};
 
-const fieldsFor = (note: Annotation) =>
-  fieldColumns.value.map((col) => ({
+const modeIdColumnName = computed(() => findModeIdColumn(props.columns));
+
+// Mode ID renders in its own leading grid, immediately followed by its
+// Mode Description toggle (see template) -- restFieldColumns is everything
+// else (Domain, Origin, the plotted axes, ...), rendered as a second grid
+// below the description.
+const leadingFieldColumns = computed(() => (modeIdColumnName.value ? [modeIdColumnName.value] : []));
+const restFieldColumns = computed(() =>
+  annotationFieldColumns(props.columns, props.xAxis, props.yAxis, props.groupBy).filter(
+    (col) => col !== modeDescriptionColumnName.value && col !== modeIdColumnName.value,
+  ),
+);
+
+const fieldRowsFor = (note: Annotation, cols: string[]) =>
+  cols.map((col) => ({
     key: col,
     value: note.row[col] === null || note.row[col] === undefined || note.row[col] === "" ? "—" : String(note.row[col]),
     bold: col === props.xAxis || col === props.yAxis,
   }));
+const leadingFieldsFor = (note: Annotation) => fieldRowsFor(note, leadingFieldColumns.value);
+const restFieldsFor = (note: Annotation) => fieldRowsFor(note, restFieldColumns.value);
+
+// Collapsed by default per pin -- a Set of the *expanded* ids rather than
+// collapsed ones, since new pins should start collapsed with no extra
+// bookkeeping when they're created.
+const expandedDescriptions = ref<Set<string>>(new Set());
+const isDescriptionExpanded = (id: string) => expandedDescriptions.value.has(id);
+const toggleDescription = (id: string) => {
+  const next = new Set(expandedDescriptions.value);
+  if (next.has(id)) next.delete(id);
+  else next.add(id);
+  expandedDescriptions.value = next;
+};
+
+// Same "same pin candidate" rule VisualizationView's pinRows actually pins
+// by (see its rowsEqual/isAlreadyPinned) -- not just reference equality.
+// Without this, a row that's a content-duplicate of an already-pinned row
+// (but a different object) would count here as a pinnable sibling, showing
+// "pin 1 other point", yet pinRows would then silently skip it as already
+// pinned -- the button looked broken because the two dedup rules disagreed.
+const rowsEqual = (a: DataRow, b: DataRow): boolean => {
+  if (a === b) return true;
+  return props.columns.every((col) => a[col] === b[col]);
+};
+
+// Other currently-plottable rows sharing this pin's Ref that aren't pinned
+// yet -- e.g. a paper's other extracted modes/cases -- offered as a
+// one-click "pin these too" shortcut instead of hunting each one down on
+// the chart (which is exactly what's hard when they overlap).
+const siblingsFor = (note: Annotation): DataRow[] =>
+  props.rows.filter((row) => {
+    if (rowsEqual(row, note.row)) return false;
+    if (String(row.ref ?? row.Ref ?? "") !== note.ref) return false;
+    return !props.annotations.some((a) => rowsEqual(a.row, row));
+  });
 </script>

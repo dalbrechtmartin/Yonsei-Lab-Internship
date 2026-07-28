@@ -4,13 +4,14 @@
       <button
         type="button"
         tabindex="-1"
-        class="inline-flex text-muted-foreground transition hover:text-secondary"
+        class="inline-flex transition"
+        :class="iconClass"
         :aria-label="text"
       >
-        <Info class="size-3.5" />
+        <component :is="icon" class="size-3.5" />
       </button>
     </TooltipTrigger>
-    <TooltipContent>
+    <TooltipContent side="left">
       <p>{{ text }}</p>
     </TooltipContent>
   </Tooltip>
@@ -18,7 +19,11 @@
 
 <script setup lang="ts">
 import { Info } from "@lucide/vue";
+import type { Component } from "vue";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-defineProps<{ text: string }>();
+withDefaults(
+  defineProps<{ text: string; iconClass?: string | string[]; icon?: Component }>(),
+  { iconClass: "text-muted-foreground hover:text-secondary", icon: () => Info },
+);
 </script>

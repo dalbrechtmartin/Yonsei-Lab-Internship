@@ -7,14 +7,11 @@
       <div class="flex items-center gap-3">
         <DropdownMenu>
           <DropdownMenuTrigger as-child>
-            <button
-              type="button"
-              class="flex items-center gap-1.5 rounded-lg border border-secondary/20 bg-card px-2.5 py-1 text-[11px] font-medium text-ink"
-            >
+            <Button variant="outline" size="xs" class="border-secondary/20 bg-card text-ink hover:bg-primary/8 hover:border-primary/30">
               <Download class="size-3" />
               {{ t("actions.export") }}
               <ChevronDown class="size-2.5" />
-            </button>
+            </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuItem @select="handleExportCsv">{{ t("fomcharts.compare.export.csv") }}</DropdownMenuItem>
@@ -22,9 +19,9 @@
             <DropdownMenuItem @select="handleExportPng">{{ t("fomcharts.compare.export.png") }}</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        <button type="button" class="text-[10.5px] text-primary" @click="$emit('clear-compare')">
+        <Button variant="link" size="xs" class="h-auto p-0 text-[10.5px]" @click="$emit('clear-compare')">
           {{ t("fomcharts.compare.clearSelection") }}
-        </button>
+        </Button>
       </div>
     </div>
 
@@ -61,6 +58,7 @@
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 import { ChevronDown, Download } from "@lucide/vue";
+import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { annotationFieldColumns } from "@/utils/annotationFields";
 import { findShortTitleColumn } from "@/utils/columnTypes";

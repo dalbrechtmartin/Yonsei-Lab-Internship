@@ -1,7 +1,16 @@
-import { findDomainColumn, findOriginColumn, findTooltipExtraColumns } from "./columnTypes";
+import {
+  findDomainColumn,
+  findModeIdColumn,
+  findModeDescriptionColumn,
+  findOriginColumn,
+  findTooltipExtraColumns,
+} from "./columnTypes";
 
 /**
  * Columns worth showing on a pinned annotation card / the compare table:
+ * Mode ID/Mode Description first (which of a paper's several extracted rows
+ * this pin is -- without it, two pins from the same Ref/Title are
+ * indistinguishable), then
  * Domain and Origin (if the sheet has them), the active group-by column,
  * the currently plotted X/Y axes (so the point's own coordinates are always
  * visible, not just whatever it was pinned under), then whatever other
@@ -25,6 +34,8 @@ export function annotationFieldColumns(
     }
   };
 
+  add(findModeIdColumn(columns));
+  add(findModeDescriptionColumn(columns));
   add(findDomainColumn(columns));
   add(findOriginColumn(columns));
   add(groupBy);

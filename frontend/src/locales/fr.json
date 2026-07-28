@@ -2,6 +2,9 @@
   "app": {
     "title": "λLens"
   },
+  "footer": {
+    "copyright": "© {year} λLens — Yonsei University Photonics Lab. Tous droits réservés."
+  },
   "nav": {
     "home": "Accueil",
     "visualization": "Visualisation",
@@ -62,6 +65,7 @@
     "uploading": "Téléchargement du fichier...",
     "success": "Fichier téléchargé avec succès.",
     "error": "Erreur lors du téléchargement du fichier.",
+    "noMatchingPins": "Aucun point épinglé ne correspond aux filtres ou axes actuels, \"Afficher uniquement les points épinglés\" a donc été désactivé.",
     "dismiss": "Fermer le message"
   },
   "extraction": {
@@ -130,13 +134,16 @@
     "controls": {
       "title": "Titre du graphique",
       "titlePlaceholder": "Aucun titre",
+      "clearTitle": "Effacer le titre",
       "xAxis": "Axe X",
       "yAxis": "Axe Y",
       "groupBy": "Grouper / Colorer par",
       "none": "Aucun",
       "trendLine": "Ligne de tendance",
-      "trendLineHint": "Choisissez un axe X numérique (ex. Sensibilité, Facteur Q) pour l'activer",
-      "pareto": "Frontière de Pareto"
+      "trendLineHint": "Nécessite un axe X numérique",
+      "trendUnavailable": "Ligne de tendance : pas assez de points",
+      "pareto": "Frontière de Pareto",
+      "axisNames": "Afficher les repères X/Y"
     },
     "sections": {
       "chart": "Graphique",
@@ -148,8 +155,6 @@
       "origin": "Origine",
       "materialClass": "Classe de matériau",
       "baseMaterials": "Matériaux de base",
-      "selectAll": "Tout sélectionner",
-      "selectOne": "Sélectionner un seul",
       "remove": "Retirer {label}",
       "add": "Ajouter {label}"
     },
@@ -166,7 +171,6 @@
       "linear": "Linéaire"
     },
     "unknownGroup": "Inconnu",
-    "unclearReported": "⚠ FOM signalée : Incertaine",
     "needsReview": "⚠ Statut de révision : À modifier",
     "flaggedHint": "Contour pointillé = signalé pour révision",
     "reviewWarning": "{count} à vérifier",
@@ -181,7 +185,7 @@
       "png": "Image du graphique (.png)"
     },
     "stats": {
-      "title": "Résumé statistique",
+      "title": "Comparer les groupes",
       "all": "Tous",
       "lowN": "Trop peu d'échantillons pour moyenne/médiane/σ",
       "n": "n",
@@ -193,7 +197,11 @@
         "mean": "Moyenne des valeurs d'axe Y affichées pour ce groupe.",
         "median": "Valeur médiane des valeurs d'axe Y affichées pour ce groupe une fois triées — correspond à la ligne médiane pointillée du graphique lorsque ce groupe est seul ou isolé.",
         "std": "Écart-type des valeurs d'axe Y affichées pour ce groupe — mesure la dispersion des points autour de la moyenne."
-      }
+      },
+      "isolate": "Isoler ce groupe sur le graphique (n'affecte pas les statistiques)",
+      "isolateActive": "Cliquez pour annuler l'isolement",
+      "showDetails": "Afficher les détails",
+      "hideDetails": "Masquer les détails"
     },
     "annotations": {
       "title": "Annotations",
@@ -201,6 +209,9 @@
       "empty": "Aucune épingle pour l'instant — cliquez sur un point du graphique pour le marquer en vue d'une comparaison ultérieure.",
       "remove": "Supprimer l'annotation",
       "clearAll": "Tout effacer",
+      "showOnlyPinned": "Afficher uniquement les points épinglés",
+      "showOnlyPinnedTooltip": "Masque tous les points du graphique sauf ceux épinglés ci-dessous — les statistiques du panneau \"Comparer les groupes\" se restreignent aussi à cette sélection.",
+      "pinSiblings": "+ Épingler {count} autre(s) point(s)",
       "compareLabel": "Sélectionner pour comparer",
       "notePlaceholder": "Ajoutez une note...",
       "sort": {
@@ -226,7 +237,9 @@
       "legend": "Trace la légende des séries (groupes, médiane, ligne de tendance) directement sur le graphique, afin qu'elle soit incluse lors de l'export du graphique en image.",
       "median": "Trace une ligne pointillée à la valeur médiane de l'axe Y des points actuellement affichés.",
       "trendLine": "Ajuste une droite à travers les points affichés pour montrer la tendance générale. Disponible seulement quand l'axe X est une colonne numérique (ex. Sensitivity, Q-factor) — une tendance par rapport à une catégorie comme Material Class n'aurait pas de sens.",
-      "pareto": "Met en surbrillance l'ensemble de points non dominés — les enregistrements non surpassés sur les deux axes par aucun autre point — en tant que ligne, en supposant que des valeurs X et Y plus élevées sont meilleures."
+      "pareto": "Met en surbrillance l'ensemble de points non dominés — les enregistrements non surpassés sur les deux axes par aucun autre point — en tant que ligne, en supposant que des valeurs X et Y plus élevées sont meilleures.",
+      "axisNames": "Ajoute un petit repère « X · »/« Y · » devant le nom de chaque axe, pour savoir lequel est lequel -- le nom de l'axe reste toujours affiché.",
+      "trendUnavailable": "La ligne de tendance nécessite au moins 2 points avec des valeurs X différentes -- avec moins (ex. un groupe isolé à un seul point), elle est activée mais n'a rien à tracer."
     }
   }
 }

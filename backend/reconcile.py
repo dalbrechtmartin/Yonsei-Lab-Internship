@@ -1,7 +1,7 @@
 """Majority-vote reconciliation across multiple independent LLM extraction
 runs of the SAME PDF, to counter the non-determinism observed even at
 temperature=0 (see docs/Model_Comparison_Lite_vs_Flash_v2.md: identical
-duplicate PDFs produced different Material Class / Spectral Range
+duplicate PDFs produced different Material Class / Domain
 classifications, and even different row counts, across runs).
 """
 
@@ -13,10 +13,17 @@ from typing import Optional
 # free text (different valid phrasings of the same real thing, e.g.
 # "R1 mode (Simulation)" vs "Simulation - Peak R1 (TD)") across runs would
 # produce noise, not a signal. Always take the primary run's value
-# verbatim. Mode/Case is the field this was explicitly designed for;
-# Layer Structure and FOM Definition have the identical free-text-drift
-# problem and get the same treatment.
-_FREE_TEXT_PRIMARY_ONLY_FIELDS = ("Mode/Case", "Layer Structure", "FOM Definition")
+# verbatim. Mode ID/Mode Description are the fields this was explicitly
+# designed for; Layer Structure, Definition, Evidence and Location have
+# the identical free-text-drift problem and get the same treatment.
+_FREE_TEXT_PRIMARY_ONLY_FIELDS = (
+    "Mode ID",
+    "Mode Description",
+    "Layer Structure",
+    "Definition",
+    "Evidence",
+    "Location",
+)
 
 # ";"-joined sets: reconciled at the token level.
 _SET_JOINED_FIELDS = ("Material Class", "Base Materials")
@@ -25,19 +32,23 @@ _SET_JOINED_FIELDS = ("Material Class", "Base Materials")
 _SCALAR_CATEGORICAL_FIELDS = (
     "Ref",
     "Title",
-    "Spectral Range",
+    "Short Title",
     "Origin",
-    "FOM Reported",
-    "FOM Domain",
+    "Domain",
+    "Review status",
     "Model Used",
 )
 
-# (value, quote, page) triplets that must move together as one atomic unit
-# -- never mix a value from one run with a quote from another.
-_NUMERIC_TRIPLETS = (
-    ("Wavelength-based FOM (/RIU)", "FOM Quote", "FOM Page"),
-    ("Sensitivity (nm/RIU)", "Sensitivity Quote", "Sensitivity Page"),
-    ("Q-factor", "Q-factor Quote", "Q-factor Page"),
+# Numeric fields, reconciled by clustering matching values across runs.
+# Evidence/Location are shared per-record (not per-metric) in the current
+# prompt, so unlike the old quote/page triplets these values are voted on
+# alone -- there is no companion field to move atomically with them.
+_NUMERIC_FIELDS = (
+    "Resonance Wavelength (nm)",
+    "FOM (RIU^-1)",
+    "Sensitivity (nm/RIU)",
+    "FWHM (nm)",
+    "Q-factor",
 )
 
 _NOTES_FIELD = "Notes"
@@ -49,8 +60,8 @@ def reconcile_runs(runs: list[list[dict]]) -> list[dict]:
     final list of records.
 
     Rows are aligned by (Origin, rank-within-origin-within-run) rather
-    than by the free-text "Mode/Case" label, which is confirmed unstable
-    across runs. Each field is then reconciled with a strategy suited to
+    than by the free-text "Mode ID"/"Mode Description" labels, which are
+    confirmed unstable across runs. Each field is then reconciled with a strategy suited to
     its type, and every disagreement is annotated into the merged
     record's "Notes" rather than silently resolved, so the output stays
     human-auditable.
@@ -137,11 +148,9 @@ def _reconcile_slot(contributing: list[dict], total_runs: int, is_extra_row: boo
         if note:
             annotations.append(note)
 
-    for value_field, quote_field, page_field in _NUMERIC_TRIPLETS:
-        value, quote, page, note = _reconcile_numeric_triplet(
-            contributing, primary, value_field, quote_field, page_field
-        )
-        result[value_field], result[quote_field], result[page_field] = value, quote, page
+    for field in _NUMERIC_FIELDS:
+        value, note = _reconcile_numeric_field(contributing, primary, field)
+        result[field] = value
         if note:
             annotations.append(note)
 
@@ -210,25 +219,19 @@ def _values_match(a: object, b: object) -> bool:
         return a == b
 
 
-def _reconcile_numeric_triplet(
-    contributing: list[dict],
-    primary: dict,
-    value_field: str,
-    quote_field: str,
-    page_field: str,
-) -> tuple[object, object, object, Optional[str]]:
-    triplets = [
-        (rec.get(value_field), rec.get(quote_field), rec.get(page_field)) for rec in contributing
-    ]
+def _reconcile_numeric_field(
+    contributing: list[dict], primary: dict, field: str
+) -> tuple[object, Optional[str]]:
+    values = [rec.get(field) for rec in contributing]
 
-    # Cluster triplets by matching value. With at most 3 runs this is
-    # cheap; index order within a cluster follows run order, so the
-    # first index in the largest cluster is the earliest-run (and thus
+    # Cluster values by numeric match. With at most 3 runs this is cheap;
+    # index order within a cluster follows run order, so the first index
+    # in the largest cluster is the earliest-run (and thus
     # primary-preferring, since primary is always index 0) agreeing run.
     clusters: list[list[int]] = []
-    for i, (vi, _, _) in enumerate(triplets):
+    for i, vi in enumerate(values):
         for cluster in clusters:
-            if _values_match(triplets[cluster[0]][0], vi):
+            if _values_match(values[cluster[0]], vi):
                 cluster.append(i)
                 break
         else:
@@ -236,25 +239,22 @@ def _reconcile_numeric_triplet(
     largest = max(clusters, key=len)
 
     def summary() -> str:
-        return ", ".join(f"run{i + 1}={v} (p.{p})" for i, (v, _, p) in enumerate(triplets))
+        return ", ".join(f"run{i + 1}={v}" for i, v in enumerate(values))
 
     if len(largest) >= 2:
-        chosen_idx = min(largest)
-        value, quote, page = triplets[chosen_idx]
+        value = values[min(largest)]
         note = None
-        if len(largest) < len(triplets):
-            note = f"{value_field}: {len(largest)}/{len(triplets)} runs agreed — {summary()}."
-        return value, quote, page, note
+        if len(largest) < len(values):
+            note = f"{field}: {len(largest)}/{len(values)} runs agreed — {summary()}."
+        return value, note
 
     # No 2-of-N agreement anywhere: never silently null or average --
-    # fall back to the primary run's own triplet and flag it loudly.
-    # This is the exact shape of the paper-65 bug (a Delta-l=25nm quote
-    # attributed to a Delta-l=20nm row) that motivated this rule.
+    # fall back to the primary run's own value and flag it loudly.
     note = (
-        f"{value_field} DISAGREEMENT (no 2/{len(triplets)} match): {summary()}. "
+        f"{field} DISAGREEMENT (no 2/{len(values)} match): {summary()}. "
         f"Used run1's value — verify manually."
     )
-    return primary.get(value_field), primary.get(quote_field), primary.get(page_field), note
+    return primary.get(field), note
 
 
 def _merge_notes(primary_notes: object, annotations: list[str]) -> Optional[str]:

@@ -2,6 +2,9 @@
   "app": {
     "title": "λLens"
   },
+  "footer": {
+    "copyright": "© {year} λLens — Yonsei University Photonics Lab. All rights reserved."
+  },
   "nav": {
     "home": "Home",
     "visualization": "Visualization",
@@ -62,6 +65,7 @@
     "uploading": "Uploading file...",
     "success": "File imported successfully. You can now adjust the axes or export the data.",
     "error": "We couldn't import that file. Please try another Excel or CSV file.",
+    "noMatchingPins": "None of your pinned points match the current filters or axes, so \"Show only pinned\" was turned back off.",
     "dismiss": "Dismiss message"
   },
   "extraction": {
@@ -130,13 +134,16 @@
     "controls": {
       "title": "Chart Title",
       "titlePlaceholder": "No title",
+      "clearTitle": "Clear title",
       "xAxis": "X-Axis",
       "yAxis": "Y-Axis",
       "groupBy": "Group / Color by",
       "none": "None",
       "trendLine": "Trend line",
-      "trendLineHint": "Pick a numeric X axis (e.g. Sensitivity, Q-factor) to enable",
-      "pareto": "Pareto frontier"
+      "trendLineHint": "Requires a numeric X axis",
+      "trendUnavailable": "Trend line: not enough points",
+      "pareto": "Pareto frontier",
+      "axisNames": "Show X/Y markers"
     },
     "sections": {
       "chart": "Chart",
@@ -148,8 +155,6 @@
       "origin": "Origin",
       "materialClass": "Material Class",
       "baseMaterials": "Base Materials",
-      "selectAll": "Select all",
-      "selectOne": "Select one",
       "remove": "Remove {label}",
       "add": "Add {label}"
     },
@@ -166,7 +171,6 @@
       "linear": "Linear"
     },
     "unknownGroup": "Unknown",
-    "unclearReported": "⚠ FOM reported: Unclear",
     "needsReview": "⚠ Review status: Edit",
     "flaggedHint": "Dashed outline = flagged for review",
     "reviewWarning": "{count} to review",
@@ -181,7 +185,7 @@
       "png": "Chart image (.png)"
     },
     "stats": {
-      "title": "Stats summary",
+      "title": "Compare groups",
       "all": "All",
       "lowN": "Too few samples for mean/median/σ",
       "n": "n",
@@ -193,7 +197,11 @@
         "mean": "Average of the plotted Y-axis values for this group.",
         "median": "Middle value once the plotted Y-axis values for this group are sorted — matches the dashed median line on the chart when this is the only or isolated group.",
         "std": "Standard deviation of the plotted Y-axis values for this group — how spread out the points are around the mean."
-      }
+      },
+      "isolate": "Isolate this group on the chart (doesn't affect the stats)",
+      "isolateActive": "Click to clear the isolation",
+      "showDetails": "Show details",
+      "hideDetails": "Hide details"
     },
     "annotations": {
       "title": "Annotations",
@@ -201,6 +209,9 @@
       "empty": "No pins yet — click any point on the chart to bookmark it for later comparison.",
       "remove": "Remove annotation",
       "clearAll": "Clear all",
+      "showOnlyPinned": "Show only pinned points",
+      "showOnlyPinnedTooltip": "Hides every chart point except the ones pinned below — the \"Compare groups\" panel's stats narrow down to this same selection too.",
+      "pinSiblings": "+ Pin {count} other point(s)",
       "compareLabel": "Select to compare",
       "notePlaceholder": "Add a note...",
       "sort": {
@@ -226,7 +237,9 @@
       "legend": "Draws the series legend (groups, median, trend line) on the chart itself, so it's included when exporting the chart as an image.",
       "median": "Draws a dashed line at the median Y value of the points currently plotted.",
       "trendLine": "Fits a straight line through the plotted points to show the overall trend. Only available when the X axis is a numeric column (e.g. Sensitivity, Q-factor) — a trend against a category like Material Class wouldn't mean anything.",
-      "pareto": "Highlights the non-dominated set of points — records not beaten on both axes by any other point — as a line, assuming higher X and higher Y are both better."
+      "pareto": "Highlights the non-dominated set of points — records not beaten on both axes by any other point — as a line, assuming higher X and higher Y are both better.",
+      "axisNames": "Prefixes each axis's name with a small \"X ·\"/\"Y ·\" marker, so it's clear which is which -- the axis name itself is always shown.",
+      "trendUnavailable": "The trend line needs at least 2 points with different X values -- with fewer (e.g. an isolated single-point group), it's toggled on but has nothing to draw."
     }
   }
 }

@@ -1,5 +1,5 @@
 <template>
-  <main class="flex grow flex-col">
+  <main class="flex animate-in fade-in grow flex-col duration-300">
     <section
       class="relative overflow-hidden bg-[#0b1824] px-6 pt-14 pb-12 text-center sm:px-20 sm:pt-20 sm:pb-19"
     >
@@ -12,29 +12,35 @@
         class="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,24,36,0.55)_0%,rgba(11,24,36,0.2)_45%,rgba(11,24,36,0.65)_100%)]"
       />
       <div class="relative mx-auto max-w-215">
-        <div class="mb-9 flex items-center justify-center gap-5">
+        <div class="mb-9 flex animate-in fade-in slide-in-from-bottom-4 items-center justify-center gap-5 fill-mode-both duration-500">
           <img
             :src="yonseiSymbol"
             alt="Yonsei University"
-            class="h-10 w-auto drop-shadow-[0_0_6px_rgba(255,255,255,0.25)] sm:h-11.5"
+            class="h-14 w-auto drop-shadow-[0_0_6px_rgba(255,255,255,0.25)] sm:h-16"
           />
-          <div class="h-9 w-px bg-white/20" />
-          <span class="text-lg font-semibold tracking-[0.2em] text-white/70">OPTICA</span>
+          <div class="h-12 w-px bg-white/20 sm:h-14" />
+          <img
+            :src="yonseiOptica"
+            alt="Optica"
+            class="h-11 w-auto drop-shadow-[0_0_6px_rgba(255,255,255,0.25)] sm:h-12.5"
+          />
         </div>
-        <p class="mb-5 text-[11px] font-medium tracking-[0.3em] text-white/40 uppercase">
+        <p
+          class="mb-5 animate-in fade-in slide-in-from-bottom-4 text-[11px] font-medium tracking-[0.3em] text-white/40 uppercase fill-mode-both delay-100 duration-500"
+        >
           {{ t("view.home.hero.eyebrow") }}
         </p>
         <h1
-          class="mx-auto text-[28px] leading-tight font-bold text-pretty text-white sm:text-[46px] sm:leading-[1.16]"
+          class="mx-auto animate-in fade-in slide-in-from-bottom-4 text-[28px] leading-tight font-bold text-pretty text-white fill-mode-both delay-150 duration-500 sm:text-[46px] sm:leading-[1.16]"
         >
           {{ t("view.home.hero.title") }}
         </h1>
         <p
-          class="mx-auto mt-4 max-w-135 text-sm leading-relaxed text-white/60 sm:mt-5.5 sm:text-base sm:leading-[1.68]"
+          class="mx-auto mt-4 max-w-135 animate-in fade-in slide-in-from-bottom-4 text-sm leading-relaxed text-white/60 fill-mode-both delay-200 duration-500 sm:mt-5.5 sm:text-base sm:leading-[1.68]"
         >
           {{ t("view.home.hero.description") }}
         </p>
-        <div class="mt-8 flex flex-wrap justify-center gap-3 sm:mt-9">
+        <div class="mt-8 flex animate-in fade-in slide-in-from-bottom-4 flex-wrap justify-center gap-3 fill-mode-both delay-300 duration-500 sm:mt-9">
           <RouterLink
             to="/visualization"
             class="rounded-lg bg-primary px-7 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-hover sm:px-7.5"
@@ -58,7 +64,7 @@
       <div class="mx-auto grid max-w-280 grid-cols-1 gap-5 sm:grid-cols-2">
         <RouterLink
           to="/visualization"
-          class="flex flex-col rounded-[1.25rem] border border-white/55 bg-card/90 p-7 text-left shadow-xl shadow-slate-900/5 backdrop-blur-xl transition-shadow duration-200 hover:shadow-2xl focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:outline-none sm:p-8"
+          class="flex animate-in fade-in slide-in-from-bottom-4 flex-col rounded-[1.25rem] border border-white/55 bg-card/90 p-7 text-left shadow-xl shadow-slate-900/5 backdrop-blur-xl fill-mode-both delay-300 transition-shadow duration-200 hover:shadow-2xl focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:outline-none sm:p-8"
         >
           <p class="text-[11px] font-bold tracking-[0.08em] text-primary uppercase">
             {{ t("view.home.tools.visualization.eyebrow") }}
@@ -81,7 +87,7 @@
         <RouterLink
           v-if="!extractionLocked"
           to="/extraction"
-          class="flex flex-col rounded-[1.25rem] border border-white/55 bg-card/90 p-7 text-left shadow-xl shadow-slate-900/5 backdrop-blur-xl transition-shadow duration-200 hover:shadow-2xl focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:outline-none sm:p-8"
+          class="flex animate-in fade-in slide-in-from-bottom-4 flex-col rounded-[1.25rem] border border-white/55 bg-card/90 p-7 text-left shadow-xl shadow-slate-900/5 backdrop-blur-xl fill-mode-both delay-500 transition-shadow duration-200 hover:shadow-2xl focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:outline-none sm:p-8"
         >
           <p class="text-[11px] font-bold tracking-[0.08em] text-primary uppercase">
             {{ t("view.home.tools.extraction.eyebrowUnlocked") }}
@@ -103,7 +109,7 @@
 
         <div
           v-else
-          class="flex flex-col rounded-[1.25rem] border border-white/55 bg-card/90 p-7 opacity-65 shadow-xl shadow-slate-900/5 backdrop-blur-xl sm:p-8"
+          class="flex animate-in fade-in slide-in-from-bottom-4 flex-col rounded-[1.25rem] border border-white/55 bg-card/90 p-7 opacity-65 shadow-xl shadow-slate-900/5 backdrop-blur-xl fill-mode-both delay-500 duration-500 sm:p-8"
         >
           <p
             class="flex items-center gap-1.5 text-[11px] font-bold tracking-[0.08em] text-secondary uppercase"
@@ -127,7 +133,8 @@
 import { Lock } from "@lucide/vue";
 import { RouterLink } from "vue-router";
 import { useI18n } from "vue-i18n";
-import yonseiSymbol from "@/assets/yonsei-symbol.png";
+import yonseiSymbol from "@/assets/yonsei-logo.svg";
+import yonseiOptica from "@/assets/yonsei-optica.svg";
 import yonseiCampus from "@/assets/yonsei-university.jpg";
 
 const { t } = useI18n();

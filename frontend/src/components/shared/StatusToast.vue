@@ -1,5 +1,5 @@
 <template>
-  <div v-if="statusKey" class="w-full">
+  <div v-if="statusKey" class="mt-4 w-full">
     <div
       class="w-full rounded-2xl border px-4 py-3 text-sm font-medium shadow-sm transition-all duration-300 ease-out"
       :class="statusClass"

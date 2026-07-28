@@ -4,25 +4,40 @@
       <h2 class="text-lg font-semibold text-ink">
         {{ t("fomcharts.type.scatter") }}
       </h2>
-      <div class="flex items-center gap-2">
-        <span v-if="needsReviewCount > 0" class="bg-amber-500/15 text-amber-800 text-xs font-medium px-2.5 py-0.5 rounded">
-          {{ t("fomcharts.reviewWarning", { count: needsReviewCount }) }}
-        </span>
-        <span v-if="hasFlaggedPoints" class="text-xs text-secondary italic">
-          {{ t("fomcharts.flaggedHint") }}
-        </span>
-        <span
-          v-if="originSummary"
-          class="bg-secondary/10 text-secondary text-xs font-medium px-2.5 py-0.5 rounded"
-        >
-          {{ originSummary }}
-        </span>
-        <span
-          class="bg-primary/10 text-primary text-xs font-medium px-2.5 py-0.5 rounded"
-        >
-          {{ sampleCount }} {{ t("fomcharts.sampleCount") }}
-        </span>
-      </div>
+      <TooltipProvider :delay-duration="200">
+        <div class="flex items-center gap-1.5">
+          <span
+            v-if="needsReviewCount > 0"
+            class="flex items-center gap-1 bg-amber-500/15 text-amber-800 text-xs font-medium pl-2.5 pr-1.5 py-0.5 rounded whitespace-nowrap"
+          >
+            {{ t("fomcharts.reviewWarning", { count: needsReviewCount }) }}
+            <InfoTooltip
+              v-if="hasFlaggedPoints"
+              :text="t('fomcharts.flaggedHint')"
+              icon-class="text-amber-800/70 hover:text-amber-800"
+            />
+          </span>
+          <InfoTooltip v-else-if="hasFlaggedPoints" :text="t('fomcharts.flaggedHint')" />
+          <span
+            v-if="trendUnavailable"
+            class="flex items-center gap-1 bg-amber-500/15 text-amber-800 text-xs font-medium pl-2.5 pr-1.5 py-0.5 rounded whitespace-nowrap"
+          >
+            {{ t("fomcharts.controls.trendUnavailable") }}
+            <InfoTooltip :text="t('fomcharts.tooltips.trendUnavailable')" icon-class="text-amber-800/70 hover:text-amber-800" />
+          </span>
+          <span
+            v-if="originSummary"
+            class="bg-secondary/10 text-secondary text-xs font-medium px-2.5 py-0.5 rounded whitespace-nowrap"
+          >
+            {{ originSummary }}
+          </span>
+          <span
+            class="bg-primary/10 text-primary text-xs font-medium px-2.5 py-0.5 rounded whitespace-nowrap"
+          >
+            {{ sampleCount }} {{ t("fomcharts.sampleCount") }}
+          </span>
+        </div>
+      </TooltipProvider>
     </div>
 
     <div
@@ -50,14 +65,17 @@ import {
 } from "echarts/components";
 import labTheme from "@/assets/themes/okabe-ito-palette.json";
 import VChart, { THEME_KEY } from "vue-echarts";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import InfoTooltip from "@/components/shared/InfoTooltip.vue";
 import {
   findOriginColumn,
-  findReportedColumn,
   findReviewStatusColumn,
   findTooltipExtraColumns,
   findMaterialClassColumn,
   findBaseMaterialsColumn,
   findFomValueColumn,
+  findModeIdColumn,
+  findModeDescriptionColumn,
   tokenizeValue,
   type DataRow,
 } from "@/utils/columnTypes";
@@ -96,6 +114,7 @@ const props = withDefaults(
     showTrend?: boolean;
     showLegend?: boolean;
     showPareto?: boolean;
+    showAxisNames?: boolean;
     xAxisNumeric?: boolean;
     // Isolating a group is now driven externally (clicking a card in
     // StatsSummaryPanel) -- this component only reads it to dim the rest.
@@ -116,6 +135,7 @@ const props = withDefaults(
     showTrend: false,
     showLegend: false,
     showPareto: false,
+    showAxisNames: true,
     xAxisNumeric: false,
     highlightGroup: null,
     groupColorMap: () => ({}),
@@ -210,11 +230,12 @@ const plottableData = computed(() => {
 const sampleCount = computed(() => highlightedRows.value.length);
 
 const originColumn = computed(() => findOriginColumn(props.columns));
-const reportedColumn = computed(() => findReportedColumn(props.columns));
 const reviewStatusColumn = computed(() => findReviewStatusColumn(props.columns));
 const materialClassColumn = computed(() => findMaterialClassColumn(props.columns));
 const baseMaterialsColumn = computed(() => findBaseMaterialsColumn(props.columns));
 const fomValueColumn = computed(() => findFomValueColumn(props.columns));
+const modeIdColumn = computed(() => findModeIdColumn(props.columns));
+const modeDescriptionColumn = computed(() => findModeDescriptionColumn(props.columns));
 // Extra tooltip fields shouldn't repeat whatever's already on an axis/
 // group-by — e.g. picking Origin as "Group / Color by" already shows it
 // via the legend and the group line below, no need to print it twice.
@@ -243,15 +264,6 @@ const originSummary = computed(() => {
     : null;
 });
 
-const hasUnclearReported = computed(() => {
-  const column = reportedColumn.value;
-  if (!column) return false;
-  return highlightedRows.value.some((item) => {
-    const v: unknown = item[column];
-    return typeof v === "string" && /unclear/i.test(v);
-  });
-});
-
 const isEditStatus = (item: DataRow): boolean => {
   const column = reviewStatusColumn.value;
   if (!column) return false;
@@ -265,12 +277,10 @@ const isEditStatus = (item: DataRow): boolean => {
 // the record is trusted at face value.
 const needsReviewCount = computed(() => highlightedRows.value.filter(isEditStatus).length);
 
-// Both signals put a dashed outline on a point (see withItemStyle): an
-// "Unclear" FOM Reported flag, or a "Review status: Edit" flag. Different
-// root causes, same "don't fully trust this point without checking"
-// meaning, so one shared hint covers both instead of two near-duplicate
-// messages competing for space next to the sample count.
-const hasFlaggedPoints = computed(() => hasUnclearReported.value || needsReviewCount.value > 0);
+// A "Review status: Edit" flag puts a dashed outline on a point (see
+// withItemStyle) -- a data-quality signal worth a researcher's attention
+// next to the sample count.
+const hasFlaggedPoints = computed(() => needsReviewCount.value > 0);
 
 // Grouping by a composite column (Material Class or Base Materials) is a
 // special case: a composite cell like "Dielectric;Metal" should not become
@@ -321,6 +331,23 @@ const yValues = computed(() =>
 );
 const medianValue = computed(() => computeStats(yValues.value).median);
 
+// Computed once here and reused by both the series builder and the
+// trendUnavailable badge below -- linearRegression silently returns null
+// when there are fewer than 2 points, or when every point shares the same
+// X value (isolating a single-row group is the common way to hit this), so
+// "Trend line" can be toggled on with nothing to show for it; the badge
+// makes that visible instead of a silent no-op.
+const trendFit = computed(() => {
+  if (!(props.showTrend && props.xAxisNumeric && props.xAxis && props.yAxis)) return null;
+  const points = highlightedRows.value
+    .map((item): [number, number] => [Number(item[props.xAxis as string]), Number(item[props.yAxis as string])])
+    .filter(([x, y]) => !isNaN(x) && !isNaN(y));
+  return linearRegression(points);
+});
+const trendUnavailable = computed(
+  () => props.showTrend && props.xAxisNumeric && !!props.xAxis && !!props.yAxis && trendFit.value === null,
+);
+
 // When groupBy is set, every distinct value becomes its own series so
 // echarts can color and legend them independently — the "categorical
 // grouping" the plotting module needs (e.g. color points by Origin/
@@ -355,11 +382,17 @@ const buildPoint = (item: DataRow) => {
     const v = item[col];
     if (v !== null && v !== undefined && v !== "") extras[col] = v;
   }
-  const reportedValue = reportedColumn.value ? item[reportedColumn.value] : null;
-  const isUnclear = typeof reportedValue === "string" && /unclear/i.test(reportedValue);
   const needsReview = isEditStatus(item);
   const rawX = props.xAxis ? item[props.xAxis] : undefined;
   const rawFomValue = fomValueColumn.value ? Number(item[fomValueColumn.value]) : NaN;
+  // Already shown via the axis/group-by line below when Mode ID happens to
+  // be picked as one of those -- no need to print it twice.
+  const modeId =
+    modeIdColumn.value && modeIdColumn.value !== props.xAxis && modeIdColumn.value !== props.groupBy
+      ? item[modeIdColumn.value]
+      : null;
+  const modeDescription = modeDescriptionColumn.value ? item[modeDescriptionColumn.value] : null;
+  const modeCase = [modeId, modeDescription].filter((v) => v !== null && v !== undefined && v !== "").join(" — ");
 
   return {
     value: [
@@ -368,21 +401,22 @@ const buildPoint = (item: DataRow) => {
     ],
     title: item.title ?? item.Title,
     refLabel: item.ref ?? item.Ref,
+    modeCase: modeCase || null,
     extras,
-    isUnclear,
     needsReview,
-    isFlagged: isUnclear || needsReview,
+    isFlagged: needsReview,
     row: item,
     symbolSize: bubbleSizeFor(rawFomValue),
     symbolOffset: undefined as [number, number] | undefined,
+    label: undefined as { show: boolean } | undefined,
   };
 };
 
-// A dashed outline flags points that need a second look — either the FOM
-// Reported flag is "Unclear", or Review status is "Edit" (a value like
-// FWHM was calculated/estimated rather than read directly from the paper)
-// — a data-quality signal, not a category, so it rides on top of whatever
-// fill color the group/series already assigned rather than replacing it.
+// A dashed outline flags points that need a second look — Review status is
+// "Edit" (a value like FWHM was calculated/estimated rather than read
+// directly from the paper) — a data-quality signal, not a category, so it
+// rides on top of whatever fill color the group/series already assigned
+// rather than replacing it.
 // Isolating one group (via StatsSummaryPanel) dims the rest instead of
 // hiding them, so the overall shape of the dataset stays visible. Every
 // point's color always matches the series/legend it belongs to — see
@@ -397,6 +431,42 @@ const withItemStyle = (point: ReturnType<typeof buildPoint>, color: string, grou
       ? { color, opacity, borderType: "dashed" as const, borderWidth: 1, borderColor: legendColor }
       : { color, opacity },
   };
+};
+
+// Two distinct rows that happen to share the exact same x/y (a common FOM
+// value at a shared x-category, e.g. two "Dielectric" papers both reporting
+// FOM=53) render as a single dot otherwise -- N still counts both, but only
+// one circle is visible and hideOverlap silently drops the other's ref
+// label, so a researcher counting dots undercounts by one. This spreads
+// same-coordinate points a few pixels apart vertically (screen space, not
+// data space) so every row stays its own visible dot with its own label.
+// Runs *after* the composite-column horizontal offset above, which already
+// separates a single row's copies across different group series -- this
+// pass instead separates different rows that land in the same series at
+// the same spot, so it only ever adds a y-offset, never touching x.
+const spreadDuplicatePoints = <T extends { value: unknown[]; symbolOffset?: [number, number]; symbolSize?: number }>(
+  points: T[],
+): T[] => {
+  const groups = new Map<string, T[]>();
+  for (const point of points) {
+    const key = JSON.stringify(point.value);
+    const group = groups.get(key);
+    if (group) group.push(point);
+    else groups.set(key, [point]);
+  }
+  for (const group of groups.values()) {
+    if (group.length <= 1) continue;
+    // A fixed offset was small enough to still leave large FOM-driven
+    // bubbles (see bubbleSizeFor, up to MAX_BUBBLE_SIZE) overlapping each
+    // other -- basing the step on the group's own bubble size guarantees
+    // visible separation regardless of how big the dots are.
+    const offsetStep = Math.max(...group.map((p) => p.symbolSize ?? 10)) * 0.7 + 3;
+    group.forEach((point, i) => {
+      const xOffset = point.symbolOffset?.[0] ?? 0;
+      point.symbolOffset = [xOffset, (i - (group.length - 1) / 2) * offsetStep];
+    });
+  }
+  return points;
 };
 
 const seriesList = computed(() => {
@@ -462,6 +532,11 @@ const seriesList = computed(() => {
               const i = Math.max(tokens.indexOf(groupName), 0);
               const offsetStep = 7;
               point.symbolOffset = [(i - (n - 1) / 2) * offsetStep, 0];
+              // Every one of those duplicates would otherwise carry its own
+              // copy of the same ref label, piling up n near-identical
+              // strings on top of each other -- one Ref only needs to be
+              // labeled once, so only the first material's dot keeps it.
+              if (i !== 0) point.label = { show: false };
             }
             return withItemStyle(point, color, groupName);
           }),
@@ -475,31 +550,37 @@ const seriesList = computed(() => {
     });
   }
 
+  // Spread duplicate coordinates across the WHOLE chart, not per series --
+  // two points from *different* series (e.g. one EXP, one SIM) landing on
+  // the same x/y would otherwise never get separated, since each series only
+  // ever saw its own single point at that spot. Points are the same object
+  // references inside each series' data array, so mutating them here also
+  // updates them in place there.
+  spreadDuplicatePoints(series.filter((s) => s.type === "scatter").flatMap((s) => s.data));
+
   // A simple least-squares fit over the plotted points — only meaningful
   // when the X axis is itself a numeric quantity (e.g. Sensitivity), not a
-  // category label like Material Class.
-  if (props.showTrend && props.xAxisNumeric && props.xAxis && props.yAxis) {
-    const points = highlightedRows.value
-      .map((item): [number, number] => [Number(item[props.xAxis as string]), Number(item[props.yAxis as string])])
-      .filter(([x, y]) => !isNaN(x) && !isNaN(y));
-    const fit = linearRegression(points);
-    if (fit) {
-      const xs = points.map((p) => p[0]);
-      const xmin = Math.min(...xs);
-      const xmax = Math.max(...xs);
-      series.push({
-        name: t("fomcharts.controls.trendLine"),
-        type: "line",
-        data: [
-          [xmin, fit.intercept + fit.slope * xmin],
-          [xmax, fit.intercept + fit.slope * xmax],
-        ],
-        showSymbol: false,
-        silent: true,
-        z: 5,
-        lineStyle: { type: "dashed", width: 2, color: trendLineColor },
-      });
-    }
+  // category label like Material Class. Fit itself is computed once in
+  // trendFit above (shared with the trendUnavailable badge).
+  if (trendFit.value) {
+    const xs = highlightedRows.value
+      .map((item) => Number(item[props.xAxis as string]))
+      .filter((x) => !isNaN(x));
+    const xmin = Math.min(...xs);
+    const xmax = Math.max(...xs);
+    const fit = trendFit.value;
+    series.push({
+      name: t("fomcharts.controls.trendLine"),
+      type: "line",
+      data: [
+        [xmin, fit.intercept + fit.slope * xmin],
+        [xmax, fit.intercept + fit.slope * xmax],
+      ],
+      showSymbol: false,
+      silent: true,
+      z: 5,
+      lineStyle: { type: "dashed", width: 2, color: trendLineColor },
+    });
   }
 
   // Pareto frontier (maximize-both-axes non-dominated set) — only meaningful
@@ -513,7 +594,23 @@ const seriesList = computed(() => {
       }))
       .filter((p) => !isNaN(p.x) && !isNaN(p.y));
     const frontier = computeParetoFrontier(points);
-    if (frontier.length > 0) {
+    // A frontier of exactly one point has no line segment to draw --
+    // `type: "line"` with a single coordinate renders nothing at all, which
+    // reads as "the toggle did nothing" even though it worked correctly.
+    // Draw it as a visible marker instead so a single non-dominated point
+    // is never silently invisible.
+    if (frontier.length === 1) {
+      series.push({
+        name: t("fomcharts.controls.pareto"),
+        type: "scatter",
+        data: [[frontier[0].x, frontier[0].y]],
+        symbol: "diamond",
+        symbolSize: 14,
+        silent: true,
+        z: 6,
+        itemStyle: { color: "#009E73", borderColor: "#fff", borderWidth: 1.5 },
+      });
+    } else if (frontier.length > 1) {
       series.push({
         name: t("fomcharts.controls.pareto"),
         type: "line",
@@ -535,9 +632,13 @@ const seriesList = computed(() => {
 // generic "Scatter Plot" chart type — showing that as a legend chip reads
 // as a meaningless label, so it's left out; only real group names (or the
 // median/trend/Pareto overlays, when active) are listed.
-const legendData = computed(() => {
+// Split into two groups -- group-by colors vs. trend/Pareto overlays -- so
+// they can render as two visually distinct legend rows (see chartOption's
+// `legend` array below) instead of one run-on line that was hard to parse
+// when both a color legend and the overlay names were mixed together.
+const groupLegendNames = computed(() => (props.groupBy && groupValues.value ? groupValues.value : []));
+const overlayLegendNames = computed(() => {
   const names: string[] = [];
-  if (props.groupBy && groupValues.value) names.push(...groupValues.value);
   if (props.showTrend && props.xAxisNumeric && props.xAxis && props.yAxis) {
     names.push(t("fomcharts.controls.trendLine"));
   }
@@ -580,7 +681,49 @@ const exportPng = (filename = "fom_chart.png") => {
 
 defineExpose({ exportPng });
 
-const chartOption = computed(() => ({
+// Rough pixel-width estimate for reserving grid margin for an axis name --
+// echarts' containLabel does not reliably account for axis *names* (as
+// opposed to tick labels), so without an explicit reservation a long name
+// can render past the canvas edge and simply appear to vanish. This was the
+// numeric x-axis name disappearing bug: its old nameGap (32px, "middle"
+// location) had no matching grid.bottom reservation the way the category
+// axis's nameGap (85px) implicitly got from its rotated tick labels
+// growing containLabel's margin anyway.
+const estimateAxisNameSpace = (text: string): number => (text ? text.length * 6.2 + 16 : 0);
+
+const chartOption = computed(() => {
+  // The axis name (the actual column name, e.g. "Sensitivity (nm/RIU)") is
+  // always shown -- it's not what showAxisNames controls. showAxisNames
+  // only toggles the small "X ·"/"Y ·" marker prefixed onto it, which helps
+  // tell at a glance which line is X and which is Y (most useful when both
+  // axes are numeric and otherwise look alike).
+  const xColumnName = props.xAxis ?? "";
+  const yColumnName = props.yAxis ?? "";
+  const xName = xColumnName ? (props.showAxisNames ? `X · ${xColumnName}` : xColumnName) : "";
+  const yName = yColumnName ? (props.showAxisNames ? `Y · ${yColumnName}` : yColumnName) : "";
+  const xNameSpace = estimateAxisNameSpace(xName);
+  const yNameSpace = yName ? 26 : 0;
+
+  // The chart title and the legend both default to the top-center of the
+  // canvas -- with no reservation for the title's own line height, a
+  // non-empty title sat directly on top of (or under) the legend/points.
+  // titleSpace pushes everything below it down by one line when a title is
+  // actually set.
+  const hasTitle = !!displayTitle.value;
+  const titleTop = 4;
+  const titleSpace = hasTitle ? 26 : 0;
+
+  // Group-by colors and trend/Pareto overlays render as two separate legend
+  // rows (rather than one run-on line) so a researcher isn't left parsing
+  // "Dielectric, Metal, Trend line, Pareto frontier" as if they were all the
+  // same kind of thing.
+  const showGroupLegend = props.showLegend && groupLegendNames.value.length > 0;
+  const showOverlayLegend = props.showLegend && overlayLegendNames.value.length > 0;
+  const legendRows = (showGroupLegend ? 1 : 0) + (showOverlayLegend ? 1 : 0);
+  const groupLegendTop = titleTop + titleSpace;
+  const overlayLegendTop = showGroupLegend ? groupLegendTop + 22 : groupLegendTop;
+
+  return {
   // Changing an axis, groupBy, or the trend-line toggle usually reshapes the
   // series array enough that echarts can't match old vs new series/data and
   // smoothly interpolate -- it tears the series down and replays its
@@ -590,29 +733,49 @@ const chartOption = computed(() => ({
   // fresh enter, not an update), so animation is disabled outright --
   // control-driven changes should be instant on a data tool like this one.
   animation: false,
-  title: { text: displayTitle.value, left: "center" },
+  title: { text: displayTitle.value, left: "center", top: titleTop },
   // Controlled by Display > Show legend (GraphControls) -- on by default so
   // exporting the chart as an image (see exportPng below) still carries a
-  // key for which color is which group.
-  legend: {
-    show: props.showLegend,
-    data: legendData.value,
-    top: 4,
-    left: "center",
-    selectedMode: false,
-    textStyle: { color: legendColor, fontSize: 11 },
-    itemWidth: 14,
-    itemHeight: 8,
-  },
+  // key for which color is which group. Two entries: group-by colors on
+  // their own row, trend/Pareto overlays on a second row below it (see
+  // groupLegendTop/overlayLegendTop above).
+  legend: [
+    {
+      show: showGroupLegend,
+      data: groupLegendNames.value,
+      top: groupLegendTop,
+      left: "center",
+      selectedMode: false,
+      textStyle: { color: legendColor, fontSize: 11 },
+      itemWidth: 14,
+      itemHeight: 8,
+    },
+    {
+      show: showOverlayLegend,
+      data: overlayLegendNames.value,
+      top: overlayLegendTop,
+      left: "center",
+      selectedMode: false,
+      textStyle: { color: legendColor, fontSize: 11 },
+      itemWidth: 14,
+      itemHeight: 8,
+    },
+  ],
   // left/right stay modest (containLabel still grows them further if an
   // unusually wide tick label needs it) instead of the ~10% default on
-  // both sides, which left a dead strip on the left and — combined with
-  // the x-axis name trailing off the last tick — clipped the name on the
-  // right. left needs to comfortably fit the y-axis tick labels *and* its
-  // rotated name (see yAxis.nameGap below); too tight and a numeric
-  // (value-type) x-axis, which has no category buckets holding points
-  // away from x=0, ends up drawing points/labels right through that area.
-  grid: { top: props.showLegend ? 64 : 40, left: 56, right: 32, containLabel: true },
+  // both sides, which left a dead strip on the left; too tight on the left
+  // and a numeric (value-type) x-axis, which has no category buckets
+  // holding points away from x=0, ends up drawing points/labels right
+  // through that area. right/top get an explicit reservation for the axis
+  // names themselves (see estimateAxisNameSpace above) since they now
+  // render at the end of each axis rather than below/beside the ticks.
+  grid: {
+    top: 16 + titleSpace + legendRows * 24 + yNameSpace,
+    left: 56,
+    right: 32 + xNameSpace,
+    bottom: 8,
+    containLabel: true,
+  },
   tooltip: {
     trigger: "item",
     formatter: (params: any) => {
@@ -625,8 +788,12 @@ const chartOption = computed(() => ({
       const groupLine = props.groupBy
         ? `${escapeHtml(props.groupBy)}: <strong>${escapeHtml(params.seriesName)}</strong><br/>`
         : "";
-      const unclearLine = params.data.isUnclear
-        ? `<span style="color:${medianLineColor}">${t("fomcharts.unclearReported")}</span><br/>`
+      // Disambiguates which of a paper's several extracted rows this point
+      // is -- Mode ID + Mode Description together (e.g. "Mode 1 —
+      // Resonance peak P1") -- without it, two points from the same
+      // Ref/Title look identical in the tooltip.
+      const modeCaseLine = params.data.modeCase
+        ? `<em style="opacity:0.75">${escapeHtml(params.data.modeCase)}</em><br/>`
         : "";
       const needsReviewLine = params.data.needsReview
         ? `<span style="color:${medianLineColor}">${t("fomcharts.needsReview")}</span><br/>`
@@ -635,8 +802,9 @@ const chartOption = computed(() => ({
         .map(([key, val]) => `${escapeHtml(key)}: <strong>${escapeHtml(val)}</strong><br/>`)
         .join("");
       return `<div style="max-width: 300px; white-space: normal;">
-                <strong>${escapeHtml(params.data.refLabel ?? "")}</strong> ${escapeHtml(params.data.title ?? "")}<br/><br/>
-                ${unclearLine}
+                <strong>${escapeHtml(params.data.refLabel ?? "")}</strong> ${escapeHtml(params.data.title ?? "")}<br/>
+                ${modeCaseLine}
+                <br/>
                 ${needsReviewLine}
                 ${groupLine}
                 ${escapeHtml(props.xAxis)}: <strong>${escapeHtml(params.data.value[0])}</strong><br/>
@@ -655,17 +823,18 @@ const chartOption = computed(() => ({
   // zooming without it; scrolling back out is the only way to un-zoom now
   // that the toolbox's own zoom/restore buttons are gone.
   dataZoom: [{ type: "inside" }],
+  // nameLocation "end" puts the column name right at the tip of each axis
+  // (past the last tick) instead of centered below/beside the tick labels --
+  // this both answers "which axis is X and which is Y" directly on the
+  // chart, and sidesteps the old clipping bug, since grid.right/top above
+  // now reserve dedicated space for it rather than relying on containLabel.
   xAxis: props.xAxisNumeric
-    ? { type: "value", name: props.xAxis, nameLocation: "middle", nameGap: 32 }
+    ? { type: "value", name: xName, nameLocation: "end", nameGap: 12 }
     : {
         type: "category",
-        name: props.xAxis,
-        // Centered below the (rotated) tick labels instead of the echarts
-        // default of trailing after the last one -- a long axis name at
-        // the end has nowhere left to go and gets clipped by the chart's
-        // right edge; centered under the full axis width it always fits.
-        nameLocation: "middle",
-        nameGap: 85,
+        name: xName,
+        nameLocation: "end",
+        nameGap: 12,
         axisLabel: {
           interval: 0,
           rotate: 30,
@@ -681,19 +850,13 @@ const chartOption = computed(() => ({
       },
   yAxis: {
     type: props.yAxisScale,
-    name: props.yAxis,
-    // echarts' default y-axis name sits horizontally above the top tick,
-    // left-anchored roughly at the axis line -- for a long descriptive
-    // column name (e.g. "Wavelength-based FOM (/RIU)") that runs past the
-    // left edge of the chart and gets clipped. Rotated and centered
-    // alongside the axis, it uses the chart's height instead of its width,
-    // so it always fits regardless of how long the column name is.
-    nameLocation: "middle",
-    nameGap: 50,
-    nameRotate: 90,
+    name: yName,
+    nameLocation: "end",
+    nameGap: 12,
   },
   series: seriesList.value,
-}));
+  };
+});
 </script>
 
 <style scoped>

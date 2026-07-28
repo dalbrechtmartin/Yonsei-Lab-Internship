@@ -8,34 +8,44 @@ export interface ColumnTypes {
 /**
  * Columns that carry provenance/bookkeeping/validation data (citation refs,
  * quoted evidence text, page numbers, free-text notes, which model produced
- * the row, the free-text FOM definition, the reported/unreported QA flag,
- * the Domain classification...) rather than a plottable quantity or
+ * the row, the free-text FOM definition, the Domain classification, the
+ * free-text Mode Description...) rather than a plottable quantity or
  * dimension. Harmonized exports (e.g. the PDF-extraction output) are full
  * of these; they must never show up as an axis/group-by choice even though
- * "Sensitivity Page" parses as a number and "Notes" reads as text.
+ * "Location" parses as text and "Notes" reads as text.
  * Domain and Origin get their own dedicated filter UI (see
  * findDomainColumn/findOriginColumn below) instead of being axis choices —
  * Origin stays out of this pattern on purpose so it can still double as a
  * "Group / Color by" option, which is the whole point of separating EXP
  * from SIM records visually.
+ * Mode Description is excluded here for the same reason as Evidence/Notes:
+ * near-unique free text per row makes an unreadable axis/legend, but it's
+ * still surfaced individually in the chart tooltip and pinned annotations
+ * (see findModeDescriptionColumn / annotationFields.ts). Mode ID is NOT
+ * excluded — it's a short label (e.g. "Mode 1") genuinely useful as an
+ * X-axis or "Group / Color by" choice once filtered down to one paper's
+ * rows (see groupableColumns' exemptColumns).
+ * A bare "id" is excluded too (a generic row-id column), but not when it's
+ * part of "Mode ID".
  */
 const METADATA_COLUMN_PATTERN =
-  /\b(ref|id|title|quotes?|evidence|page|notes?|model(\s*used)?|comments?|source|location|domain|reported|review(\s*status)?|definition)\b/i;
+  /\b(ref|title|quotes?|evidence|page|notes?|model(\s*used)?|comments?|source|location|domain|review(\s*status)?|definition|mode\s*description)\b/i;
+const GENERIC_ID_PATTERN = /(?<!mode\s)\bid\b/i;
 
 export function isMetadataColumn(column: string): boolean {
-  return METADATA_COLUMN_PATTERN.test(column);
+  return METADATA_COLUMN_PATTERN.test(column) || GENERIC_ID_PATTERN.test(column);
 }
 
 /**
  * Columns worth dropping specifically from the *export* — narrower
  * than isMetadataColumn on purpose. A researcher exporting "the filtered
- * dataset" still wants Ref/Title (which record is this?), Domain/Origin/
- * FOM Reported (why was it included/excluded?), and FOM Definition (what
- * formula did the author use?) — those are real analysis context, not
- * noise. What's actually unreadable clutter in a spreadsheet are the long
- * verbatim quote paragraphs, page numbers, and pipeline bookkeeping
- * (which LLM produced this row) — useful for auditing one record in the
- * app's tooltip, not for scanning a table of dozens of rows in Excel.
+ * dataset" still wants Ref/Title (which record is this?), Domain/Origin
+ * (why was it included/excluded?), and Definition (what formula did the
+ * author use?) — those are real analysis context, not noise. What's
+ * actually unreadable clutter in a spreadsheet are the long verbatim quote
+ * paragraphs, page numbers, and pipeline bookkeeping (which LLM produced
+ * this row) — useful for auditing one record in the app's tooltip, not for
+ * scanning a table of dozens of rows in Excel.
  */
 const EXPORT_NOISE_PATTERN =
   /\b(quotes?|page|notes?|model(\s*used)?|comments?|source|location)\b/i;
@@ -92,12 +102,11 @@ export function detectColumnTypes(rows: DataRow[], columns: string[]): ColumnTyp
 
 /**
  * Best-effort guess for a sensible default Y-axis column: prioritizes
- * FOM value when present, then Q-factor, then falls back to the first
+ * FOM when present, then Q-factor, then falls back to the first
  * numeric column found.
  */
 export function guessDefaultYAxis(numericColumns: string[]): string | null {
-  const fomValueLike = numericColumns.find((c) => /fom\s*value/i.test(c));
-  const fomLike = fomValueLike || numericColumns.find((c) => /fom/i.test(c));
+  const fomLike = numericColumns.find((c) => /\bfom\b/i.test(c));
   if (fomLike) return fomLike;
   const qFactorLike = numericColumns.find((c) => /q[-\s]?factor/i.test(c));
   return qFactorLike || numericColumns[0] || null;
@@ -186,6 +195,28 @@ export function findBaseMaterialsColumn(columns: string[]): string | null {
   return columns.find((c) => /base\s*materials?/i.test(c)) ?? null;
 }
 
+/**
+ * Locates the "Mode ID" column (e.g. "Mode 1", "Peak 3") — the strict
+ * numbered identifier that disambiguates several rows extracted from the
+ * very same paper. Near-unique per row (see groupableColumns), so it's
+ * excluded from "Group / Color by" by cardinality alone, but it's exactly
+ * the context a researcher needs to make sense of why a paper shows up
+ * more than once — surfaced in the point tooltip and on pinned annotations
+ * (see findTooltipExtraColumns / annotationFields.ts).
+ */
+export function findModeIdColumn(columns: string[]): string | null {
+  return columns.find((c) => /\bmode\s*id\b/i.test(c)) ?? null;
+}
+
+/**
+ * Locates the "Mode Description" column (e.g. "Resonance peak P1 Fano
+ * mode") — the free-text companion to Mode ID, describing what that
+ * specific configuration/peak actually is.
+ */
+export function findModeDescriptionColumn(columns: string[]): string | null {
+  return columns.find((c) => /mode\s*description/i.test(c)) ?? null;
+}
+
 export function findSensitivityColumn(columns: string[]): string | null {
   return columns.find((c) => /sensitivity/i.test(c)) ?? null;
 }
@@ -195,7 +226,11 @@ export function findQFactorColumn(columns: string[]): string | null {
 }
 
 export function findFomValueColumn(columns: string[]): string | null {
-  return columns.find((c) => /fom\s*value/i.test(c)) ?? null;
+  return columns.find((c) => /\bfom\b/i.test(c)) ?? null;
+}
+
+export function findResonanceWavelengthColumn(columns: string[]): string | null {
+  return columns.find((c) => /resonance\s*wavelength/i.test(c)) ?? null;
 }
 
 export function findLayerStructureColumn(columns: string[]): string | null {
@@ -222,20 +257,12 @@ export function findNotesColumn(columns: string[]): string | null {
 }
 
 /**
- * Locates the "FOM reported" QA flag column (Yes/No/Unclear), if present —
- * drives the dashed-outline data-quality marker on uncertain points.
- */
-export function findReportedColumn(columns: string[]): string | null {
-  return columns.find((c) => /\breported\b/i.test(c)) ?? null;
-}
-
-/**
  * Locates the "Review status" column (Approve/Edit/Exclude), if present —
  * a human-review workflow flag, not a plottable category (see
  * METADATA_COLUMN_PATTERN, which excludes it from axis/group-by choices).
- * "Edit" marks a record whose FWHM was calculated/estimated rather than
- * read directly from the paper, so it drives the same dashed-outline
- * data-quality marker as an "Unclear" FOM Reported flag.
+ * "Edit" marks a record whose FWHM/Sensitivity was estimated, converted
+ * from incompatible units, or otherwise ambiguous, so it drives the
+ * dashed-outline data-quality marker on uncertain points.
  */
 export function findReviewStatusColumn(columns: string[]): string | null {
   return columns.find((c) => /review\s*status/i.test(c)) ?? null;
@@ -253,11 +280,19 @@ export function findShortTitleColumn(columns: string[]): string | null {
 /**
  * Columns worth surfacing in the point tooltip beyond the axes already on
  * display — a researcher comparing FOM records usually wants Sensitivity/
- * Q-factor/FOM Value/Layer Structure/Spectral Range/Origin alongside it without re-plotting.
- * Matched by keyword since exact header text varies across harmonized exports.
+ * Q-factor/FOM/Resonance Wavelength/Layer Structure/Origin alongside it
+ * without re-plotting. Matched by keyword since exact header text varies
+ * across harmonized exports.
  */
 export function findTooltipExtraColumns(columns: string[]): string[] {
-  const patterns = [/sensitivity/i, /q[-\s]?factor/i, /fom\s*value/i, /layer\s*structure/i, /spectral\s*range/i, /\borigin\b/i];
+  const patterns = [
+    /sensitivity/i,
+    /q[-\s]?factor/i,
+    /\bfom\b/i,
+    /resonance\s*wavelength/i,
+    /layer\s*structure/i,
+    /\borigin\b/i,
+  ];
   const found: string[] = [];
   for (const pattern of patterns) {
     const col = columns.find((c) => pattern.test(c));
@@ -315,27 +350,34 @@ export const MAX_GROUPABLE_CATEGORIES = 7;
 
 /**
  * Categorical columns worth offering in "Group / Color by": ones with few
- * enough distinct values that every group still gets its own color. A
- * column like "Mode/Case" — often near one distinct value per row — is
- * exactly what makes a good X-axis (see guessDefaultXAxis) but a useless,
- * cluttered legend.
+ * enough distinct values that every group still gets its own color. Most
+ * near-unique-per-row columns are excluded this way — a useless, cluttered
+ * legend — but two kinds are always offered regardless of cardinality
+ * (passed in as exemptColumns):
  *
- * Composite columns (Material Class, Base Materials — see
- * findMaterialClassColumn/findBaseMaterialsColumn) are always offered
- * regardless of cardinality: grouping by one of them splits composite cells
- * like "Dielectric;Metal" into their individual tokens (see FomChart's
- * isGroupingByCompositeColumn), and a sheet can legitimately have more
- * than MAX_GROUPABLE_CATEGORIES distinct base materials (Au, Ag, SiO2,
- * Si3N4, Ta2O5, ...) — excluding the option entirely would be worse than
- * the accepted tradeoff of the palette repeating colors past 7 groups.
+ * - Composite columns (Material Class, Base Materials — see
+ *   findMaterialClassColumn/findBaseMaterialsColumn): grouping by one of
+ *   them splits composite cells like "Dielectric;Metal" into their
+ *   individual tokens (see FomChart's isGroupingByCompositeColumn), and a
+ *   sheet can legitimately have more than MAX_GROUPABLE_CATEGORIES distinct
+ *   base materials (Au, Ag, SiO2, Si3N4, Ta2O5, ...).
+ * - Mode ID (see findModeIdColumn): near-unique across the *whole*
+ *   dataset, but the point of grouping by it is almost always after
+ *   filtering down to a single paper's rows (comparing its own handful of
+ *   modes by color) rather than the full multi-paper dataset — excluding it
+ *   would remove that use case entirely just to guard against a legend that
+ *   only gets messy in the untargeted case.
+ *
+ * In both cases, excluding the option entirely would be worse than the
+ * accepted tradeoff of the palette repeating colors past 7 groups.
  */
 export function groupableColumns(
   rows: DataRow[],
   categoricalColumns: string[],
-  compositeColumns: (string | null)[] = [],
+  exemptColumns: (string | null)[] = [],
 ): string[] {
   return categoricalColumns.filter((col) => {
-    if (compositeColumns.includes(col)) return true;
+    if (exemptColumns.includes(col)) return true;
     return distinctValues(rows, col).length <= MAX_GROUPABLE_CATEGORIES;
   });
 }
