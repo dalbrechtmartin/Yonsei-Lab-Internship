@@ -243,7 +243,7 @@ const chartTitle = ref("");
 const showLegend = ref(true);
 const showMedian = ref(false);
 const showTrend = ref(false);
-const showAxisNames = ref(true);
+const showAxisNames = ref(false);
 const highlightGroup = ref<string | null>(null);
 const selectedDomains = ref<string[]>([]);
 const selectedOrigins = ref<string[]>([]);
@@ -520,7 +520,7 @@ const applyDefaults = () => {
   showLegend.value = true;
   showMedian.value = false;
   showTrend.value = false;
-  showAxisNames.value = true;
+  showAxisNames.value = false;
   showPareto.value = false;
   highlightGroup.value = null;
 };

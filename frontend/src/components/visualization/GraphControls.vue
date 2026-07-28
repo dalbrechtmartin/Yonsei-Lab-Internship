@@ -287,7 +287,7 @@ const chartTitle = defineModel<string>("chartTitle", { default: "" });
 const showLegend = defineModel<boolean>("showLegend", { default: true });
 const showMedian = defineModel<boolean>("showMedian", { default: false });
 const showTrend = defineModel<boolean>("showTrend", { default: false });
-const showAxisNames = defineModel<boolean>("showAxisNames", { default: true });
+const showAxisNames = defineModel<boolean>("showAxisNames", { default: false });
 const selectedDomains = defineModel<string[]>("selectedDomains", {
   default: () => [],
 });
@@ -362,10 +362,16 @@ watch(paretoDisabled, (disabled) => {
 
 // Same reasoning as trend/Pareto above -- once nothing would actually show
 // up in the legend, leave it off rather than a checked-but-inert switch.
+// immediate: true also covers the very first render -- showLegend defaults
+// to true, but a freshly uploaded file usually starts with no groupBy and
+// no trend/Pareto active, so legendDisabled is already true before any
+// prop ever *changes*; without immediate this watch would never fire and
+// the switch would look "on" despite showing nothing.
 watch(
   () => props.legendDisabled,
   (disabled) => {
     if (disabled && showLegend.value) showLegend.value = false;
   },
+  { immediate: true },
 );
 </script>

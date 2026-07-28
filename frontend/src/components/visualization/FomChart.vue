@@ -135,7 +135,7 @@ const props = withDefaults(
     showTrend: false,
     showLegend: false,
     showPareto: false,
-    showAxisNames: true,
+    showAxisNames: false,
     xAxisNumeric: false,
     highlightGroup: null,
     groupColorMap: () => ({}),
