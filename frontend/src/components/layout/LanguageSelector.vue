@@ -33,11 +33,17 @@
 </template>
 
 <script setup lang="ts">
+import { watch } from "vue";
 import { useI18n } from "vue-i18n";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-// Importing the 4 flags we need directly (instead of the package's global
-// CSS, which references all ~250 country flags and bloats the production
-// bundle by several MB since Vite can't tree-shake CSS url() references).
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { LOCALE_STORAGE_KEY } from "@/services/i18n";
+
 import usFlag from "flag-icons/flags/4x3/us.svg";
 import frFlag from "flag-icons/flags/4x3/fr.svg";
 import krFlag from "flag-icons/flags/4x3/kr.svg";
@@ -52,5 +58,10 @@ const options = [
   { value: "zh", label: "ZH", flag: cnFlag },
 ];
 
-const optionFor = (value: string) => options.find((option) => option.value === value) ?? options[0];
+const optionFor = (value: string) =>
+  options.find((option) => option.value === value) ?? options[0];
+
+watch(locale, (value) => {
+  localStorage.setItem(LOCALE_STORAGE_KEY, value);
+});
 </script>
