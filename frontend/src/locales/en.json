@@ -119,6 +119,88 @@
       "etaRemaining": "~{eta} remaining"
     }
   },
+  "guide": {
+    "generating": "Generating your guide…",
+    "meta": {
+      "subtitle": "User Guide",
+      "lab": "Research Tool — Yonsei Lab",
+      "version": "Version"
+    },
+    "footer": {
+      "page": "Page"
+    },
+    "mode1": {
+      "eyebrow": "Mode 1",
+      "title": "Excel-to-Plot visualization"
+    },
+    "import": {
+      "title": "1. Import your dataset",
+      "body": "Drag and drop your Excel file here, or click to browse. λLens reads each sheet's columns to populate the axis pickers below.",
+      "dropzone": {
+        "title": "Drop your Excel file here",
+        "subtitle": ".xlsx, .xls — up to 10 MB",
+        "button": "Browse files"
+      }
+    },
+    "chart": {
+      "title": "2. Read the chart",
+      "body": "The X and Y axes plot your chosen metrics — typically wavelength against Figure-of-Merit (FOM). Simulated (SIM) and experimental (EXP) points are colored separately so you can spot agreement at a glance.",
+      "axis": {
+        "x": "Wavelength (nm)",
+        "y": "FOM"
+      },
+      "annotation": {
+        "point": "λ 620nm · FOM 8.4",
+        "median": "median line"
+      },
+      "legend": {
+        "sim": "SIM",
+        "exp": "EXP"
+      },
+      "interaction": {
+        "hover": { "label": "Hover", "body": "shows exact wavelength and metric value for a point." },
+        "zoom": { "label": "Scroll / drag", "body": "zooms and pans the axes to inspect a region closely." },
+        "legend": { "label": "Click legend", "body": "toggles SIM or EXP series on/off." },
+        "scale": { "label": "Scale toggle", "body": "switches the Y axis between linear and log." },
+        "median": { "label": "Median line", "body": "can be shown or hidden to compare against the trend." },
+        "groupBy": { "label": "Group by", "body": "recolors points by a chosen column (e.g. material)." }
+      }
+    },
+    "mode2": {
+      "eyebrow": "Mode 2",
+      "title": "PDF extraction & validation"
+    },
+    "extraction": {
+      "title": "3. AI extraction rules",
+      "body": "Gemini reads each paper against a fixed set of business rules before a value is proposed for your review.",
+      "rule": {
+        "substrate": {
+          "title": "Substrate check",
+          "body": "Flags quartz vs. glass substrates when the paper doesn't state one explicitly."
+        },
+        "wavelength": {
+          "title": "Wavelength domain",
+          "body": "Confirms the reported values fall within the paper's stated operating range."
+        }
+      }
+    },
+    "validation": {
+      "title": "4. Validate extracted values",
+      "body": "Review each proposed row next to its source page. Approve, edit, or exclude a value before it's added to your dataset.",
+      "pdf": {
+        "label": "Source PDF",
+        "detected": "detected"
+      },
+      "table": {
+        "label": "Extracted data"
+      },
+      "action": {
+        "approve": "Approve",
+        "edit": "Edit",
+        "exclude": "Exclude"
+      }
+    }
+  },
   "fomcharts": {
     "sampleCount": "samples",
     "type": {

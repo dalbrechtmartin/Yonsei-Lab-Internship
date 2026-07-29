@@ -119,6 +119,88 @@
       "etaRemaining": "약 {eta} 남음"
     }
   },
+  "guide": {
+    "generating": "가이드를 생성하는 중…",
+    "meta": {
+      "subtitle": "사용자 가이드",
+      "lab": "연구 도구 — 연세대 연구실",
+      "version": "버전"
+    },
+    "footer": {
+      "page": "페이지"
+    },
+    "mode1": {
+      "eyebrow": "모드 1",
+      "title": "엑셀-투-플롯 시각화"
+    },
+    "import": {
+      "title": "1. 데이터셋 불러오기",
+      "body": "엑셀 파일을 이곳에 끌어다 놓거나 클릭하여 선택하세요. λLens는 각 시트의 열을 읽어 아래 축 선택기를 채웁니다.",
+      "dropzone": {
+        "title": "엑셀 파일을 여기에 놓으세요",
+        "subtitle": ".xlsx, .xls — 최대 10MB",
+        "button": "파일 찾아보기"
+      }
+    },
+    "chart": {
+      "title": "2. 그래프 읽는 법",
+      "body": "X축과 Y축은 선택한 지표를 나타내며, 일반적으로 파장 대 성능지수(FOM)입니다. 시뮬레이션(SIM) 값과 실험(EXP) 값은 서로 다른 색으로 표시되어 한눈에 일치 여부를 확인할 수 있습니다.",
+      "axis": {
+        "x": "파장 (nm)",
+        "y": "FOM"
+      },
+      "annotation": {
+        "point": "λ 620nm · FOM 8.4",
+        "median": "중앙값 선"
+      },
+      "legend": {
+        "sim": "SIM",
+        "exp": "EXP"
+      },
+      "interaction": {
+        "hover": { "label": "마우스 오버", "body": "포인트의 정확한 파장과 지표 값을 표시합니다." },
+        "zoom": { "label": "스크롤 / 드래그", "body": "축을 확대·이동하여 특정 영역을 자세히 살펴봅니다." },
+        "legend": { "label": "범례 클릭", "body": "SIM 또는 EXP 시리즈를 켜고 끕니다." },
+        "scale": { "label": "축척 전환", "body": "Y축을 선형과 로그 사이로 전환합니다." },
+        "median": { "label": "중앙값 선", "body": "추세와 비교할 수 있도록 표시하거나 숨길 수 있습니다." },
+        "groupBy": { "label": "그룹 기준", "body": "선택한 열(예: 재료)에 따라 포인트 색상을 다시 지정합니다." }
+      }
+    },
+    "mode2": {
+      "eyebrow": "모드 2",
+      "title": "PDF 추출 및 검증"
+    },
+    "extraction": {
+      "title": "3. AI 추출 규칙",
+      "body": "Gemini는 값이 검토를 위해 제안되기 전에 고정된 업무 규칙 세트에 따라 각 논문을 분석합니다.",
+      "rule": {
+        "substrate": {
+          "title": "기판 확인",
+          "body": "논문에 명시되지 않은 경우 석영 또는 유리 기판 여부를 표시합니다."
+        },
+        "wavelength": {
+          "title": "파장 범위",
+          "body": "보고된 값이 논문에 명시된 동작 범위 내에 있는지 확인합니다."
+        }
+      }
+    },
+    "validation": {
+      "title": "4. 추출된 값 검증",
+      "body": "제안된 각 행을 원본 페이지와 함께 검토하세요. 데이터셋에 추가하기 전에 값을 승인, 수정 또는 제외할 수 있습니다.",
+      "pdf": {
+        "label": "원본 PDF",
+        "detected": "감지됨"
+      },
+      "table": {
+        "label": "추출된 데이터"
+      },
+      "action": {
+        "approve": "승인",
+        "edit": "수정",
+        "exclude": "제외"
+      }
+    }
+  },
   "fomcharts": {
     "sampleCount": "샘플",
     "type": {

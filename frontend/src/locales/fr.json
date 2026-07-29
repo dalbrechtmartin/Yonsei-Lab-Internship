@@ -119,6 +119,88 @@
       "etaRemaining": "~{eta} restant(es)"
     }
   },
+  "guide": {
+    "generating": "Génération du guide en cours…",
+    "meta": {
+      "subtitle": "Guide utilisateur",
+      "lab": "Outil de recherche — Laboratoire Yonsei",
+      "version": "Version"
+    },
+    "footer": {
+      "page": "Page"
+    },
+    "mode1": {
+      "eyebrow": "Mode 1",
+      "title": "Visualisation Excel-to-Plot"
+    },
+    "import": {
+      "title": "1. Importer votre jeu de données",
+      "body": "Glissez-déposez votre fichier Excel ici, ou cliquez pour le sélectionner. λLens lit les colonnes de chaque feuille pour remplir les sélecteurs d'axes ci-dessous.",
+      "dropzone": {
+        "title": "Déposez votre fichier Excel ici",
+        "subtitle": ".xlsx, .xls — jusqu'à 10 Mo",
+        "button": "Parcourir les fichiers"
+      }
+    },
+    "chart": {
+      "title": "2. Lire le graphique",
+      "body": "Les axes X et Y représentent les métriques choisies — généralement la longueur d'onde par rapport au facteur de mérite (FOM). Les points simulés (SIM) et expérimentaux (EXP) sont colorés différemment pour repérer les écarts en un coup d'œil.",
+      "axis": {
+        "x": "Longueur d'onde (nm)",
+        "y": "FOM"
+      },
+      "annotation": {
+        "point": "λ 620nm · FOM 8.4",
+        "median": "ligne médiane"
+      },
+      "legend": {
+        "sim": "SIM",
+        "exp": "EXP"
+      },
+      "interaction": {
+        "hover": { "label": "Survol", "body": "affiche la longueur d'onde exacte et la valeur de la métrique pour un point." },
+        "zoom": { "label": "Défilement / glisser", "body": "zoome et déplace les axes pour inspecter une zone en détail." },
+        "legend": { "label": "Clic sur la légende", "body": "active ou désactive la série SIM ou EXP." },
+        "scale": { "label": "Bascule d'échelle", "body": "passe l'axe Y d'une échelle linéaire à logarithmique." },
+        "median": { "label": "Ligne médiane", "body": "peut être affichée ou masquée pour la comparer à la tendance." },
+        "groupBy": { "label": "Regrouper par", "body": "recolore les points selon une colonne choisie (ex. matériau)." }
+      }
+    },
+    "mode2": {
+      "eyebrow": "Mode 2",
+      "title": "Extraction PDF et validation"
+    },
+    "extraction": {
+      "title": "3. Règles d'extraction par IA",
+      "body": "Gemini analyse chaque article selon un ensemble fixe de règles métier avant de proposer une valeur à valider.",
+      "rule": {
+        "substrate": {
+          "title": "Vérification du substrat",
+          "body": "Signale les substrats en quartz ou en verre lorsque l'article ne le précise pas explicitement."
+        },
+        "wavelength": {
+          "title": "Domaine de longueur d'onde",
+          "body": "Vérifie que les valeurs rapportées se situent dans la plage de fonctionnement indiquée par l'article."
+        }
+      }
+    },
+    "validation": {
+      "title": "4. Valider les valeurs extraites",
+      "body": "Vérifiez chaque ligne proposée en la comparant à sa page source. Approuvez, modifiez ou excluez une valeur avant son ajout à votre jeu de données.",
+      "pdf": {
+        "label": "PDF source",
+        "detected": "détecté"
+      },
+      "table": {
+        "label": "Données extraites"
+      },
+      "action": {
+        "approve": "Approuver",
+        "edit": "Modifier",
+        "exclude": "Exclure"
+      }
+    }
+  },
   "fomcharts": {
     "sampleCount": "échantillons",
     "type": {

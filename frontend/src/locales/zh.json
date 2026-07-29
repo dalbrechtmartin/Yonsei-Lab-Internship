@@ -119,6 +119,88 @@
       "etaRemaining": "约剩 {eta}"
     }
   },
+  "guide": {
+    "generating": "正在生成指南…",
+    "meta": {
+      "subtitle": "用户指南",
+      "lab": "研究工具 — 延世大学实验室",
+      "version": "版本"
+    },
+    "footer": {
+      "page": "第"
+    },
+    "mode1": {
+      "eyebrow": "模式一",
+      "title": "Excel 转图表可视化"
+    },
+    "import": {
+      "title": "1. 导入数据集",
+      "body": "将 Excel 文件拖放到此处，或点击浏览选择文件。λLens 会读取每个工作表的列，以填充下方的坐标轴选择器。",
+      "dropzone": {
+        "title": "将 Excel 文件拖放到此处",
+        "subtitle": ".xlsx、.xls — 最大 10 MB",
+        "button": "浏览文件"
+      }
+    },
+    "chart": {
+      "title": "2. 解读图表",
+      "body": "X 轴和 Y 轴表示所选指标，通常是波长与品质因数（FOM）。仿真（SIM）与实验（EXP）数据点分别用不同颜色标注，便于一眼比对。",
+      "axis": {
+        "x": "波长 (nm)",
+        "y": "FOM"
+      },
+      "annotation": {
+        "point": "λ 620nm · FOM 8.4",
+        "median": "中位线"
+      },
+      "legend": {
+        "sim": "SIM",
+        "exp": "EXP"
+      },
+      "interaction": {
+        "hover": { "label": "悬停", "body": "显示某点的精确波长和指标值。" },
+        "zoom": { "label": "滚动 / 拖动", "body": "缩放并平移坐标轴以细致查看某个区域。" },
+        "legend": { "label": "点击图例", "body": "切换显示或隐藏 SIM 或 EXP 系列。" },
+        "scale": { "label": "坐标切换", "body": "在线性和对数刻度之间切换 Y 轴。" },
+        "median": { "label": "中位线", "body": "可显示或隐藏，用于与趋势对比。" },
+        "groupBy": { "label": "分组依据", "body": "根据所选列（例如材料）为数据点重新着色。" }
+      }
+    },
+    "mode2": {
+      "eyebrow": "模式二",
+      "title": "PDF 提取与校验"
+    },
+    "extraction": {
+      "title": "3. AI 提取规则",
+      "body": "Gemini 会根据一套固定的业务规则分析每篇论文，然后再提出数值供您审核。",
+      "rule": {
+        "substrate": {
+          "title": "基底检查",
+          "body": "当论文未明确说明时，标记石英或玻璃基底。"
+        },
+        "wavelength": {
+          "title": "波长范围",
+          "body": "确认报告数值是否落在论文所述的工作范围内。"
+        }
+      }
+    },
+    "validation": {
+      "title": "4. 校验提取的数值",
+      "body": "对照来源页面逐行审核提议的数据。在加入数据集之前，您可以批准、编辑或排除某个数值。",
+      "pdf": {
+        "label": "源 PDF",
+        "detected": "已检测"
+      },
+      "table": {
+        "label": "提取的数据"
+      },
+      "action": {
+        "approve": "批准",
+        "edit": "编辑",
+        "exclude": "排除"
+      }
+    }
+  },
   "fomcharts": {
     "sampleCount": "样本",
     "type": {

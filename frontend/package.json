@@ -19,6 +19,8 @@
     "clsx": "^2.1.1",
     "echarts": "^6.1.0",
     "flag-icons": "^7.5.0",
+    "html2canvas-pro": "^2.3.2",
+    "jspdf": "^4.2.1",
     "reka-ui": "^2.10.1",
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.3.3",
