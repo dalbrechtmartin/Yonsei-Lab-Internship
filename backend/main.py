@@ -6,6 +6,7 @@ import polars as pl
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 import jobs
 import llm
@@ -138,6 +139,54 @@ async def download_job_result(job_id: str):
     if job["status"] in ("pending", "running"):
         raise HTTPException(status_code=409, detail="Job is still processing.")
     return _build_xlsx_response(job)
+
+
+
+@app.get("/jobs/{job_id}/files/{file_id}/records")
+async def get_file_records(job_id: str, file_id: str):
+    """Returns one file's reconciled records with their positional index,
+    so a review UI can address a specific record via the PATCH endpoint
+    below without needing to parse the downloaded xlsx."""
+    _job_or_404(job_id)
+    files_by_id = {f["id"]: f for f in state.list_job_files(job_id)}
+    job_file = files_by_id.get(file_id)
+    if job_file is None:
+        raise HTTPException(status_code=404, detail="File not found.")
+    records = job_file.get("records") or []
+    return {
+        "file_id": file_id,
+        "filename": job_file["filename"],
+        "records": [{"index": i, **r} for i, r in enumerate(records)],
+    }
+
+
+# The model itself only ever emits "Approve (AI)", "Edit", or "Exclude"
+# (see prompt.txt) -- "Approve (Manual)" is reserved for a human
+# reviewer confirming a value after checking an "Edit"-flagged record,
+# which is what this endpoint is for. Re-flagging back to "Edit" or
+# "Exclude" is also allowed, so a reviewer can walk a decision back.
+MANUAL_REVIEW_STATUSES = {"Approve (Manual)", "Edit", "Exclude"}
+
+
+class ReviewStatusUpdate(BaseModel):
+    status: str
+
+
+@app.patch("/jobs/{job_id}/files/{file_id}/records/{record_index}/review-status")
+async def update_record_review_status(
+    job_id: str, file_id: str, record_index: int, body: ReviewStatusUpdate
+):
+    _job_or_404(job_id)
+    if body.status not in MANUAL_REVIEW_STATUSES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unknown status '{body.status}'. Expected one of {sorted(MANUAL_REVIEW_STATUSES)}.",
+        )
+    try:
+        record = state.set_record_review_status(job_id, file_id, record_index, body.status)
+    except (KeyError, IndexError):
+        raise HTTPException(status_code=404, detail="File or record not found.")
+    return {"record": record}
 
 
 @app.get("/usage")

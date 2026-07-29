@@ -27,6 +27,7 @@ from typing import Optional
 DATA_DIR = Path(__file__).resolve().parent / "data"
 JOBS_DIR = DATA_DIR / "jobs"
 USAGE_LOG_PATH = DATA_DIR / "usage.jsonl"
+QUOTA_EXHAUSTED_PATH = DATA_DIR / "quota_exhausted.json"
 
 JOBS: dict[str, dict] = {}
 
@@ -190,6 +191,20 @@ def get_job_records(job_id: str) -> list[dict]:
     return records
 
 
+def set_record_review_status(
+    job_id: str, file_id: str, record_index: int, status: str
+) -> dict:
+    """A human reviewer overriding one record's "Review status" after
+    checking an AI-flagged "Edit" row -- the only path allowed to write
+    "Approve (Manual)" (the model itself never does, see prompt.txt).
+    Raises IndexError if record_index is out of range for this file."""
+    records = JOBS[job_id]["files"][file_id]["records"]
+    record = records[record_index]
+    record["Review status"] = status
+    _persist_job(job_id)
+    return record
+
+
 def set_available_models(job_id: str, available_models: list[str]) -> None:
     JOBS[job_id]["available_models"] = list(available_models)
     _persist_job(job_id)
@@ -229,7 +244,7 @@ def log_usage(
         f.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
 
-def get_usage_summary() -> dict:
+def _read_usage_counters() -> tuple[Counter, Counter]:
     today = datetime.now(timezone.utc).date().isoformat()
     calls_today: Counter = Counter()
     calls_total: Counter = Counter()
@@ -249,6 +264,52 @@ def get_usage_summary() -> dict:
                 calls_total[model] += 1
                 if str(entry.get("called_at", "")).startswith(today):
                     calls_today[model] += 1
+    return calls_today, calls_total
+
+
+def _read_quota_exhausted() -> dict:
+    if not QUOTA_EXHAUSTED_PATH.exists():
+        return {}
+    try:
+        return json.loads(QUOTA_EXHAUSTED_PATH.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
+def mark_model_exhausted_today(model: str) -> None:
+    """Called from a worker thread (llm._call_model_with_429_retry hits
+    this on a confirmed per-DAY 429, identified via the API's own
+    quotaId -- see llm._quota_scope) so every subsequent file today
+    skips straight past this model instead of re-discovering the same
+    429 one file at a time. Read-modify-write here isn't atomic across
+    concurrent jobs, but the worst case is one lost update, immediately
+    re-written by the next 429 on the same model -- fine at this
+    project's volume (see module docstring: no DB, single process)."""
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    data = _read_quota_exhausted()
+    data[model] = datetime.now(timezone.utc).date().isoformat()
+    tmp = QUOTA_EXHAUSTED_PATH.with_suffix(".json.tmp")
+    tmp.write_text(json.dumps(data), encoding="utf-8")
+    os.replace(tmp, QUOTA_EXHAUSTED_PATH)
+
+
+def is_model_exhausted_today(model: str) -> bool:
+    today = datetime.now(timezone.utc).date().isoformat()
+    return _read_quota_exhausted().get(model) == today
+
+
+def calls_today_for_model(model: str) -> int:
+    """Used to proactively steer the fallback chain away from a model
+    close to its daily (RPD) quota, instead of discovering it via 429s
+    -- see llm.filter_models_by_quota. Rereads the whole log each call;
+    fine at this project's volume (no DB, see module docstring)."""
+    calls_today, _ = _read_usage_counters()
+    return calls_today.get(model, 0)
+
+
+def get_usage_summary() -> dict:
+    calls_today, calls_total = _read_usage_counters()
+    today = datetime.now(timezone.utc).date().isoformat()
     models = sorted(set(calls_total) | set(calls_today))
     return {
         "date": today,

@@ -20,6 +20,7 @@ COLUMN_ORDER = [
     "Location",
     "Review status",
     "Notes",
+    "Reconciliation Log",
     "Model Used"
 ]
 
