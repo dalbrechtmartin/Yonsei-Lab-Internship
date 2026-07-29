@@ -15,6 +15,8 @@ from google import genai
 from google.genai import errors as genai_errors
 from google.genai import types
 
+import state
+
 load_dotenv()
 api_key = os.getenv("GEMINI_API_KEY")
 if not api_key:
@@ -51,15 +53,77 @@ def _classify_error(e: Exception) -> str:
         return "unavailable"
     return "error"
 
+
+# Gemini 3 models default to a per-model thinking_level (MEDIUM for flash,
+# MINIMAL for flash-lite -- see ai.google.dev/gemini-api/docs/thinking).
+# This task needs the model to enumerate every mode/peak mentioned in the
+# paper and reason about unit conversions/exclusion rules before writing
+# JSON, so we pin every model in the chain to HIGH rather than accepting
+# flash-lite's much weaker MINIMAL default -- a likely source of the
+# extra hallucinated/missed rows seen when the fallback chain lands on
+# flash-lite (see docs/Model_Comparison_Lite_vs_Flash_v2.md).
+_THINKING_CONFIG = types.ThinkingConfig(thinking_level=types.ThinkingLevel.HIGH)
+
 MODEL_CONFIG: dict[str, dict] = {
     "gemini-3.5-flash-lite": {"temperature": 0},
     "gemini-3.5-flash": {"temperature": 0},
     "gemini-flash-latest": {"temperature": 0},
 }
 
+# One JSON object per FOM record, matching prompt.txt's OUTPUT FORMAT.
+# Constraining the shape server-side (instead of hoping the model free-
+# forms valid JSON and hand-parsing ```json fences) removes an entire
+# class of run-to-run inconsistency: missing keys, wrong types, or
+# markdown-wrapped output. propertyOrdering keeps field order stable too.
+_RECORD_PROPERTIES: dict[str, types.Schema] = {
+    "Ref": types.Schema(type=types.Type.STRING),
+    "Title": types.Schema(type=types.Type.STRING),
+    "Short Title": types.Schema(type=types.Type.STRING),
+    "Mode ID": types.Schema(type=types.Type.INTEGER),
+    "Mode Description": types.Schema(type=types.Type.STRING),
+    "Material Class": types.Schema(type=types.Type.STRING),
+    "Base Materials": types.Schema(type=types.Type.STRING),
+    "Layer Structure": types.Schema(type=types.Type.STRING),
+    "Origin": types.Schema(type=types.Type.STRING, enum=["EXP", "SIM", "UNCLEAR"]),
+    "Domain": types.Schema(type=types.Type.STRING, enum=["Wavelength", "Frequency", "Other", "Unclear"]),
+    "Resonance Wavelength (nm)": types.Schema(type=types.Type.NUMBER, nullable=True),
+    "FOM (RIU^-1)": types.Schema(type=types.Type.NUMBER, nullable=True),
+    "Definition": types.Schema(type=types.Type.STRING),
+    "Sensitivity (nm/RIU)": types.Schema(type=types.Type.NUMBER, nullable=True),
+    "FWHM (nm)": types.Schema(type=types.Type.NUMBER, nullable=True),
+    "Q-factor": types.Schema(type=types.Type.NUMBER, nullable=True),
+    "Evidence": types.Schema(type=types.Type.STRING),
+    "Location": types.Schema(type=types.Type.STRING),
+    # "Approve (Manual)" is intentionally NOT in this enum -- only a human
+    # reviewer (via the future manual-approval endpoint) can set it, never
+    # the model itself.
+    "Review status": types.Schema(type=types.Type.STRING, enum=["Approve (AI)", "Edit", "Exclude"]),
+    "Notes": types.Schema(type=types.Type.STRING, nullable=True),
+}
+
+RESPONSE_SCHEMA = types.Schema(
+    type=types.Type.ARRAY,
+    items=types.Schema(
+        type=types.Type.OBJECT,
+        properties=_RECORD_PROPERTIES,
+        required=[
+            "Ref", "Title", "Short Title", "Mode ID", "Mode Description",
+            "Material Class", "Base Materials", "Layer Structure", "Origin",
+            "Domain", "Definition", "Evidence", "Location", "Review status",
+        ],
+        property_ordering=list(_RECORD_PROPERTIES),
+    ),
+)
+
+
 def get_model_config(model: str) -> types.GenerateContentConfig:
     config_dict = MODEL_CONFIG.get(model, {"temperature": 0})
-    return types.GenerateContentConfig(**config_dict)
+    return types.GenerateContentConfig(
+        **config_dict,
+        thinking_config=_THINKING_CONFIG,
+        response_mime_type="application/json",
+        response_schema=RESPONSE_SCHEMA,
+    )
 
 # "Default": most powerful/latest model first, falling back through
 # progressively cheaper/more available tiers.
@@ -82,6 +146,50 @@ MODEL_SLEEP_SECONDS = {
     "gemini-flash-latest": 13,  # 5 RPM
 }
 DEFAULT_SLEEP_SECONDS = 13
+
+# Free-tier RPD (requests/day) ceilings for this project's API key --
+# see ai.google.dev/gemini-api/docs/rate-limits. Update if the account's
+# tier changes. gemini-flash-latest and gemini-3.5-flash share the same
+# tight 20/day cap, which a single 7-file batch can exhaust on its own
+# (each file pins up to 3 calls to the same model -- see jobs.py's
+# MODEL PINNING note), so this is treated as a hard, checkable budget
+# rather than something only discovered by hitting a 429.
+MODEL_RPD_LIMITS = {
+    "gemini-flash-latest": 20,
+    "gemini-3.5-flash": 20,
+    "gemini-3.5-flash-lite": 500,
+}
+
+# A file's full reconciliation set makes up to 3 calls to its pinned
+# model (run 1 + 2 pinned reruns). Reserve that much headroom before
+# trusting a model to start a NEW file, so a batch doesn't pin a file to
+# a model that then 429s partway through its own reconciliation runs.
+CALLS_PER_FILE_RESERVE = 3
+
+
+def filter_models_by_quota(models: list[str]) -> list[str]:
+    """Drops models from a fallback chain that are known to be out of
+    daily quota. Two independent signals, checked in order of trust:
+
+    1. state.is_model_exhausted_today -- authoritative: set the moment a
+       429 explicitly identifies itself as a per-day quota violation
+       (see llm._quota_scope). If Google said so, believe it outright.
+    2. This app's own call count vs MODEL_RPD_LIMITS -- an estimate that
+       can undercount (calls made outside this app, or a run that failed
+       before logging), so it's only used to pre-emptively avoid the
+       FIRST 429 rather than as a hard truth.
+
+    Models with no known RPD limit are never filtered out on signal 2 --
+    an unknown cap is not evidence of exhaustion.
+    """
+    kept = []
+    for model in models:
+        if state.is_model_exhausted_today(model):
+            continue
+        limit = MODEL_RPD_LIMITS.get(model)
+        if limit is None or state.calls_today_for_model(model) + CALLS_PER_FILE_RESERVE <= limit:
+            kept.append(model)
+    return kept
 
 
 def _call_model(model: str, final_prompt: str, filename: str) -> Optional[list[dict]]:
@@ -114,16 +222,53 @@ def _call_model(model: str, final_prompt: str, filename: str) -> Optional[list[d
 MAX_429_RETRIES = 3
 BASE_429_BACKOFF_SECONDS = 30
 
+# A 429 for a per-minute quota resets within seconds to low tens of
+# seconds -- worth blocking this worker thread for. A 429 for a per-day
+# quota (RPD) can carry a RetryInfo of literally hours, and blindly
+# time.sleep()-ing that long would freeze this file's whole run (and,
+# since files are processed one at a time, the rest of the batch behind
+# it) for the remainder of the day. Past this cap we stop treating it as
+# "retry the same model shortly" and let it propagate instead, so the
+# caller falls back to the next model in the chain (run 1) or gives up
+# just this pinned run (runs 2/3) -- jobs.py's own multi-pass backoff
+# (RETRY_BACKOFFS_SECONDS, up to 300s between passes over the whole
+# batch) is the mechanism actually meant to ride out a long quota wait.
+MAX_429_RETRY_SLEEP_SECONDS = 90
+
+
+def _error_details_list(e: Exception) -> list:
+    details = getattr(e, "details", None)
+    return (details or {}).get("error", {}).get("details", []) if isinstance(details, dict) else []
+
+
+def _quota_scope(e: Exception) -> str:
+    """Google's 429 body includes a QuotaFailure with a quotaId that says
+    exactly which limit was hit (e.g.
+    'GenerateRequestsPerDayPerProjectPerModel-FreeTier' vs
+    '...PerMinute...'). This is authoritative -- unlike RetryInfo's
+    retryDelay, which in practice comes back as '0s' or a handful of
+    seconds even for a fully-exhausted DAILY quota, so it cannot be used
+    to distinguish the two (see the '77.pdf' log: a 20/20 RPD-exhausted
+    gemini-3.6-flash reported retryDelay '0s')."""
+    for detail in _error_details_list(e):
+        if not isinstance(detail, dict) or "QuotaFailure" not in str(detail.get("@type", "")):
+            continue
+        for violation in detail.get("violations", []) or []:
+            quota_id = str(violation.get("quotaId", "")).lower()
+            if "perday" in quota_id:
+                return "day"
+            if "perminute" in quota_id:
+                return "minute"
+    return "unknown"
+
 
 def _retry_delay_seconds(e: Exception, attempt: int) -> float:
     """Prefers the API's own RetryInfo ("retry in 34s") when the 429
-    response includes one -- it reflects the actual remaining quota window,
-    which is far more accurate than a fixed guess. Falls back to
-    exponential backoff otherwise.
+    response includes one -- for a per-minute quota it reflects the
+    actual remaining window. Falls back to exponential backoff otherwise.
+    Not used at all for a per-day quota -- see _quota_scope.
     """
-    details = getattr(e, "details", None)
-    error_details = (details or {}).get("error", {}).get("details", []) if isinstance(details, dict) else []
-    for detail in error_details or []:
+    for detail in _error_details_list(e):
         retry_delay = detail.get("retryDelay") if isinstance(detail, dict) else None
         if isinstance(retry_delay, str) and retry_delay.endswith("s"):
             try:
@@ -138,9 +283,26 @@ def _call_model_with_429_retry(model: str, final_prompt: str, filename: str) -> 
         try:
             return _call_model(model, final_prompt, filename)
         except genai_errors.ClientError as e:
-            if e.code != 429 or attempt == MAX_429_RETRIES:
+            if e.code != 429:
+                raise
+            scope = _quota_scope(e)
+            if scope == "day":
+                # Retrying (even once) is pure waste: this model will
+                # 429 again on every attempt until it resets tomorrow.
+                # Record it so filter_models_by_quota can skip it for
+                # every subsequent file today too, not just this call.
+                state.mark_model_exhausted_today(model)
+                print(f"  -> {model} hit a DAILY quota 429 for {filename} -- not retrying, skipping it for the rest of today")
+                raise
+            if attempt == MAX_429_RETRIES:
                 raise
             delay = _retry_delay_seconds(e, attempt)
+            if delay > MAX_429_RETRY_SLEEP_SECONDS:
+                print(
+                    f"  -> {model} hit 429 for {filename} with a {delay:.0f}s retry window -- "
+                    f"not blocking on it, giving up on this model for now"
+                )
+                raise
             print(
                 f"  -> {model} hit 429 for {filename} "
                 f"(attempt {attempt + 1}/{MAX_429_RETRIES + 1}), retrying in {delay:.0f}s"
@@ -155,7 +317,7 @@ def analyze_paper_with_llm(
     final_prompt = PROMPT_TEMPLATE.replace("{filename}", filename)
     final_prompt += f"\n\n--- PAPER TEXT ---\n{paper_text}"
 
-    last_reason = "error"
+    last_reason = "quota" if not models else "error"
     while models:
         model = models[0]
         try:

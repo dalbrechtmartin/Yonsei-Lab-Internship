@@ -119,6 +119,96 @@
       "etaRemaining": "~{eta} remaining"
     }
   },
+  "guide": {
+    "generating": "Generating your guide…",
+    "filenameBase": "User_Guide",
+    "meta": {
+      "subtitle": "User Guide",
+      "lab": "Research Tool — Yonsei Lab",
+      "version": "Version"
+    },
+    "footer": {
+      "page": "Page"
+    },
+    "outline": {
+      "cover": "Cover",
+      "intro": "Introduction",
+      "toc": "Table of contents",
+      "mode1Setup": "Mode 1 — Import your dataset",
+      "mode1Controls": "Mode 1 — Axes, display & filters",
+      "mode1Chart": "Mode 1 — Chart & analysis",
+      "mode2": "Mode 2 (coming soon)"
+    },
+    "intro": {
+      "title": "Introduction",
+      "abstractTitle": "Abstract",
+      "abstractBody": "λLens is a research tool built during a Yonsei University Photonics Lab internship to speed up how the lab surveys the literature on integrated photonic sensors. Pulling figure-of-merit values — resonance wavelength, sensitivity, Q-factor, FWHM — out of papers by hand does not scale past a handful of references. λLens combines a guided PDF-extraction pipeline with an interactive visualization workspace, so a researcher can go from a folder of papers to a filterable, exportable comparison chart in minutes rather than days.",
+      "guideTitle": "How to use this guide",
+      "guideBody": "This guide documents Mode 1 (Excel-to-Plot visualization), which is complete and ready to use — see the table of contents on the next page. Mode 2 (PDF extraction and validation) is still under active development and will be documented here once it stabilizes.",
+      "authorTitle": "About the author",
+      "authorBody": "λLens was developed by Danaé A.M. as part of a research internship at the Yonsei University Photonics Lab."
+    },
+    "toc": {
+      "title": "Table of contents",
+      "hint": "Click any entry to jump to that page."
+    },
+    "mode1": {
+      "eyebrow": "Mode 1",
+      "title": "Excel-to-Plot visualization"
+    },
+    "scenario": {
+      "title": "Worked example used throughout this section",
+      "body": "The screenshots below all come from one running example: six photonic resonator sensor designs (silicon and silicon-nitride rings, a gold plasmonic nanodisk, a hybrid dielectric-metal disk, an InP interferometer, and a polymer ring), each reported once from measurement (EXP) and once from simulation (SIM). We compare their Q-factor against resonance wavelength."
+    },
+    "steps": {
+      "import": {
+        "title": "1. Import your dataset",
+        "body": "From the Visualization tool, drop an Excel or CSV file onto the dropzone below, or click it to browse for one.",
+        "figure1Caption": "Figure 1 — The import dropzone: drag an Excel or CSV file here, or click to browse (.xlsx, .xls, .csv, up to 10 MB).",
+        "figure2Caption": "Figure 2 — The workspace toolbar once a file is loaded: Import to load another file, Export for CSV, Excel or a chart image, and Reset to restore the default chart settings."
+      },
+      "controls": {
+        "title": "2. Configure axes, display and filters",
+        "body": "The left-hand panel drives everything the chart shows. The Chart section picks the chart title and the Y/X-axis columns. The Display section toggles the log/linear scale, trend line, Pareto frontier, legend, median line and axis markers. The Filters section — shown below — narrows the dataset down by Origin, Material Class or Base Materials.",
+        "figure3Caption": "Figure 3 — The control panel with the Filters section open, showing the Origin, Material Class and Base Materials chips with live counts for our worked example."
+      },
+      "reading": {
+        "title": "3. Read and interact with the chart",
+        "body": "Every point is one reported record. Colors follow the current \"Group / Color by\" column — here, Origin.",
+        "figure4Caption": "Figure 4 — The scatter chart for our worked example: Q-factor (Y, log scale) against resonance wavelength (X), colored by Origin — orange for EXP, blue for SIM — with the median line and legend visible.",
+        "interactions": {
+          "hover": { "label": "Hover", "body": "shows the full wavelength, Q-factor and other metrics for a point." },
+          "zoom": { "label": "Scroll / drag", "body": "zooms and pans inside the plot to inspect a region closely." },
+          "click": { "label": "Click", "body": "pins a point so it can be compared later." },
+          "median": { "body": "marks the median Y value of the plotted points." }
+        }
+      },
+      "compare": {
+        "title": "4. Compare groups, annotate and export",
+        "body": "The right-hand Annotations panel keeps every pinned point within reach: click any chart point to pin it, add your own note, and use \"pin the paper's other rows\" to gather every mode from the same record in one click. The Export button in the toolbar then offers the filtered dataset as CSV or Excel, or the chart itself as a PNG image.",
+        "figure5Caption": "Figure 5 — The Compare groups panel, summarizing count, mean, median and σ for each group — here, EXP versus SIM."
+      }
+    },
+    "mode2": {
+      "eyebrow": "Mode 2",
+      "title": "PDF extraction & validation",
+      "comingSoon": {
+        "title": "Coming soon",
+        "body": "The PDF extraction and validation workflow is still under active development. This guide will be updated with full documentation once that feature is ready."
+      },
+      "preview": {
+        "title": "What's coming",
+        "rules": {
+          "title": "AI extraction rules",
+          "body": "Gemini will read each paper against a fixed set of business rules — substrate checks, wavelength-domain validation — before proposing a value for review."
+        },
+        "validation": {
+          "title": "Human-in-the-loop validation",
+          "body": "A split-screen view will let you approve, edit or exclude each extracted value next to its source page before it's added to your dataset."
+        }
+      }
+    }
+  },
   "fomcharts": {
     "sampleCount": "samples",
     "type": {
@@ -142,8 +232,17 @@
       "trendLine": "Trend line",
       "trendLineHint": "Requires a numeric X axis",
       "trendUnavailable": "Trend line: not enough points",
+      "trendType": "Curve type",
       "pareto": "Pareto frontier",
       "axisNames": "Show X/Y markers"
+    },
+    "trendType": {
+      "auto": "Auto (best fit)",
+      "linear": "Linear",
+      "exponential": "Exponential",
+      "logarithmic": "Logarithmic",
+      "power": "Power",
+      "polynomial": "Polynomial"
     },
     "sections": {
       "chart": "Chart",
@@ -218,7 +317,17 @@
         "newest": "Newest first",
         "oldest": "Oldest first",
         "ref": "By reference"
-      }
+      },
+      "notes": "Notes",
+      "downloadTxt": "Download .txt",
+      "expandDetails": "Show details",
+      "collapseDetails": "Hide details",
+      "zoomLayers": "View layer structure",
+      "metrics": "Metrics",
+      "zoomMetrics": "View metrics",
+      "downloadPng": "Download PNG",
+      "mode": "Mode",
+      "exportPin": "Export this pin"
     },
     "compare": {
       "title": "Compare pinned points",
@@ -236,7 +345,8 @@
       "scale": "Log scale keeps FOM values that span several orders of magnitude readable. Linear keeps equal spacing between values.",
       "legend": "Draws the series legend (groups, median, trend line) on the chart itself, so it's included when exporting the chart as an image.",
       "median": "Draws a dashed line at the median Y value of the points currently plotted.",
-      "trendLine": "Fits a straight line through the plotted points to show the overall trend. Only available when the X axis is a numeric column (e.g. Sensitivity, Q-factor) — a trend against a category like Material Class wouldn't mean anything.",
+      "trendLine": "Fits a curve through the plotted points to show the overall trend. Only available when the X axis is a numeric column (e.g. Sensitivity, Q-factor) — a trend against a category like Material Class wouldn't mean anything. \"Auto\" tries several curve shapes and keeps the one that fits best (highest R²), instead of forcing a straight line onto data that's actually curved.",
+      "trendType": "Which mathematical model the trend line fits: Linear (y = a + bx), Exponential (y = a·e^(bx)), Logarithmic (y = a + b·ln(x), needs x > 0), Power (y = a·x^b, needs x > 0 and y > 0), or Polynomial (a degree-2 curve, needs at least 3 points). \"Auto\" fits every model the data supports and picks the one with the highest R².",
       "pareto": "Highlights the non-dominated set of points — records not beaten on both axes by any other point — as a line, assuming higher X and higher Y are both better.",
       "axisNames": "Prefixes each axis's name with a small \"X ·\"/\"Y ·\" marker, so it's clear which is which -- the axis name itself is always shown.",
       "trendUnavailable": "The trend line needs at least 2 points with different X values -- with fewer (e.g. an isolated single-point group), it's toggled on but has nothing to draw."

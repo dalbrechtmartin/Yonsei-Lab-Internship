@@ -12,7 +12,9 @@
         class="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,24,36,0.55)_0%,rgba(11,24,36,0.2)_45%,rgba(11,24,36,0.65)_100%)]"
       />
       <div class="relative mx-auto max-w-215">
-        <div class="mb-9 flex animate-in fade-in slide-in-from-bottom-4 items-center justify-center gap-5 fill-mode-both duration-500">
+        <div
+          class="mb-9 flex animate-in fade-in slide-in-from-bottom-4 items-center justify-center gap-5 fill-mode-both duration-500"
+        >
           <img
             :src="yonseiSymbol"
             alt="Yonsei University"
@@ -40,7 +42,9 @@
         >
           {{ t("view.home.hero.description") }}
         </p>
-        <div class="mt-8 flex animate-in fade-in slide-in-from-bottom-4 flex-wrap justify-center gap-3 fill-mode-both delay-300 duration-500 sm:mt-9">
+        <div
+          class="mt-8 flex animate-in fade-in slide-in-from-bottom-4 flex-wrap justify-center gap-3 fill-mode-both delay-300 duration-500 sm:mt-9"
+        >
           <RouterLink
             to="/visualization"
             class="rounded-lg bg-primary px-7 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-hover sm:px-7.5"
@@ -49,9 +53,16 @@
           </RouterLink>
           <button
             type="button"
-            class="rounded-lg border-[1.5px] border-white/20 bg-white/10 px-6 py-3 text-sm font-medium text-white/85 transition-colors hover:bg-white/15 hover:text-white"
+            :disabled="generatingGuide"
+            class="rounded-lg border-[1.5px] border-white/20 bg-white/10 px-6 py-3 text-sm font-medium text-white/85 transition-colors hover:bg-white/15 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+            @click="downloadGuide"
           >
-            ↓ {{ t("view.home.hero.manual") }}
+            ↓
+            {{
+              generatingGuide
+                ? t("guide.generating")
+                : t("view.home.hero.manual")
+            }}
           </button>
         </div>
       </div>
@@ -59,14 +70,29 @@
 
     <div
       class="flex-1 px-4 pt-7 pb-10 sm:px-10 sm:pt-9 sm:pb-13"
-      style="background: radial-gradient(ellipse 80% 60% at 5% 0%, rgba(0, 150, 136, 0.1) 0%, transparent 55%), radial-gradient(ellipse 60% 50% at 95% 0%, rgba(0, 114, 178, 0.13) 0%, transparent 55%), linear-gradient(180deg, #f0f4f8 0%, #e9eef4 100%)"
+      style="
+        background:
+          radial-gradient(
+            ellipse 80% 60% at 5% 0%,
+            rgba(0, 150, 136, 0.1) 0%,
+            transparent 55%
+          ),
+          radial-gradient(
+            ellipse 60% 50% at 95% 0%,
+            rgba(0, 114, 178, 0.13) 0%,
+            transparent 55%
+          ),
+          linear-gradient(180deg, #f0f4f8 0%, #e9eef4 100%);
+      "
     >
       <div class="mx-auto grid max-w-280 grid-cols-1 gap-5 sm:grid-cols-2">
         <RouterLink
           to="/visualization"
           class="flex animate-in fade-in slide-in-from-bottom-4 flex-col rounded-[1.25rem] border border-white/55 bg-card/90 p-7 text-left shadow-xl shadow-slate-900/5 backdrop-blur-xl fill-mode-both delay-300 transition-shadow duration-200 hover:shadow-2xl focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:outline-none sm:p-8"
         >
-          <p class="text-[11px] font-bold tracking-[0.08em] text-primary uppercase">
+          <p
+            class="text-[11px] font-bold tracking-[0.08em] text-primary uppercase"
+          >
             {{ t("view.home.tools.visualization.eyebrow") }}
           </p>
           <h3 class="mt-2.5 text-[20px] font-semibold text-ink">
@@ -89,7 +115,9 @@
           to="/extraction"
           class="flex animate-in fade-in slide-in-from-bottom-4 flex-col rounded-[1.25rem] border border-white/55 bg-card/90 p-7 text-left shadow-xl shadow-slate-900/5 backdrop-blur-xl fill-mode-both delay-500 transition-shadow duration-200 hover:shadow-2xl focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:outline-none sm:p-8"
         >
-          <p class="text-[11px] font-bold tracking-[0.08em] text-primary uppercase">
+          <p
+            class="text-[11px] font-bold tracking-[0.08em] text-primary uppercase"
+          >
             {{ t("view.home.tools.extraction.eyebrowUnlocked") }}
           </p>
           <h3 class="mt-2.5 text-[20px] font-semibold text-ink">
@@ -121,25 +149,51 @@
             {{ t("view.home.tools.extraction.title") }}
           </h3>
           <p class="mt-2.5 text-[13px] leading-[1.6] text-secondary">
-            {{ t("view.home.tools.extraction.body") }} {{ t("view.home.tools.extraction.lockedNote") }}
+            {{ t("view.home.tools.extraction.body") }}
+            {{ t("view.home.tools.extraction.lockedNote") }}
           </p>
         </div>
       </div>
     </div>
+
+    <!-- Hidden multilingual guide, captured to PDF on demand -- see
+         GuideTemplate.vue and utils/pdfExport.ts. -->
+    <GuideTemplate ref="guideTemplateRef" />
   </main>
 </template>
 
 <script setup lang="ts">
+import { ref } from "vue";
 import { Lock } from "@lucide/vue";
 import { RouterLink } from "vue-router";
 import { useI18n } from "vue-i18n";
+import GuideTemplate from "@/components/guide/GuideTemplate.vue";
+import { exportGuideToPdf } from "@/utils/pdfExport";
 import yonseiSymbol from "@/assets/yonsei-logo.svg";
 import yonseiOptica from "@/assets/yonsei-optica.svg";
 import yonseiCampus from "@/assets/yonsei-university.jpg";
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 // Extraction is locked in deployed builds while its next version is being
 // reworked -- see the matching lock in AppNavbar.vue and the router guard.
 const extractionLocked = import.meta.env.PROD;
+
+const guideTemplateRef = ref<InstanceType<typeof GuideTemplate> | null>(null);
+const generatingGuide = ref(false);
+
+async function downloadGuide() {
+  if (generatingGuide.value || !guideTemplateRef.value?.rootEl) return;
+
+  generatingGuide.value = true;
+  try {
+    await exportGuideToPdf(
+      guideTemplateRef.value.rootEl,
+      `${t("guide.filenameBase")}_${t("app.title")}_${locale.value.toUpperCase()}.pdf`,
+      { title: `${t("app.title")} — ${t("guide.meta.subtitle")}`, language: locale.value },
+    );
+  } finally {
+    generatingGuide.value = false;
+  }
+}
 </script>

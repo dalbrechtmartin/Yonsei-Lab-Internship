@@ -1,3 +1,4 @@
 .env
 docs/notes.md
 backend/tests/*.png
+docs/GUIDE_UTILISATEUR.md

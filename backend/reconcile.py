@@ -9,15 +9,18 @@ import math
 from collections import Counter
 from typing import Optional
 
+from schema import spectral_range
+
 # Free-text fields are never voted on: comparing structurally-unstable
 # free text (different valid phrasings of the same real thing, e.g.
 # "R1 mode (Simulation)" vs "Simulation - Peak R1 (TD)") across runs would
 # produce noise, not a signal. Always take the primary run's value
-# verbatim. Mode ID/Mode Description are the fields this was explicitly
-# designed for; Layer Structure, Definition, Evidence and Location have
-# the identical free-text-drift problem and get the same treatment.
+# verbatim. Mode Description is the field this was explicitly designed
+# for; Layer Structure, Definition, Evidence and Location have the
+# identical free-text-drift problem and get the same treatment. Mode ID
+# is NOT here -- it's a plain integer now (see prompt.txt), so it gets
+# the same numeric majority-vote treatment as the other metrics instead.
 _FREE_TEXT_PRIMARY_ONLY_FIELDS = (
-    "Mode ID",
     "Mode Description",
     "Layer Structure",
     "Definition",
@@ -44,6 +47,7 @@ _SCALAR_CATEGORICAL_FIELDS = (
 # prompt, so unlike the old quote/page triplets these values are voted on
 # alone -- there is no companion field to move atomically with them.
 _NUMERIC_FIELDS = (
+    "Mode ID",
     "Resonance Wavelength (nm)",
     "FOM (RIU^-1)",
     "Sensitivity (nm/RIU)",
@@ -52,6 +56,7 @@ _NUMERIC_FIELDS = (
 )
 
 _NOTES_FIELD = "Notes"
+_LOG_FIELD = "Reconciliation Log"
 _EPSILON = 1e-6
 
 
@@ -63,8 +68,10 @@ def reconcile_runs(runs: list[list[dict]]) -> list[dict]:
     than by the free-text "Mode ID"/"Mode Description" labels, which are
     confirmed unstable across runs. Each field is then reconciled with a strategy suited to
     its type, and every disagreement is annotated into the merged
-    record's "Notes" rather than silently resolved, so the output stays
-    human-auditable.
+    record's "Reconciliation Log" rather than silently resolved, so the
+    output stays human-auditable. "Notes" is left untouched (the winning
+    run's own value) since it's user-facing in the app and must not carry
+    internal run-to-run bookkeeping.
 
     `runs` is a list of already-normalized record lists, one entry per
     run that actually succeeded. A failed/missing run must simply be
@@ -154,7 +161,16 @@ def _reconcile_slot(contributing: list[dict], total_runs: int, is_extra_row: boo
         if note:
             annotations.append(note)
 
-    result[_NOTES_FIELD] = _merge_notes(primary.get(_NOTES_FIELD), annotations)
+    # Derived from Resonance Wavelength, which the loop above may just have
+    # changed via majority vote -- recompute rather than keep primary's copy.
+    result["Spectral Range"] = spectral_range(result["Resonance Wavelength (nm)"])
+
+    # Notes stays exactly what the model wrote for the winning run (user-
+    # facing, about the science) -- reconciliation bookkeeping (run
+    # disagreements, dropped/extra rows) goes in its own column instead,
+    # since Notes is surfaced directly to end users in the app.
+    result[_NOTES_FIELD] = primary.get(_NOTES_FIELD)
+    result[_LOG_FIELD] = "\n".join(annotations) if annotations else None
     return result
 
 
@@ -255,11 +271,3 @@ def _reconcile_numeric_field(
         f"Used run1's value — verify manually."
     )
     return primary.get(field), note
-
-
-def _merge_notes(primary_notes: object, annotations: list[str]) -> Optional[str]:
-    parts = []
-    if primary_notes:
-        parts.append(str(primary_notes))
-    parts.extend(f"[Reconciliation] {a}" for a in annotations)
-    return " ".join(parts) if parts else None

@@ -1,5 +1,7 @@
 import {
+  findBaseMaterialsColumn,
   findDomainColumn,
+  findMaterialClassColumn,
   findModeIdColumn,
   findModeDescriptionColumn,
   findOriginColumn,
@@ -11,8 +13,10 @@ import {
  * Mode ID/Mode Description first (which of a paper's several extracted rows
  * this pin is -- without it, two pins from the same Ref/Title are
  * indistinguishable), then
- * Domain and Origin (if the sheet has them), the active group-by column,
- * the currently plotted X/Y axes (so the point's own coordinates are always
+ * Domain and Origin (if the sheet has them), Material Class/Base Materials
+ * (the structure's composition -- always relevant context for a pinned
+ * point, not just when grouping by them), the active group-by column, the
+ * currently plotted X/Y axes (so the point's own coordinates are always
  * visible, not just whatever it was pinned under), then whatever other
  * metrics (Sensitivity, Q-factor, ...) the chart tooltip itself surfaces.
  * Recomputed off the *current* axis/group-by selection rather than frozen
@@ -38,6 +42,8 @@ export function annotationFieldColumns(
   add(findModeDescriptionColumn(columns));
   add(findDomainColumn(columns));
   add(findOriginColumn(columns));
+  add(findMaterialClassColumn(columns));
+  add(findBaseMaterialsColumn(columns));
   add(groupBy);
   add(xAxis);
   add(yAxis);

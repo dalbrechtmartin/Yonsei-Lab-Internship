@@ -12,7 +12,7 @@ def make_record(**overrides) -> dict:
         "Ref": "paper_x",
         "Title": "A Test Paper",
         "Short Title": "Test Paper",
-        "Mode ID": "Mode 1",
+        "Mode ID": 1,
         "Mode Description": "main",
         "Material Class": "Dielectric;Metal",
         "Base Materials": "Au;SiO2",
@@ -27,7 +27,7 @@ def make_record(**overrides) -> dict:
         "Q-factor": 200,
         "Evidence": "FOM of 100",
         "Location": "Page 3",
-        "Review status": "Approve",
+        "Review status": "Approve (AI)",
         "Notes": None,
         "Model Used": "gemini-3.5-flash",
     }
@@ -36,13 +36,8 @@ def make_record(**overrides) -> dict:
 
 
 def notes_reconciliation_lines(record: dict) -> list[str]:
-    notes = record.get("Notes") or ""
-    if "[Reconciliation]" not in notes:
-        return []
-    # First segment is whatever preceded the first tag (the primary run's
-    # own Notes text, possibly empty) -- always drop it, then keep the rest.
-    segments = notes.split("[Reconciliation]")[1:]
-    return [s.strip() for s in segments if s.strip()]
+    log = record.get("Reconciliation Log") or ""
+    return [line.strip() for line in log.split("\n") if line.strip()]
 
 
 class TestBasics:

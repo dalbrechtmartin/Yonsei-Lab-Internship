@@ -81,6 +81,7 @@
             v-model:show-legend="showLegend"
             v-model:show-median="showMedian"
             v-model:show-trend="showTrend"
+            v-model:trend-type="trendType"
             v-model:show-axis-names="showAxisNames"
             v-model:selected-domains="selectedDomains"
             v-model:selected-origins="selectedOrigins"
@@ -117,6 +118,7 @@
               :show-legend="showLegend"
               :show-median="showMedian"
               :show-trend="showTrend"
+              :trend-type="trendType"
               :show-pareto="showPareto"
               :show-axis-names="showAxisNames"
               :x-axis-numeric="xAxisNumeric"
@@ -141,7 +143,6 @@
             />
             <AnnotationsPanel
               v-model:open="annotationsPanelOpen"
-              v-model:compare-ids="compareIds"
               v-model:show-only-annotated="showOnlyAnnotated"
               :annotations="annotations"
               :columns="fomColumns"
@@ -155,17 +156,6 @@
               @pin-rows="pinRows"
             />
           </aside>
-        </div>
-
-        <div v-if="compareAnnotations.length >= 2" class="px-4 pb-4 lg:px-5 lg:pb-5">
-          <CompareTable
-            :annotations="compareAnnotations"
-            :columns="fomColumns"
-            :x-axis="selectedXAxis"
-            :y-axis="selectedYAxis"
-            :group-by="groupBy"
-            @clear-compare="compareIds = []"
-          />
         </div>
       </Card>
     </div>
@@ -186,12 +176,11 @@ import GraphControls from "@/components/visualization/GraphControls.vue";
 import FomChart from "@/components/visualization/FomChart.vue";
 import StatsSummaryPanel from "@/components/visualization/StatsSummaryPanel.vue";
 import AnnotationsPanel, { type Annotation } from "@/components/visualization/AnnotationsPanel.vue";
-import CompareTable from "@/components/visualization/CompareTable.vue";
 import { apiService } from "@/services/api";
 import { exportRowsAsExcel } from "@/utils/excelExport";
 import { exportRowsAsCsv } from "@/utils/csvExport";
 import { useTransientStatus } from "@/composables/useTransientStatus";
-import { filterPlottable } from "@/utils/stats";
+import { filterPlottable, type TrendType } from "@/utils/stats";
 import { assignGroupColors } from "@/utils/palette";
 import {
   detectColumnTypes,
@@ -243,7 +232,8 @@ const chartTitle = ref("");
 const showLegend = ref(true);
 const showMedian = ref(false);
 const showTrend = ref(false);
-const showAxisNames = ref(true);
+const trendType = ref<TrendType | "auto">("auto");
+const showAxisNames = ref(false);
 const highlightGroup = ref<string | null>(null);
 const selectedDomains = ref<string[]>([]);
 const selectedOrigins = ref<string[]>([]);
@@ -251,7 +241,6 @@ const selectedMaterialClasses = ref<string[]>([]);
 const selectedBaseMaterials = ref<string[]>([]);
 const showPareto = ref(false);
 const annotations = ref<Annotation[]>([]);
-const compareIds = ref<string[]>([]);
 // "Afficher uniquement les points épinglés" (AnnotationsPanel) -- narrows
 // the chart and stats down to exactly the pinned rows, for comparing a
 // handful of specific points (e.g. one paper's several modes) without the
@@ -434,10 +423,31 @@ const allPlottableData = computed(() => {
 });
 
 // Rows actually reaching the chart -- narrowed to just the pinned
-// annotations when showOnlyAnnotated is on (see AnnotationsPanel).
-const annotatedRowSet = computed(() => new Set(annotations.value.map((a) => a.row)));
+// annotations when showOnlyAnnotated is on (see AnnotationsPanel). Reads off
+// fomData (the full unfiltered dataset), not filteredData -- a pin is a
+// deliberate bookmark of one specific row, so toggling this on must show
+// every pinned row regardless of the current Domain/Origin/Material Class
+// filter chips. Filtering from filteredData instead silently dropped any
+// pinned row the active filters happened to exclude (e.g. pinning both a
+// paper's EXP and SIM modes, then the default "SIM only" Origin filter
+// hiding the EXP one) -- the toggle looked broken, showing fewer points
+// than were actually pinned, with no indication why.
+//
+// Matches by content (rowsEqual), not by object reference -- a pinned row's
+// `annotation.row` is captured from the chart's click event (ECharts
+// `params.data.row`), which vue-echarts does not guarantee is the exact
+// same object identity as the row sitting in fomData by the time this
+// recomputes (observed in practice: `fomData.value.some(r => r ===
+// annotation.row)` can come back false for a row that was just pinned off
+// that very array). Content equality is what the rest of the annotations
+// feature already relies on for "is this the same row" (see rowsEqual /
+// isAlreadyPinned below), so this reuses the same rule instead of a
+// reference-based Set that silently drops rows whose identity didn't survive
+// the click round-trip.
 const chartDisplayData = computed(() =>
-  showOnlyAnnotated.value ? filteredData.value.filter((row) => annotatedRowSet.value.has(row)) : filteredData.value,
+  showOnlyAnnotated.value
+    ? fomData.value.filter((row) => annotations.value.some((a) => rowsEqual(a.row, row)))
+    : filteredData.value,
 );
 
 // Stats panel reads off the same narrowed set as the chart, so its N/mean/
@@ -520,7 +530,8 @@ const applyDefaults = () => {
   showLegend.value = true;
   showMedian.value = false;
   showTrend.value = false;
-  showAxisNames.value = true;
+  trendType.value = "auto";
+  showAxisNames.value = false;
   showPareto.value = false;
   highlightGroup.value = null;
 };
@@ -537,7 +548,6 @@ const handleUpload = async ([file]: File[]) => {
     fomColumns.value = data.columns;
     applyDefaults();
     annotations.value = [];
-    compareIds.value = [];
     setTransientStatus(
       "status.success",
       "border-emerald-500/20 bg-emerald-500/12 text-emerald-950",
@@ -560,7 +570,6 @@ const resetToDropzone = () => {
   selectedBaseMaterials.value = [];
   showPareto.value = false;
   annotations.value = [];
-  compareIds.value = [];
 };
 
 const openImportDialog = () => {
@@ -577,7 +586,6 @@ const openImportDialog = () => {
 const resetWorkspace = () => {
   applyDefaults();
   annotations.value = [];
-  compareIds.value = [];
 };
 
 const handleExportCsv = () => {
@@ -650,10 +658,6 @@ const handlePointClick = (point: {
   if (isAlreadyPinned(point.row)) return;
   const newAnnotation = buildAnnotation(point.row);
   annotations.value = [...annotations.value, newAnnotation];
-  // Freshly pinned points are checked for comparison by default -- a
-  // researcher pinning points is almost always trying to compare them, and
-  // otherwise they'd have to open the panel and re-check each one by hand.
-  compareIds.value = [...compareIds.value, newAnnotation.id];
   // Pinning a point is the whole point of clicking the chart -- open the
   // Annotations panel automatically so the researcher immediately sees the
   // pin land, instead of having to know to expand the accordion themselves.
@@ -675,25 +679,18 @@ const pinRows = (rows: DataRow[]) => {
   }
   if (newAnnotations.length === 0) return;
   annotations.value = [...annotations.value, ...newAnnotations];
-  compareIds.value = [...compareIds.value, ...newAnnotations.map((a) => a.id)];
   annotationsPanelOpen.value = true;
 };
 
 const removeAnnotation = (id: string) => {
   annotations.value = annotations.value.filter((a) => a.id !== id);
-  compareIds.value = compareIds.value.filter((x) => x !== id);
 };
 
 const clearAnnotations = () => {
   annotations.value = [];
-  compareIds.value = [];
 };
 
 const updateAnnotationNote = (id: string, note: string) => {
   annotations.value = annotations.value.map((a) => (a.id === id ? { ...a, note } : a));
 };
-
-const compareAnnotations = computed(() =>
-  annotations.value.filter((a) => compareIds.value.includes(a.id)),
-);
 </script>

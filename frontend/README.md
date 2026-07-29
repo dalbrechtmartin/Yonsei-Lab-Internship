@@ -2,7 +2,8 @@
 
 Vue 3 + TypeScript client for λLens, the wavelength-domain FOM (Figure of
 Merit) data tool: upload a gold-standard Excel/CSV file and explore it as an
-interactive scatter plot (`/`), or batch-extract FOM records from scientific
+interactive scatter plot with filters, group comparisons, and pinned
+annotations (`/visualization`), or batch-extract FOM records from scientific
 PDFs via Gemini (`/extraction`, dev-only in production builds).
 
 See the [repository root README](../README.md) for how to run the whole
@@ -38,18 +39,18 @@ npm run preview       # serve the production build locally
 ```
 src/
   components/
-    ui/            # shadcn-vue primitives (Button, Card, Select, Tabs...)
+    ui/            # shadcn-vue primitives (Button, Card, Select, Input, Textarea, Tabs...)
     extraction/    # PDF-extraction view components
-    visualization/ # FOM chart + controls
-    layout/        # navbar, tool actions bar, language selector
-    shared/        # dropzone, status toast
+    visualization/ # FOM chart, axis/filter controls, group comparison, annotations
+    layout/        # navbar, footer, tool actions bar, language selector
+    shared/        # dropzone, status toast, filter chips, collapsible sections
   composables/     # reusable reactive logic (useTransientStatus)
   lib/utils.ts     # shadcn's `cn()` class-merging helper
-  locales/         # i18n message files
+  locales/         # i18n message files (en, fr, ko, zh)
   router/          # route definitions
   services/        # backend API client (api.ts), i18n setup
-  utils/           # column type detection, CSV export
-  views/           # top-level routed pages
+  utils/           # column type detection, stats, CSV/Excel export
+  views/           # top-level routed pages (Home, Visualization, Extraction)
 ```
 
 ## Adding a shadcn-vue component

@@ -53,7 +53,10 @@ async def _process_one_file(job_id: str, job_file: dict, any_call_made: bool) ->
     if not job:
         return False, any_call_made 
         
-    available_models = list(job["available_models"])
+    # Re-checked per file (not just once per job pass): daily quota
+    # keeps shrinking as the batch runs, so a model that had room for
+    # file 1 may not for file 5. See llm.filter_models_by_quota.
+    available_models = llm.filter_models_by_quota(list(job["available_models"]))
 
     state.update_job_file_status(job_id, file_id, "processing")
 
