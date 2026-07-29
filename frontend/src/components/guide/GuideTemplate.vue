@@ -44,13 +44,15 @@
       </div>
 
       <div class="flex w-full flex-col items-center gap-4">
-        <!-- The Optica mark is a solid-white SVG (designed for the app's dark
-             hero band, see HomeView.vue) -- invisible on a plain white cover,
-             so it gets its own dark chip here rather than sitting bare. -->
-        <div class="flex items-center gap-8 rounded-2xl bg-[#0b1824] px-8 py-4">
-          <img :src="yonseiSymbol" alt="Yonsei University" class="h-14 w-auto" />
-          <div class="h-9 w-px bg-white/20" />
-          <img :src="yonseiOptica" alt="Optica" class="h-11 w-auto" />
+        <div class="flex items-center gap-8">
+          <img :src="yonseiSymbol" alt="Yonsei University" class="h-16 w-auto" />
+          <div class="h-10 w-px bg-border" />
+          <!-- The Optica mark ships as a solid-white SVG (built for the app's
+               dark hero band, see HomeView.vue) -- on this plain white cover
+               it's recolored to solid black via a brightness filter rather
+               than boxed in a dark chip, so both marks read directly off
+               the page like a real letterhead. -->
+          <img :src="yonseiOptica" alt="Optica" class="h-12 w-auto" style="filter: brightness(0)" />
         </div>
         <p class="text-xs text-secondary">{{ t("guide.meta.lab") }}</p>
       </div>
@@ -65,36 +67,48 @@
 
       <h2 class="mb-3 text-xl font-semibold">{{ t("guide.intro.title") }}</h2>
 
-      <div class="mb-4">
-        <h3 class="mb-1.5 text-base font-semibold text-primary">{{ t("guide.intro.abstractTitle") }}</h3>
-        <p class="text-sm leading-relaxed text-ink">{{ t("guide.intro.abstractBody") }}</p>
+      <div class="mb-3">
+        <h3 class="mb-1 text-base font-semibold text-primary">{{ t("guide.intro.abstractTitle") }}</h3>
+        <p class="text-sm leading-relaxed text-justify text-ink">{{ t("guide.intro.abstractBody") }}</p>
       </div>
 
-      <div class="mb-4">
-        <h3 class="mb-1.5 text-base font-semibold text-primary">{{ t("guide.intro.guideTitle") }}</h3>
-        <p class="text-sm leading-relaxed text-ink">{{ t("guide.intro.guideBody") }}</p>
+      <div class="mb-3">
+        <h3 class="mb-1 text-base font-semibold text-primary">{{ t("guide.intro.guideTitle") }}</h3>
+        <p class="text-sm leading-relaxed text-justify text-ink">{{ t("guide.intro.guideBody") }}</p>
       </div>
 
-      <div class="mb-5 rounded-xl border border-border bg-muted/30 px-4 py-3">
+      <div class="mb-4 rounded-xl border border-border bg-muted/30 px-4 py-2.5">
         <h3 class="mb-1 text-base font-semibold text-primary">{{ t("guide.intro.authorTitle") }}</h3>
-        <p class="text-sm leading-relaxed text-ink">{{ t("guide.intro.authorBody") }}</p>
+        <p class="text-sm leading-relaxed text-justify text-ink">{{ t("guide.intro.authorBody") }}</p>
       </div>
 
       <div class="h-px w-full bg-border" />
 
-      <h2 class="mt-5 mb-3 text-xl font-semibold">{{ t("guide.toc.title") }}</h2>
+      <h2 class="mt-4 mb-2 text-xl font-semibold">{{ t("guide.toc.title") }}</h2>
 
-      <div class="flex flex-col">
-        <div
-          v-for="entry in tocEntries"
-          :key="entry.page"
-          class="guide-toc-row flex items-baseline gap-2 border-b border-border py-2"
-          :data-toc-target="entry.page"
-        >
-          <span class="text-sm text-ink">{{ entry.label }}</span>
-          <span class="mx-1 h-0 flex-1 -translate-y-1 border-b border-dotted border-secondary/50" />
-          <span class="font-mono text-sm font-semibold text-primary">{{ entry.page }}</span>
-        </div>
+      <div class="flex flex-col overflow-hidden rounded-2xl border border-border">
+        <template v-for="(entry, idx) in tocEntries" :key="entry.page">
+          <div
+            v-if="entry.group === 'mode1' && tocEntries[idx - 1]?.group !== 'mode1'"
+            class="flex items-center gap-2 border-b border-border bg-primary/[0.07] px-4 py-1.5 text-xs font-semibold tracking-[0.2em] text-primary uppercase"
+          >
+            {{ t("guide.mode1.eyebrow") }} — {{ t("guide.mode1.title") }}
+          </div>
+          <div
+            class="guide-toc-row group flex items-center gap-2.5 px-4 py-1.5"
+            :class="[idx % 2 === 1 ? 'bg-muted/25' : 'bg-white', entry.group === 'mode1' ? 'pl-9' : '', idx > 0 ? 'border-t border-border/70' : '']"
+            :data-toc-target="entry.page"
+          >
+            <span class="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <component :is="entry.icon" class="size-3" />
+            </span>
+            <span class="flex-1 text-sm text-ink">{{ entry.label }}</span>
+            <span class="h-0 w-6 flex-none -translate-y-1 border-b border-dotted border-secondary/50" />
+            <span class="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary font-mono text-[11px] font-semibold text-white">
+              {{ entry.page }}
+            </span>
+          </div>
+        </template>
       </div>
 
       <p class="mt-2 text-xs text-secondary">{{ t("guide.toc.hint") }}</p>
@@ -114,17 +128,17 @@
 
       <div class="mb-4 rounded-xl border border-border bg-muted/30 px-4 py-3">
         <p class="mb-1 text-sm font-semibold text-ink">{{ t("guide.scenario.title") }}</p>
-        <p class="text-sm leading-relaxed text-ink">{{ t("guide.scenario.body") }}</p>
+        <p class="text-sm leading-relaxed text-justify text-ink">{{ t("guide.scenario.body") }}</p>
       </div>
 
       <div class="mb-4">
         <h3 class="mb-1.5 text-base font-semibold text-primary">{{ t("guide.steps.import.overviewTitle") }}</h3>
-        <p class="text-sm leading-relaxed text-ink">{{ t("guide.steps.import.overviewBody") }}</p>
+        <p class="text-sm leading-relaxed text-justify text-ink">{{ t("guide.steps.import.overviewBody") }}</p>
       </div>
 
       <div class="mb-4">
         <h3 class="mb-2 text-base font-semibold">{{ t("guide.steps.import.title") }}</h3>
-        <p class="mb-3 text-sm leading-relaxed text-ink">{{ t("guide.steps.import.body") }}</p>
+        <p class="mb-3 text-sm leading-relaxed text-justify text-ink">{{ t("guide.steps.import.body") }}</p>
 
         <div class="mx-auto guide-callout-region" style="max-width: 380px">
           <FileDropzone compact />
@@ -153,7 +167,7 @@
               </Button>
             </div>
           </div>
-          <GuideMarkRing v-for="(m, i) in toolbarMarks" :key="i" :mark="m" :number="i + 1" />
+          <GuideMarkRing v-for="(m, i) in toolbarMarks" :key="i" :mark="m" :number="i + 1" side="top" />
         </div>
         <p class="mx-auto mt-2 max-w-125 text-center text-sm leading-snug text-secondary">{{ t("guide.steps.import.figure2Caption") }}</p>
 
@@ -177,7 +191,7 @@
       <GuideHeader />
       <p class="mb-2 text-xs font-semibold tracking-[0.3em] text-secondary uppercase">{{ t("guide.mode1.eyebrow") }}</p>
       <h2 class="mb-2 text-xl font-semibold">{{ t("guide.steps.controls.title") }}</h2>
-      <p class="mb-4 text-sm leading-relaxed text-ink">{{ t("guide.steps.controls.body") }}</p>
+      <p class="mb-4 text-sm leading-relaxed text-justify text-ink">{{ t("guide.steps.controls.body") }}</p>
 
       <div class="flex gap-5">
         <div class="flex-1">
@@ -277,9 +291,9 @@
       <GuideHeader />
       <p class="mb-2 text-xs font-semibold tracking-[0.3em] text-secondary uppercase">{{ t("guide.mode1.eyebrow") }}</p>
       <h2 class="mb-2 text-xl font-semibold">{{ t("guide.steps.filters.title") }}</h2>
-      <p class="mb-4 text-sm leading-relaxed text-ink">{{ t("guide.steps.filters.body") }}</p>
+      <p class="mb-4 text-sm leading-relaxed text-justify text-ink">{{ t("guide.steps.filters.body") }}</p>
 
-      <div class="flex items-start gap-5">
+      <div class="flex items-start gap-9">
         <div ref="filtersWrap" class="guide-callout-region relative shrink-0" style="width: 260px">
           <GraphControls
             v-model:y-axis="selectedYAxis"
@@ -322,7 +336,7 @@
       </div>
 
       <div class="mt-5 rounded-xl border border-border bg-muted/30 px-4 py-3">
-        <p class="text-sm leading-relaxed text-ink">{{ t("guide.steps.filters.note") }}</p>
+        <p class="text-sm leading-relaxed text-justify text-ink">{{ t("guide.steps.filters.note") }}</p>
       </div>
 
       <GuideFooter :page="PAGE_MODE1_FILTERS" />
@@ -336,26 +350,35 @@
       <GuideHeader />
       <p class="mb-2 text-xs font-semibold tracking-[0.3em] text-secondary uppercase">{{ t("guide.mode1.eyebrow") }}</p>
       <h2 class="mb-2 text-xl font-semibold">{{ t("guide.steps.reading.title") }}</h2>
-      <p class="mb-3 text-sm leading-relaxed text-ink">{{ t("guide.steps.reading.body") }}</p>
+      <p class="mb-3 text-sm leading-relaxed text-justify text-ink">{{ t("guide.steps.reading.body") }}</p>
 
-      <div class="relative mx-auto guide-callout-region" style="width: 480px; height: 392px; overflow: hidden">
-        <div style="width: 686px; transform: scale(0.7); transform-origin: top left">
-          <FomChart
-            :chart-data="sampleRows"
-            :columns="sampleColumns"
-            :y-axis="selectedYAxis"
-            :x-axis="selectedXAxis"
-            :group-by="groupBy"
-            :y-axis-scale="yAxisScale"
-            :chart-title="chartTitle"
-            :show-legend="showLegend"
-            :show-median="showMedian"
-            :show-trend="showTrend"
-            :show-pareto="showPareto"
-            :show-axis-names="showAxisNames"
-            :x-axis-numeric="true"
-            :group-color-map="groupColorMap"
-          />
+      <!-- The chart itself is clipped (overflow:hidden, to crop the scaled
+           component to a fixed figure size), but its real content (the
+           status-badge row) runs flush to that box's own right edge with
+           zero slack -- so the numbered rings live in this OUTER, unclipped
+           wrapper instead, sized identically, letting badges float outside
+           the inner box without either covering real content or being
+           clipped themselves. -->
+      <div class="relative mx-auto" style="width: 480px">
+        <div class="guide-callout-region" style="width: 480px; height: 392px; overflow: hidden">
+          <div style="width: 686px; transform: scale(0.7); transform-origin: top left">
+            <FomChart
+              :chart-data="sampleRows"
+              :columns="sampleColumns"
+              :y-axis="selectedYAxis"
+              :x-axis="selectedXAxis"
+              :group-by="groupBy"
+              :y-axis-scale="yAxisScale"
+              :chart-title="chartTitle"
+              :show-legend="showLegend"
+              :show-median="showMedian"
+              :show-trend="showTrend"
+              :show-pareto="showPareto"
+              :show-axis-names="showAxisNames"
+              :x-axis-numeric="true"
+              :group-color-map="groupColorMap"
+            />
+          </div>
         </div>
         <GuideMarkRing v-for="(m, i) in readingMarks" :key="i" :mark="m" :number="i + 1" />
       </div>
@@ -387,9 +410,9 @@
       <GuideHeader />
       <p class="mb-2 text-xs font-semibold tracking-[0.3em] text-secondary uppercase">{{ t("guide.mode1.eyebrow") }}</p>
       <h2 class="mb-2 text-xl font-semibold">{{ t("guide.steps.compare.title") }}</h2>
-      <p class="mb-4 text-sm leading-relaxed text-ink">{{ t("guide.steps.compare.body") }}</p>
+      <p class="mb-4 text-sm leading-relaxed text-justify text-ink">{{ t("guide.steps.compare.body") }}</p>
 
-      <div class="flex items-start gap-5">
+      <div class="flex items-start gap-9">
         <div ref="statsWrap" class="guide-callout-region relative shrink-0" style="width: 270px">
           <StatsSummaryPanel
             v-model:open="statsOpen"
@@ -416,7 +439,7 @@
       </div>
 
       <div class="mt-5 rounded-xl border border-border bg-muted/30 px-4 py-3">
-        <p class="text-sm leading-relaxed text-ink">{{ t("guide.steps.compare.note") }}</p>
+        <p class="text-sm leading-relaxed text-justify text-ink">{{ t("guide.steps.compare.note") }}</p>
       </div>
 
       <GuideFooter :page="PAGE_MODE1_COMPARE" />
@@ -430,9 +453,9 @@
       <GuideHeader />
       <p class="mb-2 text-xs font-semibold tracking-[0.3em] text-secondary uppercase">{{ t("guide.mode1.eyebrow") }}</p>
       <h2 class="mb-2 text-xl font-semibold">{{ t("guide.steps.annotate.title") }}</h2>
-      <p class="mb-4 text-sm leading-relaxed text-ink">{{ t("guide.steps.annotate.body") }}</p>
+      <p class="mb-4 text-sm leading-relaxed text-justify text-ink">{{ t("guide.steps.annotate.body") }}</p>
 
-      <div class="flex items-start gap-5">
+      <div class="flex items-start gap-9">
         <div ref="annotationsWrap" class="guide-callout-region relative shrink-0" style="width: 280px">
           <AnnotationsPanel
             v-model:open="annotationsOpen"
@@ -459,7 +482,7 @@
       </div>
 
       <div class="mt-5 rounded-xl border border-border bg-muted/30 px-4 py-3">
-        <p class="text-sm leading-relaxed text-ink">{{ t("guide.steps.annotate.extra") }}</p>
+        <p class="text-sm leading-relaxed text-justify text-ink">{{ t("guide.steps.annotate.extra") }}</p>
       </div>
 
       <GuideFooter :page="PAGE_MODE1_ANNOTATE" />
@@ -473,11 +496,11 @@
       <GuideHeader />
       <p class="mb-2 text-xs font-semibold tracking-[0.3em] text-secondary uppercase">{{ t("guide.mode1.eyebrow") }}</p>
       <h2 class="mb-2 text-xl font-semibold">{{ t("guide.steps.export.title") }}</h2>
-      <p class="mb-4 text-sm leading-relaxed text-ink">{{ t("guide.steps.export.body") }}</p>
+      <p class="mb-4 text-sm leading-relaxed text-justify text-ink">{{ t("guide.steps.export.body") }}</p>
 
       <div class="flex gap-5">
         <div class="flex-1">
-          <div class="guide-callout-region" style="width: 280px; height: 200px; overflow: hidden">
+          <div class="guide-callout-region" style="width: 280px; height: 346px; overflow: hidden">
             <div style="width: 466px; transform: scale(0.6); transform-origin: top left">
               <FomChart
             :chart-data="sampleRows"
@@ -500,7 +523,7 @@
           <p class="mt-1.5 max-w-65 text-xs leading-snug text-secondary">{{ t("guide.steps.export.chartCaption") }}</p>
         </div>
         <div class="flex-1">
-          <div class="guide-callout-region font-mono text-xs leading-relaxed text-ink" style="min-height: 190px; white-space: pre-wrap">{{ sampleNoteText }}</div>
+          <div class="guide-callout-region font-mono text-xs leading-relaxed text-ink" style="min-height: 346px; white-space: pre-wrap">{{ sampleNoteText }}</div>
           <p class="mt-1.5 max-w-65 text-xs leading-snug text-secondary">{{ t("guide.steps.export.noteCaption") }}</p>
         </div>
       </div>
@@ -535,20 +558,20 @@
       <GuideHeader />
       <p class="mb-2 text-xs font-semibold tracking-[0.3em] text-secondary uppercase">{{ t("guide.mode1.eyebrow") }}</p>
       <h2 class="mb-2 text-xl font-semibold">{{ t("guide.steps.useCases.title") }}</h2>
-      <p class="mb-5 text-sm leading-relaxed text-ink">{{ t("guide.steps.useCases.intro") }}</p>
+      <p class="mb-5 text-sm leading-relaxed text-justify text-ink">{{ t("guide.steps.useCases.intro") }}</p>
 
       <div class="flex flex-col gap-4">
         <div class="rounded-xl border border-border bg-muted/30 px-4 py-3">
           <p class="mb-1 text-sm font-semibold text-primary">1. {{ t("guide.steps.useCases.compareExpSim.title") }}</p>
-          <p class="text-sm leading-relaxed text-ink">{{ t("guide.steps.useCases.compareExpSim.body") }}</p>
+          <p class="text-sm leading-relaxed text-justify text-ink">{{ t("guide.steps.useCases.compareExpSim.body") }}</p>
         </div>
         <div class="rounded-xl border border-border bg-muted/30 px-4 py-3">
           <p class="mb-1 text-sm font-semibold text-primary">2. {{ t("guide.steps.useCases.reviewFlagged.title") }}</p>
-          <p class="text-sm leading-relaxed text-ink">{{ t("guide.steps.useCases.reviewFlagged.body") }}</p>
+          <p class="text-sm leading-relaxed text-justify text-ink">{{ t("guide.steps.useCases.reviewFlagged.body") }}</p>
         </div>
         <div class="rounded-xl border border-border bg-muted/30 px-4 py-3">
           <p class="mb-1 text-sm font-semibold text-primary">3. {{ t("guide.steps.useCases.publicationFigure.title") }}</p>
-          <p class="text-sm leading-relaxed text-ink">{{ t("guide.steps.useCases.publicationFigure.body") }}</p>
+          <p class="text-sm leading-relaxed text-justify text-ink">{{ t("guide.steps.useCases.publicationFigure.body") }}</p>
         </div>
       </div>
 
@@ -567,7 +590,7 @@
       <div class="flex flex-col items-center rounded-2xl border border-dashed border-border bg-muted/20 px-10 py-8 text-center">
         <p class="mb-3 text-3xl">🚧</p>
         <p class="mb-2 text-lg font-semibold text-ink">{{ t("guide.mode2.comingSoon.title") }}</p>
-        <p class="max-w-md text-sm leading-relaxed text-ink">{{ t("guide.mode2.comingSoon.body") }}</p>
+        <p class="max-w-md text-sm leading-relaxed text-justify text-ink">{{ t("guide.mode2.comingSoon.body") }}</p>
       </div>
 
       <div class="mt-8">
@@ -575,11 +598,11 @@
         <div class="grid grid-cols-2 gap-4">
           <div class="rounded-xl border border-border bg-muted/30 px-4 py-3">
             <p class="mb-1 text-sm font-semibold text-ink">{{ t("guide.mode2.preview.rules.title") }}</p>
-            <p class="text-sm leading-relaxed text-secondary">{{ t("guide.mode2.preview.rules.body") }}</p>
+            <p class="text-sm leading-relaxed text-justify text-secondary">{{ t("guide.mode2.preview.rules.body") }}</p>
           </div>
           <div class="rounded-xl border border-border bg-muted/30 px-4 py-3">
             <p class="mb-1 text-sm font-semibold text-ink">{{ t("guide.mode2.preview.validation.title") }}</p>
-            <p class="text-sm leading-relaxed text-secondary">{{ t("guide.mode2.preview.validation.body") }}</p>
+            <p class="text-sm leading-relaxed text-justify text-secondary">{{ t("guide.mode2.preview.validation.body") }}</p>
           </div>
         </div>
       </div>
@@ -592,7 +615,20 @@
 <script setup lang="ts">
 import { computed, h, nextTick, onMounted, ref, useTemplateRef } from "vue";
 import { useI18n } from "vue-i18n";
-import { ChevronDown, Download, RotateCcw, Upload } from "@lucide/vue";
+import {
+  ChevronDown,
+  Construction,
+  Download,
+  Filter,
+  Info,
+  Lightbulb,
+  LineChart,
+  Pin,
+  RotateCcw,
+  SlidersHorizontal,
+  Upload,
+  Users,
+} from "@lucide/vue";
 import { Button } from "@/components/ui/button";
 import FileDropzone from "@/components/shared/FileDropzone.vue";
 import GraphControls from "@/components/visualization/GraphControls.vue";
@@ -640,17 +676,28 @@ const PAGE_MODE1_USECASES = 10;
 const PAGE_MODE2 = 11;
 const TOTAL_PAGES = 11;
 
+// Every outline label follows "<Mode N> — <rest>" in all four locales
+// (checked en/fr/ko/zh -- always the same em-dash separator), so the
+// section prefix can be stripped generically for the TOC's own display
+// without needing per-language substring logic. The full label (with
+// prefix) is still what's used for the PDF outline/bookmark title
+// elsewhere, since that one benefits from staying fully self-descriptive.
+function tocLabel(fullLabel: string): string {
+  const parts = fullLabel.split(" — ");
+  return parts.length > 1 ? parts.slice(1).join(" — ") : fullLabel;
+}
+
 const tocEntries = computed(() => [
-  { label: t("guide.outline.intro"), page: PAGE_INTRO },
-  { label: t("guide.outline.mode1Import"), page: PAGE_MODE1_IMPORT },
-  { label: t("guide.outline.mode1Controls"), page: PAGE_MODE1_CONTROLS },
-  { label: t("guide.outline.mode1Filters"), page: PAGE_MODE1_FILTERS },
-  { label: t("guide.outline.mode1Reading"), page: PAGE_MODE1_READING },
-  { label: t("guide.outline.mode1Compare"), page: PAGE_MODE1_COMPARE },
-  { label: t("guide.outline.mode1Annotate"), page: PAGE_MODE1_ANNOTATE },
-  { label: t("guide.outline.mode1Export"), page: PAGE_MODE1_EXPORT },
-  { label: t("guide.outline.mode1UseCases"), page: PAGE_MODE1_USECASES },
-  { label: t("guide.outline.mode2"), page: PAGE_MODE2 },
+  { label: tocLabel(t("guide.outline.intro")), page: PAGE_INTRO, icon: Info, group: "front" as const },
+  { label: tocLabel(t("guide.outline.mode1Import")), page: PAGE_MODE1_IMPORT, icon: Upload, group: "mode1" as const },
+  { label: tocLabel(t("guide.outline.mode1Controls")), page: PAGE_MODE1_CONTROLS, icon: SlidersHorizontal, group: "mode1" as const },
+  { label: tocLabel(t("guide.outline.mode1Filters")), page: PAGE_MODE1_FILTERS, icon: Filter, group: "mode1" as const },
+  { label: tocLabel(t("guide.outline.mode1Reading")), page: PAGE_MODE1_READING, icon: LineChart, group: "mode1" as const },
+  { label: tocLabel(t("guide.outline.mode1Compare")), page: PAGE_MODE1_COMPARE, icon: Users, group: "mode1" as const },
+  { label: tocLabel(t("guide.outline.mode1Annotate")), page: PAGE_MODE1_ANNOTATE, icon: Pin, group: "mode1" as const },
+  { label: tocLabel(t("guide.outline.mode1Export")), page: PAGE_MODE1_EXPORT, icon: Download, group: "mode1" as const },
+  { label: tocLabel(t("guide.outline.mode1UseCases")), page: PAGE_MODE1_USECASES, icon: Lightbulb, group: "mode1" as const },
+  { label: tocLabel(t("guide.outline.mode2")), page: PAGE_MODE2, icon: Construction, group: "back" as const },
 ]);
 
 // ---------------------------------------------------------------------
@@ -794,8 +841,12 @@ const annotationMarks = ref<GuideMark[]>([]);
 // line are pixels drawn by ECharts, not separate DOM nodes, so these are
 // calibrated percentages of the 480x392 callout box rather than measured
 // elements -- the only figure in this guide that isn't DOM-measured.
+// Mark 1's real content (measured live) runs flush to the figure's own
+// right edge with zero slack -- it must span the full badge row (up to
+// x=480) so its ring's own right-side number badge lands in the blank
+// margin just outside the figure instead of on top of the real content.
 const readingMarks = ref<GuideMark[]>([
-  { top: 6, left: 175, width: 260, height: 26 },
+  { top: 7, left: 256, width: 224, height: 22 },
   { top: 40, left: 148, width: 130, height: 40 },
   { top: 172, left: 118, width: 150, height: 22 },
 ]);
@@ -917,11 +968,56 @@ const GuideFooter = (props: { page: number }) =>
     h("span", {}, `${t("guide.footer.page")} ${props.page} / ${TOTAL_PAGES}`),
   ]);
 
-const GuideMarkRing = (props: { mark: GuideMark; number: number }) =>
-  h("div", {
-    class: "guide-mark",
-    style: { top: `${props.mark.top}px`, left: `${props.mark.left}px`, width: `${props.mark.width}px`, height: `${props.mark.height}px` },
-  }, [h("span", { class: "guide-mark-num" }, String(props.number))]);
+const MARK_COLOR = "#d6272c";
+const markNumBadgeStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: "18px",
+  height: "18px",
+  borderRadius: "9999px",
+  background: MARK_COLOR,
+  color: "#fff",
+  fontSize: "10px",
+  fontWeight: "700",
+  boxShadow: "0 0 0 2px #fff",
+};
+
+// `side` controls which edge the numbered badge floats outside of -- it
+// must never sit on top of the ring's own interior, since that's exactly
+// the real UI content being pointed at. "right" (the default) works for
+// every stacked control row/card in this guide (there's always slack
+// before the next column); the toolbar figure is the one place a row of
+// tightly-packed buttons sits side by side, so its rings use "top"
+// instead to avoid landing on the neighboring button.
+//
+// The badge's position is set via an inline style object, not a scoped
+// CSS class: GuideMarkRing is a plain h()-based component, not compiled
+// SFC template markup, so Vue's scoped-style attribute (data-v-xxxx) only
+// ever lands on the component's OWN root element (this div) -- nested
+// elements it creates internally (the inner span) never receive it, so a
+// scoped ".guide-mark-num" rule silently never matches. Inline styles
+// sidestep that entirely.
+const GuideMarkRing = (props: { mark: GuideMark; number: number; side?: "right" | "top" }) =>
+  h(
+    "div",
+    {
+      class: "guide-mark",
+      style: { top: `${props.mark.top}px`, left: `${props.mark.left}px`, width: `${props.mark.width}px`, height: `${props.mark.height}px` },
+    },
+    [
+      h(
+        "span",
+        {
+          style:
+            props.side === "top"
+              ? { ...markNumBadgeStyle, position: "absolute", left: "50%", bottom: "100%", marginBottom: "6px", transform: "translateX(-50%)" }
+              : { ...markNumBadgeStyle, position: "absolute", top: "50%", left: "100%", marginLeft: "6px", transform: "translateY(-50%)" },
+        },
+        String(props.number),
+      ),
+    ],
+  );
 
 const GuideMarkLegend = (props: { items: { label: string; body: string }[] }, ctx: { attrs: Record<string, unknown> }) =>
   h(
@@ -929,8 +1025,12 @@ const GuideMarkLegend = (props: { items: { label: string; body: string }[] }, ct
     { class: ["flex flex-col gap-1.5 text-xs", ctx.attrs.class] },
     props.items.map((item, i) =>
       h("p", { key: i }, [
-        h("span", { class: "guide-mark-num guide-mark-num--inline" }, String(i + 1)),
-        h("strong", { class: "ml-1.5 text-ink" }, item.label),
+        h(
+          "span",
+          { style: { ...markNumBadgeStyle, display: "inline-flex", marginRight: "6px", verticalAlign: "middle", boxShadow: "none" } },
+          String(i + 1),
+        ),
+        h("strong", { class: "text-ink" }, item.label),
         ` — ${item.body}`,
       ]),
     ),
@@ -940,6 +1040,18 @@ const GuideMarkLegend = (props: { items: { label: string; body: string }[] }, ct
 <style scoped>
 .guide-page {
   page-break-inside: avoid;
+}
+
+/* Every guide-page is a fixed-height flex column. Without this, the browser's
+   default flex-shrink:1 silently COMPRESSES child blocks (rather than letting
+   them overflow visibly) whenever total content is a bit too tall for the
+   page -- the compressed box then ends before its own text/rows are done
+   rendering, so the next sibling starts drawing on top of that spillover.
+   That reads as random overlapping content instead of a clean, measurable
+   overflow. Shrink-proofing every child makes real overflow show up as
+   overflow (verifiable via getBoundingClientRect) instead of being masked. */
+.guide-page > * {
+  flex-shrink: 0;
 }
 
 .guide-callout-region {
@@ -955,30 +1067,6 @@ const GuideMarkLegend = (props: { items: { label: string; body: string }[] }, ct
   border-radius: 10px;
   pointer-events: none;
   box-sizing: border-box;
-}
-
-.guide-mark-num {
-  position: absolute;
-  top: -9px;
-  left: -9px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 9999px;
-  background: #d6272c;
-  color: #fff;
-  font-size: 10px;
-  font-weight: 700;
-  box-shadow: 0 0 0 2px #fff;
-}
-
-.guide-mark-num--inline {
-  position: static;
-  display: inline-flex;
-  box-shadow: none;
-  vertical-align: middle;
 }
 
 .guide-toc-row {
