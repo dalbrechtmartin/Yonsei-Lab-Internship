@@ -74,6 +74,17 @@ export function detectColumnTypes(rows: DataRow[], columns: string[]): ColumnTyp
   for (const col of columns) {
     if (isMetadataColumn(col)) continue;
 
+    // Mode ID is a plain integer in the harmonized export (1, 2, 3 --
+    // normalized from whatever label style the paper used, e.g. "Mode
+    // A"/"Peak 1", see backend/prompt.txt), but it's semantically a
+    // discrete label disambiguating a paper's rows, not a continuous
+    // quantity -- force it categorical so it keeps working as an X-axis/
+    // "Group / Color by" choice instead of being treated like a metric.
+    if (findModeIdColumn([col])) {
+      categorical.push(col);
+      continue;
+    }
+
     const sample = rows
       .map((row) => row[col])
       .filter((v) => v !== null && v !== undefined && v !== "");
@@ -233,6 +244,17 @@ export function findResonanceWavelengthColumn(columns: string[]): string | null 
   return columns.find((c) => /resonance\s*wavelength/i.test(c)) ?? null;
 }
 
+/**
+ * Locates the "Spectral Range" column (UV/Visible/NIR/MIR/FIR-THz), if
+ * present -- derived server-side from Resonance Wavelength (see
+ * backend/schema.py's spectral_range), so it's genuinely a measurement
+ * worth always showing alongside it (tooltip, pins, exports), not
+ * metadata/bookkeeping.
+ */
+export function findSpectralRangeColumn(columns: string[]): string | null {
+  return columns.find((c) => /spectral\s*range/i.test(c)) ?? null;
+}
+
 export function findLayerStructureColumn(columns: string[]): string | null {
   return columns.find((c) => /layer\s*structure/i.test(c)) ?? null;
 }
@@ -293,6 +315,7 @@ export function findShortTitleColumn(columns: string[]): string | null {
 export function findTooltipExtraColumns(columns: string[]): string[] {
   const patterns = [
     /resonance\s*wavelength/i,
+    /spectral\s*range/i,
     /\bfom\b/i,
     /sensitivity/i,
     /\bfwhm\b/i,

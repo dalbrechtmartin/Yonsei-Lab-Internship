@@ -71,6 +71,159 @@ export function linearRegression(points: Array<[number, number]>): LinearFit | n
   return { slope, intercept };
 }
 
+export type TrendType = "linear" | "exponential" | "logarithmic" | "power" | "polynomial";
+
+export interface TrendFit {
+  type: TrendType;
+  /** Coefficient of determination against the *original* (untransformed) y values -- lets "auto" compare models fairly even though exponential/logarithmic/power are fit via a linearized transform. */
+  r2: number;
+  predict: (x: number) => number;
+}
+
+function rSquared(points: Array<[number, number]>, predict: (x: number) => number): number {
+  const ys = points.map((p) => p[1]);
+  const meanY = ys.reduce((sum, v) => sum + v, 0) / ys.length;
+  const ssTot = ys.reduce((sum, v) => sum + (v - meanY) ** 2, 0);
+  // Every y identical -- there's no variance for any model to explain, so
+  // R^2 is undefined; treat it as 0 rather than dividing by zero.
+  if (ssTot === 0) return 0;
+  const ssRes = points.reduce((sum, [x, y]) => sum + (y - predict(x)) ** 2, 0);
+  return 1 - ssRes / ssTot;
+}
+
+function fitLinear(points: Array<[number, number]>): TrendFit | null {
+  const fit = linearRegression(points);
+  if (!fit) return null;
+  const predict = (x: number) => fit.intercept + fit.slope * x;
+  return { type: "linear", r2: rSquared(points, predict), predict };
+}
+
+/** y = a * e^(b x), fit by linear regression on (x, ln y) -- only valid when every y is strictly positive. */
+function fitExponential(points: Array<[number, number]>): TrendFit | null {
+  if (points.some(([, y]) => y <= 0)) return null;
+  const fit = linearRegression(points.map(([x, y]): [number, number] => [x, Math.log(y)]));
+  if (!fit) return null;
+  const a = Math.exp(fit.intercept);
+  const b = fit.slope;
+  const predict = (x: number) => a * Math.exp(b * x);
+  return { type: "exponential", r2: rSquared(points, predict), predict };
+}
+
+/** y = a + b*ln(x), fit by linear regression on (ln x, y) -- only valid when every x is strictly positive. */
+function fitLogarithmic(points: Array<[number, number]>): TrendFit | null {
+  if (points.some(([x]) => x <= 0)) return null;
+  const fit = linearRegression(points.map(([x, y]): [number, number] => [Math.log(x), y]));
+  if (!fit) return null;
+  const predict = (x: number) => fit.intercept + fit.slope * Math.log(x);
+  return { type: "logarithmic", r2: rSquared(points, predict), predict };
+}
+
+/** y = a * x^b, fit by linear regression on (ln x, ln y) -- only valid when every x and y are strictly positive. */
+function fitPower(points: Array<[number, number]>): TrendFit | null {
+  if (points.some(([x, y]) => x <= 0 || y <= 0)) return null;
+  const fit = linearRegression(points.map(([x, y]): [number, number] => [Math.log(x), Math.log(y)]));
+  if (!fit) return null;
+  const a = Math.exp(fit.intercept);
+  const b = fit.slope;
+  const predict = (x: number) => a * Math.pow(x, b);
+  return { type: "power", r2: rSquared(points, predict), predict };
+}
+
+/** Solves a 3x3 linear system via Gaussian elimination with partial pivoting. Returns null if singular. */
+function solve3x3(rows: number[][], rhs: number[]): [number, number, number] | null {
+  const a = rows.map((row, i) => [...row, rhs[i]]);
+  for (let i = 0; i < 3; i++) {
+    let pivot = i;
+    for (let k = i + 1; k < 3; k++) if (Math.abs(a[k][i]) > Math.abs(a[pivot][i])) pivot = k;
+    if (Math.abs(a[pivot][i]) < 1e-12) return null;
+    [a[i], a[pivot]] = [a[pivot], a[i]];
+    for (let k = i + 1; k < 3; k++) {
+      const factor = a[k][i] / a[i][i];
+      for (let j = i; j < 4; j++) a[k][j] -= factor * a[i][j];
+    }
+  }
+  const x: [number, number, number] = [0, 0, 0];
+  for (let i = 2; i >= 0; i--) {
+    let sum = a[i][3];
+    for (let j = i + 1; j < 3; j++) sum -= a[i][j] * x[j];
+    x[i] = sum / a[i][i];
+  }
+  return x;
+}
+
+/** y = c0 + c1*x + c2*x^2, fit by least-squares via the normal equations. Needs at least 3 points to be determined. */
+function fitPolynomial(points: Array<[number, number]>): TrendFit | null {
+  if (points.length < 3) return null;
+  let s1 = 0,
+    s2 = 0,
+    s3 = 0,
+    s4 = 0,
+    sy = 0,
+    sxy = 0,
+    sx2y = 0;
+  for (const [x, y] of points) {
+    const x2 = x * x;
+    s1 += x;
+    s2 += x2;
+    s3 += x2 * x;
+    s4 += x2 * x2;
+    sy += y;
+    sxy += x * y;
+    sx2y += x2 * y;
+  }
+  const n = points.length;
+  const coeffs = solve3x3(
+    [
+      [n, s1, s2],
+      [s1, s2, s3],
+      [s2, s3, s4],
+    ],
+    [sy, sxy, sx2y],
+  );
+  if (!coeffs) return null;
+  const [c0, c1, c2] = coeffs;
+  const predict = (x: number) => c0 + c1 * x + c2 * x * x;
+  return { type: "polynomial", r2: rSquared(points, predict), predict };
+}
+
+/**
+ * Fits a trend curve to `points`. With an explicit `type`, fits exactly that
+ * model (or returns null if the data doesn't satisfy its domain constraints,
+ * e.g. logarithmic needs x > 0). With "auto", fits every model whose domain
+ * constraints the data satisfies and returns the one with the highest R^2 --
+ * the point being that a straight line forced onto a curved relationship
+ * (e.g. saturating sensor response, exponential decay) is a worse fit than
+ * letting the shape match the data, per the standard curve-fitting practice
+ * of comparing candidate models by R^2 rather than assuming linearity.
+ */
+export function fitTrend(points: Array<[number, number]>, type: TrendType | "auto"): TrendFit | null {
+  if (points.length < 2) return null;
+  const fitters: Record<TrendType, (pts: Array<[number, number]>) => TrendFit | null> = {
+    linear: fitLinear,
+    exponential: fitExponential,
+    logarithmic: fitLogarithmic,
+    power: fitPower,
+    polynomial: fitPolynomial,
+  };
+  if (type !== "auto") return fitters[type](points);
+  const fits = (Object.keys(fitters) as TrendType[])
+    .map((key) => fitters[key](points))
+    .filter((f): f is TrendFit => f !== null);
+  if (fits.length === 0) return null;
+  return fits.reduce((best, f) => (f.r2 > best.r2 ? f : best));
+}
+
+/** Samples a fitted curve at evenly-spaced x values between xmin and xmax -- needed to draw an actual curve (exponential/logarithmic/power/polynomial), since a 2-point line only ever renders straight. */
+export function sampleTrendCurve(fit: TrendFit, xmin: number, xmax: number, steps = 60): Array<[number, number]> {
+  if (xmin === xmax) return [[xmin, fit.predict(xmin)]];
+  const points: Array<[number, number]> = [];
+  for (let i = 0; i <= steps; i++) {
+    const x = xmin + ((xmax - xmin) * i) / steps;
+    points.push([x, fit.predict(x)]);
+  }
+  return points;
+}
+
 export interface ParetoPoint {
   x: number;
   y: number;

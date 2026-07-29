@@ -332,9 +332,20 @@ const structureExtraFields = computed(() =>
   ),
 );
 
+// foldFields deliberately excludes the plotted X/Y axes on screen (see
+// AnnotationsPanel's foldFieldColumns) since those already show as the
+// header badges (axisBadges) right above -- but neither the "Metrics"
+// zoom/export nor the full pin export ever renders that header, so
+// exporting foldFields alone silently drops whichever measurement is
+// currently plotted (e.g. FOM/Resonance Wavelength picked as axes). Put
+// the axis values back in for export/zoom specifically, so every export
+// always has every measurement, matching what's visible somewhere on
+// the card.
+const exportMetricsRows = computed(() => [...axisBadges.value, ...props.foldFields]);
+
 const downloadLayersPng = () =>
   exportLayerStackPng({ ref: props.note.ref, title: props.note.title }, props.initialLayers, structureExtraFields.value);
-const downloadFieldsPng = () => exportFieldListPng({ ref: props.note.ref, title: props.note.title }, props.foldFields);
+const downloadFieldsPng = () => exportFieldListPng({ ref: props.note.ref, title: props.note.title }, exportMetricsRows.value);
 const downloadNoteTxt = () => downloadTextFile(props.note.note, `notes_${props.note.ref.replace(/[^a-z0-9_-]+/gi, "_")}.txt`);
 
 // Collapsed preview line under the metrics trigger (same convention as Layer
@@ -352,7 +363,7 @@ const downloadAllPng = () =>
         rows: structureExtraFields.value,
         layers: props.initialLayers,
       },
-      { title: t("fomcharts.annotations.metrics"), rows: props.foldFields },
+      { title: t("fomcharts.annotations.metrics"), rows: exportMetricsRows.value },
       { title: t("fomcharts.annotations.notes"), text: props.note.note || undefined },
     ],
   );

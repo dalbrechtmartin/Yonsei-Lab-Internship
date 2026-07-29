@@ -189,7 +189,8 @@ async function downloadGuide() {
   try {
     await exportGuideToPdf(
       guideTemplateRef.value.rootEl,
-      `Guide_Utilisateur_lambdaLens_${locale.value.toUpperCase()}.pdf`,
+      `${t("guide.filenameBase")}_${t("app.title")}_${locale.value.toUpperCase()}.pdf`,
+      { title: `${t("app.title")} — ${t("guide.meta.subtitle")}`, language: locale.value },
     );
   } finally {
     generatingGuide.value = false;

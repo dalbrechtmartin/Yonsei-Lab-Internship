@@ -121,6 +121,7 @@
   },
   "guide": {
     "generating": "Génération du guide en cours…",
+    "filenameBase": "Guide_Utilisateur",
     "meta": {
       "subtitle": "Guide utilisateur",
       "lab": "Outil de recherche — Laboratoire Yonsei",
@@ -129,75 +130,82 @@
     "footer": {
       "page": "Page"
     },
+    "outline": {
+      "cover": "Couverture",
+      "intro": "Introduction",
+      "toc": "Sommaire",
+      "mode1Setup": "Mode 1 — Importer votre jeu de données",
+      "mode1Controls": "Mode 1 — Axes, affichage et filtres",
+      "mode1Chart": "Mode 1 — Graphique et analyse",
+      "mode2": "Mode 2 (à venir)"
+    },
+    "intro": {
+      "title": "Introduction",
+      "abstractTitle": "Résumé",
+      "abstractBody": "λLens est un outil de recherche développé dans le cadre d'un stage au Laboratoire de Photonique de l'Université de Yonsei, pour accélérer la façon dont le laboratoire dépouille la littérature sur les capteurs photoniques intégrés. Extraire à la main les valeurs de facteur de mérite — longueur d'onde de résonance, sensibilité, facteur Q, FWHM — ne passe pas à l'échelle au-delà de quelques références. λLens combine un pipeline d'extraction PDF guidé et un espace de visualisation interactif, permettant de passer d'un dossier d'articles à un graphique de comparaison filtrable et exportable en quelques minutes plutôt qu'en plusieurs jours.",
+      "guideTitle": "Comment utiliser ce guide",
+      "guideBody": "Ce guide documente le Mode 1 (visualisation Excel-to-Plot), qui est complet et prêt à l'emploi — voir le sommaire à la page suivante. Le Mode 2 (extraction et validation PDF) est encore en cours de développement actif et sera documenté ici une fois stabilisé.",
+      "authorTitle": "À propos de l'auteure",
+      "authorBody": "λLens a été développé par Danaé A.M. dans le cadre d'un stage de recherche au Laboratoire de Photonique de l'Université de Yonsei."
+    },
+    "toc": {
+      "title": "Sommaire",
+      "hint": "Cliquez sur une entrée pour accéder directement à la page correspondante."
+    },
     "mode1": {
       "eyebrow": "Mode 1",
       "title": "Visualisation Excel-to-Plot"
     },
-    "import": {
-      "title": "1. Importer votre jeu de données",
-      "body": "Glissez-déposez votre fichier Excel ici, ou cliquez pour le sélectionner. λLens lit les colonnes de chaque feuille pour remplir les sélecteurs d'axes ci-dessous.",
-      "dropzone": {
-        "title": "Déposez votre fichier Excel ici",
-        "subtitle": ".xlsx, .xls — jusqu'à 10 Mo",
-        "button": "Parcourir les fichiers"
-      }
+    "scenario": {
+      "title": "Exemple fil rouge utilisé dans cette section",
+      "body": "Les captures ci-dessous proviennent toutes d'un même exemple : six capteurs résonateurs photoniques (anneaux en silicium et en nitrure de silicium, nanodisque plasmonique en or, disque hybride diélectrique-métal, interféromètre InP et anneau polymère), chacun rapporté une fois par la mesure (EXP) et une fois par la simulation (SIM). Nous comparons leur facteur de qualité (Q) à la longueur d'onde de résonance."
     },
-    "chart": {
-      "title": "2. Lire le graphique",
-      "body": "Les axes X et Y représentent les métriques choisies — généralement la longueur d'onde par rapport au facteur de mérite (FOM). Les points simulés (SIM) et expérimentaux (EXP) sont colorés différemment pour repérer les écarts en un coup d'œil.",
-      "axis": {
-        "x": "Longueur d'onde (nm)",
-        "y": "FOM"
+    "steps": {
+      "import": {
+        "title": "1. Importer votre jeu de données",
+        "body": "Depuis l'outil Visualisation, déposez un fichier Excel ou CSV sur la zone ci-dessous, ou cliquez dessus pour le sélectionner.",
+        "figure1Caption": "Figure 1 — La zone d'import : glissez-déposez un fichier Excel ou CSV ici, ou cliquez pour le sélectionner (.xlsx, .xls, .csv, jusqu'à 10 Mo).",
+        "figure2Caption": "Figure 2 — La barre d'outils de l'espace de travail une fois un fichier chargé : Importer pour charger un autre fichier, Exporter pour du CSV, de l'Excel ou une image du graphique, et Réinitialiser pour restaurer les réglages par défaut."
       },
-      "annotation": {
-        "point": "λ 620nm · FOM 8.4",
-        "median": "ligne médiane"
+      "controls": {
+        "title": "2. Configurer les axes, l'affichage et les filtres",
+        "body": "Le panneau de gauche contrôle tout ce que montre le graphique. La section Graphique choisit le titre et les colonnes des axes Y/X. La section Affichage bascule l'échelle log/linéaire, la ligne de tendance, la frontière de Pareto, la légende, la ligne médiane et les repères d'axes. La section Filtres — illustrée ci-dessous — restreint le jeu de données par Origine, Classe de matériau ou Matériaux de base.",
+        "figure3Caption": "Figure 3 — Le panneau de contrôle avec la section Filtres ouverte, montrant les puces Origine, Classe de matériau et Matériaux de base avec leurs effectifs pour notre exemple."
       },
-      "legend": {
-        "sim": "SIM",
-        "exp": "EXP"
+      "reading": {
+        "title": "3. Lire et interagir avec le graphique",
+        "body": "Chaque point correspond à un enregistrement rapporté. Les couleurs suivent la colonne « Regrouper / Colorer par » actuelle — ici, Origine.",
+        "figure4Caption": "Figure 4 — Le graphique de notre exemple : facteur de qualité Q (axe Y, échelle log) en fonction de la longueur d'onde de résonance (axe X), coloré par Origine — orange pour EXP, bleu pour SIM —, avec la ligne médiane et la légende visibles.",
+        "interactions": {
+          "hover": { "label": "Survol", "body": "affiche la longueur d'onde complète, le facteur Q et les autres métriques d'un point." },
+          "zoom": { "label": "Défilement / glisser", "body": "zoome et déplace la vue à l'intérieur du graphique pour inspecter une zone de près." },
+          "click": { "label": "Clic", "body": "épingle un point pour pouvoir le comparer plus tard." },
+          "median": { "body": "marque la valeur Y médiane des points affichés." }
+        }
       },
-      "interaction": {
-        "hover": { "label": "Survol", "body": "affiche la longueur d'onde exacte et la valeur de la métrique pour un point." },
-        "zoom": { "label": "Défilement / glisser", "body": "zoome et déplace les axes pour inspecter une zone en détail." },
-        "legend": { "label": "Clic sur la légende", "body": "active ou désactive la série SIM ou EXP." },
-        "scale": { "label": "Bascule d'échelle", "body": "passe l'axe Y d'une échelle linéaire à logarithmique." },
-        "median": { "label": "Ligne médiane", "body": "peut être affichée ou masquée pour la comparer à la tendance." },
-        "groupBy": { "label": "Regrouper par", "body": "recolore les points selon une colonne choisie (ex. matériau)." }
+      "compare": {
+        "title": "4. Comparer les groupes, annoter et exporter",
+        "body": "Le panneau Annotations, à droite, garde chaque point épinglé à portée de main : cliquez sur un point du graphique pour l'épingler, ajoutez votre propre note, et utilisez « épingler les autres lignes de cet article » pour regrouper tous les modes d'un même enregistrement en un clic. Le bouton Exporter de la barre d'outils propose ensuite le jeu de données filtré en CSV ou Excel, ou le graphique lui-même en image PNG.",
+        "figure5Caption": "Figure 5 — Le panneau Comparer les groupes, résumant l'effectif, la moyenne, la médiane et σ pour chaque groupe — ici, EXP contre SIM."
       }
     },
     "mode2": {
       "eyebrow": "Mode 2",
-      "title": "Extraction PDF et validation"
-    },
-    "extraction": {
-      "title": "3. Règles d'extraction par IA",
-      "body": "Gemini analyse chaque article selon un ensemble fixe de règles métier avant de proposer une valeur à valider.",
-      "rule": {
-        "substrate": {
-          "title": "Vérification du substrat",
-          "body": "Signale les substrats en quartz ou en verre lorsque l'article ne le précise pas explicitement."
+      "title": "Extraction PDF et validation",
+      "comingSoon": {
+        "title": "Bientôt disponible",
+        "body": "Le flux d'extraction et de validation PDF est encore en cours de développement actif. Ce guide sera complété avec sa documentation détaillée une fois cette fonctionnalité prête."
+      },
+      "preview": {
+        "title": "À venir",
+        "rules": {
+          "title": "Règles d'extraction par IA",
+          "body": "Gemini analysera chaque article selon un ensemble fixe de règles métier — vérification du substrat, validation du domaine de longueur d'onde — avant de proposer une valeur à valider."
         },
-        "wavelength": {
-          "title": "Domaine de longueur d'onde",
-          "body": "Vérifie que les valeurs rapportées se situent dans la plage de fonctionnement indiquée par l'article."
+        "validation": {
+          "title": "Validation supervisée par un humain",
+          "body": "Une vue en écran partagé permettra d'approuver, modifier ou exclure chaque valeur extraite en la comparant à sa page source, avant son ajout à votre jeu de données."
         }
-      }
-    },
-    "validation": {
-      "title": "4. Valider les valeurs extraites",
-      "body": "Vérifiez chaque ligne proposée en la comparant à sa page source. Approuvez, modifiez ou excluez une valeur avant son ajout à votre jeu de données.",
-      "pdf": {
-        "label": "PDF source",
-        "detected": "détecté"
-      },
-      "table": {
-        "label": "Données extraites"
-      },
-      "action": {
-        "approve": "Approuver",
-        "edit": "Modifier",
-        "exclude": "Exclure"
       }
     }
   },
@@ -224,8 +232,17 @@
       "trendLine": "Ligne de tendance",
       "trendLineHint": "Nécessite un axe X numérique",
       "trendUnavailable": "Ligne de tendance : pas assez de points",
+      "trendType": "Type de courbe",
       "pareto": "Frontière de Pareto",
       "axisNames": "Afficher les repères X/Y"
+    },
+    "trendType": {
+      "auto": "Auto (meilleur ajustement)",
+      "linear": "Linéaire",
+      "exponential": "Exponentielle",
+      "logarithmic": "Logarithmique",
+      "power": "Puissance",
+      "polynomial": "Polynomiale"
     },
     "sections": {
       "chart": "Graphique",
@@ -328,7 +345,8 @@
       "scale": "L'échelle log garde lisibles des valeurs de FOM qui s'étendent sur plusieurs ordres de grandeur. L'échelle linéaire garde un espacement égal entre les valeurs.",
       "legend": "Trace la légende des séries (groupes, médiane, ligne de tendance) directement sur le graphique, afin qu'elle soit incluse lors de l'export du graphique en image.",
       "median": "Trace une ligne pointillée à la valeur médiane de l'axe Y des points actuellement affichés.",
-      "trendLine": "Ajuste une droite à travers les points affichés pour montrer la tendance générale. Disponible seulement quand l'axe X est une colonne numérique (ex. Sensitivity, Q-factor) — une tendance par rapport à une catégorie comme Material Class n'aurait pas de sens.",
+      "trendLine": "Ajuste une courbe à travers les points affichés pour montrer la tendance générale. Disponible seulement quand l'axe X est une colonne numérique (ex. Sensitivity, Q-factor) — une tendance par rapport à une catégorie comme Material Class n'aurait pas de sens. « Auto » essaie plusieurs formes de courbe et garde celle qui s'ajuste le mieux (R² le plus élevé), au lieu de forcer une droite sur des données qui sont en réalité courbes.",
+      "trendType": "Le modèle mathématique ajusté par la ligne de tendance : Linéaire (y = a + bx), Exponentielle (y = a·e^(bx)), Logarithmique (y = a + b·ln(x), nécessite x > 0), Puissance (y = a·x^b, nécessite x > 0 et y > 0), ou Polynomiale (courbe de degré 2, nécessite au moins 3 points). « Auto » ajuste chaque modèle compatible avec les données et garde celui dont le R² est le plus élevé.",
       "pareto": "Met en surbrillance l'ensemble de points non dominés — les enregistrements non surpassés sur les deux axes par aucun autre point — en tant que ligne, en supposant que des valeurs X et Y plus élevées sont meilleures.",
       "axisNames": "Ajoute un petit repère « X · »/« Y · » devant le nom de chaque axe, pour savoir lequel est lequel -- le nom de l'axe reste toujours affiché.",
       "trendUnavailable": "La ligne de tendance nécessite au moins 2 points avec des valeurs X différentes -- avec moins (ex. un groupe isolé à un seul point), elle est activée mais n'a rien à tracer."

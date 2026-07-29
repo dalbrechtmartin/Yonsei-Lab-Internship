@@ -98,6 +98,23 @@
             <Switch v-model="showTrend" :disabled="trendDisabled" />
           </div>
 
+          <label v-if="showTrend && !trendDisabled" class="flex flex-col gap-1 pl-1 text-xs text-secondary">
+            {{ t("fomcharts.controls.trendType") }}
+            <Select v-model="trendType">
+              <SelectTrigger size="sm" class="w-full min-w-0 bg-card">
+                <SelectValue class="min-w-0 truncate" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="auto">{{ t("fomcharts.trendType.auto") }}</SelectItem>
+                <SelectItem value="linear">{{ t("fomcharts.trendType.linear") }}</SelectItem>
+                <SelectItem value="exponential">{{ t("fomcharts.trendType.exponential") }}</SelectItem>
+                <SelectItem value="logarithmic">{{ t("fomcharts.trendType.logarithmic") }}</SelectItem>
+                <SelectItem value="power">{{ t("fomcharts.trendType.power") }}</SelectItem>
+                <SelectItem value="polynomial">{{ t("fomcharts.trendType.polynomial") }}</SelectItem>
+              </SelectContent>
+            </Select>
+          </label>
+
           <div class="flex items-center justify-between">
             <span class="flex items-center gap-1 text-xs" :class="paretoDisabled ? 'text-muted-foreground' : 'text-ink'">
               {{ t("fomcharts.controls.pareto") }}
@@ -237,6 +254,7 @@ import { Input } from "@/components/ui/input";
 import InfoTooltip from "@/components/shared/InfoTooltip.vue";
 import CollapsibleSection from "@/components/shared/CollapsibleSection.vue";
 import FilterChip from "@/components/shared/FilterChip.vue";
+import type { TrendType } from "@/utils/stats";
 
 const { t } = useI18n();
 
@@ -282,11 +300,25 @@ const props = withDefaults(
 // these is a real two-way v-model from the parent (VisualizationView).
 const yAxis = defineModel<string | null>("yAxis");
 const xAxis = defineModel<string | null>("xAxis");
+
+// Neither axis Select excludes the other's current value (X and Y draw
+// from overlapping/different column lists, so a name-based exclusion
+// would be awkward) -- picking the same column on both would otherwise
+// just plot a meaningless Y=X diagonal. Instead of forbidding it, swap:
+// picking Y = the current X moves the old Y onto X (and vice versa), so
+// the two axes always land on two different columns.
+watch(xAxis, (newX, oldX) => {
+  if (newX !== null && newX === yAxis.value) yAxis.value = oldX ?? null;
+});
+watch(yAxis, (newY, oldY) => {
+  if (newY !== null && newY === xAxis.value) xAxis.value = oldY ?? null;
+});
 const scale = defineModel<"log" | "value">("scale", { default: "log" });
 const chartTitle = defineModel<string>("chartTitle", { default: "" });
 const showLegend = defineModel<boolean>("showLegend", { default: true });
 const showMedian = defineModel<boolean>("showMedian", { default: false });
 const showTrend = defineModel<boolean>("showTrend", { default: false });
+const trendType = defineModel<TrendType | "auto">("trendType", { default: "auto" });
 const showAxisNames = defineModel<boolean>("showAxisNames", { default: false });
 const selectedDomains = defineModel<string[]>("selectedDomains", {
   default: () => [],

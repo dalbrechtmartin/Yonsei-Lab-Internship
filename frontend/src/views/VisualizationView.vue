@@ -81,6 +81,7 @@
             v-model:show-legend="showLegend"
             v-model:show-median="showMedian"
             v-model:show-trend="showTrend"
+            v-model:trend-type="trendType"
             v-model:show-axis-names="showAxisNames"
             v-model:selected-domains="selectedDomains"
             v-model:selected-origins="selectedOrigins"
@@ -117,6 +118,7 @@
               :show-legend="showLegend"
               :show-median="showMedian"
               :show-trend="showTrend"
+              :trend-type="trendType"
               :show-pareto="showPareto"
               :show-axis-names="showAxisNames"
               :x-axis-numeric="xAxisNumeric"
@@ -178,7 +180,7 @@ import { apiService } from "@/services/api";
 import { exportRowsAsExcel } from "@/utils/excelExport";
 import { exportRowsAsCsv } from "@/utils/csvExport";
 import { useTransientStatus } from "@/composables/useTransientStatus";
-import { filterPlottable } from "@/utils/stats";
+import { filterPlottable, type TrendType } from "@/utils/stats";
 import { assignGroupColors } from "@/utils/palette";
 import {
   detectColumnTypes,
@@ -230,6 +232,7 @@ const chartTitle = ref("");
 const showLegend = ref(true);
 const showMedian = ref(false);
 const showTrend = ref(false);
+const trendType = ref<TrendType | "auto">("auto");
 const showAxisNames = ref(false);
 const highlightGroup = ref<string | null>(null);
 const selectedDomains = ref<string[]>([]);
@@ -527,6 +530,7 @@ const applyDefaults = () => {
   showLegend.value = true;
   showMedian.value = false;
   showTrend.value = false;
+  trendType.value = "auto";
   showAxisNames.value = false;
   showPareto.value = false;
   highlightGroup.value = null;

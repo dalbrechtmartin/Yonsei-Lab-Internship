@@ -19,6 +19,12 @@
           </span>
           <InfoTooltip v-else-if="hasFlaggedPoints" :text="t('fomcharts.flaggedHint')" />
           <span
+            v-if="trendFit"
+            class="flex items-center gap-1 bg-secondary/10 text-secondary text-xs font-medium px-2.5 py-0.5 rounded whitespace-nowrap"
+          >
+            {{ t(`fomcharts.trendType.${trendFit.type}`) }} · R² {{ formatStat(trendFit.r2) }}
+          </span>
+          <span
             v-if="trendUnavailable"
             class="flex items-center gap-1 bg-amber-500/15 text-amber-800 text-xs font-medium pl-2.5 pr-1.5 py-0.5 rounded whitespace-nowrap"
           >
@@ -79,7 +85,7 @@ import {
   tokenizeValue,
   type DataRow,
 } from "@/utils/columnTypes";
-import { computeStats, filterPlottable, linearRegression, computeParetoFrontier } from "@/utils/stats";
+import { computeStats, filterPlottable, fitTrend, sampleTrendCurve, formatStat, computeParetoFrontier, type TrendType } from "@/utils/stats";
 
 use([
   CanvasRenderer,
@@ -112,6 +118,7 @@ const props = withDefaults(
     chartTitle?: string;
     showMedian?: boolean;
     showTrend?: boolean;
+    trendType?: TrendType | "auto";
     showLegend?: boolean;
     showPareto?: boolean;
     showAxisNames?: boolean;
@@ -133,6 +140,7 @@ const props = withDefaults(
     chartTitle: "",
     showMedian: false,
     showTrend: false,
+    trendType: "auto",
     showLegend: false,
     showPareto: false,
     showAxisNames: false,
@@ -332,17 +340,21 @@ const yValues = computed(() =>
 const medianValue = computed(() => computeStats(yValues.value).median);
 
 // Computed once here and reused by both the series builder and the
-// trendUnavailable badge below -- linearRegression silently returns null
-// when there are fewer than 2 points, or when every point shares the same
-// X value (isolating a single-row group is the common way to hit this), so
-// "Trend line" can be toggled on with nothing to show for it; the badge
-// makes that visible instead of a silent no-op.
+// trendUnavailable badge below -- fitTrend silently returns null when
+// there are fewer than 2 points, when every point shares the same X value
+// (isolating a single-row group is the common way to hit this), or when
+// the chosen model's domain constraints aren't met (e.g. logarithmic/power
+// need x > 0, exponential/power need y > 0) -- so "Trend line" can be
+// toggled on with nothing to show for it; the badge makes that visible
+// instead of a silent no-op. With trendType "auto", fitTrend tries every
+// model the data supports and keeps the one with the best R^2, rather than
+// always forcing a straight line onto data that's actually curved.
 const trendFit = computed(() => {
   if (!(props.showTrend && props.xAxisNumeric && props.xAxis && props.yAxis)) return null;
   const points = highlightedRows.value
     .map((item): [number, number] => [Number(item[props.xAxis as string]), Number(item[props.yAxis as string])])
     .filter(([x, y]) => !isNaN(x) && !isNaN(y));
-  return linearRegression(points);
+  return fitTrend(points, props.trendType);
 });
 const trendUnavailable = computed(
   () => props.showTrend && props.xAxisNumeric && !!props.xAxis && !!props.yAxis && trendFit.value === null,
@@ -558,10 +570,16 @@ const seriesList = computed(() => {
   // updates them in place there.
   spreadDuplicatePoints(series.filter((s) => s.type === "scatter").flatMap((s) => s.data));
 
-  // A simple least-squares fit over the plotted points — only meaningful
-  // when the X axis is itself a numeric quantity (e.g. Sensitivity), not a
-  // category label like Material Class. Fit itself is computed once in
-  // trendFit above (shared with the trendUnavailable badge).
+  // A least-squares fit over the plotted points — only meaningful when the
+  // X axis is itself a numeric quantity (e.g. Sensitivity), not a category
+  // label like Material Class. Fit itself is computed once in trendFit
+  // above (shared with the trendUnavailable badge). Sampled at many x
+  // values rather than drawn as a single 2-point segment: a non-linear
+  // model (exponential/logarithmic/power/polynomial) is an actual curve,
+  // and even a linear fit needs sampling to render as a straight line once
+  // the Y axis itself is log-scaled (echarts interpolates a "line" series
+  // in data space between whatever points it's given, so 2 points would
+  // draw straight in *pixel* space and come out visibly bent on a log axis).
   if (trendFit.value) {
     const xs = highlightedRows.value
       .map((item) => Number(item[props.xAxis as string]))
@@ -572,12 +590,10 @@ const seriesList = computed(() => {
     series.push({
       name: t("fomcharts.controls.trendLine"),
       type: "line",
-      data: [
-        [xmin, fit.intercept + fit.slope * xmin],
-        [xmax, fit.intercept + fit.slope * xmax],
-      ],
+      data: sampleTrendCurve(fit, xmin, xmax),
       showSymbol: false,
       silent: true,
+      smooth: true,
       z: 5,
       lineStyle: { type: "dashed", width: 2, color: trendLineColor },
     });
