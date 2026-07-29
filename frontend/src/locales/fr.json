@@ -134,9 +134,14 @@
       "cover": "Couverture",
       "intro": "Introduction",
       "toc": "Sommaire",
-      "mode1Setup": "Mode 1 — Importer votre jeu de données",
-      "mode1Controls": "Mode 1 — Axes, affichage et filtres",
-      "mode1Chart": "Mode 1 — Graphique et analyse",
+      "mode1Import": "Mode 1 — Importer votre jeu de données",
+      "mode1Controls": "Mode 1 — Axes et affichage",
+      "mode1Filters": "Mode 1 — Filtres",
+      "mode1Reading": "Mode 1 — Lire le graphique",
+      "mode1Compare": "Mode 1 — Comparer les groupes",
+      "mode1Annotate": "Mode 1 — Épingler et annoter",
+      "mode1Export": "Mode 1 — Exporter vos résultats",
+      "mode1UseCases": "Mode 1 — Cas d'utilisation",
       "mode2": "Mode 2 (à venir)"
     },
     "intro": {
@@ -163,30 +168,116 @@
     "steps": {
       "import": {
         "title": "1. Importer votre jeu de données",
+        "overviewTitle": "L'espace de travail en un coup d'œil",
+        "overviewBody": "Une fois un fichier chargé, l'espace de travail comporte trois zones : un panneau de contrôle à gauche (axes, affichage, filtres), le graphique au centre, et un panneau à droite pour comparer les groupes et annoter des points. Chacune est détaillée dans ce guide.",
         "body": "Depuis l'outil Visualisation, déposez un fichier Excel ou CSV sur la zone ci-dessous, ou cliquez dessus pour le sélectionner.",
         "figure1Caption": "Figure 1 — La zone d'import : glissez-déposez un fichier Excel ou CSV ici, ou cliquez pour le sélectionner (.xlsx, .xls, .csv, jusqu'à 10 Mo).",
-        "figure2Caption": "Figure 2 — La barre d'outils de l'espace de travail une fois un fichier chargé : Importer pour charger un autre fichier, Exporter pour du CSV, de l'Excel ou une image du graphique, et Réinitialiser pour restaurer les réglages par défaut."
+        "figure2Caption": "Figure 2 — La barre d'outils de l'espace de travail une fois un fichier chargé.",
+        "toolbar": {
+          "import": { "label": "Importer", "body": "rouvre la zone de dépôt pour charger un autre fichier, en remplaçant le jeu de données actuel." },
+          "export": { "label": "Exporter", "body": "propose le jeu de données filtré en CSV ou Excel, ou le graphique en image PNG (voir page 9)." },
+          "reset": { "label": "Réinitialiser", "body": "restaure les axes, l'affichage et les filtres par défaut du jeu de données chargé, sans le réimporter." }
+        }
       },
       "controls": {
-        "title": "2. Configurer les axes, l'affichage et les filtres",
-        "body": "Le panneau de gauche contrôle tout ce que montre le graphique. La section Graphique choisit le titre et les colonnes des axes Y/X. La section Affichage bascule l'échelle log/linéaire, la ligne de tendance, la frontière de Pareto, la légende, la ligne médiane et les repères d'axes. La section Filtres — illustrée ci-dessous — restreint le jeu de données par Origine, Classe de matériau ou Matériaux de base.",
-        "figure3Caption": "Figure 3 — Le panneau de contrôle avec la section Filtres ouverte, montrant les puces Origine, Classe de matériau et Matériaux de base avec leurs effectifs pour notre exemple."
+        "title": "2. Axes et affichage",
+        "body": "La section Graphique (en haut) choisit ce qui est tracé ; la section Affichage (en dessous) contrôle comment c'est dessiné. Une seule section est ouverte à la fois — cliquez sur son en-tête pour changer.",
+        "figureChartCaption": "Figure 3 — La section Graphique, ouverte.",
+        "figureDisplayCaption": "Figure 4 — La section Affichage, ouverte.",
+        "chart": {
+          "title": { "label": "Titre du graphique", "body": "un nom optionnel affiché au-dessus du graphique — utile avant un export PNG." },
+          "yAxis": { "label": "Axe Y", "body": "la colonne numérique tracée verticalement, ex. Q-Factor. Seules les colonnes numériques sont proposées." },
+          "xAxis": { "label": "Axe X", "body": "la colonne tracée horizontalement — numérique ou catégorielle, selon le contenu du fichier." }
+        },
+        "display": {
+          "scale": { "label": "Échelle", "body": "bascule l'axe Y entre logarithmique et linéaire — le log garde lisibles des valeurs sur plusieurs ordres de grandeur." },
+          "trendLine": { "label": "Ligne de tendance", "body": "trace une régression linéaire sur les points affichés. Nécessite un axe X numérique avec au moins deux valeurs distinctes." },
+          "pareto": { "label": "Frontière de Pareto", "body": "met en évidence les points non dominés — aucun autre point ne fait mieux sur les deux axes à la fois." },
+          "legend": { "label": "Afficher la légende", "body": "dessine les couleurs de groupe (et une éventuelle tendance/Pareto) sur le graphique, pour qu'elles apparaissent dans un export PNG." },
+          "median": { "label": "Ligne médiane", "body": "trace une ligne pointillée à la valeur médiane de l'axe Y actuellement affiché." },
+          "axisNames": { "label": "Afficher les repères X/Y", "body": "préfixe le nom de chaque axe par « X · » / « Y · » — utile quand les deux axes sont numériques et se ressemblent." }
+        }
+      },
+      "filters": {
+        "title": "3. Filtres",
+        "body": "Les filtres restreignent le jeu de données sans modifier le fichier d'origine — décocher une puce masque cette valeur partout (graphique, statistiques, exports) jusqu'à ce qu'elle soit recochée. Ils n'apparaissent que si le fichier contient réellement la colonne correspondante.",
+        "figureCaption": "Figure 5 — La section Filtres, montrant Origine, Classe de matériau et Matériaux de base pour notre exemple.",
+        "note": "Classe de matériau et Matériaux de base sont des filtres « composites » : une cellule comme « Diélectrique;Métal » compte pour les deux puces à la fois, et décocher l'une des deux exclut toute ligne qui la mentionne, même combinée à autre chose.",
+        "marks": {
+          "origin": { "label": "Origine", "body": "inclut ou exclut les enregistrements expérimentaux (EXP) et simulés (SIM)." },
+          "materialClass": { "label": "Classe de matériau", "body": "filtre par catégorie de matériau — une cellule combinée compte pour chaque catégorie qu'elle liste." },
+          "baseMaterials": { "label": "Matériaux de base", "body": "filtre par matériau précis (Si, Au, SiN...) — même traitement combiné que Classe de matériau." }
+        }
       },
       "reading": {
-        "title": "3. Lire et interagir avec le graphique",
+        "title": "4. Lire et interagir avec le graphique",
         "body": "Chaque point correspond à un enregistrement rapporté. Les couleurs suivent la colonne « Regrouper / Colorer par » actuelle — ici, Origine.",
-        "figure4Caption": "Figure 4 — Le graphique de notre exemple : facteur de qualité Q (axe Y, échelle log) en fonction de la longueur d'onde de résonance (axe X), coloré par Origine — orange pour EXP, bleu pour SIM —, avec la ligne médiane et la légende visibles.",
+        "figure4Caption": "Figure 6 — Le graphique de notre exemple : facteur de qualité Q (axe Y, échelle log) en fonction de la longueur d'onde de résonance (axe X), coloré par Origine — orange pour EXP, bleu pour SIM —, avec la ligne médiane et la légende visibles.",
+        "marks": {
+          "badges": { "label": "Indicateurs", "body": "nombre d'échantillons, répartition EXP/SIM, et nombre de points signalés pour révision." },
+          "legend": { "label": "Légende", "body": "une couleur par groupe — dans l'application, cliquer sur une entrée isole cette série." },
+          "median": { "label": "Ligne médiane", "body": "la ligne pointillée marquant la valeur médiane de l'axe actuellement affiché." }
+        },
         "interactions": {
           "hover": { "label": "Survol", "body": "affiche la longueur d'onde complète, le facteur Q et les autres métriques d'un point." },
           "zoom": { "label": "Défilement / glisser", "body": "zoome et déplace la vue à l'intérieur du graphique pour inspecter une zone de près." },
-          "click": { "label": "Clic", "body": "épingle un point pour pouvoir le comparer plus tard." },
-          "median": { "body": "marque la valeur Y médiane des points affichés." }
+          "click": { "label": "Clic", "body": "épingle un point pour pouvoir le comparer plus tard — voir la page suivante." }
         }
       },
       "compare": {
-        "title": "4. Comparer les groupes, annoter et exporter",
-        "body": "Le panneau Annotations, à droite, garde chaque point épinglé à portée de main : cliquez sur un point du graphique pour l'épingler, ajoutez votre propre note, et utilisez « épingler les autres lignes de cet article » pour regrouper tous les modes d'un même enregistrement en un clic. Le bouton Exporter de la barre d'outils propose ensuite le jeu de données filtré en CSV ou Excel, ou le graphique lui-même en image PNG.",
-        "figure5Caption": "Figure 5 — Le panneau Comparer les groupes, résumant l'effectif, la moyenne, la médiane et σ pour chaque groupe — ici, EXP contre SIM."
+        "title": "5. Comparer les groupes",
+        "body": "Le panneau Comparer les groupes résume la colonne choisie comme « Regrouper / Colorer par » — ici, Origine — avec des statistiques par groupe qui correspondent toujours exactement à ce que montre le graphique.",
+        "figureCaption": "Figure 7 — Le panneau Comparer les groupes, montrant EXP et SIM.",
+        "marks": {
+          "groupBySelect": { "label": "Regrouper / Colorer par", "body": "choisit la colonne qui répartit le graphique (et ce panneau) en groupes colorés." },
+          "groupCard": { "label": "Carte de groupe", "body": "cliquez pour isoler ce groupe sur le graphique (le reste s'estompe) ; la flèche déplie l'effectif, la moyenne, la médiane et σ." }
+        },
+        "note": "Moyenne, médiane et σ n'apparaissent qu'à partir de 3 points par groupe — en dessous, elles décriraient des valeurs individuelles plutôt qu'une vraie distribution."
+      },
+      "annotate": {
+        "title": "6. Épingler et annoter des points",
+        "body": "Cliquer sur n'importe quel point du graphique l'épingle ici sous forme de carte — un marque-page léger, propre à la session, pour comparer quelques enregistrements précis sans que le reste du jeu de données ne distraie l'attention.",
+        "figureCaption": "Figure 8 — Le panneau Annotations avec deux points épinglés, dont un signalé pour révision.",
+        "marks": {
+          "sort": { "label": "Trier", "body": "ordonne les cartes épinglées par date d'ajout ou par référence." },
+          "showOnlyPinned": { "label": "Afficher uniquement les points épinglés", "body": "restreint le graphique et le panneau Comparer les groupes aux seules lignes épinglées." },
+          "card": { "label": "Carte épinglée", "body": "référence, titre, valeurs des axes tracés, et une note modifiable — pré-remplie depuis les colonnes Notes/Evidence du fichier si disponibles." }
+        },
+        "extra": "Déplier une carte fait aussi apparaître un raccourci « épingler les autres lignes de cet article » quand il en existe, un visualiseur de structure de couches, et un encart Métriques — chacun avec sa propre fenêtre de zoom et son export PNG dédié (voir la page suivante)."
+      },
+      "export": {
+        "title": "7. Exporter vos résultats",
+        "body": "Tout ce que propose le Mode 1 peut quitter l'application sous une forme réutilisable ailleurs : le jeu de données filtré en tableur, le graphique en image, et le détail de n'importe quel point épinglé en petit PNG ou fichier texte autonome.",
+        "chartCaption": "L'export du graphique en image — identique à ce que produit « Exporter → Image du graphique (.png) », puisqu'il provient du même graphique.",
+        "noteCaption": "Le contenu de la note exportée (.txt) d'un point épinglé — exactement ce qu'enregistre « Télécharger .txt », pré-rempli depuis la colonne Notes du fichier.",
+        "formatsTitle": "Formats du jeu de données et du graphique",
+        "formats": {
+          "csv": "les lignes filtrées sous forme de fichier CSV.",
+          "xlsx": "les lignes filtrées sous forme de classeur Excel.",
+          "png": "le graphique tel qu'affiché, avec titre, légende et éventuel overlay."
+        },
+        "pinFormatsTitle": "Exports par point épinglé",
+        "pinFormats": {
+          "note": "le texte de la note, en fichier .txt autonome.",
+          "fields": "l'encart Métriques (ou Structure de couches) en petite image PNG autonome.",
+          "all": "tout le contenu de la carte — Mode, structure, métriques et note — en une seule image PNG combinée."
+        }
+      },
+      "useCases": {
+        "title": "8. Exemples de cas d'utilisation",
+        "intro": "Quelques façons dont les contrôles ci-dessus se combinent en pratique, avec le même exemple fil rouge.",
+        "compareExpSim": {
+          "title": "Comparer mesure et simulation",
+          "body": "Gardez les deux valeurs d'Origine cochées, regroupez par Origine, et activez la ligne médiane : si la médiane EXP se situe nettement sous la médiane SIM, les simulations pourraient être systématiquement optimistes pour ce jeu de données."
+        },
+        "reviewFlagged": {
+          "title": "Trier les enregistrements à vérifier",
+          "body": "Le badge « à réviser » signale les enregistrements dont le FWHM a été estimé plutôt que lu directement. Épinglez-en un, ouvrez sa note, et vérifiez la méthode d'estimation avant de faire confiance à la valeur."
+        },
+        "publicationFigure": {
+          "title": "Préparer une figure pour un article",
+          "body": "Filtrez sur les plateformes de matériaux que vous comparez, activez la légende et les repères d'axes pour plus de clarté, puis exportez le graphique en PNG — il est déjà dimensionné et légendé pour être réutilisé."
+        }
       }
     },
     "mode2": {

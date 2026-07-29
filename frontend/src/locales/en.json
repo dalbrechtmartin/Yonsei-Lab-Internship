@@ -134,9 +134,14 @@
       "cover": "Cover",
       "intro": "Introduction",
       "toc": "Table of contents",
-      "mode1Setup": "Mode 1 — Import your dataset",
-      "mode1Controls": "Mode 1 — Axes, display & filters",
-      "mode1Chart": "Mode 1 — Chart & analysis",
+      "mode1Import": "Mode 1 — Import your dataset",
+      "mode1Controls": "Mode 1 — Axes & display",
+      "mode1Filters": "Mode 1 — Filters",
+      "mode1Reading": "Mode 1 — Reading the chart",
+      "mode1Compare": "Mode 1 — Compare groups",
+      "mode1Annotate": "Mode 1 — Pin & annotate",
+      "mode1Export": "Mode 1 — Export your results",
+      "mode1UseCases": "Mode 1 — Use cases",
       "mode2": "Mode 2 (coming soon)"
     },
     "intro": {
@@ -163,30 +168,116 @@
     "steps": {
       "import": {
         "title": "1. Import your dataset",
+        "overviewTitle": "The workspace at a glance",
+        "overviewBody": "Once a file is loaded, the workspace has three parts: a control panel on the left (axes, display, filters), the scatter chart in the middle, and a right-hand panel for comparing groups and annotating points. Every one of them is documented in this guide.",
         "body": "From the Visualization tool, drop an Excel or CSV file onto the dropzone below, or click it to browse for one.",
         "figure1Caption": "Figure 1 — The import dropzone: drag an Excel or CSV file here, or click to browse (.xlsx, .xls, .csv, up to 10 MB).",
-        "figure2Caption": "Figure 2 — The workspace toolbar once a file is loaded: Import to load another file, Export for CSV, Excel or a chart image, and Reset to restore the default chart settings."
+        "figure2Caption": "Figure 2 — The workspace toolbar once a file is loaded.",
+        "toolbar": {
+          "import": { "label": "Import", "body": "opens the dropzone again to load a different file, replacing the current dataset." },
+          "export": { "label": "Export", "body": "offers the filtered dataset as CSV or Excel, or the chart as a PNG image (see page 9)." },
+          "reset": { "label": "Reset", "body": "restores the default axes, display options and filters for the loaded dataset, without re-importing it." }
+        }
       },
       "controls": {
-        "title": "2. Configure axes, display and filters",
-        "body": "The left-hand panel drives everything the chart shows. The Chart section picks the chart title and the Y/X-axis columns. The Display section toggles the log/linear scale, trend line, Pareto frontier, legend, median line and axis markers. The Filters section — shown below — narrows the dataset down by Origin, Material Class or Base Materials.",
-        "figure3Caption": "Figure 3 — The control panel with the Filters section open, showing the Origin, Material Class and Base Materials chips with live counts for our worked example."
+        "title": "2. Axes and display options",
+        "body": "The Chart section (top) picks what gets plotted; the Display section (below it) controls how it's drawn. Only one section is expanded at a time — click a section's header to switch.",
+        "figureChartCaption": "Figure 3 — The Chart section, open.",
+        "figureDisplayCaption": "Figure 4 — The Display section, open.",
+        "chart": {
+          "title": { "label": "Chart title", "body": "an optional name shown above the chart — useful before a PNG export." },
+          "yAxis": { "label": "Y-Axis", "body": "the numeric column plotted vertically, e.g. Q-Factor. Only numeric columns are offered." },
+          "xAxis": { "label": "X-Axis", "body": "the column plotted horizontally — numeric or categorical, depending on what the sheet contains." }
+        },
+        "display": {
+          "scale": { "label": "Scale", "body": "toggles the Y axis between logarithmic and linear — log keeps values that span several orders of magnitude readable." },
+          "trendLine": { "label": "Trend line", "body": "fits a straight line through the plotted points. Needs a numeric X axis with at least two distinct values." },
+          "pareto": { "label": "Pareto frontier", "body": "highlights the non-dominated points — records not beaten on both axes by any other point." },
+          "legend": { "label": "Show legend", "body": "draws the group colors (and any trend/Pareto overlay) on the chart itself, so they're included in a PNG export." },
+          "median": { "label": "Median line", "body": "draws a dashed line at the median value of the Y axis currently plotted." },
+          "axisNames": { "label": "Show X/Y markers", "body": "prefixes each axis name with \"X ·\" / \"Y ·\" — clearest when both axes are numeric and look alike." }
+        }
+      },
+      "filters": {
+        "title": "3. Filters",
+        "body": "Filters narrow the dataset down without changing the underlying file — unchecking a chip hides that value everywhere (chart, stats, exports) until it's checked again. They only appear when the sheet actually has a matching column.",
+        "figureCaption": "Figure 5 — The Filters section, showing Origin, Material Class and Base Materials for our worked example.",
+        "note": "Material Class and Base Materials are \"composite\" filters: a cell like \"Dielectric;Metal\" counts toward both chips at once, and unchecking either one drops any row that lists it, even combined with something else.",
+        "marks": {
+          "origin": { "label": "Origin", "body": "includes or excludes experimental (EXP) and simulated (SIM) records." },
+          "materialClass": { "label": "Material Class", "body": "filters by material category — a combined cell counts toward every category it lists." },
+          "baseMaterials": { "label": "Base Materials", "body": "filters by specific material (Si, Au, SiN, ...) — same combined-cell handling as Material Class." }
+        }
       },
       "reading": {
-        "title": "3. Read and interact with the chart",
+        "title": "4. Reading and interacting with the chart",
         "body": "Every point is one reported record. Colors follow the current \"Group / Color by\" column — here, Origin.",
-        "figure4Caption": "Figure 4 — The scatter chart for our worked example: Q-factor (Y, log scale) against resonance wavelength (X), colored by Origin — orange for EXP, blue for SIM — with the median line and legend visible.",
+        "figure4Caption": "Figure 6 — The scatter chart for our worked example: Q-factor (Y, log scale) against resonance wavelength (X), colored by Origin — orange for EXP, blue for SIM — with the median line and legend visible.",
+        "marks": {
+          "badges": { "label": "Status badges", "body": "sample count, the EXP/SIM breakdown, and how many points are flagged for review." },
+          "legend": { "label": "Legend", "body": "one color per group — in the live app, clicking an entry isolates that series." },
+          "median": { "label": "Median line", "body": "the dashed line marking the median value of the axis currently plotted." }
+        },
         "interactions": {
           "hover": { "label": "Hover", "body": "shows the full wavelength, Q-factor and other metrics for a point." },
           "zoom": { "label": "Scroll / drag", "body": "zooms and pans inside the plot to inspect a region closely." },
-          "click": { "label": "Click", "body": "pins a point so it can be compared later." },
-          "median": { "body": "marks the median Y value of the plotted points." }
+          "click": { "label": "Click", "body": "pins a point so it can be compared later — see the next page." }
         }
       },
       "compare": {
-        "title": "4. Compare groups, annotate and export",
-        "body": "The right-hand Annotations panel keeps every pinned point within reach: click any chart point to pin it, add your own note, and use \"pin the paper's other rows\" to gather every mode from the same record in one click. The Export button in the toolbar then offers the filtered dataset as CSV or Excel, or the chart itself as a PNG image.",
-        "figure5Caption": "Figure 5 — The Compare groups panel, summarizing count, mean, median and σ for each group — here, EXP versus SIM."
+        "title": "5. Compare groups",
+        "body": "The Compare groups panel summarizes whatever column is picked as \"Group / Color by\" — here, Origin — with per-group statistics that always match exactly what the chart is showing.",
+        "figureCaption": "Figure 7 — The Compare groups panel, showing EXP and SIM.",
+        "marks": {
+          "groupBySelect": { "label": "Group / Color by", "body": "picks which column splits the chart (and this panel) into colored groups." },
+          "groupCard": { "label": "Group card", "body": "click to isolate that group on the chart (dims the rest); the chevron expands n, mean, median and σ." }
+        },
+        "note": "Mean, median and σ only appear once a group has at least 3 points — below that, they'd describe individual values rather than a real distribution."
+      },
+      "annotate": {
+        "title": "6. Pin and annotate points",
+        "body": "Clicking any chart point pins it here as a card — a lightweight, session-only bookmark for comparing a handful of specific records without the rest of the dataset competing for attention.",
+        "figureCaption": "Figure 8 — The Annotations panel with two pinned points, one of them flagged for review.",
+        "marks": {
+          "sort": { "label": "Sort", "body": "orders pinned cards by when they were added, or by their reference." },
+          "showOnlyPinned": { "label": "Show only pinned points", "body": "narrows the chart and the Compare groups panel down to exactly the pinned rows." },
+          "card": { "label": "Pinned card", "body": "reference, title, plotted axis values, and an editable note — pre-filled from the sheet's Notes/Evidence columns when available." }
+        },
+        "extra": "Expanding a card also surfaces a \"pin this paper's other rows\" shortcut when siblings exist, a Layer Structure viewer, and a Metrics box — each with its own zoom dialog and a dedicated PNG export (see the next page)."
+      },
+      "export": {
+        "title": "7. Export your results",
+        "body": "Everything in Mode 1 can leave the app in a form you can reuse elsewhere: the filtered dataset as a spreadsheet, the chart as an image, and any pinned point's details as a small standalone PNG or text file.",
+        "chartCaption": "The chart image export — identical to what \"Export → Chart image (.png)\" produces, since it comes from the same chart.",
+        "noteCaption": "The content of a pinned point's exported note (.txt) — exactly what \"Download .txt\" saves, pre-filled from the sheet's Notes column.",
+        "formatsTitle": "Dataset and chart formats",
+        "formats": {
+          "csv": "the filtered rows as a CSV file.",
+          "xlsx": "the filtered rows as an Excel workbook.",
+          "png": "the chart exactly as displayed, including title, legend and any overlay."
+        },
+        "pinFormatsTitle": "Per-pin exports",
+        "pinFormats": {
+          "note": "the note text, as its own .txt file.",
+          "fields": "the Metrics box (or Layer Structure) as a small, self-contained PNG image.",
+          "all": "everything on the card — Mode, structure, metrics and note — as one combined PNG."
+        }
+      },
+      "useCases": {
+        "title": "8. Example use cases",
+        "intro": "A few ways the controls above combine in practice, using the same worked example.",
+        "compareExpSim": {
+          "title": "Checking measurement against simulation",
+          "body": "Keep both Origin values checked, group by Origin, and turn on the median line: if the EXP median sits well below the SIM one, simulations may be systematically optimistic for this dataset."
+        },
+        "reviewFlagged": {
+          "title": "Triaging records that need a second look",
+          "body": "The \"flagged for review\" badge marks records whose FWHM was estimated rather than read directly. Pin one, open its note, and check the estimation method before trusting the value."
+        },
+        "publicationFigure": {
+          "title": "Preparing a figure for a paper",
+          "body": "Filter down to the material platforms you're comparing, turn on the legend and axis markers for clarity, then export the chart as a PNG — it's already sized and labeled for reuse."
+        }
       }
     },
     "mode2": {

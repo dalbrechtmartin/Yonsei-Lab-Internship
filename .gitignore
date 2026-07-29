@@ -1,4 +1,5 @@
 .env
 docs/notes.md
 backend/tests/*.png
+backend/tests/*.pdf
 docs/GUIDE_UTILISATEUR.md

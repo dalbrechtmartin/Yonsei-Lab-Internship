@@ -8,11 +8,12 @@ export interface ColumnTypes {
 /**
  * Columns that carry provenance/bookkeeping/validation data (citation refs,
  * quoted evidence text, page numbers, free-text notes, which model produced
- * the row, the free-text FOM definition, the Domain classification, the
- * free-text Mode Description...) rather than a plottable quantity or
- * dimension. Harmonized exports (e.g. the PDF-extraction output) are full
- * of these; they must never show up as an axis/group-by choice even though
- * "Location" parses as text and "Notes" reads as text.
+ * the row, the reconciliation pipeline's own run-disagreement log, the
+ * free-text FOM definition, the Domain classification, the free-text Mode
+ * Description...) rather than a plottable quantity or dimension. Harmonized
+ * exports (e.g. the PDF-extraction output) are full of these; they must
+ * never show up as an axis/group-by choice even though "Location" parses as
+ * text and "Notes" reads as text.
  * Domain and Origin get their own dedicated filter UI (see
  * findDomainColumn/findOriginColumn below) instead of being axis choices —
  * Origin stays out of this pattern on purpose so it can still double as a
@@ -29,7 +30,7 @@ export interface ColumnTypes {
  * part of "Mode ID".
  */
 const METADATA_COLUMN_PATTERN =
-  /\b(ref|title|quotes?|evidence|page|notes?|model(\s*used)?|comments?|source|location|domain|review(\s*status)?|definition|mode\s*description)\b/i;
+  /\b(ref|title|quotes?|evidence|page|notes?|model(\s*used)?|comments?|source|location|domain|review(\s*status)?|definition|mode\s*description|reconciliation(\s*log)?)\b/i;
 const GENERIC_ID_PATTERN = /(?<!mode\s)\bid\b/i;
 
 export function isMetadataColumn(column: string): boolean {
@@ -48,7 +49,7 @@ export function isMetadataColumn(column: string): boolean {
  * scanning a table of dozens of rows in Excel.
  */
 const EXPORT_NOISE_PATTERN =
-  /\b(quotes?|page|notes?|model(\s*used)?|comments?|source|location)\b/i;
+  /\b(quotes?|page|notes?|model(\s*used)?|comments?|source|location|reconciliation(\s*log)?)\b/i;
 
 export function isExportNoiseColumn(column: string): boolean {
   return EXPORT_NOISE_PATTERN.test(column);

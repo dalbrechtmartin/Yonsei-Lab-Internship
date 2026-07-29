@@ -5,19 +5,21 @@
     html2canvas-pro/jsPDF (utils/pdfExport.ts) on demand.
 
     Mode 1's illustrations are genuine renders of the real production
-    components (FileDropzone, GraphControls, FomChart, StatsSummaryPanel),
-    fed by a fixed worked-example dataset defined below -- not mockups --
-    so the guide can never drift from what the app actually looks like,
-    and stays multilingual for free since those components read the same
-    vue-i18n instance as the rest of the app.
+    components (FileDropzone, GraphControls, FomChart, StatsSummaryPanel,
+    AnnotationsPanel), fed by a fixed worked-example dataset defined below
+    -- not mockups -- so the guide can never drift from what the app
+    actually looks like, and stays multilingual for free since those
+    components read the same vue-i18n instance as the rest of the app.
+
+    Every annotated figure below draws numbered callout rings measured
+    from the REAL rendered DOM at guide-render time (see guideAnnotate.ts)
+    rather than hardcoded pixel coordinates, so a ring can't drift out of
+    place just because a component's copy or spacing changes later.
 
     Cover + introduction + a clickable table of contents (see
     data-toc-target below, resolved into real PDF link annotations by
-    pdfExport.ts) come before Mode 1's own pages, and every figure is
-    captioned with what it shows. Pages also carry a translated PDF
-    outline (data-outline-title) so the document stays easy to skim and
-    navigate, especially for low-vision readers relying on their PDF
-    viewer's zoom and bookmarks.
+    pdfExport.ts) come first. Pages also carry a translated PDF outline
+    (data-outline-title) so the document stays easy to skim and navigate.
   -->
   <div ref="rootEl" class="fixed top-0 left-[-9999px] font-sans text-ink" aria-hidden="true">
     <!-- ============================= PAGE 1 -- Cover ============================= -->
@@ -54,26 +56,12 @@
       </div>
     </section>
 
-    <!-- ============================= PAGE 2 -- Introduction / abstract ============================= -->
+    <!-- ============================= PAGE 2 -- Introduction + table of contents ============================= -->
     <section
       class="guide-page box-border flex h-[297mm] w-[210mm] flex-col bg-white p-[15mm] break-after-page"
       :data-outline-title="t('guide.outline.intro')"
     >
-      <header class="mb-6 flex items-start justify-between border-b border-border pb-4">
-        <div class="flex items-center gap-3">
-          <img src="@/assets/logo.svg" class="h-12 w-12" alt="" />
-          <div>
-            <h1 class="text-xl leading-tight font-semibold">{{ t("app.title") }} — {{ t("guide.meta.subtitle") }}</h1>
-            <p class="text-sm text-secondary">{{ t("guide.meta.lab") }}</p>
-          </div>
-        </div>
-        <div class="flex flex-col items-end gap-2">
-          <span class="font-mono text-xs text-secondary">{{ t("guide.meta.version") }} v{{ appVersion }}</span>
-          <span class="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium tracking-[0.2em] text-primary uppercase">
-            {{ locale }}
-          </span>
-        </div>
-      </header>
+      <GuideHeader />
 
       <h2 class="mb-3 text-xl font-semibold">{{ t("guide.intro.title") }}</h2>
 
@@ -87,77 +75,65 @@
         <p class="text-sm leading-relaxed text-ink">{{ t("guide.intro.guideBody") }}</p>
       </div>
 
-      <div class="mb-6 rounded-xl border border-border bg-muted/30 px-4 py-3">
+      <div class="mb-5 rounded-xl border border-border bg-muted/30 px-4 py-3">
         <h3 class="mb-1 text-base font-semibold text-primary">{{ t("guide.intro.authorTitle") }}</h3>
         <p class="text-sm leading-relaxed text-ink">{{ t("guide.intro.authorBody") }}</p>
       </div>
 
       <div class="h-px w-full bg-border" />
 
-      <h2 class="mt-6 mb-4 text-xl font-semibold">{{ t("guide.toc.title") }}</h2>
+      <h2 class="mt-5 mb-3 text-xl font-semibold">{{ t("guide.toc.title") }}</h2>
 
       <div class="flex flex-col">
         <div
           v-for="entry in tocEntries"
           :key="entry.page"
-          class="guide-toc-row flex items-baseline gap-2 border-b border-border py-2.5"
+          class="guide-toc-row flex items-baseline gap-2 border-b border-border py-2"
           :data-toc-target="entry.page"
         >
-          <span class="text-base text-ink">{{ entry.label }}</span>
+          <span class="text-sm text-ink">{{ entry.label }}</span>
           <span class="mx-1 h-0 flex-1 -translate-y-1 border-b border-dotted border-secondary/50" />
           <span class="font-mono text-sm font-semibold text-primary">{{ entry.page }}</span>
         </div>
       </div>
 
-      <p class="mt-3 text-xs text-secondary">{{ t("guide.toc.hint") }}</p>
+      <p class="mt-2 text-xs text-secondary">{{ t("guide.toc.hint") }}</p>
 
-      <footer class="mt-auto flex items-center justify-between border-t border-border pt-3 text-xs text-secondary">
-        <span>{{ t("app.title") }} — {{ t("guide.meta.subtitle") }}</span>
-        <span>{{ t("guide.footer.page") }} {{ PAGE_INTRO }} / {{ TOTAL_PAGES }}</span>
-      </footer>
+      <GuideFooter :page="PAGE_INTRO" />
     </section>
 
-    <!-- ============================= PAGE 3 -- Mode 1: import & setup ============================= -->
+    <!-- ============================= PAGE 3 -- Mode 1: overview + import ============================= -->
     <section
       class="guide-page box-border flex h-[297mm] w-[210mm] flex-col bg-white p-[15mm] break-after-page"
-      :data-outline-title="t('guide.outline.mode1Setup')"
+      :data-outline-title="t('guide.outline.mode1Import')"
     >
-      <header class="mb-6 flex items-start justify-between border-b border-border pb-4">
-        <div class="flex items-center gap-3">
-          <img src="@/assets/logo.svg" class="h-12 w-12" alt="" />
-          <div>
-            <h1 class="text-xl leading-tight font-semibold">{{ t("app.title") }} — {{ t("guide.meta.subtitle") }}</h1>
-            <p class="text-sm text-secondary">{{ t("guide.meta.lab") }}</p>
-          </div>
-        </div>
-        <div class="flex flex-col items-end gap-2">
-          <span class="font-mono text-xs text-secondary">{{ t("guide.meta.version") }} v{{ appVersion }}</span>
-          <span class="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium tracking-[0.2em] text-primary uppercase">
-            {{ locale }}
-          </span>
-        </div>
-      </header>
+      <GuideHeader />
 
       <p class="mb-2 text-xs font-semibold tracking-[0.3em] text-secondary uppercase">{{ t("guide.mode1.eyebrow") }}</p>
       <h2 class="mb-3 text-xl font-semibold">{{ t("guide.mode1.title") }}</h2>
 
-      <div class="mb-6 rounded-xl border border-border bg-muted/30 px-4 py-3">
+      <div class="mb-4 rounded-xl border border-border bg-muted/30 px-4 py-3">
         <p class="mb-1 text-sm font-semibold text-ink">{{ t("guide.scenario.title") }}</p>
         <p class="text-sm leading-relaxed text-ink">{{ t("guide.scenario.body") }}</p>
       </div>
 
-      <div class="mb-6">
+      <div class="mb-4">
+        <h3 class="mb-1.5 text-base font-semibold text-primary">{{ t("guide.steps.import.overviewTitle") }}</h3>
+        <p class="text-sm leading-relaxed text-ink">{{ t("guide.steps.import.overviewBody") }}</p>
+      </div>
+
+      <div class="mb-4">
         <h3 class="mb-2 text-base font-semibold">{{ t("guide.steps.import.title") }}</h3>
         <p class="mb-3 text-sm leading-relaxed text-ink">{{ t("guide.steps.import.body") }}</p>
 
-        <div class="mx-auto guide-callout-region" style="max-width: 420px">
+        <div class="mx-auto guide-callout-region" style="max-width: 380px">
           <FileDropzone compact />
         </div>
-        <p class="mx-auto mt-2 max-w-[420px] text-sm leading-snug text-ink">{{ t("guide.steps.import.figure1Caption") }}</p>
+        <p class="mx-auto mt-2 max-w-96 text-center text-sm leading-snug text-secondary">{{ t("guide.steps.import.figure1Caption") }}</p>
       </div>
 
-      <div class="mb-2">
-        <div class="mx-auto guide-callout-region" style="max-width: 500px">
+      <div>
+        <div ref="toolbarWrap" class="relative mx-auto guide-callout-region" style="max-width: 500px">
           <div class="flex items-center justify-between rounded-2xl border border-secondary/10 bg-card/70 px-4 py-3 shadow-sm backdrop-blur-xl">
             <span class="text-sm font-semibold text-ink">{{ t("fomcharts.workspace.title") }}</span>
             <div class="flex items-center gap-2">
@@ -177,27 +153,134 @@
               </Button>
             </div>
           </div>
+          <GuideMarkRing v-for="(m, i) in toolbarMarks" :key="i" :mark="m" :number="i + 1" />
         </div>
-        <p class="mx-auto mt-2 max-w-[500px] text-sm leading-snug text-ink">{{ t("guide.steps.import.figure2Caption") }}</p>
+        <p class="mx-auto mt-2 max-w-125 text-center text-sm leading-snug text-secondary">{{ t("guide.steps.import.figure2Caption") }}</p>
+
+        <GuideMarkLegend
+          :items="[
+            { label: t('guide.steps.import.toolbar.import.label'), body: t('guide.steps.import.toolbar.import.body') },
+            { label: t('guide.steps.import.toolbar.export.label'), body: t('guide.steps.import.toolbar.export.body') },
+            { label: t('guide.steps.import.toolbar.reset.label'), body: t('guide.steps.import.toolbar.reset.body') },
+          ]"
+        />
       </div>
 
-      <footer class="mt-auto flex items-center justify-between border-t border-border pt-3 text-xs text-secondary">
-        <span>{{ t("app.title") }} — {{ t("guide.meta.subtitle") }}</span>
-        <span>{{ t("guide.footer.page") }} {{ PAGE_MODE1_IMPORT }} / {{ TOTAL_PAGES }}</span>
-      </footer>
+      <GuideFooter :page="PAGE_MODE1_IMPORT" />
     </section>
 
-    <!-- ============================= PAGE 4 -- Mode 1: axes, display & filters ============================= -->
+    <!-- ============================= PAGE 4 -- Mode 1: chart & display controls ============================= -->
     <section
       class="guide-page box-border flex h-[297mm] w-[210mm] flex-col bg-white p-[15mm] break-after-page"
       :data-outline-title="t('guide.outline.mode1Controls')"
     >
+      <GuideHeader />
       <p class="mb-2 text-xs font-semibold tracking-[0.3em] text-secondary uppercase">{{ t("guide.mode1.eyebrow") }}</p>
-      <h2 class="mb-3 text-xl font-semibold">{{ t("guide.steps.controls.title") }}</h2>
+      <h2 class="mb-2 text-xl font-semibold">{{ t("guide.steps.controls.title") }}</h2>
       <p class="mb-4 text-sm leading-relaxed text-ink">{{ t("guide.steps.controls.body") }}</p>
 
+      <div class="flex gap-5">
+        <div class="flex-1">
+          <div ref="chartControlsWrap" class="guide-callout-region relative" style="width: 260px">
+            <GraphControls
+            v-model:y-axis="selectedYAxis"
+            v-model:x-axis="selectedXAxis"
+            v-model:scale="yAxisScale"
+            v-model:chart-title="chartTitle"
+            v-model:show-legend="showLegend"
+            v-model:show-median="showMedian"
+            v-model:show-trend="showTrend"
+            v-model:show-axis-names="showAxisNames"
+            v-model:selected-domains="selectedDomains"
+            v-model:selected-origins="selectedOrigins"
+            v-model:selected-material-classes="selectedMaterialClasses"
+            v-model:selected-base-materials="selectedBaseMaterials"
+            v-model:show-pareto="showPareto"
+            :numeric-columns="numericColumns"
+            :categorical-columns="xAxisCategoricalColumns"
+            :origin-column="originColumn"
+            :origin-values="originValues"
+            :origin-counts="originCounts"
+            :material-class-column="materialClassColumn"
+            :material-class-values="materialClassValues"
+            :material-class-counts="materialClassCounts"
+            :base-materials-column="baseMaterialsColumn"
+            :base-materials-values="baseMaterialsValues"
+            :base-materials-counts="baseMaterialsCounts"
+          />
+            <GuideMarkRing v-for="(m, i) in chartMarks" :key="i" :mark="m" :number="i + 1" />
+          </div>
+          <p class="mt-2 max-w-65 text-xs leading-snug text-secondary">{{ t("guide.steps.controls.figureChartCaption") }}</p>
+          <GuideMarkLegend
+            class="mt-2"
+            :items="[
+              { label: t('guide.steps.controls.chart.title.label'), body: t('guide.steps.controls.chart.title.body') },
+              { label: t('guide.steps.controls.chart.yAxis.label'), body: t('guide.steps.controls.chart.yAxis.body') },
+              { label: t('guide.steps.controls.chart.xAxis.label'), body: t('guide.steps.controls.chart.xAxis.body') },
+            ]"
+          />
+        </div>
+
+        <div class="flex-1">
+          <div ref="displayControlsWrap" class="guide-callout-region relative" style="width: 260px">
+            <GraphControls
+            v-model:y-axis="selectedYAxis"
+            v-model:x-axis="selectedXAxis"
+            v-model:scale="yAxisScale"
+            v-model:chart-title="chartTitle"
+            v-model:show-legend="showLegend"
+            v-model:show-median="showMedian"
+            v-model:show-trend="showTrend"
+            v-model:show-axis-names="showAxisNames"
+            v-model:selected-domains="selectedDomains"
+            v-model:selected-origins="selectedOrigins"
+            v-model:selected-material-classes="selectedMaterialClasses"
+            v-model:selected-base-materials="selectedBaseMaterials"
+            v-model:show-pareto="showPareto"
+            :numeric-columns="numericColumns"
+            :categorical-columns="xAxisCategoricalColumns"
+            :origin-column="originColumn"
+            :origin-values="originValues"
+            :origin-counts="originCounts"
+            :material-class-column="materialClassColumn"
+            :material-class-values="materialClassValues"
+            :material-class-counts="materialClassCounts"
+            :base-materials-column="baseMaterialsColumn"
+            :base-materials-values="baseMaterialsValues"
+            :base-materials-counts="baseMaterialsCounts"
+          />
+            <GuideMarkRing v-for="(m, i) in displayMarks" :key="i" :mark="m" :number="i + 1" />
+          </div>
+          <p class="mt-2 max-w-65 text-xs leading-snug text-secondary">{{ t("guide.steps.controls.figureDisplayCaption") }}</p>
+          <GuideMarkLegend
+            class="mt-2"
+            :items="[
+              { label: t('guide.steps.controls.display.scale.label'), body: t('guide.steps.controls.display.scale.body') },
+              { label: t('guide.steps.controls.display.trendLine.label'), body: t('guide.steps.controls.display.trendLine.body') },
+              { label: t('guide.steps.controls.display.pareto.label'), body: t('guide.steps.controls.display.pareto.body') },
+              { label: t('guide.steps.controls.display.legend.label'), body: t('guide.steps.controls.display.legend.body') },
+              { label: t('guide.steps.controls.display.median.label'), body: t('guide.steps.controls.display.median.body') },
+              { label: t('guide.steps.controls.display.axisNames.label'), body: t('guide.steps.controls.display.axisNames.body') },
+            ]"
+          />
+        </div>
+      </div>
+
+      <GuideFooter :page="PAGE_MODE1_CONTROLS" />
+    </section>
+
+    <!-- ============================= PAGE 5 -- Mode 1: filters ============================= -->
+    <section
+      class="guide-page box-border flex h-[297mm] w-[210mm] flex-col bg-white p-[15mm] break-after-page"
+      :data-outline-title="t('guide.outline.mode1Filters')"
+    >
+      <GuideHeader />
+      <p class="mb-2 text-xs font-semibold tracking-[0.3em] text-secondary uppercase">{{ t("guide.mode1.eyebrow") }}</p>
+      <h2 class="mb-2 text-xl font-semibold">{{ t("guide.steps.filters.title") }}</h2>
+      <p class="mb-4 text-sm leading-relaxed text-ink">{{ t("guide.steps.filters.body") }}</p>
+
       <div class="flex items-start gap-5">
-        <div ref="controlsFiltersWrap" class="guide-callout-region shrink-0" style="width: 260px">
+        <div ref="filtersWrap" class="guide-callout-region relative shrink-0" style="width: 260px">
           <GraphControls
             v-model:y-axis="selectedYAxis"
             v-model:x-axis="selectedXAxis"
@@ -224,26 +307,38 @@
             :base-materials-values="baseMaterialsValues"
             :base-materials-counts="baseMaterialsCounts"
           />
+          <GuideMarkRing v-for="(m, i) in filterMarks" :key="i" :mark="m" :number="i + 1" />
         </div>
-        <p class="pt-1 text-sm leading-snug text-ink">{{ t("guide.steps.controls.figure3Caption") }}</p>
+        <div class="flex-1 pt-1">
+          <p class="mb-2 text-sm leading-snug text-secondary">{{ t("guide.steps.filters.figureCaption") }}</p>
+          <GuideMarkLegend
+            :items="[
+              { label: t('guide.steps.filters.marks.origin.label'), body: t('guide.steps.filters.marks.origin.body') },
+              { label: t('guide.steps.filters.marks.materialClass.label'), body: t('guide.steps.filters.marks.materialClass.body') },
+              { label: t('guide.steps.filters.marks.baseMaterials.label'), body: t('guide.steps.filters.marks.baseMaterials.body') },
+            ]"
+          />
+        </div>
       </div>
 
-      <footer class="mt-auto flex items-center justify-between border-t border-border pt-3 text-xs text-secondary">
-        <span>{{ t("app.title") }} — {{ t("guide.meta.subtitle") }}</span>
-        <span>{{ t("guide.footer.page") }} {{ PAGE_MODE1_CONTROLS }} / {{ TOTAL_PAGES }}</span>
-      </footer>
+      <div class="mt-5 rounded-xl border border-border bg-muted/30 px-4 py-3">
+        <p class="text-sm leading-relaxed text-ink">{{ t("guide.steps.filters.note") }}</p>
+      </div>
+
+      <GuideFooter :page="PAGE_MODE1_FILTERS" />
     </section>
 
-    <!-- ============================= PAGE 5 -- Mode 1: chart, comparison & export ============================= -->
+    <!-- ============================= PAGE 6 -- Mode 1: reading the chart ============================= -->
     <section
       class="guide-page box-border flex h-[297mm] w-[210mm] flex-col bg-white p-[15mm] break-after-page"
-      :data-outline-title="t('guide.outline.mode1Chart')"
+      :data-outline-title="t('guide.outline.mode1Reading')"
     >
+      <GuideHeader />
       <p class="mb-2 text-xs font-semibold tracking-[0.3em] text-secondary uppercase">{{ t("guide.mode1.eyebrow") }}</p>
-      <h2 class="mb-3 text-xl font-semibold">{{ t("guide.steps.reading.title") }}</h2>
+      <h2 class="mb-2 text-xl font-semibold">{{ t("guide.steps.reading.title") }}</h2>
       <p class="mb-3 text-sm leading-relaxed text-ink">{{ t("guide.steps.reading.body") }}</p>
 
-      <div class="mx-auto guide-callout-region" style="width: 480px; height: 392px; overflow: hidden">
+      <div class="relative mx-auto guide-callout-region" style="width: 480px; height: 392px; overflow: hidden">
         <div style="width: 686px; transform: scale(0.7); transform-origin: top left">
           <FomChart
             :chart-data="sampleRows"
@@ -262,53 +357,214 @@
             :group-color-map="groupColorMap"
           />
         </div>
+        <GuideMarkRing v-for="(m, i) in readingMarks" :key="i" :mark="m" :number="i + 1" />
       </div>
-      <p class="mx-auto mt-2 max-w-[480px] text-sm leading-snug text-ink">{{ t("guide.steps.reading.figure4Caption") }}</p>
+      <p class="mx-auto mt-2 max-w-120 text-center text-sm leading-snug text-secondary">{{ t("guide.steps.reading.figure4Caption") }}</p>
 
-      <div class="mt-4 grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+      <GuideMarkLegend
+        class="mt-2"
+        :items="[
+          { label: t('guide.steps.reading.marks.badges.label'), body: t('guide.steps.reading.marks.badges.body') },
+          { label: t('guide.steps.reading.marks.legend.label'), body: t('guide.steps.reading.marks.legend.body') },
+          { label: t('guide.steps.reading.marks.median.label'), body: t('guide.steps.reading.marks.median.body') },
+        ]"
+      />
+
+      <div class="mt-4 grid grid-cols-3 gap-x-4 gap-y-2 text-xs">
         <p><strong class="text-primary">{{ t("guide.steps.reading.interactions.hover.label") }}</strong> — {{ t("guide.steps.reading.interactions.hover.body") }}</p>
         <p><strong class="text-primary">{{ t("guide.steps.reading.interactions.zoom.label") }}</strong> — {{ t("guide.steps.reading.interactions.zoom.body") }}</p>
         <p><strong class="text-primary">{{ t("guide.steps.reading.interactions.click.label") }}</strong> — {{ t("guide.steps.reading.interactions.click.body") }}</p>
-        <p><strong class="text-primary">{{ t("fomcharts.medianLine.name") }}</strong> — {{ t("guide.steps.reading.interactions.median.body") }}</p>
       </div>
 
-      <div class="mt-6">
-        <h3 class="mb-2 text-base font-semibold">{{ t("guide.steps.compare.title") }}</h3>
-        <p class="mb-3 text-sm leading-relaxed text-ink">{{ t("guide.steps.compare.body") }}</p>
+      <GuideFooter :page="PAGE_MODE1_READING" />
+    </section>
 
-        <div class="flex items-start gap-5">
-          <div class="guide-callout-region shrink-0" style="width: 260px">
-            <StatsSummaryPanel
-              v-model:open="statsOpen"
-              v-model:group-by="groupBy"
-              :rows="plottableRows"
-              :y-axis="selectedYAxis"
-              :x-axis="selectedXAxis"
-              :group-by-columns="groupByColumns"
-              :highlight-group="highlightGroup"
-              :composite-columns="compositeColumns"
-              :group-color-map="groupColorMap"
-            />
-          </div>
-          <p class="pt-1 text-sm leading-snug text-ink">{{ t("guide.steps.compare.figure5Caption") }}</p>
+    <!-- ============================= PAGE 7 -- Mode 1: compare groups ============================= -->
+    <section
+      class="guide-page box-border flex h-[297mm] w-[210mm] flex-col bg-white p-[15mm] break-after-page"
+      :data-outline-title="t('guide.outline.mode1Compare')"
+    >
+      <GuideHeader />
+      <p class="mb-2 text-xs font-semibold tracking-[0.3em] text-secondary uppercase">{{ t("guide.mode1.eyebrow") }}</p>
+      <h2 class="mb-2 text-xl font-semibold">{{ t("guide.steps.compare.title") }}</h2>
+      <p class="mb-4 text-sm leading-relaxed text-ink">{{ t("guide.steps.compare.body") }}</p>
+
+      <div class="flex items-start gap-5">
+        <div ref="statsWrap" class="guide-callout-region relative shrink-0" style="width: 270px">
+          <StatsSummaryPanel
+            v-model:open="statsOpen"
+            v-model:group-by="groupBy"
+            :rows="plottableRows"
+            :y-axis="selectedYAxis"
+            :x-axis="selectedXAxis"
+            :group-by-columns="groupByColumns"
+            :highlight-group="highlightGroup"
+            :composite-columns="compositeColumns"
+            :group-color-map="groupColorMap"
+          />
+          <GuideMarkRing v-for="(m, i) in statsMarks" :key="i" :mark="m" :number="i + 1" />
+        </div>
+        <div class="flex-1 pt-1">
+          <p class="mb-2 text-sm leading-snug text-secondary">{{ t("guide.steps.compare.figureCaption") }}</p>
+          <GuideMarkLegend
+            :items="[
+              { label: t('guide.steps.compare.marks.groupBySelect.label'), body: t('guide.steps.compare.marks.groupBySelect.body') },
+              { label: t('guide.steps.compare.marks.groupCard.label'), body: t('guide.steps.compare.marks.groupCard.body') },
+            ]"
+          />
         </div>
       </div>
 
-      <footer class="mt-auto flex items-center justify-between border-t border-border pt-3 text-xs text-secondary">
-        <span>{{ t("app.title") }} — {{ t("guide.meta.subtitle") }}</span>
-        <span>{{ t("guide.footer.page") }} {{ PAGE_MODE1_CHART }} / {{ TOTAL_PAGES }}</span>
-      </footer>
+      <div class="mt-5 rounded-xl border border-border bg-muted/30 px-4 py-3">
+        <p class="text-sm leading-relaxed text-ink">{{ t("guide.steps.compare.note") }}</p>
+      </div>
+
+      <GuideFooter :page="PAGE_MODE1_COMPARE" />
     </section>
 
-    <!-- ============================= PAGE 6 -- Mode 2: coming soon ============================= -->
+    <!-- ============================= PAGE 8 -- Mode 1: pin & annotate ============================= -->
+    <section
+      class="guide-page box-border flex h-[297mm] w-[210mm] flex-col bg-white p-[15mm] break-after-page"
+      :data-outline-title="t('guide.outline.mode1Annotate')"
+    >
+      <GuideHeader />
+      <p class="mb-2 text-xs font-semibold tracking-[0.3em] text-secondary uppercase">{{ t("guide.mode1.eyebrow") }}</p>
+      <h2 class="mb-2 text-xl font-semibold">{{ t("guide.steps.annotate.title") }}</h2>
+      <p class="mb-4 text-sm leading-relaxed text-ink">{{ t("guide.steps.annotate.body") }}</p>
+
+      <div class="flex items-start gap-5">
+        <div ref="annotationsWrap" class="guide-callout-region relative shrink-0" style="width: 280px">
+          <AnnotationsPanel
+            v-model:open="annotationsOpen"
+            v-model:show-only-annotated="showOnlyAnnotated"
+            :annotations="annotations"
+            :columns="sampleColumns"
+            :rows="plottableRows"
+            :x-axis="selectedXAxis"
+            :y-axis="selectedYAxis"
+            :group-by="groupBy"
+          />
+          <GuideMarkRing v-for="(m, i) in annotationMarks" :key="i" :mark="m" :number="i + 1" />
+        </div>
+        <div class="flex-1 pt-1">
+          <p class="mb-2 text-sm leading-snug text-secondary">{{ t("guide.steps.annotate.figureCaption") }}</p>
+          <GuideMarkLegend
+            :items="[
+              { label: t('guide.steps.annotate.marks.sort.label'), body: t('guide.steps.annotate.marks.sort.body') },
+              { label: t('guide.steps.annotate.marks.showOnlyPinned.label'), body: t('guide.steps.annotate.marks.showOnlyPinned.body') },
+              { label: t('guide.steps.annotate.marks.card.label'), body: t('guide.steps.annotate.marks.card.body') },
+            ]"
+          />
+        </div>
+      </div>
+
+      <div class="mt-5 rounded-xl border border-border bg-muted/30 px-4 py-3">
+        <p class="text-sm leading-relaxed text-ink">{{ t("guide.steps.annotate.extra") }}</p>
+      </div>
+
+      <GuideFooter :page="PAGE_MODE1_ANNOTATE" />
+    </section>
+
+    <!-- ============================= PAGE 9 -- Mode 1: export ============================= -->
+    <section
+      class="guide-page box-border flex h-[297mm] w-[210mm] flex-col bg-white p-[15mm] break-after-page"
+      :data-outline-title="t('guide.outline.mode1Export')"
+    >
+      <GuideHeader />
+      <p class="mb-2 text-xs font-semibold tracking-[0.3em] text-secondary uppercase">{{ t("guide.mode1.eyebrow") }}</p>
+      <h2 class="mb-2 text-xl font-semibold">{{ t("guide.steps.export.title") }}</h2>
+      <p class="mb-4 text-sm leading-relaxed text-ink">{{ t("guide.steps.export.body") }}</p>
+
+      <div class="flex gap-5">
+        <div class="flex-1">
+          <div class="guide-callout-region" style="width: 280px; height: 200px; overflow: hidden">
+            <div style="width: 466px; transform: scale(0.6); transform-origin: top left">
+              <FomChart
+            :chart-data="sampleRows"
+            :columns="sampleColumns"
+            :y-axis="selectedYAxis"
+            :x-axis="selectedXAxis"
+            :group-by="groupBy"
+            :y-axis-scale="yAxisScale"
+            :chart-title="chartTitle"
+            :show-legend="showLegend"
+            :show-median="showMedian"
+            :show-trend="showTrend"
+            :show-pareto="showPareto"
+            :show-axis-names="showAxisNames"
+            :x-axis-numeric="true"
+            :group-color-map="groupColorMap"
+          />
+            </div>
+          </div>
+          <p class="mt-1.5 max-w-65 text-xs leading-snug text-secondary">{{ t("guide.steps.export.chartCaption") }}</p>
+        </div>
+        <div class="flex-1">
+          <div class="guide-callout-region font-mono text-xs leading-relaxed text-ink" style="min-height: 190px; white-space: pre-wrap">{{ sampleNoteText }}</div>
+          <p class="mt-1.5 max-w-65 text-xs leading-snug text-secondary">{{ t("guide.steps.export.noteCaption") }}</p>
+        </div>
+      </div>
+
+      <div class="mt-5 grid grid-cols-2 gap-5">
+        <div>
+          <h3 class="mb-2 text-sm font-semibold text-primary">{{ t("guide.steps.export.formatsTitle") }}</h3>
+          <ul class="flex flex-col gap-1.5 text-sm text-ink">
+            <li><strong class="font-mono text-ink">{{ t("fomcharts.export.csv") }}</strong> — {{ t("guide.steps.export.formats.csv") }}</li>
+            <li><strong class="font-mono text-ink">{{ t("fomcharts.export.xlsx") }}</strong> — {{ t("guide.steps.export.formats.xlsx") }}</li>
+            <li><strong class="font-mono text-ink">{{ t("fomcharts.export.png") }}</strong> — {{ t("guide.steps.export.formats.png") }}</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="mb-2 text-sm font-semibold text-primary">{{ t("guide.steps.export.pinFormatsTitle") }}</h3>
+          <ul class="flex flex-col gap-1.5 text-sm text-ink">
+            <li><strong>{{ t("fomcharts.annotations.downloadTxt") }}</strong> — {{ t("guide.steps.export.pinFormats.note") }}</li>
+            <li><strong>{{ t("fomcharts.annotations.downloadPng") }}</strong> — {{ t("guide.steps.export.pinFormats.fields") }}</li>
+            <li><strong>{{ t("fomcharts.annotations.exportPin") }}</strong> — {{ t("guide.steps.export.pinFormats.all") }}</li>
+          </ul>
+        </div>
+      </div>
+
+      <GuideFooter :page="PAGE_MODE1_EXPORT" />
+    </section>
+
+    <!-- ============================= PAGE 10 -- Mode 1: use cases ============================= -->
+    <section
+      class="guide-page box-border flex h-[297mm] w-[210mm] flex-col bg-white p-[15mm] break-after-page"
+      :data-outline-title="t('guide.outline.mode1UseCases')"
+    >
+      <GuideHeader />
+      <p class="mb-2 text-xs font-semibold tracking-[0.3em] text-secondary uppercase">{{ t("guide.mode1.eyebrow") }}</p>
+      <h2 class="mb-2 text-xl font-semibold">{{ t("guide.steps.useCases.title") }}</h2>
+      <p class="mb-5 text-sm leading-relaxed text-ink">{{ t("guide.steps.useCases.intro") }}</p>
+
+      <div class="flex flex-col gap-4">
+        <div class="rounded-xl border border-border bg-muted/30 px-4 py-3">
+          <p class="mb-1 text-sm font-semibold text-primary">1. {{ t("guide.steps.useCases.compareExpSim.title") }}</p>
+          <p class="text-sm leading-relaxed text-ink">{{ t("guide.steps.useCases.compareExpSim.body") }}</p>
+        </div>
+        <div class="rounded-xl border border-border bg-muted/30 px-4 py-3">
+          <p class="mb-1 text-sm font-semibold text-primary">2. {{ t("guide.steps.useCases.reviewFlagged.title") }}</p>
+          <p class="text-sm leading-relaxed text-ink">{{ t("guide.steps.useCases.reviewFlagged.body") }}</p>
+        </div>
+        <div class="rounded-xl border border-border bg-muted/30 px-4 py-3">
+          <p class="mb-1 text-sm font-semibold text-primary">3. {{ t("guide.steps.useCases.publicationFigure.title") }}</p>
+          <p class="text-sm leading-relaxed text-ink">{{ t("guide.steps.useCases.publicationFigure.body") }}</p>
+        </div>
+      </div>
+
+      <GuideFooter :page="PAGE_MODE1_USECASES" />
+    </section>
+
+    <!-- ============================= PAGE 11 -- Mode 2: coming soon ============================= -->
     <section
       class="guide-page box-border flex h-[297mm] w-[210mm] flex-col bg-white p-[15mm]"
       :data-outline-title="t('guide.outline.mode2')"
     >
+      <GuideHeader />
       <p class="mb-2 text-xs font-semibold tracking-[0.3em] text-secondary uppercase">{{ t("guide.mode2.eyebrow") }}</p>
       <h2 class="mb-6 text-xl font-semibold">{{ t("guide.mode2.title") }}</h2>
 
-      <div class="flex flex-col items-center rounded-2xl border border-dashed border-border bg-muted/20 px-10 py-10 text-center">
+      <div class="flex flex-col items-center rounded-2xl border border-dashed border-border bg-muted/20 px-10 py-8 text-center">
         <p class="mb-3 text-3xl">🚧</p>
         <p class="mb-2 text-lg font-semibold text-ink">{{ t("guide.mode2.comingSoon.title") }}</p>
         <p class="max-w-md text-sm leading-relaxed text-ink">{{ t("guide.mode2.comingSoon.body") }}</p>
@@ -328,16 +584,13 @@
         </div>
       </div>
 
-      <footer class="mt-auto flex items-center justify-between border-t border-border pt-3 text-xs text-secondary">
-        <span>{{ t("app.title") }} — {{ t("guide.meta.subtitle") }}</span>
-        <span>{{ t("guide.footer.page") }} {{ PAGE_MODE2 }} / {{ TOTAL_PAGES }}</span>
-      </footer>
+      <GuideFooter :page="PAGE_MODE2" />
     </section>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, useTemplateRef } from "vue";
+import { computed, h, nextTick, onMounted, ref, useTemplateRef } from "vue";
 import { useI18n } from "vue-i18n";
 import { ChevronDown, Download, RotateCcw, Upload } from "@lucide/vue";
 import { Button } from "@/components/ui/button";
@@ -345,6 +598,7 @@ import FileDropzone from "@/components/shared/FileDropzone.vue";
 import GraphControls from "@/components/visualization/GraphControls.vue";
 import FomChart from "@/components/visualization/FomChart.vue";
 import StatsSummaryPanel from "@/components/visualization/StatsSummaryPanel.vue";
+import AnnotationsPanel, { type Annotation } from "@/components/visualization/AnnotationsPanel.vue";
 import { filterPlottable } from "@/utils/stats";
 import { assignGroupColors } from "@/utils/palette";
 import {
@@ -359,8 +613,10 @@ import {
   groupableColumns,
   type DataRow,
 } from "@/utils/columnTypes";
+import logoUrl from "@/assets/logo.svg";
 import yonseiSymbol from "@/assets/yonsei-logo.svg";
 import yonseiOptica from "@/assets/yonsei-optica.svg";
+import { findByText, markRect, markRow, markLabel, markFilterBlock, type GuideMark } from "./guideAnnotate";
 
 const { t, locale } = useI18n();
 
@@ -375,15 +631,25 @@ const rootEl = useTemplateRef<HTMLDivElement>("rootEl");
 const PAGE_INTRO = 2;
 const PAGE_MODE1_IMPORT = 3;
 const PAGE_MODE1_CONTROLS = 4;
-const PAGE_MODE1_CHART = 5;
-const PAGE_MODE2 = 6;
-const TOTAL_PAGES = 6;
+const PAGE_MODE1_FILTERS = 5;
+const PAGE_MODE1_READING = 6;
+const PAGE_MODE1_COMPARE = 7;
+const PAGE_MODE1_ANNOTATE = 8;
+const PAGE_MODE1_EXPORT = 9;
+const PAGE_MODE1_USECASES = 10;
+const PAGE_MODE2 = 11;
+const TOTAL_PAGES = 11;
 
 const tocEntries = computed(() => [
   { label: t("guide.outline.intro"), page: PAGE_INTRO },
-  { label: t("guide.outline.mode1Setup"), page: PAGE_MODE1_IMPORT },
+  { label: t("guide.outline.mode1Import"), page: PAGE_MODE1_IMPORT },
   { label: t("guide.outline.mode1Controls"), page: PAGE_MODE1_CONTROLS },
-  { label: t("guide.outline.mode1Chart"), page: PAGE_MODE1_CHART },
+  { label: t("guide.outline.mode1Filters"), page: PAGE_MODE1_FILTERS },
+  { label: t("guide.outline.mode1Reading"), page: PAGE_MODE1_READING },
+  { label: t("guide.outline.mode1Compare"), page: PAGE_MODE1_COMPARE },
+  { label: t("guide.outline.mode1Annotate"), page: PAGE_MODE1_ANNOTATE },
+  { label: t("guide.outline.mode1Export"), page: PAGE_MODE1_EXPORT },
+  { label: t("guide.outline.mode1UseCases"), page: PAGE_MODE1_USECASES },
   { label: t("guide.outline.mode2"), page: PAGE_MODE2 },
 ]);
 
@@ -392,8 +658,7 @@ const tocEntries = computed(() => [
 // designs, each reported once experimentally (EXP) and once from
 // simulation (SIM). Column names follow the same conventions the real
 // app's column detectors (utils/columnTypes.ts) look for, so every real
-// component mounted below -- GraphControls' filters, FomChart's grouping,
-// StatsSummaryPanel -- behaves exactly as it would on a real uploaded
+// component mounted below behaves exactly as it would on a real uploaded
 // file, not a hand-faked illustration.
 // ---------------------------------------------------------------------
 const sampleColumns = [
@@ -480,28 +745,196 @@ const selectedMaterialClasses = ref<string[]>([...materialClassValues]);
 const selectedBaseMaterials = ref<string[]>([...baseMaterialsValues]);
 
 const groupColorMap = computed<Record<string, string>>(() => (originColumn ? assignGroupColors(originValues) : {}));
-
 const plottableRows = computed(() => filterPlottable(filterPlottable(sampleRows, selectedYAxis.value), selectedXAxis.value));
 
 const statsOpen = ref(true);
+const annotationsOpen = ref(true);
+const showOnlyAnnotated = ref(false);
+const annotations = ref<Annotation[]>([
+  {
+    id: "demo-r3-exp",
+    ref: "R3",
+    title: "Plasmonic gold nanodisk array LSPR sensor",
+    row: sampleRows[4],
+    note: "FWHM estimated from the published linewidth plot (Q ≈ λ / FWHM) -- flagged for review.",
+    createdAt: Date.now() - 60_000,
+  },
+  {
+    id: "demo-r1-sim",
+    ref: "R1",
+    title: "High-Q silicon microring resonator RI sensor",
+    row: sampleRows[1],
+    note: "",
+    createdAt: Date.now(),
+  },
+]);
+const sampleNoteText = annotations.value[0].note;
 
-// The Filters section needs to be forced open for the screenshot --
-// CollapsibleSection's open/closed state is internal, so this simulates
-// the exact click a user would make on that section's header, right after
-// the component mounts.
-const controlsFiltersWrap = useTemplateRef<HTMLDivElement>("controlsFiltersWrap");
+// -----------------------------------------------------------------------
+// Callout rings -- every mark below is measured from the real rendered DOM
+// (see guideAnnotate.ts) rather than a hardcoded pixel guess, so a ring
+// can't silently drift out of place if a component's copy or layout
+// changes later.
+// -----------------------------------------------------------------------
+const toolbarWrap = useTemplateRef<HTMLDivElement>("toolbarWrap");
+const chartControlsWrap = useTemplateRef<HTMLDivElement>("chartControlsWrap");
+const displayControlsWrap = useTemplateRef<HTMLDivElement>("displayControlsWrap");
+const filtersWrap = useTemplateRef<HTMLDivElement>("filtersWrap");
+const statsWrap = useTemplateRef<HTMLDivElement>("statsWrap");
+const annotationsWrap = useTemplateRef<HTMLDivElement>("annotationsWrap");
+
+const toolbarMarks = ref<GuideMark[]>([]);
+const chartMarks = ref<GuideMark[]>([]);
+const displayMarks = ref<GuideMark[]>([]);
+const filterMarks = ref<GuideMark[]>([]);
+const statsMarks = ref<GuideMark[]>([]);
+const annotationMarks = ref<GuideMark[]>([]);
+
+// Approximate marks over the chart's canvas: individual points/legend/median
+// line are pixels drawn by ECharts, not separate DOM nodes, so these are
+// calibrated percentages of the 480x392 callout box rather than measured
+// elements -- the only figure in this guide that isn't DOM-measured.
+const readingMarks = ref<GuideMark[]>([
+  { top: 6, left: 175, width: 260, height: 26 },
+  { top: 40, left: 148, width: 130, height: 40 },
+  { top: 172, left: 118, width: 150, height: 22 },
+]);
 
 function openSection(root: HTMLElement | null, title: string) {
   const button = root ? Array.from(root.querySelectorAll("button")).find((b) => b.textContent?.trim() === title) : undefined;
   button?.click();
 }
 
+// CollapsibleSection animates open/closed over 250ms (grid-template-rows
+// transition) -- measuring a row's rect before that finishes catches it
+// mid-collapse/expand and produces wrong, squashed callout rects. Waiting
+// out the transition (a plain timeout, since there's no 'transitionend'
+// to await here across every affected row at once) before measuring is
+// simplest and safe -- this only runs once, off-screen, before capture.
+const settle = (ms = 320) => new Promise((resolve) => setTimeout(resolve, ms));
+
 onMounted(async () => {
   await nextTick();
-  openSection(controlsFiltersWrap.value, t("fomcharts.sections.filters"));
+
+  openSection(displayControlsWrap.value, t("fomcharts.sections.display"));
+  openSection(filtersWrap.value, t("fomcharts.sections.filters"));
+  await nextTick();
+  await settle();
+
+  const push = (arr: typeof toolbarMarks, mark: GuideMark | null) => {
+    if (mark) arr.value.push(mark);
+  };
+
+  // Toolbar: Import / Export / Reset buttons.
+  if (toolbarWrap.value) {
+    const c = toolbarWrap.value;
+    [t("actions.import"), t("actions.export"), t("fomcharts.workspace.reset")].forEach((label) => {
+      const btn = findByText(c, "button", label);
+      push(toolbarMarks, btn ? markRect(c, btn, 4) : null);
+    });
+  }
+
+  // Chart section: title / Y axis / X axis.
+  if (chartControlsWrap.value) {
+    const c = chartControlsWrap.value;
+    [t("fomcharts.controls.title"), t("fomcharts.controls.yAxis"), t("fomcharts.controls.xAxis")].forEach((label) => {
+      push(chartMarks, markLabel(c, label));
+    });
+  }
+
+  // Display section: scale / trend line / pareto / legend / median / axis names.
+  if (displayControlsWrap.value) {
+    const c = displayControlsWrap.value;
+    [
+      t("fomcharts.scale.label"),
+      t("fomcharts.controls.trendLine"),
+      t("fomcharts.controls.pareto"),
+      t("fomcharts.legend.toggle"),
+      t("fomcharts.medianLine.toggle"),
+      t("fomcharts.controls.axisNames"),
+    ].forEach((label) => {
+      push(displayMarks, markRow(c, label));
+    });
+  }
+
+  // Filters section: Origin / Material Class / Base Materials blocks.
+  if (filtersWrap.value) {
+    const c = filtersWrap.value;
+    [t("fomcharts.filters.origin"), t("fomcharts.filters.materialClass"), t("fomcharts.filters.baseMaterials")].forEach((label) => {
+      push(filterMarks, markFilterBlock(c, label));
+    });
+  }
+
+  // Compare groups: "Group / Color by" select, first group card (EXP).
+  if (statsWrap.value) {
+    const c = statsWrap.value;
+    push(statsMarks, markRow(c, t("fomcharts.controls.groupBy")));
+    const groupBtn = findByText(c, "button", "EXP");
+    push(statsMarks, groupBtn ? markRect(c, groupBtn, 4) : null);
+  }
+
+  // Annotations: sort select, "show only pinned" row, first pinned card.
+  if (annotationsWrap.value) {
+    const c = annotationsWrap.value;
+    // The sort control has no visible caption of its own -- only its
+    // current value ("Newest first" / "Plus récentes" / ...) shown on the
+    // trigger button itself, so it's matched (and boxed) by that value
+    // rather than by a row label like the other controls.
+    const sortTrigger = findByText(c, "button", t("fomcharts.annotations.sort.newest"));
+    push(annotationMarks, sortTrigger ? markRect(c, sortTrigger, 4) : null);
+    push(annotationMarks, markRow(c, t("fomcharts.annotations.showOnlyPinned")));
+    const cardRef = findByText(c, "span", "R3");
+    const card = cardRef?.closest(".rounded-\\[10px\\]") as HTMLElement | null;
+    push(annotationMarks, card ? markRect(c, card, 4) : null);
+  }
 });
 
 defineExpose({ rootEl });
+
+// -----------------------------------------------------------------------
+// Tiny local presentational components -- kept in this file since they're
+// only ever used by the guide itself (a real shared header/footer/mark
+// wouldn't belong in components/shared for something this guide-specific).
+// -----------------------------------------------------------------------
+const GuideHeader = () =>
+  h("header", { class: "mb-6 flex items-start justify-between border-b border-border pb-4" }, [
+    h("div", { class: "flex items-center gap-3" }, [
+      h("img", { src: logoUrl, class: "h-12 w-12" }),
+      h("div", {}, [
+        h("h1", { class: "text-xl leading-tight font-semibold" }, `${t("app.title")} — ${t("guide.meta.subtitle")}`),
+        h("p", { class: "text-sm text-secondary" }, t("guide.meta.lab")),
+      ]),
+    ]),
+    h("div", { class: "flex flex-col items-end gap-2" }, [
+      h("span", { class: "font-mono text-xs text-secondary" }, `${t("guide.meta.version")} v${appVersion}`),
+      h("span", { class: "rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium tracking-[0.2em] text-primary uppercase" }, locale.value),
+    ]),
+  ]);
+
+const GuideFooter = (props: { page: number }) =>
+  h("footer", { class: "mt-auto flex items-center justify-between border-t border-border pt-3 text-xs text-secondary" }, [
+    h("span", {}, `${t("app.title")} — ${t("guide.meta.subtitle")}`),
+    h("span", {}, `${t("guide.footer.page")} ${props.page} / ${TOTAL_PAGES}`),
+  ]);
+
+const GuideMarkRing = (props: { mark: GuideMark; number: number }) =>
+  h("div", {
+    class: "guide-mark",
+    style: { top: `${props.mark.top}px`, left: `${props.mark.left}px`, width: `${props.mark.width}px`, height: `${props.mark.height}px` },
+  }, [h("span", { class: "guide-mark-num" }, String(props.number))]);
+
+const GuideMarkLegend = (props: { items: { label: string; body: string }[] }, ctx: { attrs: Record<string, unknown> }) =>
+  h(
+    "div",
+    { class: ["flex flex-col gap-1.5 text-xs", ctx.attrs.class] },
+    props.items.map((item, i) =>
+      h("p", { key: i }, [
+        h("span", { class: "guide-mark-num guide-mark-num--inline" }, String(i + 1)),
+        h("strong", { class: "ml-1.5 text-ink" }, item.label),
+        ` — ${item.body}`,
+      ]),
+    ),
+  );
 </script>
 
 <style scoped>
@@ -514,5 +947,41 @@ defineExpose({ rootEl });
   border-radius: 14px;
   padding: 10px;
   background: #fff;
+}
+
+.guide-mark {
+  position: absolute;
+  border: 2px solid #d6272c;
+  border-radius: 10px;
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+.guide-mark-num {
+  position: absolute;
+  top: -9px;
+  left: -9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background: #d6272c;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  box-shadow: 0 0 0 2px #fff;
+}
+
+.guide-mark-num--inline {
+  position: static;
+  display: inline-flex;
+  box-shadow: none;
+  vertical-align: middle;
+}
+
+.guide-toc-row {
+  break-inside: avoid;
 }
 </style>
