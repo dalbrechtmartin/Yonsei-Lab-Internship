@@ -5,7 +5,7 @@
         {{ t("fomcharts.type.scatter") }}
       </h2>
       <TooltipProvider :delay-duration="200">
-        <div class="flex items-center gap-1.5">
+        <div ref="badgesRowRef" class="flex items-center gap-1.5">
           <span
             v-if="needsReviewCount > 0"
             class="flex items-center gap-1 bg-amber-500/15 text-amber-800 text-xs font-medium pl-2.5 pr-1.5 py-0.5 rounded whitespace-nowrap"
@@ -57,7 +57,7 @@
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
 import { computed, provide, ref } from "vue";
-import { use, registerTheme } from "echarts/core";
+import { use, registerTheme, getInstanceByDom } from "echarts/core";
 import { CanvasRenderer } from "echarts/renderers";
 import { ScatterChart, LineChart } from "echarts/charts";
 import {
@@ -82,7 +82,7 @@ import {
   findFomValueColumn,
   findModeIdColumn,
   findModeDescriptionColumn,
-  tokenizeValue,
+  keptTokens,
   type DataRow,
 } from "@/utils/columnTypes";
 import { computeStats, filterPlottable, fitTrend, sampleTrendCurve, formatStat, computeParetoFrontier, type TrendType } from "@/utils/stats";
@@ -121,7 +121,6 @@ const props = withDefaults(
     trendType?: TrendType | "auto";
     showLegend?: boolean;
     showPareto?: boolean;
-    showAxisNames?: boolean;
     xAxisNumeric?: boolean;
     // Isolating a group is now driven externally (clicking a card in
     // StatsSummaryPanel) -- this component only reads it to dim the rest.
@@ -131,6 +130,16 @@ const props = withDefaults(
     // locally-computed index so a group's color never shifts just because a
     // filter temporarily hid some of its rows.
     groupColorMap?: Record<string, string>;
+    // The filter chip selection governing groupBy's tokens (Material Class
+    // or Base Materials), or null when groupBy isn't a composite column --
+    // see VisualizationView's groupBySelectedTokens. Used via keptTokens so
+    // a row the lenient composite filter kept alive through one token never
+    // re-adds an excluded token as its own group here.
+    groupBySelectedTokens?: string[] | null;
+    // Renders a row with several kept tokens as a single merged marker
+    // instead of one duplicate point per token -- see
+    // isGroupingByCompositeColumn and the series-building loop below.
+    mergeMultiCategoryPoints?: boolean;
   }>(),
   {
     yAxis: null,
@@ -143,10 +152,11 @@ const props = withDefaults(
     trendType: "auto",
     showLegend: false,
     showPareto: false,
-    showAxisNames: false,
     xAxisNumeric: false,
     highlightGroup: null,
     groupColorMap: () => ({}),
+    groupBySelectedTokens: null,
+    mergeMultiCategoryPoints: false,
   },
 );
 
@@ -165,6 +175,7 @@ const emit = defineEmits<{
 }>();
 
 const chartRef = ref<InstanceType<typeof VChart> | null>(null);
+const badgesRowRef = ref<HTMLElement | null>(null);
 
 const displayTitle = computed(() => props.chartTitle.trim());
 
@@ -302,6 +313,17 @@ const isGroupingByCompositeColumn = computed(
     (props.groupBy === materialClassColumn.value || props.groupBy === baseMaterialsColumn.value),
 );
 
+// A row's tokens for the composite groupBy column, restricted to the ones
+// still checked in the corresponding filter (see keptTokens and
+// VisualizationView's groupBySelectedTokens) -- so a row the lenient
+// composite-filter mode kept alive through one token never re-adds an
+// excluded token as its own group here. Falls back to the shared "unknown"
+// bucket when there's nothing left, same as the non-composite branch below.
+const compositeGroupTokens = (item: DataRow): string[] => {
+  const tokens = keptTokens(item[props.groupBy as string], props.groupBySelectedTokens);
+  return tokens.length === 0 ? [t("fomcharts.unknownGroup")] : tokens;
+};
+
 // Single source of truth for "does this row belong to this group" — used
 // both to build each series' data (below) and to decide which rows feed
 // the median/trend/Pareto overlays (see highlightedRows). Having two
@@ -312,8 +334,7 @@ const isGroupingByCompositeColumn = computed(
 const matchesGroup = (item: DataRow, groupName: string): boolean => {
   if (!props.groupBy) return false;
   if (isGroupingByCompositeColumn.value) {
-    const tokens = tokenizeValue(item[props.groupBy as string]);
-    return tokens.length === 0 ? groupName === t("fomcharts.unknownGroup") : tokens.includes(groupName);
+    return compositeGroupTokens(item).includes(groupName);
   }
   const v = item[props.groupBy as string];
   const normalized = v === null || v === undefined || v === "" ? t("fomcharts.unknownGroup") : String(v);
@@ -369,9 +390,7 @@ const groupValues = computed(() => {
   const values = new Set<string>();
   for (const row of plottableData.value) {
     if (isGroupingByCompositeColumn.value) {
-      const tokens = tokenizeValue(row[props.groupBy as string]);
-      if (tokens.length === 0) values.add(t("fomcharts.unknownGroup"));
-      else tokens.forEach((tok) => values.add(tok));
+      compositeGroupTokens(row).forEach((tok) => values.add(tok));
     } else {
       const v = row[props.groupBy as string];
       values.add(v === null || v === undefined || v === "" ? t("fomcharts.unknownGroup") : String(v));
@@ -405,6 +424,12 @@ const buildPoint = (item: DataRow) => {
       : null;
   const modeDescription = modeDescriptionColumn.value ? item[modeDescriptionColumn.value] : null;
   const modeCase = [modeId, modeDescription].filter((v) => v !== null && v !== undefined && v !== "").join(" — ");
+  // Every group this point belongs to (composite grouping only) -- powers
+  // both the tooltip's "also classified as" line and, for a merged marker,
+  // the dimming check in withItemStyle below (a merged point anchored on
+  // one group must still stay bright when a *different* member group is
+  // isolated).
+  const groups = isGroupingByCompositeColumn.value ? compositeGroupTokens(item) : null;
 
   return {
     value: [
@@ -418,6 +443,7 @@ const buildPoint = (item: DataRow) => {
     needsReview,
     isFlagged: needsReview,
     row: item,
+    groups,
     symbolSize: bubbleSizeFor(rawFomValue),
     symbolOffset: undefined as [number, number] | undefined,
     label: undefined as { show: boolean } | undefined,
@@ -434,8 +460,18 @@ const buildPoint = (item: DataRow) => {
 // point's color always matches the series/legend it belongs to — see
 // isGroupingByCompositeColumn above for how Material Class points land in
 // the right (possibly several) series to begin with.
-const withItemStyle = (point: ReturnType<typeof buildPoint>, color: string, groupName: string | null) => {
-  const dimmed = props.highlightGroup !== null && groupName !== null && groupName !== props.highlightGroup;
+const withItemStyle = (
+  point: ReturnType<typeof buildPoint>,
+  color: string | Record<string, unknown>,
+  // The group(s) that must include highlightGroup for this exact point to
+  // stay bright. Normally just [groupName] of whichever series built this
+  // point (dimmed unless it's the isolated group). A merged marker (see
+  // seriesList below) passes its *full* member-token list instead, since one
+  // marker there really does represent several groups at once and must not
+  // dim just because its series/anchor happens not to be the isolated one.
+  dimGroups: string[] | null,
+) => {
+  const dimmed = props.highlightGroup !== null && dimGroups !== null && !dimGroups.includes(props.highlightGroup);
   const opacity = dimmed ? 0.15 : 0.88;
   return {
     ...point,
@@ -444,6 +480,38 @@ const withItemStyle = (point: ReturnType<typeof buildPoint>, color: string, grou
       : { color, opacity },
   };
 };
+
+// A single-color style for a normal point; for a merged multi-category point
+// (mergeMultiCategoryPoints) a left-to-right sweep of solid color BANDS (one
+// per member group, hard edges rather than a smooth blend) communicates
+// "this point is more than one category" with no custom rendering -- ECharts
+// accepts this plain object directly wherever an itemStyle.color is
+// expected. Hard edges instead of a continuous gradient matter here: a
+// smoothly blended gradient washes out into a single muddy mid-tone on a
+// marker this small (down to MIN_BUBBLE_SIZE, well under the merged-point
+// floor below), making a 3+ way split unreadable -- solid bands stay
+// individually identifiable at any size the merged floor allows.
+const gradientColor = (colors: string[]): string | Record<string, unknown> =>
+  colors.length <= 1
+    ? (colors[0] ?? "")
+    : {
+        type: "linear",
+        x: 0,
+        y: 0,
+        x2: 1,
+        y2: 0,
+        colorStops: colors.flatMap((c, i) => [
+          { offset: i / colors.length, color: c },
+          { offset: (i + 1) / colors.length, color: c },
+        ]),
+      };
+
+// A merged multi-category marker must stay legible at its smallest -- the
+// ordinary FOM-driven bubble size (see bubbleSizeFor) can go as low as
+// MIN_BUBBLE_SIZE, too small for a multi-band gradient to read as anything
+// but a smear. Merged points get floored to this size instead (still scaling
+// up further for genuinely large FOM values, just never below it).
+const MERGED_MIN_BUBBLE_SIZE = MAX_BUBBLE_SIZE;
 
 // Two distinct rows that happen to share the exact same x/y (a common FOM
 // value at a shared x-category, e.g. two "Dielectric" papers both reporting
@@ -530,16 +598,45 @@ const seriesList = computed(() => {
           .filter((item) => matchesGroup(item, groupName))
           .map((item) => {
             const point = buildPoint(item);
-            // A row with several materials (e.g. "Dielectric;Metal") plots
-            // once per material at the exact same x/y -- without an offset
-            // the duplicates stack perfectly on top of each other and only
-            // the last-drawn series' color is ever visible, which is what
-            // made the chart's colors look arbitrary/wrong. symbolOffset
-            // shifts each duplicate a few pixels apart (screen space, not
-            // data space) so every material's dot stays visible without
-            // moving the point off its real coordinate.
             if (isGroupingByCompositeColumn.value) {
-              const tokens = tokenizeValue(item[props.groupBy as string]);
+              const tokens = compositeGroupTokens(item);
+              if (props.mergeMultiCategoryPoints && tokens.length > 1) {
+                // Merge mode: a row with several kept tokens draws as ONE
+                // marker instead of one duplicate per token, anchored on a
+                // deterministically sorted first token so every series
+                // agrees on which copy is the visible one. The other member
+                // series still carry an invisible (symbolSize 0) copy of the
+                // same row purely so matchesGroup-driven logic (isolate,
+                // stats) keeps treating it as a member of every one of its
+                // groups -- see the symbolSize-0 filter in
+                // spreadDuplicatePoints below, which keeps that invisible
+                // sibling from nudging the visible anchor off its true
+                // coordinate.
+                // Known trade-off: ECharts' own legend row for a non-anchor
+                // member group can't hide this marker by itself (it isn't
+                // really drawn in that series) -- only the anchor group's
+                // legend row can. The sidebar filter chips are unaffected.
+                const sortedTokens = [...tokens].sort();
+                const anchor = sortedTokens[0];
+                point.symbolOffset = [0, 0];
+                if (groupName === anchor) {
+                  const memberColors = sortedTokens.map((tok) => props.groupColorMap[tok] ?? color);
+                  point.symbolSize = Math.max(point.symbolSize, MERGED_MIN_BUBBLE_SIZE);
+                  return withItemStyle(point, gradientColor(memberColors), sortedTokens);
+                }
+                point.symbolSize = 0;
+                point.label = { show: false };
+                return withItemStyle(point, color, [groupName]);
+              }
+              // Separated mode (default): a row with several materials (e.g.
+              // "Dielectric;Metal") plots once per material at the exact
+              // same x/y -- without an offset the duplicates stack perfectly
+              // on top of each other and only the last-drawn series' color
+              // is ever visible, which is what made the chart's colors look
+              // arbitrary/wrong. symbolOffset shifts each duplicate a few
+              // pixels apart (screen space, not data space) so every
+              // material's dot stays visible without moving the point off
+              // its real coordinate.
               const n = Math.max(tokens.length, 1);
               const i = Math.max(tokens.indexOf(groupName), 0);
               const offsetStep = 7;
@@ -550,7 +647,7 @@ const seriesList = computed(() => {
               // labeled once, so only the first material's dot keeps it.
               if (i !== 0) point.label = { show: false };
             }
-            return withItemStyle(point, color, groupName);
+            return withItemStyle(point, color, [groupName]);
           }),
         label: pointLabel,
         labelLayout: { hideOverlap: true },
@@ -567,8 +664,17 @@ const seriesList = computed(() => {
   // the same x/y would otherwise never get separated, since each series only
   // ever saw its own single point at that spot. Points are the same object
   // references inside each series' data array, so mutating them here also
-  // updates them in place there.
-  spreadDuplicatePoints(series.filter((s) => s.type === "scatter").flatMap((s) => s.data));
+  // updates them in place there. symbolSize-0 points are excluded -- those
+  // are merge mode's invisible per-token siblings of an already-visible
+  // anchor (see above); they always share their anchor's exact coordinate,
+  // so without this filter every merged marker would get needlessly nudged
+  // off its true position by its own invisible copy.
+  spreadDuplicatePoints(
+    series
+      .filter((s) => s.type === "scatter")
+      .flatMap((s) => s.data)
+      .filter((p) => (p.symbolSize ?? 10) !== 0),
+  );
 
   // A least-squares fit over the plotted points — only meaningful when the
   // X axis is itself a numeric quantity (e.g. Sensitivity), not a category
@@ -681,11 +787,17 @@ const handleChartClick = (params: any) => {
   });
 };
 
+/** The current chart render as a PNG data URL -- split out of exportPng so
+ * the guide can show a genuine "Export chart image" example (see
+ * GuideTemplate.vue) instead of just the live interactive component. */
+const getPngDataUrl = (): string | null =>
+  chartRef.value?.getDataURL({ type: "png", pixelRatio: 2, backgroundColor: "#fff" }) ?? null;
+
 /** Downloads the current chart render as a PNG -- used by the workspace's
  * Export menu. Mirrors echarts' own toolbox "save as image" action, just
  * triggerable from outside the chart. */
 const exportPng = (filename = "fom_chart.png") => {
-  const url = chartRef.value?.getDataURL({ type: "png", pixelRatio: 2, backgroundColor: "#fff" });
+  const url = getPngDataUrl();
   if (!url) return;
   const a = document.createElement("a");
   a.href = url;
@@ -695,7 +807,62 @@ const exportPng = (filename = "fom_chart.png") => {
   document.body.removeChild(a);
 };
 
-defineExpose({ exportPng });
+// Guide-only: the badges row is real DOM (GuideTemplate can already box it
+// with the normal getBoundingClientRect-based helpers once it has this
+// element) -- exposed the same way chartRef itself is used internally.
+const getBadgesRow = (): HTMLElement | null => badgesRowRef.value;
+
+/** Guide-only: the chart's own DOM node, in whatever CSS transform scale
+ * the guide is currently rendering it at -- paired with getMedianLabelRect/
+ * getLegendRect below (which report positions in echarts' own, pre-scale
+ * pixel space) so GuideTemplate can convert one into the other and box
+ * canvas-drawn content the same way it boxes real DOM elements everywhere
+ * else in the guide. */
+const getChartDom = (): HTMLElement | null => chartRef.value?.getDom() ?? null;
+
+type PixelRect = { left: number; top: number; width: number; height: number };
+
+/** Guide-only: the median line's label, read from echarts' own live layout
+ * rather than guessed -- the label sits at the grid's horizontal center,
+ * and that center shifts with the x-axis name's length (nameGap/containLabel
+ * grow the grid's right margin for a longer translated name), which is
+ * exactly what made a hardcoded pixel guess drift out of ring in some
+ * locales. getInstanceByDom + the grid coordinate system's own rect is the
+ * only way to read back where echarts actually put it, since none of this
+ * is real DOM (CanvasRenderer draws it straight onto the canvas). */
+const getMedianLabelRect = (): PixelRect | null => {
+  if (!props.showMedian) return null;
+  const dom = chartRef.value?.getDom();
+  const raw = dom ? getInstanceByDom(dom) : undefined;
+  if (!raw) return null;
+  // `getModel`/`coordinateSystem` aren't part of echarts' typed public API
+  // surface, but reading a live grid's rendered rect back is a long-standing,
+  // stable pattern -- worth it here to avoid re-deriving (and drifting from)
+  // the same layout math chartOption above uses to place the grid.
+  const grid = (raw as any).getModel?.()?.getComponent?.("grid", 0)?.coordinateSystem?.getRect?.();
+  const y = raw.convertToPixel({ yAxisIndex: 0 }, medianValue.value);
+  if (!grid || typeof y !== "number" || Number.isNaN(y)) return null;
+  return { left: grid.x + grid.width / 2 - 75, top: y - 18, width: 150, height: 36 };
+};
+
+/** Guide-only: the legend's live top position (see getMedianLabelRect for
+ * why this can't be read off real DOM) -- horizontally it's always centered
+ * on the whole canvas (`left: "center"`, not grid-relative), so only the
+ * vertical position needs to be read back; a fixed generous width covers
+ * the legend regardless of how long its (locale-invariant, data-literal)
+ * group names run. */
+const getLegendRect = (): PixelRect | null => {
+  if (!props.showLegend) return null;
+  const inst = chartRef.value;
+  if (!inst) return null;
+  const legendOpt = (inst.getOption() as any)?.legend?.[0];
+  if (!legendOpt || legendOpt.show === false) return null;
+  const width = inst.getWidth();
+  const top = typeof legendOpt.top === "number" ? legendOpt.top : 4;
+  return { left: width / 2 - 75, top: top - 6, width: 150, height: 30 };
+};
+
+defineExpose({ exportPng, getPngDataUrl, getBadgesRow, getChartDom, getMedianLabelRect, getLegendRect });
 
 // Rough pixel-width estimate for reserving grid margin for an axis name --
 // echarts' containLabel does not reliably account for axis *names* (as
@@ -708,15 +875,8 @@ defineExpose({ exportPng });
 const estimateAxisNameSpace = (text: string): number => (text ? text.length * 6.2 + 16 : 0);
 
 const chartOption = computed(() => {
-  // The axis name (the actual column name, e.g. "Sensitivity (nm/RIU)") is
-  // always shown -- it's not what showAxisNames controls. showAxisNames
-  // only toggles the small "X ·"/"Y ·" marker prefixed onto it, which helps
-  // tell at a glance which line is X and which is Y (most useful when both
-  // axes are numeric and otherwise look alike).
-  const xColumnName = props.xAxis ?? "";
-  const yColumnName = props.yAxis ?? "";
-  const xName = xColumnName ? (props.showAxisNames ? `X · ${xColumnName}` : xColumnName) : "";
-  const yName = yColumnName ? (props.showAxisNames ? `Y · ${yColumnName}` : yColumnName) : "";
+  const xName = props.xAxis ?? "";
+  const yName = props.yAxis ?? "";
   const xNameSpace = estimateAxisNameSpace(xName);
   const yNameSpace = yName ? 26 : 0;
 
@@ -804,6 +964,17 @@ const chartOption = computed(() => {
       const groupLine = props.groupBy
         ? `${escapeHtml(props.groupBy)}: <strong>${escapeHtml(params.seriesName)}</strong><br/>`
         : "";
+      // A row with several kept Material Class/Base Materials tokens plots
+      // as more than one dot (or, in merge mode, one dot anchored on just
+      // one of them) -- without this, two neighboring points (or a single
+      // merged marker) give no hint they're actually the *same* row split
+      // across categories. Lists every other group this exact point also
+      // belongs to, alongside the one groupLine already names.
+      const otherGroups = (params.data.groups ?? []).filter((g: string) => g !== params.seriesName);
+      const alsoInGroupsLine =
+        otherGroups.length > 0
+          ? `<em style="opacity:0.75">${t("fomcharts.alsoInGroups", { groups: otherGroups.map(escapeHtml).join(", ") })}</em><br/>`
+          : "";
       // Disambiguates which of a paper's several extracted rows this point
       // is -- Mode ID + Mode Description together (e.g. "Mode 1 —
       // Resonance peak P1") -- without it, two points from the same
@@ -823,6 +994,7 @@ const chartOption = computed(() => {
                 <br/>
                 ${needsReviewLine}
                 ${groupLine}
+                ${alsoInGroupsLine}
                 ${escapeHtml(props.xAxis)}: <strong>${escapeHtml(params.data.value[0])}</strong><br/>
                 ${escapeHtml(props.yAxis)}: <strong>${escapeHtml(params.data.value[1])}</strong><br/>
                 ${extraLines}

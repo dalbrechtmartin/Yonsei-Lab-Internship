@@ -1,49 +1,45 @@
-import { utils, writeFile } from "xlsx";
+import { layoutAndMaybeDraw, PAD_X, type AnnotationExportSection } from "./annotationExport";
 
-export interface CompareRow {
-  label: string;
-  values: string[];
+export interface ComparePinData {
+  ref: string;
+  title: string;
+  origin: { key: string; value: string } | null;
+  sections: AnnotationExportSection[];
 }
 
-function downloadBlob(blob: Blob, filename: string): void {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
-
-export function exportCompareCsv(cols: string[], rows: CompareRow[], filename = "compare_pinned_points.csv"): void {
-  const lines = [["", ...cols].map((c) => JSON.stringify(c)).join(",")].concat(
-    rows.map((r) => [r.label, ...r.values].map((v) => JSON.stringify(v ?? "")).join(",")),
-  );
-  downloadBlob(new Blob([lines.join("\n")], { type: "text/csv" }), filename);
-}
-
-export function exportCompareXlsx(cols: string[], rows: CompareRow[], filename = "compare_pinned_points.xlsx"): void {
-  const data = [["", ...cols], ...rows.map((r) => [r.label, ...r.values])];
-  const worksheet = utils.aoa_to_sheet(data);
-  const workbook = utils.book_new();
-  utils.book_append_sheet(workbook, worksheet, "Compare");
-  writeFile(workbook, filename);
-}
+const COL_WIDTH = 300;
+const COL_GAP = 22;
+const TITLE_FONT = "700 20px Inter, sans-serif";
+const TITLE_COLOR = "#1c2541";
+const TITLE_H = 34;
+const DIVIDER = "rgba(58,80,107,0.18)";
 
 /**
- * Renders the compare table as a flat label/value grid onto a canvas and
- * downloads it as a PNG — a lightweight "image export" that doesn't require
- * pulling in a DOM-to-image library just for this one table.
+ * Lays out several pinned points as side-by-side columns -- each column is
+ * exactly one pin's card (see annotationExport.ts's layoutAndMaybeDraw,
+ * reused here rather than reimplemented) so a multi-pin comparison reads as
+ * "the same single-pin export, repeated per pin" instead of a different
+ * visual language. An optional heading spans the full width above every
+ * column. Returns the canvas's data URL, or null if 2D canvas isn't
+ * available or there are no pins to render.
  */
-export function exportComparePng(cols: string[], rows: CompareRow[], filename = "compare_pinned_points.png"): void {
-  const padX = 16;
-  const padY = 12;
-  const rowH = 26;
-  const labelW = 130;
-  const colW = 150;
-  const width = labelW + colW * cols.length + padX * 2;
-  const height = rowH * (rows.length + 1) + padY * 2;
+export function renderComparePng(title: string | null, pins: ComparePinData[]): string | null {
+  if (pins.length === 0) return null;
+
+  const measureCanvas = document.createElement("canvas");
+  const measureCtx = measureCanvas.getContext("2d");
+  if (!measureCtx) return null;
+
+  const hasTitle = !!title && title.trim().length > 0;
+  const topY = hasTitle ? TITLE_H : 0;
+
+  measureCtx.textBaseline = "alphabetic";
+  const colHeights = pins.map((pin, i) =>
+    layoutAndMaybeDraw(measureCtx, pin, pin.origin, pin.sections, false, i * (COL_WIDTH + COL_GAP), COL_WIDTH, topY),
+  );
+  const contentHeight = Math.max(...colHeights);
+  const width = pins.length * COL_WIDTH + (pins.length - 1) * COL_GAP;
+  const height = topY + contentHeight;
 
   const canvas = document.createElement("canvas");
   const scale = 2;
@@ -52,36 +48,44 @@ export function exportComparePng(cols: string[], rows: CompareRow[], filename = 
   canvas.style.width = `${width}px`;
   canvas.style.height = `${height}px`;
   const ctx = canvas.getContext("2d");
-  if (!ctx) return;
+  if (!ctx) return null;
   ctx.scale(scale, scale);
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, width, height);
 
-  ctx.font = "700 12px Inter, sans-serif";
-  ctx.fillStyle = "#0072b2";
-  ctx.textBaseline = "middle";
-  cols.forEach((c, i) => ctx.fillText(c, padX + labelW + i * colW, padY + rowH / 2));
+  if (hasTitle) {
+    ctx.textBaseline = "alphabetic";
+    ctx.font = TITLE_FONT;
+    ctx.fillStyle = TITLE_COLOR;
+    ctx.fillText(title!.trim(), PAD_X, 24);
+  }
 
-  ctx.strokeStyle = "rgba(58,80,107,0.2)";
-  ctx.beginPath();
-  ctx.moveTo(padX, padY + rowH);
-  ctx.lineTo(width - padX, padY + rowH);
-  ctx.stroke();
-
-  rows.forEach((r, ri) => {
-    const y = padY + rowH * (ri + 1) + rowH / 2;
-    ctx.font = "400 11px Inter, sans-serif";
-    ctx.fillStyle = "#52616b";
-    ctx.fillText(r.label, padX, y);
-    ctx.font = '400 12px "IBM Plex Mono", monospace';
-    ctx.fillStyle = "#1c2541";
-    r.values.forEach((val, i) => ctx.fillText(String(val ?? ""), padX + labelW + i * colW, y));
+  pins.forEach((pin, i) => {
+    const colX = i * (COL_WIDTH + COL_GAP);
+    if (i > 0) {
+      ctx.strokeStyle = DIVIDER;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(colX - COL_GAP / 2, topY);
+      ctx.lineTo(colX - COL_GAP / 2, height);
+      ctx.stroke();
+    }
+    layoutAndMaybeDraw(ctx, pin, pin.origin, pin.sections, true, colX, COL_WIDTH, topY);
   });
 
-  const url = canvas.toDataURL("image/png");
+  return canvas.toDataURL("image/png");
+}
+
+/**
+ * Exports the side-by-side comparison as a single PNG file.
+ */
+export function exportComparePng(title: string | null, pins: ComparePinData[], filename?: string): void {
+  const url = renderComparePng(title, pins);
+  if (!url) return;
   const a = document.createElement("a");
   a.href = url;
-  a.download = filename;
+  const refs = pins.map((p) => p.ref.replace(/[^a-z0-9_-]+/gi, "_")).join("_");
+  a.download = filename ?? `compare_${refs}.png`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

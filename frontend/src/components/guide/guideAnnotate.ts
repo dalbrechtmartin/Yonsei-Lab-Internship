@@ -60,3 +60,33 @@ export function markFilterBlock(container: HTMLElement, headerText: string, pad 
   const block = header?.parentElement?.parentElement;
   return block ? markRect(container, block, pad) : null;
 }
+
+/** Converts a rect given in a canvas-rendered chart's own logical pixel
+ * space (e.g. FomChart's getMedianLabelRect/getLegendRect -- content
+ * CanvasRenderer draws straight onto a `<canvas>`, with no DOM node of its
+ * own to measure) into a GuideMark relative to `container`. `chartDom` is
+ * the chart's real DOM node, used only to work out how much the guide has
+ * visually shrunk it: comparing its rendered box (getBoundingClientRect,
+ * which reflects any ancestor `transform: scale(...)`) against its layout
+ * box (offsetWidth/Height, which a CSS transform never changes, and which
+ * is what echarts actually renders its canvas at) gives that scale factor
+ * without needing to know or hardcode it. */
+export function markCanvasRect(
+  container: HTMLElement,
+  chartDom: HTMLElement,
+  rect: { left: number; top: number; width: number; height: number },
+  pad = 4,
+): GuideMark {
+  const c = container.getBoundingClientRect();
+  const d = chartDom.getBoundingClientRect();
+  const scaleX = d.width / chartDom.offsetWidth;
+  const scaleY = d.height / chartDom.offsetHeight;
+  const left = d.left + rect.left * scaleX;
+  const top = d.top + rect.top * scaleY;
+  return {
+    top: top - c.top - pad,
+    left: left - c.left - pad,
+    width: rect.width * scaleX + pad * 2,
+    height: rect.height * scaleY + pad * 2,
+  };
+}

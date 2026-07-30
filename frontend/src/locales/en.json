@@ -9,7 +9,10 @@
     "home": "Home",
     "visualization": "Visualization",
     "extraction": "Extraction",
-    "comingSoon": "Under development"
+    "comingSoon": "Under development",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "language": "Language"
   },
   "view": {
     "home": {
@@ -43,7 +46,8 @@
         "eyebrow": "Analysis workspace",
         "title": "Visualize your data",
         "description": "Import an Excel file to inspect the dataset, compare axes, and export the data as CSV."
-      }
+      },
+      "mobileBlocked": "For a better experience, we recommend using a PC for visualization. Visualization is not available on mobile."
     },
     "extraction": {
       "batchExtraction": {
@@ -63,7 +67,10 @@
   },
   "status": {
     "uploading": "Uploading file...",
+    "converting": "Your file's columns don't match the expected format -- converting it automatically, this can take a moment...",
     "success": "File imported successfully. You can now adjust the axes or export the data.",
+    "convertedSuccess": "Your file's columns didn't match the expected format, so we converted it automatically. Some fields may be missing -- double-check the result before relying on it.",
+    "conversionFailed": "We couldn't automatically convert this file to the expected format. Please reformat it manually or try another file.",
     "error": "We couldn't import that file. Please try another Excel or CSV file.",
     "noMatchingPins": "None of your pinned points match the current filters or axes, so \"Show only pinned\" was turned back off.",
     "dismiss": "Dismiss message"
@@ -163,7 +170,7 @@
     },
     "scenario": {
       "title": "Worked example used throughout this section",
-      "body": "The screenshots below all come from one running example: six photonic resonator sensor designs (silicon and silicon-nitride rings, a gold plasmonic nanodisk, a hybrid dielectric-metal disk, an InP interferometer, and a polymer ring), each reported once from measurement (EXP) and once from simulation (SIM). We compare their Q-factor against resonance wavelength."
+      "body": "The screenshots below all come from one running example: six all-dielectric photonic resonator sensor designs (silicon and silicon-nitride rings, a guided-mode resonance grating, a silicon disk on a dielectric Bragg mirror, an InP interferometer, and a polymer ring), each reported once from measurement (EXP) and once from simulation (SIM). We compare their FOM (Sensitivity / FWHM) against resonance wavelength."
     },
     "steps": {
       "import": {
@@ -186,7 +193,7 @@
         "figureDisplayCaption": "Figure 4 — The Display section, open.",
         "chart": {
           "title": { "label": "Chart title", "body": "an optional name shown above the chart — useful before a PNG export." },
-          "yAxis": { "label": "Y-Axis", "body": "the numeric column plotted vertically, e.g. Q-Factor. Only numeric columns are offered." },
+          "yAxis": { "label": "Y-Axis", "body": "the numeric column plotted vertically, e.g. FOM or Q-factor. Only numeric columns are offered." },
           "xAxis": { "label": "X-Axis", "body": "the column plotted horizontally — numeric or categorical, depending on what the sheet contains." }
         },
         "display": {
@@ -194,25 +201,24 @@
           "trendLine": { "label": "Trend line", "body": "fits a straight line through the plotted points. Needs a numeric X axis with at least two distinct values." },
           "pareto": { "label": "Pareto frontier", "body": "highlights the non-dominated points — records not beaten on both axes by any other point." },
           "legend": { "label": "Show legend", "body": "draws the group colors (and any trend/Pareto overlay) on the chart itself, so they're included in a PNG export." },
-          "median": { "label": "Median line", "body": "draws a dashed line at the median value of the Y axis currently plotted." },
-          "axisNames": { "label": "Show X/Y markers", "body": "prefixes each axis name with \"X ·\" / \"Y ·\" — clearest when both axes are numeric and look alike." }
+          "median": { "label": "Median line", "body": "draws a dashed line at the median value of the Y axis currently plotted." }
         }
       },
       "filters": {
         "title": "3. Filters",
         "body": "Filters narrow the dataset down without changing the underlying file — unchecking a chip hides that value everywhere (chart, stats, exports) until it's checked again. They only appear when the sheet actually has a matching column.",
         "figureCaption": "Figure 5 — The Filters section, showing Origin, Material Class and Base Materials for our worked example.",
-        "note": "Material Class and Base Materials are \"composite\" filters: a cell like \"Dielectric;Metal\" counts toward both chips at once, and unchecking either one drops any row that lists it, even combined with something else.",
+        "note": "Material Class and Base Materials are \"composite\" filters: a cell like \"Dielectric;Semiconductor\" counts toward both chips at once, and unchecking either one drops any row that lists it, even combined with something else.",
         "marks": {
           "origin": { "label": "Origin", "body": "includes or excludes experimental (EXP) and simulated (SIM) records." },
           "materialClass": { "label": "Material Class", "body": "filters by material category — a combined cell counts toward every category it lists." },
-          "baseMaterials": { "label": "Base Materials", "body": "filters by specific material (Si, Au, SiN, ...) — same combined-cell handling as Material Class." }
+          "baseMaterials": { "label": "Base Materials", "body": "filters by specific material (Si, SiN, Ta2O5, ...) — same combined-cell handling as Material Class." }
         }
       },
       "reading": {
         "title": "4. Reading and interacting with the chart",
         "body": "Every point is one reported record. Colors follow the current \"Group / Color by\" column — here, Origin.",
-        "figure4Caption": "Figure 6 — The scatter chart for our worked example: Q-factor (Y, log scale) against resonance wavelength (X), colored by Origin — orange for EXP, blue for SIM — with the median line and legend visible.",
+        "figure4Caption": "Figure 6 — The scatter chart for our worked example: FOM (Y, log scale) against resonance wavelength (X), colored by Origin — orange for EXP, blue for SIM — with the median line and legend visible.",
         "marks": {
           "badges": { "label": "Status badges", "body": "sample count, the EXP/SIM breakdown, and how many points are flagged for review." },
           "legend": { "label": "Legend", "body": "one color per group — in the live app, clicking an entry isolates that series." },
@@ -248,8 +254,8 @@
       "export": {
         "title": "7. Export your results",
         "body": "Everything in Mode 1 can leave the app in a form you can reuse elsewhere: the filtered dataset as a spreadsheet, the chart as an image, and any pinned point's details as a small standalone PNG or text file.",
-        "chartCaption": "The chart image export — identical to what \"Export → Chart image (.png)\" produces, since it comes from the same chart.",
-        "noteCaption": "The content of a pinned point's exported note (.txt) — exactly what \"Download .txt\" saves, pre-filled from the sheet's Notes column.",
+        "chartCaption": "Figure 9 — The chart image export, produced by \"Export → Chart image (.png)\" — a title, trend line and Pareto frontier have been turned on to show the full range of what can go into it.",
+        "pinExportCaption": "Figure 10 — One pinned point's full export, produced by \"Export this pin\" — everything on the card (Origin, Mode, a multi-layer structure, Metrics and the note) combined into a single PNG.",
         "formatsTitle": "Dataset and chart formats",
         "formats": {
           "csv": "the filtered rows as a CSV file.",
@@ -325,7 +331,7 @@
       "trendUnavailable": "Trend line: not enough points",
       "trendType": "Curve type",
       "pareto": "Pareto frontier",
-      "axisNames": "Show X/Y markers"
+      "mergeMultiCategory": "Merge multi-category points"
     },
     "trendType": {
       "auto": "Auto (best fit)",
@@ -346,7 +352,12 @@
       "materialClass": "Material Class",
       "baseMaterials": "Base Materials",
       "remove": "Remove {label}",
-      "add": "Add {label}"
+      "add": "Add {label}",
+      "exclusionMode": {
+        "label": "Exclusion mode",
+        "strict": "Strict",
+        "lenient": "Lenient"
+      }
     },
     "legend": {
       "toggle": "Show legend"
@@ -361,6 +372,7 @@
       "linear": "Linear"
     },
     "unknownGroup": "Unknown",
+    "alsoInGroups": "Also classified as: {groups}",
     "needsReview": "⚠ Review status: Edit",
     "flaggedHint": "Dashed outline = flagged for review",
     "reviewWarning": "{count} to review",
@@ -383,10 +395,10 @@
       "median": "Median",
       "std": "σ",
       "tooltips": {
-        "n": "Count of points with a valid, plotted Y-axis value in this group — the same points the chart draws.",
+        "n": "Count of points from this group plotted on the chart.",
         "mean": "Average of the plotted Y-axis values for this group.",
-        "median": "Middle value once the plotted Y-axis values for this group are sorted — matches the dashed median line on the chart when this is the only or isolated group.",
-        "std": "Standard deviation of the plotted Y-axis values for this group — how spread out the points are around the mean."
+        "median": "Middle plotted Y-axis value for this group. Matches the dashed median line when this group is isolated.",
+        "std": "Standard deviation of this group's plotted Y-axis values: how spread out they are around the mean."
       },
       "isolate": "Isolate this group on the chart (doesn't affect the stats)",
       "isolateActive": "Click to clear the isolation",
@@ -395,12 +407,12 @@
     },
     "annotations": {
       "title": "Annotations",
-      "tooltip": "Click any point on the chart to pin it here. Check two or more pins below to compare their values side by side in a table under the chart.",
+      "tooltip": "Click any point to pin it here. Check 2 or more pins to compare them.",
       "empty": "No pins yet — click any point on the chart to bookmark it for later comparison.",
       "remove": "Remove annotation",
       "clearAll": "Clear all",
       "showOnlyPinned": "Show only pinned points",
-      "showOnlyPinnedTooltip": "Hides every chart point except the ones pinned below — the \"Compare groups\" panel's stats narrow down to this same selection too.",
+      "showOnlyPinnedTooltip": "Hides every point except the ones pinned below. Stats narrow down to this same selection too.",
       "pinSiblings": "+ Pin {count} other point(s)",
       "compareLabel": "Select to compare",
       "notePlaceholder": "Add a note...",
@@ -414,33 +426,39 @@
       "expandDetails": "Show details",
       "collapseDetails": "Hide details",
       "zoomLayers": "View layer structure",
+      "layerStructure": "Layer Structure",
       "metrics": "Metrics",
       "zoomMetrics": "View metrics",
       "downloadPng": "Download PNG",
       "mode": "Mode",
-      "exportPin": "Export this pin"
+      "exportPin": "Export this pin",
+      "compareLimitReached": "Comparison limit reached (max {max})"
     },
     "compare": {
       "title": "Compare pinned points",
+      "description": "Pick which sections to include and, optionally, a title for this comparison image.",
       "clearSelection": "Clear selection",
-      "titleRow": "Title",
-      "noteRow": "Note",
-      "export": {
-        "csv": "CSV (.csv)",
-        "xlsx": "Excel (.xlsx)",
-        "png": "Table image (.png)"
-      }
+      "compareButton": "Compare ({count})",
+      "hint": "Select 2 to {max} pinned points to compare them.",
+      "selectedCount": "{count} selected",
+      "titleLabel": "Title (optional)",
+      "titlePlaceholder": "e.g. Ring resonators vs. grating sensors",
+      "sectionsLabel": "Show",
+      "origin": "Origin",
+      "downloadPng": "Download comparison PNG",
+      "empty": "Pick at least one section to include."
     },
     "tooltips": {
-      "groupBy": "Colors points by this column so you can compare groups at a glance. Pick a low-cardinality field like Origin or Material Class.",
-      "scale": "Log scale keeps FOM values that span several orders of magnitude readable. Linear keeps equal spacing between values.",
-      "legend": "Draws the series legend (groups, median, trend line) on the chart itself, so it's included when exporting the chart as an image.",
-      "median": "Draws a dashed line at the median Y value of the points currently plotted.",
-      "trendLine": "Fits a curve through the plotted points to show the overall trend. Only available when the X axis is a numeric column (e.g. Sensitivity, Q-factor) — a trend against a category like Material Class wouldn't mean anything. \"Auto\" tries several curve shapes and keeps the one that fits best (highest R²), instead of forcing a straight line onto data that's actually curved.",
-      "trendType": "Which mathematical model the trend line fits: Linear (y = a + bx), Exponential (y = a·e^(bx)), Logarithmic (y = a + b·ln(x), needs x > 0), Power (y = a·x^b, needs x > 0 and y > 0), or Polynomial (a degree-2 curve, needs at least 3 points). \"Auto\" fits every model the data supports and picks the one with the highest R².",
-      "pareto": "Highlights the non-dominated set of points — records not beaten on both axes by any other point — as a line, assuming higher X and higher Y are both better.",
-      "axisNames": "Prefixes each axis's name with a small \"X ·\"/\"Y ·\" marker, so it's clear which is which -- the axis name itself is always shown.",
-      "trendUnavailable": "The trend line needs at least 2 points with different X values -- with fewer (e.g. an isolated single-point group), it's toggled on but has nothing to draw."
+      "groupBy": "Colors points by this column so you can compare groups at a glance.",
+      "scale": "Log keeps values that span several orders of magnitude readable. Linear keeps equal spacing between values.",
+      "legend": "Draws the legend on the chart itself, so it's included when exporting as an image.",
+      "median": "Draws a dashed line at the median Y value of the points plotted.",
+      "trendLine": "Fits a curve through the points to show the overall trend. Needs a numeric X axis; \"Auto\" picks whichever shape fits best.",
+      "trendType": "The mathematical model the trend line fits (linear, exponential, logarithmic, power, or polynomial). \"Auto\" keeps whichever has the highest R².",
+      "pareto": "Highlights the non-dominated points — not beaten on both axes by any other point.",
+      "trendUnavailable": "Needs at least 2 points with different X values to draw anything.",
+      "exclusionMode": "Strict excludes a point as soon as it contains one unchecked material/class. Lenient only excludes it once ALL of its materials/classes are unchecked.",
+      "mergeMultiCategory": "A multi-category point normally plots once per category. Turn this on to show a single gradient marker instead."
     }
   }
 }
