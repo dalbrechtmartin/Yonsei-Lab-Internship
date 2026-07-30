@@ -1,6 +1,6 @@
 <template>
   <nav
-    class="sticky top-0 z-20 flex h-16 w-full items-center justify-between border-b border-secondary/15 bg-card/90 px-6 shadow-[0_1px_0_rgba(58,80,107,0.08)] backdrop-blur-xl"
+    class="sticky top-0 z-20 flex h-16 w-full items-center justify-between border-b border-secondary/15 bg-card/90 px-3 shadow-[0_1px_0_rgba(58,80,107,0.08)] backdrop-blur-xl sm:px-6"
   >
     <RouterLink to="/" class="flex items-center gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
       <img src="@/assets/logo.svg" class="h-7 w-7" alt="" />
@@ -9,7 +9,7 @@
       </h1>
     </RouterLink>
 
-    <div class="flex items-center gap-4">
+    <div class="hidden items-center gap-4 sm:flex">
       <div
         class="flex items-center gap-2 rounded-full border border-secondary/10 bg-background/70 p-1 shadow-sm"
       >
@@ -41,12 +41,67 @@
 
       <LanguageSelector />
     </div>
+
+    <Button
+      variant="ghost"
+      size="icon"
+      class="sm:hidden"
+      :aria-label="$t(mobileMenuOpen ? 'nav.closeMenu' : 'nav.openMenu')"
+      @click="mobileMenuOpen = !mobileMenuOpen"
+    >
+      <X v-if="mobileMenuOpen" class="size-5" />
+      <Menu v-else class="size-5" />
+    </Button>
+
+    <Transition
+      enter-active-class="transition duration-150 ease-out"
+      enter-from-class="opacity-0 -translate-y-1"
+      enter-to-class="opacity-100 translate-y-0"
+      leave-active-class="transition duration-100 ease-in"
+      leave-from-class="opacity-100 translate-y-0"
+      leave-to-class="opacity-0 -translate-y-1"
+    >
+      <div
+        v-if="mobileMenuOpen"
+        class="absolute top-full right-0 left-0 flex flex-col gap-3 border-b border-secondary/15 bg-card/95 p-3 shadow-lg backdrop-blur-xl sm:hidden"
+      >
+        <template v-for="tool in tools" :key="tool.path">
+          <RouterLink
+            v-if="!tool.locked"
+            :to="tool.path"
+            class="inline-flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-secondary transition duration-200 hover:bg-secondary/10 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            active-class="!bg-primary !text-primary-foreground shadow-md shadow-primary/15"
+            @click="mobileMenuOpen = false"
+          >
+            {{ $t(tool.labelKey) }}
+          </RouterLink>
+
+          <div
+            v-else
+            class="flex cursor-not-allowed items-center justify-between gap-1.5 rounded-lg px-3 py-2.5 text-sm font-medium text-secondary/50"
+          >
+            <span>{{ $t(tool.labelKey) }}</span>
+            <span class="flex items-center gap-1 text-xs">
+              <Lock class="size-3.5" />
+              {{ $t("nav.comingSoon") }}
+            </span>
+          </div>
+        </template>
+
+        <div class="mt-1 flex items-center justify-between border-t border-secondary/10 pt-3">
+          <span class="text-xs font-medium text-secondary">{{ $t("nav.language") }}</span>
+          <LanguageSelector />
+        </div>
+      </div>
+    </Transition>
   </nav>
 </template>
 
 <script setup lang="ts">
-import { Lock } from "@lucide/vue";
-import { RouterLink } from "vue-router";
+import { ref, watch } from "vue";
+import { Lock, Menu, X } from "@lucide/vue";
+import { RouterLink, useRoute } from "vue-router";
+import { Button } from "@/components/ui/button";
 import LanguageSelector from "./LanguageSelector.vue";
 
 interface ToolTab {
@@ -64,4 +119,10 @@ const tools: ToolTab[] = [
   // is exactly the local/dev-only access the app owner wants to keep.
   { path: "/extraction", labelKey: "nav.extraction", locked: import.meta.env.PROD },
 ];
+
+const mobileMenuOpen = ref(false);
+const route = useRoute();
+watch(() => route.path, () => {
+  mobileMenuOpen.value = false;
+});
 </script>
