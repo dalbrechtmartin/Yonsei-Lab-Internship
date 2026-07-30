@@ -107,6 +107,33 @@ export const apiService = {
   },
 
   /**
+   * Best-effort AI reformat of an already-parsed sheet (see uploadExcel)
+   * onto the columns the visualization needs -- called only when
+   * needsAiConversion() (utils/columnTypes.ts) flags the uploaded sheet as
+   * missing them. Throws on a 422 (Gemini couldn't produce a usable
+   * mapping) same as any other failure -- the caller treats both as a
+   * rejected conversion.
+   */
+  async convertExcel(
+    columns: string[],
+    data: Record<string, unknown>[],
+  ): Promise<UploadExcelResponse> {
+    try {
+      const response = await fetch(`${API_URL}convert-excel/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ columns, data }),
+      });
+      if (!response.ok)
+        throw new Error("Server error while converting the file.");
+      return await response.json();
+    } catch (error) {
+      console.error("API Error:", error);
+      throw error;
+    }
+  },
+
+  /**
    * Submits PDFs for extraction and returns immediately with a job id --
    * processing happens in the background, one file at a time, with
    * progress available via getJobStatus() and the final .xlsx fetched

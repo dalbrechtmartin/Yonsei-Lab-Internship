@@ -150,13 +150,6 @@
             <Switch v-model="showMedian" />
           </div>
 
-          <div class="flex items-center justify-between">
-            <span class="flex items-center gap-1 text-xs text-ink">
-              {{ t("fomcharts.controls.axisNames") }}
-              <InfoTooltip :text="t('fomcharts.tooltips.axisNames')" />
-            </span>
-            <Switch v-model="showAxisNames" />
-          </div>
         </div>
       </CollapsibleSection>
 
@@ -199,7 +192,53 @@
               </div>
             </div>
 
-            <div v-if="originColumn && materialClassColumn" class="h-px bg-secondary/10" />
+            <div v-if="originColumn && (materialClassColumn || baseMaterialsColumn)" class="h-px bg-secondary/10" />
+
+            <!-- Sits directly below Origin and above Material Class/Base
+                 Materials, the two filters it actually governs -- placing it
+                 at the top of the section (as it originally was) read as if
+                 it applied to every filter above it too (Domain, Origin),
+                 which it doesn't: only the tokenized composite columns have
+                 an "exclude some but not all tokens" question to answer. -->
+            <!-- Stacked (label above a full-width segmented control) rather
+                 than side-by-side -- "Mode d'exclusion" plus both option
+                 labels together don't fit on one row at the sidebar's width
+                 without cropping the buttons. Matches the label-above-control
+                 pattern the Chart section already uses (Y-Axis/X-Axis
+                 selects) instead of the same-row pattern Scale uses above,
+                 whose two labels ("Log"/"Linear") are short enough to fit. -->
+            <template v-if="materialClassColumn || baseMaterialsColumn">
+              <div class="flex flex-col gap-1.5">
+                <span class="flex items-center gap-1 text-xs font-semibold text-secondary">
+                  {{ t("fomcharts.filters.exclusionMode.label") }}
+                  <InfoTooltip :text="t('fomcharts.tooltips.exclusionMode')" />
+                </span>
+                <div class="inline-flex w-full overflow-hidden rounded-lg border border-secondary/20 bg-card">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="xs"
+                    class="flex-1 rounded-none text-[11.5px] hover:bg-primary/10"
+                    :class="compositeFilterMode === 'strict' ? 'bg-primary font-semibold text-primary-foreground hover:bg-primary hover:text-primary-foreground' : 'text-secondary'"
+                    @click="compositeFilterMode = 'strict'"
+                  >
+                    {{ t("fomcharts.filters.exclusionMode.strict") }}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="xs"
+                    class="flex-1 rounded-none text-[11.5px] hover:bg-primary/10"
+                    :class="compositeFilterMode === 'lenient' ? 'bg-primary font-semibold text-primary-foreground hover:bg-primary hover:text-primary-foreground' : 'text-secondary'"
+                    @click="compositeFilterMode = 'lenient'"
+                  >
+                    {{ t("fomcharts.filters.exclusionMode.lenient") }}
+                  </Button>
+                </div>
+              </div>
+
+              <div class="h-px bg-secondary/10" />
+            </template>
 
             <div v-if="materialClassColumn && materialClassValues.length > 0">
               <div class="mb-2">
@@ -319,7 +358,6 @@ const showLegend = defineModel<boolean>("showLegend", { default: true });
 const showMedian = defineModel<boolean>("showMedian", { default: false });
 const showTrend = defineModel<boolean>("showTrend", { default: false });
 const trendType = defineModel<TrendType | "auto">("trendType", { default: "auto" });
-const showAxisNames = defineModel<boolean>("showAxisNames", { default: false });
 const selectedDomains = defineModel<string[]>("selectedDomains", {
   default: () => [],
 });
@@ -332,6 +370,7 @@ const selectedMaterialClasses = defineModel<string[]>("selectedMaterialClasses",
 const selectedBaseMaterials = defineModel<string[]>("selectedBaseMaterials", {
   default: () => [],
 });
+const compositeFilterMode = defineModel<"strict" | "lenient">("compositeFilterMode", { default: "lenient" });
 const showPareto = defineModel<boolean>("showPareto", { default: false });
 
 const toggleDomain = (val: string) => {

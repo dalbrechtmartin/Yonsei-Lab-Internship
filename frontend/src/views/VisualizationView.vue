@@ -2,7 +2,14 @@
   <ToolActionsBar :tool-name="t('nav.visualization')" :show-import="false" :show-export="false" />
 
   <main class="animate-in fade-in grow px-3 pb-4 duration-300 sm:px-4 lg:px-5">
-    <div class="mx-auto flex w-full max-w-7xl flex-col gap-4">
+    <div class="mx-auto flex max-w-2xl flex-col items-center gap-3 py-16 text-center lg:hidden">
+      <MonitorSmartphone class="size-10 text-secondary" />
+      <p class="text-sm leading-6 text-secondary">
+        {{ t("view.visualization.mobileBlocked") }}
+      </p>
+    </div>
+
+    <div class="mx-auto hidden w-full max-w-7xl flex-col gap-4 lg:flex">
       <Card
         v-if="fomData.length === 0"
         class="mt-4 overflow-hidden rounded-4xl border-white/50 bg-card/80 p-6 shadow-2xl shadow-slate-900/5 backdrop-blur-xl"
@@ -82,11 +89,11 @@
             v-model:show-median="showMedian"
             v-model:show-trend="showTrend"
             v-model:trend-type="trendType"
-            v-model:show-axis-names="showAxisNames"
             v-model:selected-domains="selectedDomains"
             v-model:selected-origins="selectedOrigins"
             v-model:selected-material-classes="selectedMaterialClasses"
             v-model:selected-base-materials="selectedBaseMaterials"
+            v-model:composite-filter-mode="compositeFilterMode"
             v-model:show-pareto="showPareto"
             :legend-disabled="!hasLegendContent"
             :numeric-columns="numericColumns"
@@ -120,10 +127,11 @@
               :show-trend="showTrend"
               :trend-type="trendType"
               :show-pareto="showPareto"
-              :show-axis-names="showAxisNames"
               :x-axis-numeric="xAxisNumeric"
               :highlight-group="highlightGroup"
               :group-color-map="groupColorMap"
+              :group-by-selected-tokens="groupBySelectedTokens"
+              :merge-multi-category-points="mergeMultiCategoryPoints"
               @point-click="handlePointClick"
             />
           </div>
@@ -132,6 +140,7 @@
             <StatsSummaryPanel
               v-model:open="statsPanelOpen"
               v-model:group-by="groupBy"
+              v-model:merge-multi-category-points="mergeMultiCategoryPoints"
               :rows="plottableData"
               :y-axis="selectedYAxis"
               :x-axis="selectedXAxis"
@@ -139,6 +148,7 @@
               :highlight-group="highlightGroup"
               :composite-columns="compositeColumns"
               :group-color-map="groupColorMap"
+              :group-by-selected-tokens="groupBySelectedTokens"
               @toggle-highlight="toggleHighlight"
             />
             <AnnotationsPanel
@@ -165,7 +175,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
-import { ChevronDown, Download, RotateCcw, Upload } from "@lucide/vue";
+import { ChevronDown, Download, MonitorSmartphone, RotateCcw, Upload } from "@lucide/vue";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -199,6 +209,7 @@ import {
   distinctValues,
   tokenizedDistinctValues,
   tokenizeValue,
+  needsAiConversion,
   type DataRow,
 } from "@/utils/columnTypes";
 
@@ -233,12 +244,29 @@ const showLegend = ref(true);
 const showMedian = ref(false);
 const showTrend = ref(false);
 const trendType = ref<TrendType | "auto">("auto");
-const showAxisNames = ref(false);
 const highlightGroup = ref<string | null>(null);
 const selectedDomains = ref<string[]>([]);
 const selectedOrigins = ref<string[]>([]);
 const selectedMaterialClasses = ref<string[]>([]);
 const selectedBaseMaterials = ref<string[]>([]);
+// Strict = a row must keep ALL of its Material Class/Base Materials tokens
+// checked to survive (the original behavior). Lenient = a row survives as
+// soon as at least one of its tokens is still checked -- so unchecking
+// "Metal" no longer silently drops a "Dielectric;Metal" row that's really
+// still wanted for its Dielectric side. Defaults to lenient: it's the less
+// surprising reading of "exclude Metal" for a multi-valued column, and with
+// nothing yet unchecked (the default, everything-selected state) the two
+// modes agree anyway. Applies to both composite filters at once -- see
+// filteredData below and groupBySelectedTokens, which keeps the chart/stats
+// grouping from re-surfacing a token a lenient survivor still carries but
+// the user did exclude.
+const compositeFilterMode = ref<"strict" | "lenient">("lenient");
+// Purely a rendering choice for FomChart (see isGroupingByCompositeColumn
+// there) -- a row with several Material Class/Base Materials tokens either
+// plots as one duplicate point per token (current behavior, kept as the
+// default) or as a single merged marker. Off by default since it's a bigger
+// visual change than the filter mode above, opted into rather than forced.
+const mergeMultiCategoryPoints = ref(false);
 const showPareto = ref(false);
 const annotations = ref<Annotation[]>([]);
 // "Afficher uniquement les points épinglés" (AnnotationsPanel) -- narrows
@@ -303,6 +331,17 @@ const modeIdColumn = computed(() => findModeIdColumn(fomColumns.value));
 const compositeColumns = computed(() =>
   [materialClassColumn.value, baseMaterialsColumn.value].filter((c): c is string => c !== null),
 );
+// The filter chip selection that actually governs groupBy's tokens, or null
+// when groupBy isn't composite. Passed down to FomChart/StatsSummaryPanel so
+// their per-token grouping only ever considers tokens the user still has
+// checked (via keptTokens) -- without this, a row kept alive by the lenient
+// composite-filter mode above would still tokenize into every one of its
+// raw values, silently re-adding a group the user just excluded.
+const groupBySelectedTokens = computed<string[] | null>(() => {
+  if (groupBy.value === materialClassColumn.value) return selectedMaterialClasses.value;
+  if (groupBy.value === baseMaterialsColumn.value) return selectedBaseMaterials.value;
+  return null;
+});
 // Origin and the composite columns already have their own dedicated filter
 // UI and are meant for grouping/coloring, not for X-axis position -- a
 // composite cell's raw, un-tokenized string ("Dielectric;Metal") would just
@@ -393,16 +432,26 @@ const filteredData = computed(() => {
     if (materialClassColumn.value) {
       const tokens = tokenizeValue(row[materialClassColumn.value]);
       const isSet = tokens.length > 0;
-      // Unchecking "Dielectric" must drop every row that lists Dielectric
-      // at all, including composite ones like "Dielectric;Metal" -- so a
-      // row only survives if ALL of its tokens are still checked, not just
-      // one of them.
-      if (isSet && !tokens.every((tok) => selectedMaterialClasses.value.includes(tok))) return false;
+      // Strict: unchecking "Dielectric" drops every row that lists
+      // Dielectric at all, including composite ones like "Dielectric;Metal"
+      // -- a row only survives if ALL of its tokens are still checked.
+      // Lenient: a row survives as soon as ANY of its tokens is still
+      // checked, so a "Dielectric;Metal" row stays visible for its
+      // Dielectric side even after Metal is excluded.
+      const survives =
+        compositeFilterMode.value === "strict"
+          ? tokens.every((tok) => selectedMaterialClasses.value.includes(tok))
+          : tokens.some((tok) => selectedMaterialClasses.value.includes(tok));
+      if (isSet && !survives) return false;
     }
     if (baseMaterialsColumn.value) {
       const tokens = tokenizeValue(row[baseMaterialsColumn.value]);
       const isSet = tokens.length > 0;
-      if (isSet && !tokens.every((tok) => selectedBaseMaterials.value.includes(tok))) return false;
+      const survives =
+        compositeFilterMode.value === "strict"
+          ? tokens.every((tok) => selectedBaseMaterials.value.includes(tok))
+          : tokens.some((tok) => selectedBaseMaterials.value.includes(tok));
+      if (isSet && !survives) return false;
     }
     return true;
   });
@@ -474,8 +523,14 @@ const groupByColumns = computed(() =>
 // Isolating a single group by clicking its card in StatsSummaryPanel only
 // makes sense for the grouping that was active when it was set -- reset it
 // whenever groupBy itself changes or is cleared.
-watch(groupBy, () => {
+watch(groupBy, (newGroupBy) => {
   highlightGroup.value = null;
+  // Picking a "Group / Color by" column is exactly the moment the legend
+  // becomes useful (it's what tells the colors apart) -- re-enable it even
+  // if the researcher had switched it off earlier (e.g. while ungrouped,
+  // when it was disabled anyway), rather than leaving them to notice new
+  // colors appeared with no legend to read them against.
+  if (newGroupBy !== null) showLegend.value = true;
 });
 
 const toggleHighlight = (group: string) => {
@@ -524,6 +579,8 @@ const applyDefaults = () => {
   selectedOrigins.value = nonExpOrigins.length > 0 ? nonExpOrigins : originValues.value;
   selectedMaterialClasses.value = materialClassValues.value;
   selectedBaseMaterials.value = baseMaterialsValues.value;
+  compositeFilterMode.value = "lenient";
+  mergeMultiCategoryPoints.value = false;
   groupBy.value = guessDefaultColorGroup(groupByColumns.value);
   chartTitle.value = "";
   yAxisScale.value = "log";
@@ -531,7 +588,6 @@ const applyDefaults = () => {
   showMedian.value = false;
   showTrend.value = false;
   trendType.value = "auto";
-  showAxisNames.value = false;
   showPareto.value = false;
   highlightGroup.value = null;
 };
@@ -542,22 +598,50 @@ const handleUpload = async ([file]: File[]) => {
     "border-amber-500/20 bg-amber-500/12 text-amber-950",
   );
 
+  let columns: string[];
+  let data: DataRow[];
   try {
-    const data = await apiService.uploadExcel(file);
-    fomData.value = data.data;
-    fomColumns.value = data.columns;
-    applyDefaults();
-    annotations.value = [];
-    setTransientStatus(
-      "status.success",
-      "border-emerald-500/20 bg-emerald-500/12 text-emerald-950",
-    );
+    ({ columns, data } = await apiService.uploadExcel(file));
   } catch (error) {
     setTransientStatus(
       "status.error",
       "border-rose-500/20 bg-rose-500/12 text-rose-950",
     );
+    return;
   }
+
+  // The plain parse above never checks column names -- if what came back
+  // doesn't carry what the chart/filters need (see needsAiConversion), try
+  // an AI reformat before giving up, rather than silently rendering a
+  // near-empty workspace. Kept as a second request instead of folding into
+  // uploadExcel so the fast, non-AI path (the common case: a file already
+  // in the expected shape) never pays for it.
+  let converted = false;
+  if (needsAiConversion(columns)) {
+    setStatus(
+      "status.converting",
+      "border-amber-500/20 bg-amber-500/12 text-amber-950",
+    );
+    try {
+      ({ columns, data } = await apiService.convertExcel(columns, data));
+      converted = true;
+    } catch (error) {
+      setTransientStatus(
+        "status.conversionFailed",
+        "border-rose-500/20 bg-rose-500/12 text-rose-950",
+      );
+      return;
+    }
+  }
+
+  fomData.value = data;
+  fomColumns.value = columns;
+  applyDefaults();
+  annotations.value = [];
+  setTransientStatus(
+    converted ? "status.convertedSuccess" : "status.success",
+    "border-emerald-500/20 bg-emerald-500/12 text-emerald-950",
+  );
 };
 const resetToDropzone = () => {
   clearStatus();

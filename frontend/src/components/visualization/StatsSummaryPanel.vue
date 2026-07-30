@@ -20,6 +20,18 @@
           </Select>
         </div>
 
+        <!-- Only meaningful once grouping by a composite column (Material
+             Class/Base Materials) -- that's the only case where a single row
+             can land in more than one card/group at once, so it's the only
+             case a "merge" choice actually changes anything on the chart. -->
+        <div v-if="isCompositeGroupBy" class="flex items-center justify-between gap-2 text-xs">
+          <span class="flex items-center gap-1 text-ink">
+            {{ t("fomcharts.controls.mergeMultiCategory") }}
+            <InfoTooltip :text="t('fomcharts.tooltips.mergeMultiCategory')" />
+          </span>
+          <Switch v-model="mergeMultiCategoryPoints" />
+        </div>
+
         <div class="h-px w-full bg-secondary/15" />
 
         <div class="flex min-w-0 flex-1 flex-col gap-1 rounded-[10px] border border-secondary/15 bg-secondary/5 p-3">
@@ -104,11 +116,12 @@ import { useI18n } from "vue-i18n";
 import { ChevronDown, Target } from "@lucide/vue";
 import labTheme from "@/assets/themes/okabe-ito-palette.json";
 import { computeStats, formatStat, extractUnit } from "@/utils/stats";
-import { tokenizeValue, tokenizedDistinctValues, type DataRow } from "@/utils/columnTypes";
+import { keptTokens, type DataRow } from "@/utils/columnTypes";
 import InfoTooltip from "@/components/shared/InfoTooltip.vue";
 import CollapsibleSection from "@/components/shared/CollapsibleSection.vue";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 
 const { t } = useI18n();
 
@@ -142,8 +155,15 @@ const props = withDefaults(
     // utils/palette.ts) -- keeps a group's card color identical to its
     // dot/legend color on the chart, and stable across filter changes.
     groupColorMap?: Record<string, string>;
+    // The filter chip selection governing groupBy's tokens (Material Class
+    // or Base Materials), or null when groupBy isn't composite -- see
+    // VisualizationView's groupBySelectedTokens and FomChart's identical use
+    // of it. Keeps a token excluded via the lenient composite-filter mode
+    // from re-appearing as its own card here just because a surviving row
+    // still carries it.
+    groupBySelectedTokens?: string[] | null;
   }>(),
-  { compositeColumns: () => [], groupColorMap: () => ({}) },
+  { compositeColumns: () => [], groupColorMap: () => ({}), groupBySelectedTokens: null },
 );
 defineEmits<{
   "toggle-highlight": [group: string];
@@ -151,6 +171,13 @@ defineEmits<{
 
 const open = defineModel<boolean>("open", { default: true });
 const groupBy = defineModel<string | null>("groupBy", { default: null });
+// Renders a row with several kept tokens as a single merged marker on the
+// chart instead of one duplicate point per token -- see FomChart's
+// isGroupingByCompositeColumn and mergeMultiCategoryPoints. Lives here
+// rather than in GraphControls' generic Display section since it's only
+// ever relevant right next to the "Group / Color by" choice that decides
+// whether it does anything at all.
+const mergeMultiCategoryPoints = defineModel<boolean>("mergeMultiCategoryPoints", { default: false });
 
 // The shadcn/Reka Select has no native concept of a null value (unlike a
 // plain <option :value="null">, which Vue's v-model specifically supports
@@ -172,6 +199,11 @@ const groupBySelectValue = computed<string>({
 // palette never has to repeat colors; excluding the current X-axis choice
 // on top of that stops the redundant, chart-cluttering combination too.
 const groupByOptions = computed(() => props.groupByColumns.filter((col) => col !== props.xAxis));
+
+// Whether the current selection is itself one of the tokenized composite
+// columns -- gates the merge/split switch above, and reused below (as
+// isCompositeGroup) by the groups computed for its own tokenizing logic.
+const isCompositeGroupBy = computed(() => !!groupBy.value && props.compositeColumns.includes(groupBy.value));
 
 // If the X-axis changes onto the current group-by column, or the group-by
 // column stops qualifying (e.g. a Domain/Origin filter change pushes its
@@ -245,16 +277,17 @@ const groups = computed(() => {
     ];
   }
 
-  const isCompositeGroup = props.compositeColumns.includes(groupByCol);
-
-  if (isCompositeGroup) {
-    const labels = tokenizedDistinctValues(props.rows, groupByCol);
+  if (isCompositeGroupBy.value) {
+    // keptTokens (not the raw cell) so a token excluded via the lenient
+    // composite-filter mode never re-appears as its own card here just
+    // because a surviving row still carries it -- see FomChart's identical
+    // compositeGroupTokens and VisualizationView's groupBySelectedTokens.
+    const rowTokens = (row: DataRow) => keptTokens(row[groupByCol], props.groupBySelectedTokens);
+    const labels = Array.from(new Set(props.rows.flatMap(rowTokens))).sort();
     return labels.map((label, idx) => ({
       label,
       color: props.groupColorMap[label] ?? palette[idx % palette.length],
-      tiles: tilesFor(
-        computeStats(values(props.rows.filter((row) => tokenizeValue(row[groupByCol]).includes(label)))),
-      ),
+      tiles: tilesFor(computeStats(values(props.rows.filter((row) => rowTokens(row).includes(label))))),
     }));
   }
 

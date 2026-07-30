@@ -371,6 +371,19 @@ export function tokenizedDistinctValues(rows: DataRow[], column: string): string
 }
 
 /**
+ * A cell's tokens (see tokenizeValue) restricted to the ones still "kept" by
+ * a filter selection — `selected: null` means no restriction (every token
+ * kept). Used everywhere a composite column's tokens feed grouping/coloring,
+ * so an excluded token never re-surfaces as its own group just because the
+ * row survived the lenient composite-filter mode via one of its other
+ * tokens (see VisualizationView's compositeFilterMode).
+ */
+export function keptTokens(value: unknown, selected: string[] | null): string[] {
+  const tokens = tokenizeValue(value);
+  return selected === null ? tokens : tokens.filter((t) => selected.includes(t));
+}
+
+/**
  * The chart's color palette (Okabe-Ito, colorblind-safe) has 7 distinct
  * series colors — see okabe-ito-palette.json. Past that many groups, colors
  * start repeating and the legend actively lies: two unrelated categories
@@ -411,4 +424,34 @@ export function groupableColumns(
     if (exemptColumns.includes(col)) return true;
     return distinctValues(rows, col).length <= MAX_GROUPABLE_CATEGORIES;
   });
+}
+
+/**
+ * Decides whether an uploaded sheet needs AI reformatting before
+ * visualization -- reuses the same find*Column heuristics the rest of this
+ * file already relies on, so "what counts as a recognizable column" stays
+ * defined in exactly one place. Triggers when either:
+ * - Origin or Domain is entirely absent: these drive Phase 1's "wavelength-
+ *   domain, SIM-only by default" filtering (see VisualizationView's
+ *   applyDefaults) -- without them that filtering silently never applies,
+ *   rather than erroring, so it has to be checked for explicitly here.
+ * - No numeric metric (Resonance Wavelength/FOM/Sensitivity/Q-factor) is
+ *   present at all, or no structure/material categorical column is present
+ *   at all -- i.e. there's nothing worth plotting on either axis.
+ * A sheet that already has all of these (e.g. the app's own harmonized
+ * export) never triggers a conversion call.
+ */
+export function needsAiConversion(columns: string[]): boolean {
+  const hasOrigin = findOriginColumn(columns) !== null;
+  const hasDomain = findDomainColumn(columns) !== null;
+  const hasMetric =
+    findResonanceWavelengthColumn(columns) !== null ||
+    findFomValueColumn(columns) !== null ||
+    findSensitivityColumn(columns) !== null ||
+    findQFactorColumn(columns) !== null;
+  const hasStructure =
+    findLayerStructureColumn(columns) !== null ||
+    findMaterialClassColumn(columns) !== null ||
+    findBaseMaterialsColumn(columns) !== null;
+  return !hasOrigin || !hasDomain || !hasMetric || !hasStructure;
 }
