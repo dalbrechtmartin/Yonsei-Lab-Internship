@@ -116,13 +116,15 @@ RESPONSE_SCHEMA = types.Schema(
 )
 
 
-def get_model_config(model: str) -> types.GenerateContentConfig:
+def get_model_config(
+    model: str, response_schema: types.Schema = RESPONSE_SCHEMA
+) -> types.GenerateContentConfig:
     config_dict = MODEL_CONFIG.get(model, {"temperature": 0})
     return types.GenerateContentConfig(
         **config_dict,
         thinking_config=_THINKING_CONFIG,
         response_mime_type="application/json",
-        response_schema=RESPONSE_SCHEMA,
+        response_schema=response_schema,
     )
 
 # "Default": most powerful/latest model first, falling back through
@@ -350,3 +352,103 @@ def analyze_paper_with_llm_pinned(
     except Exception as e:
         print(f"Error for {filename}: {e}")
         return None
+
+
+# Target shape for convert_table_to_viz_schema -- mirrors schema.VIZ_COLUMN_ORDER
+# but as a Gemini structured-output schema. Everything is nullable (unlike
+# RESPONSE_SCHEMA's PDF-extraction fields): a spreadsheet a researcher already
+# has on hand may genuinely be missing most of these, and the whole point of
+# this conversion is to accept that gracefully (see VIZ_CONVERSION_PROMPT's
+# grounding rule) rather than force the model to invent values.
+_VIZ_RECORD_PROPERTIES: dict[str, types.Schema] = {
+    "Ref": types.Schema(type=types.Type.STRING, nullable=True),
+    "Title": types.Schema(type=types.Type.STRING, nullable=True),
+    "Mode ID": types.Schema(type=types.Type.INTEGER, nullable=True),
+    "Material Class": types.Schema(type=types.Type.STRING, nullable=True),
+    "Base Materials": types.Schema(type=types.Type.STRING, nullable=True),
+    "Layer Structure": types.Schema(type=types.Type.STRING, nullable=True),
+    "Origin": types.Schema(type=types.Type.STRING, enum=["EXP", "SIM", "UNCLEAR"]),
+    "Domain": types.Schema(type=types.Type.STRING, enum=["Wavelength", "Frequency", "Other", "Unclear"]),
+    "Resonance Wavelength (nm)": types.Schema(type=types.Type.NUMBER, nullable=True),
+    "FOM (RIU^-1)": types.Schema(type=types.Type.NUMBER, nullable=True),
+    "Sensitivity (nm/RIU)": types.Schema(type=types.Type.NUMBER, nullable=True),
+    "FWHM (nm)": types.Schema(type=types.Type.NUMBER, nullable=True),
+    "Q-factor": types.Schema(type=types.Type.NUMBER, nullable=True),
+}
+
+VIZ_RESPONSE_SCHEMA = types.Schema(
+    type=types.Type.ARRAY,
+    items=types.Schema(
+        type=types.Type.OBJECT,
+        properties=_VIZ_RECORD_PROPERTIES,
+        property_ordering=list(_VIZ_RECORD_PROPERTIES),
+    ),
+)
+
+VIZ_CONVERSION_PROMPT = """Role: You convert an arbitrary, messily-formatted spreadsheet of optical/photonic biosensor data into a standardized schema so it can be charted.
+
+You will receive a JSON object with "columns" (the original column headers, possibly in a language other than English, abbreviated, or using different naming conventions) and "rows" (one object per record, keyed by those original column headers).
+
+GROUNDING RULE: Every value you output must come from the given data. Never invent a number, material, or category that is not stated or clearly implied by the row's own content. If a target field has no reasonable source in the row, output null for it -- missing data is expected and fine.
+
+TASK: Return a JSON array with EXACTLY one object per input row, in the SAME ORDER as the input rows, remapping each row onto the target schema below. Translate non-English text into English where a target field expects English content (e.g. Origin, Domain, Material Class). Keep Ref/Title/Layer Structure as close to the source wording as possible (translating only when the source is in another language).
+
+TARGET SCHEMA (each key is a column; use JSON null when not derivable):
+- "Ref": A short identifier for the source record (e.g. a citation marker or filename fragment) -- carry over from the input if present.
+- "Title": The paper/record's title.
+- "Mode ID": A plain integer disambiguating multiple rows from the same paper/record (1, 2, 3...), or null if there's only one mode/row for that source.
+- "Material Class": Coarse material categories, chosen ONLY from "Dielectric", "Metal", "Phase-change", "Polymer", "Semiconductor", "2D Material", sorted alphabetically and joined with ";". Infer from the layer/structure description if it names or clearly implies these categories (e.g. "all dielectric" -> "Dielectric"; "metal+dielectric" -> "Dielectric;Metal").
+- "Base Materials": The actual materials/compounds mentioned (e.g. "Au;SiO2"), joined with ";", or null if not stated.
+- "Layer Structure": The structure/composition description, carried over from the source (translated to English if needed).
+- "Origin": "EXP" (experimental), "SIM" (simulated/numerical), or "UNCLEAR" -- infer from wording like "numerical study", "simulated", "measured", "fabricated"; use "UNCLEAR" if genuinely undeterminable, never leave this null.
+- "Domain": "Wavelength", "Frequency", "Other", or "Unclear" -- infer from the units/context of the numeric metrics present (e.g. a value in nm, or a column named with "wavelength", implies "Wavelength"); use "Unclear" if undeterminable, never leave this null.
+- "Resonance Wavelength (nm)": Numeric value in nm, or null.
+- "FOM (RIU^-1)": Numeric value, or null.
+- "Sensitivity (nm/RIU)": Numeric value, converted to nm/RIU if the source uses a convertible unit (e.g. um/RIU: multiply by 1000), or null.
+- "FWHM (nm)": Numeric value, or null.
+- "Q-factor": Numeric value, or null.
+
+OUTPUT FORMAT: Respond STRICTLY with a valid JSON array of objects, one per input row, in input order. Do NOT wrap the JSON in markdown fences. Do NOT add any preamble or conclusion."""
+
+
+def convert_table_to_viz_schema(columns: list[str], rows: list[dict]) -> list[dict]:
+    """Best-effort remaps an arbitrary/mismatched spreadsheet onto
+    schema.VIZ_COLUMN_ORDER via Gemini, nulling out fields it can't derive
+    from the given data rather than inventing them (see
+    VIZ_CONVERSION_PROMPT). Synchronous, single-shot: this is a much
+    lighter task than PDF extraction (no page text to parse), so it skips
+    jobs.py's async job/majority-vote machinery and just walks the same
+    model fallback chain used for run 1 of a PDF (see
+    analyze_paper_with_llm) until one model returns a parseable,
+    row-count-matching array. Raises ModelChainExhaustedError if every
+    model fails.
+    """
+    payload = json.dumps({"columns": columns, "rows": rows}, ensure_ascii=False)
+    final_prompt = VIZ_CONVERSION_PROMPT + f"\n\n--- INPUT TABLE ---\n{payload}"
+
+    models = filter_models_by_quota(list(MODEL_FALLBACK_CHAIN))
+    last_reason = "quota" if not models else "error"
+    while models:
+        model = models[0]
+        try:
+            response = client.models.generate_content(
+                model=model,
+                contents=final_prompt,
+                config=get_model_config(model, VIZ_RESPONSE_SCHEMA),
+            )
+            raw = (response.text or "").strip().replace("```json", "").replace("```", "")
+            parsed = json.loads(raw.strip())
+            if isinstance(parsed, dict):
+                parsed = [parsed]
+            if len(parsed) != len(rows):
+                raise ValueError(f"Expected {len(rows)} converted rows, got {len(parsed)}")
+            return parsed
+        except Exception as e:
+            last_reason = _classify_error(e)
+            print(f"  -> {model} failed ({last_reason}) during viz conversion, falling back: {e}")
+            models.pop(0)
+            continue
+
+    raise ModelChainExhaustedError(
+        "All models in fallback chain failed for viz conversion", reason=last_reason
+    )

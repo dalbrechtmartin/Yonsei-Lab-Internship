@@ -1,6 +1,6 @@
 import io
 from contextlib import asynccontextmanager
-from typing import cast
+from typing import Any, cast
 
 import polars as pl
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
@@ -11,7 +11,7 @@ from pydantic import BaseModel
 import jobs
 import llm
 import state
-from schema import COLUMN_ORDER
+from schema import COLUMN_ORDER, VIZ_COLUMN_ORDER, normalize_viz_result
 
 
 @asynccontextmanager
@@ -72,6 +72,33 @@ async def process_excel(file: UploadFile = File(...)):
         else pl.read_excel(io.BytesIO(content), engine="calamine")
     )
     return {"columns": df.columns, "data": df.to_dicts()}
+
+
+class ConvertExcelRequest(BaseModel):
+    columns: list[str]
+    data: list[dict[str, Any]]
+
+
+@app.post("/convert-excel/")
+async def convert_excel(body: ConvertExcelRequest):
+    """Best-effort remaps an already-parsed, non-standard spreadsheet (see
+    process_excel above) onto VIZ_COLUMN_ORDER via Gemini, so the frontend
+    can still visualize a file that doesn't already carry the expected
+    columns (see frontend's needsAiConversion). Raises a 422 rather than a
+    generic 500 when conversion genuinely fails, since that's a normal,
+    user-facing outcome here (an unreadable/unrelated file), not a bug.
+    """
+    if not body.data:
+        raise HTTPException(status_code=400, detail="No data to convert.")
+    try:
+        converted = llm.convert_table_to_viz_schema(body.columns, body.data)
+    except llm.ModelChainExhaustedError:
+        raise HTTPException(
+            status_code=422,
+            detail="Could not convert this file to the expected format.",
+        )
+    records = [normalize_viz_result(r) for r in converted]
+    return {"columns": VIZ_COLUMN_ORDER + ["Spectral Range"], "data": records}
 
 
 @app.post("/extract-pdfs/", status_code=202)
