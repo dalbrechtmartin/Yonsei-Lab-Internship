@@ -1,56 +1,62 @@
 <template>
-  <div class="flex flex-col rounded-[10px] border border-secondary/15 bg-white/70">
-    <div class="flex items-start gap-2 p-3">
-      <Tooltip>
-        <TooltipTrigger as-child>
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            class="mt-0.5 shrink-0 text-primary hover:bg-primary/8 hover:text-primary/80"
-            :aria-label="t('fomcharts.annotations.exportPin')"
-            @click="downloadAllPng"
-          >
-            <Download class="size-3.5" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>{{ t("fomcharts.annotations.exportPin") }}</TooltipContent>
-      </Tooltip>
-      <div class="min-w-0 flex-1">
-        <div class="flex items-center gap-2">
-          <span class="shrink-0 font-mono text-xs font-bold text-primary">{{ note.ref }}</span>
-          <span class="truncate text-xs text-ink">{{ note.title }}</span>
-        </div>
-        <div v-if="axisBadges.length" class="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-[10.5px] text-secondary">
-          <span v-for="badge in axisBadges" :key="badge.key">{{ badge.key }} <b class="font-mono text-ink">{{ badge.value }}</b></span>
-        </div>
+  <div class="flex flex-col rounded-[10px] border border-secondary/15 bg-white/70" :class="selected ? 'ring-1 ring-primary/40' : ''">
+    <div class="flex flex-col gap-2 p-3">
+      <div class="flex items-start gap-1.5">
+        <button
+          type="button"
+          class="-m-1 min-w-0 flex-1 rounded-md p-1 text-left transition-colors hover:bg-secondary/8"
+          :aria-label="expanded ? t('fomcharts.annotations.collapseDetails') : t('fomcharts.annotations.expandDetails')"
+          @click="$emit('toggle-expand')"
+        >
+          <span class="flex items-center gap-1.5">
+            <span class="shrink-0 font-mono text-xs font-bold text-primary">{{ note.ref }}</span>
+            <span class="truncate text-xs text-ink">{{ note.title }}</span>
+            <ChevronDown
+              class="size-3.5 shrink-0 text-muted-foreground transition-transform duration-200"
+              :class="expanded ? '' : '-rotate-90'"
+            />
+          </span>
+          <span v-if="axisBadges.length" class="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-[10.5px] text-secondary">
+            <span v-for="badge in axisBadges" :key="badge.key">{{ badge.key }} <b class="font-mono text-ink">{{ badge.value }}</b></span>
+          </span>
+        </button>
+        <Tooltip>
+          <TooltipTrigger as-child>
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              class="shrink-0 text-primary hover:bg-primary/8 hover:text-primary/80"
+              :aria-label="t('fomcharts.annotations.exportPin')"
+              @click="downloadAllPng"
+            >
+              <Download class="size-3.5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{{ t("fomcharts.annotations.exportPin") }}</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger as-child>
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              class="shrink-0 text-muted-foreground hover:text-ink"
+              :aria-label="t('fomcharts.annotations.remove')"
+              @click="$emit('remove')"
+            >
+              <X class="size-3.5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{{ t("fomcharts.annotations.remove") }}</TooltipContent>
+        </Tooltip>
       </div>
-      <Tooltip>
-        <TooltipTrigger as-child>
-          <button
-            type="button"
-            class="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary/10 hover:text-ink"
-            :aria-label="expanded ? t('fomcharts.annotations.collapseDetails') : t('fomcharts.annotations.expandDetails')"
-            @click="$emit('toggle-expand')"
-          >
-            <ChevronDown class="size-3.5 transition-transform duration-200" :class="expanded ? '' : '-rotate-90'" />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>{{ expanded ? t("fomcharts.annotations.collapseDetails") : t("fomcharts.annotations.expandDetails") }}</TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger as-child>
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            class="shrink-0 text-muted-foreground hover:text-ink"
-            :aria-label="t('fomcharts.annotations.remove')"
-            @click="$emit('remove')"
-          >
-            <X class="size-3.5" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>{{ t("fomcharts.annotations.remove") }}</TooltipContent>
-      </Tooltip>
+
+      <label
+        class="flex w-fit items-center gap-1.5 rounded py-0.5 text-[10.5px] select-none"
+        :class="compareLimitReached ? 'cursor-not-allowed text-muted-foreground/50' : 'cursor-pointer text-primary hover:text-primary/80'"
+      >
+        <Checkbox :model-value="selected" :disabled="compareLimitReached" @update:model-value="$emit('toggle-select')" />
+        {{ compareLimitReached ? t("fomcharts.annotations.compareLimitReached", { max: compareMax }) : t("fomcharts.annotations.compareLabel") }}
+      </label>
     </div>
 
     <div class="grid transition-[grid-template-rows] duration-200 ease-out" :style="{ gridTemplateRows: expanded ? '1fr' : '0fr' }">
@@ -257,6 +263,7 @@ import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 import { ChevronDown, Download, NotebookPen, X, ZoomIn } from "@lucide/vue";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -267,6 +274,7 @@ import type { StructureLayer } from "@/utils/layerStructure";
 import { exportLayerStackPng } from "@/utils/layerStackExport";
 import { exportFieldListPng } from "@/utils/fieldListExport";
 import { exportAnnotationPng, renderAnnotationPng, type AnnotationExportSection } from "@/utils/annotationExport";
+import { buildAnnotationCardData } from "@/utils/annotationCardData";
 import { downloadTextFile } from "@/utils/textExport";
 
 const { t } = useI18n();
@@ -275,6 +283,9 @@ const props = defineProps<{
   note: Annotation;
   expanded: boolean;
   descriptionExpanded: boolean;
+  selected: boolean;
+  compareLimitReached: boolean;
+  compareMax: number;
   xAxis: string | null;
   yAxis: string | null;
   leadingFields: { key: string; value: string }[];
@@ -295,42 +306,48 @@ defineEmits<{
   "pin-siblings": [rows: DataRow[]];
   "update-note": [note: string];
   "toggle-description": [];
+  "toggle-select": [];
 }>();
 
-const EMPTY = "—";
-const displayValue = (v: unknown) => (v === null || v === undefined || v === "" ? EMPTY : String(v));
-const rowField = (col: string | null): { key: string; value: string } | null => {
-  if (!col) return null;
-  const raw = props.note.row[col];
-  if (raw === null || raw === undefined || raw === "") return null;
-  return { key: col, value: String(raw) };
-};
+// Shared with the multi-pin compare export (see annotationCardData.ts) so
+// "what counts as Origin/Mode/Structure/Metrics" can't drift between the two.
+const cardData = computed(() =>
+  buildAnnotationCardData({
+    ref: props.note.ref,
+    title: props.note.title,
+    row: props.note.row,
+    note: props.note.note,
+    xAxis: props.xAxis,
+    yAxis: props.yAxis,
+    layerStructureColumnName: props.layerStructureColumnName,
+    materialClassColumnName: props.materialClassColumnName,
+    baseMaterialsColumnName: props.baseMaterialsColumnName,
+    originColumnName: props.originColumnName,
+    leadingFields: props.leadingFields,
+    foldFields: props.foldFields,
+    modeDescription: props.modeDescription,
+    layers: props.initialLayers,
+    layerStructureRaw: props.layerStructureRaw,
+  }),
+);
 
 // Origin (EXP/SIM) gets its own bordered box, same treatment as Mode/Layer
 // Structure/Metrics/Notes -- it's the first thing worth knowing about a pin
 // (is this measured or simulated data?), so it sits above Mode, not as a
 // small inline label easy to miss next to the plotted axis values.
-const originField = computed(() => rowField(props.originColumnName));
+const originField = computed(() => cardData.value.origin);
 
 // The plotted X/Y axes render here as compact "label value" badges -- but
 // when an axis is Layer Structure itself, its value is the full
 // material/thickness string (already rendered below as the layer stack, see
 // LayerStack), so showing it again here would just repeat the same data as
 // an unreadable wrapped line of text.
-const axisBadges = computed(() =>
-  [{ axis: props.xAxis }, { axis: props.yAxis }]
-    .filter(({ axis }) => axis && axis !== props.layerStructureColumnName)
-    .map(({ axis }) => ({ key: axis as string, value: displayValue(props.note.row[axis as string]) })),
-);
+const axisBadges = computed(() => cardData.value.axisBadges);
 
 // Material Class and Base Materials describe the same physical structure as
 // Layer Structure, so they live in that same card/dialog/export instead of
 // mixed in among unrelated numeric measurements.
-const structureExtraFields = computed(() =>
-  [rowField(props.materialClassColumnName), rowField(props.baseMaterialsColumnName)].filter(
-    (f): f is { key: string; value: string } => f !== null,
-  ),
-);
+const structureExtraFields = computed(() => cardData.value.structureExtraFields);
 
 // foldFields deliberately excludes the plotted X/Y axes on screen (see
 // AnnotationsPanel's foldFieldColumns) since those already show as the
@@ -339,9 +356,8 @@ const structureExtraFields = computed(() =>
 // exporting foldFields alone silently drops whichever measurement is
 // currently plotted (e.g. FOM/Resonance Wavelength picked as axes). Put
 // the axis values back in for export/zoom specifically, so every export
-// always has every measurement, matching what's visible somewhere on
-// the card.
-const exportMetricsRows = computed(() => [...axisBadges.value, ...props.foldFields]);
+// always has every measurement, matching what's visible somewhere on the card.
+const exportMetricsRows = computed(() => cardData.value.metricsRows);
 
 const downloadLayersPng = () =>
   exportLayerStackPng({ ref: props.note.ref, title: props.note.title }, props.initialLayers, structureExtraFields.value);

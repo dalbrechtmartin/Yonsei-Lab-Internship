@@ -36,6 +36,32 @@
           <Switch v-model="showOnlyAnnotated" />
         </div>
 
+        <!-- min-w-0 + truncate on the hint span is load-bearing: a flex
+             item's default min-width is auto (= its content width), so
+             without it long hint text refused to shrink and pushed
+             "Effacer la sélection" + "Comparer" past the container's right
+             edge the moment a selection existed. The left text also no
+             longer repeats the button's own "Comparer (N)" label once
+             something is selected -- it said the same thing twice. -->
+        <div v-if="annotations.length > 0" class="mb-2.5 flex items-center justify-between gap-2 rounded-md border border-secondary/15 bg-card px-2.5 py-1.5">
+          <span class="min-w-0 flex-1 truncate text-[10.5px] text-secondary">
+            {{ selectedIds.size > 0 ? t("fomcharts.compare.selectedCount", { count: selectedIds.size }) : t("fomcharts.compare.hint", { max: compareMax }) }}
+          </span>
+          <div class="flex shrink-0 items-center gap-2.5">
+            <Button v-if="selectedIds.size > 0" variant="link" size="xs" class="h-auto shrink-0 p-0 text-[10.5px]" @click="clearSelection">
+              {{ t("fomcharts.compare.clearSelection") }}
+            </Button>
+            <Button
+              size="xs"
+              class="shrink-0 bg-primary text-primary-foreground hover:bg-primary/90"
+              :disabled="selectedIds.size < 2"
+              @click="showCompareDialog = true"
+            >
+              {{ t("fomcharts.compare.compareButton", { count: selectedIds.size }) }}
+            </Button>
+          </div>
+        </div>
+
         <div v-if="annotations.length > 0" class="flex max-h-105 flex-col gap-2 overflow-y-auto">
           <AnnotationCard
             v-for="note in sortedAnnotations"
@@ -44,6 +70,9 @@
             :note="note"
             :expanded="isExpanded(note.id)"
             :description-expanded="isDescriptionExpanded(note.id)"
+            :selected="selectedIds.has(note.id)"
+            :compare-limit-reached="selectedIds.size >= compareMax && !selectedIds.has(note.id)"
+            :compare-max="compareMax"
             :x-axis="xAxis"
             :y-axis="yAxis"
             :leading-fields="leadingFieldsFor(note)"
@@ -62,6 +91,7 @@
             @pin-siblings="(rows) => $emit('pin-rows', rows)"
             @update-note="(value) => $emit('update-note', note.id, value)"
             @toggle-description="toggleDescription(note.id)"
+            @toggle-select="toggleSelect(note.id)"
           />
         </div>
         <p v-else class="text-xs leading-relaxed text-muted-foreground">
@@ -69,11 +99,13 @@
         </p>
       </div>
     </CollapsibleSection>
+
+    <CompareDialog v-model:open="showCompareDialog" :pins="compareData" />
   </TooltipProvider>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
@@ -82,7 +114,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import InfoTooltip from "@/components/shared/InfoTooltip.vue";
 import CollapsibleSection from "@/components/shared/CollapsibleSection.vue";
 import AnnotationCard from "./AnnotationCard.vue";
+import CompareDialog from "./CompareDialog.vue";
 import { annotationFieldColumns } from "@/utils/annotationFields";
+import { buildAnnotationCardData, type AnnotationCardData } from "@/utils/annotationCardData";
 import {
   findBaseMaterialsColumn,
   findDomainColumn,
@@ -252,6 +286,68 @@ const siblingsFor = (note: Annotation): DataRow[] =>
     if (String(row.ref ?? row.Ref ?? "") !== note.ref) return false;
     return !props.annotations.some((a) => rowsEqual(a.row, row));
   });
+
+// Comparing more than a handful of pins side by side stops being readable
+// (columns shrink, the exported PNG gets unwieldy) -- capped well below
+// that point rather than left unbounded.
+const compareMax = 6;
+const selectedIds = ref<Set<string>>(new Set());
+const showCompareDialog = ref(false);
+
+const toggleSelect = (id: string) => {
+  const next = new Set(selectedIds.value);
+  if (next.has(id)) {
+    next.delete(id);
+  } else if (next.size < compareMax) {
+    next.add(id);
+  }
+  selectedIds.value = next;
+};
+
+const clearSelection = () => {
+  selectedIds.value = new Set();
+};
+
+// A pin selected for compare can still be removed from the panel entirely
+// (see @remove) -- prune stale ids so the compare count/dialog never holds
+// onto a reference to an annotation that no longer exists.
+watch(
+  () => props.annotations,
+  (list) => {
+    const ids = new Set(list.map((a) => a.id));
+    if ([...selectedIds.value].some((id) => !ids.has(id))) {
+      selectedIds.value = new Set([...selectedIds.value].filter((id) => ids.has(id)));
+    }
+  },
+);
+
+// Built from the exact same per-note field rules AnnotationCard uses for its
+// own single-pin export (see annotationCardData.ts) -- kept in the sorted
+// list's current order so the compare columns read left-to-right the same
+// way the pins are currently sorted in this panel.
+const compareData = computed<AnnotationCardData[]>(() =>
+  sortedAnnotations.value
+    .filter((note) => selectedIds.value.has(note.id))
+    .map((note) =>
+      buildAnnotationCardData({
+        ref: note.ref,
+        title: note.title,
+        row: note.row,
+        note: note.note,
+        xAxis: props.xAxis,
+        yAxis: props.yAxis,
+        layerStructureColumnName: layerStructureColumnName.value,
+        materialClassColumnName: materialClassColumnName.value,
+        baseMaterialsColumnName: baseMaterialsColumnName.value,
+        originColumnName: originColumnName.value,
+        leadingFields: leadingFieldsFor(note),
+        foldFields: foldFieldsFor(note),
+        modeDescription: modeDescriptionFor(note),
+        layers: layersFor(note),
+        layerStructureRaw: layerStructureRawFor(note),
+      }),
+    ),
+);
 
 // Guide-only: v-for + ref="cardRefs" collects one entry per rendered card,
 // in the same order as sortedAnnotations -- looking a note up by id (rather

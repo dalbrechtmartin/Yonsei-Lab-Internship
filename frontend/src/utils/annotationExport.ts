@@ -7,8 +7,8 @@ export interface AnnotationExportSection {
   layers?: StructureLayer[];
 }
 
-const WIDTH = 460;
-const PAD_X = 20;
+export const WIDTH = 460;
+export const PAD_X = 20;
 const BOX_PAD = 12;
 const ROW_LINE_H = 15;
 const ROW_GAP = 8;
@@ -105,24 +105,32 @@ function drawBoxStart(ctx: CanvasRenderingContext2D, x: number, y: number, w: nu
  * known) so the border/background sits behind the text, matching the
  * rounded bordered-card look the rest of the app uses for these same
  * groupings (Mode, Layer Structure, Metrics, Note).
+ *
+ * `originX`/`width`/`y0` let this same layout render as one column among
+ * several (see compareExport.ts's side-by-side multi-pin export) instead of
+ * always owning the whole canvas from (0, 0) -- exported for that reuse.
  */
-function layoutAndMaybeDraw(
+export function layoutAndMaybeDraw(
   ctx: CanvasRenderingContext2D,
   source: { ref: string; title: string },
   origin: { key: string; value: string } | null,
   sections: AnnotationExportSection[],
   draw: boolean,
+  originX = 0,
+  width = WIDTH,
+  y0 = 0,
 ): number {
-  const contentW = WIDTH - PAD_X * 2;
+  const contentW = width - PAD_X * 2;
   const labelW = Math.round(contentW * 0.38);
   const valueW = contentW - labelW - 10;
-  let y = 0;
+  const x = originX + PAD_X;
+  let y = y0;
 
   ctx.textBaseline = "alphabetic";
   ctx.font = "700 15px 'IBM Plex Mono', monospace";
   if (draw) {
     ctx.fillStyle = "#0072b2";
-    ctx.fillText(source.ref, PAD_X, y + 18);
+    ctx.fillText(source.ref, x, y + 18);
   }
   y += 24;
 
@@ -130,15 +138,15 @@ function layoutAndMaybeDraw(
   const titleLines = wrapText(ctx, source.title, contentW);
   if (draw) {
     ctx.fillStyle = "#1c2541";
-    titleLines.forEach((line, i) => ctx.fillText(line, PAD_X, y + 12 + i * 16));
+    titleLines.forEach((line, i) => ctx.fillText(line, x, y + 12 + i * 16));
   }
   y += titleLines.length * 16 + SECTION_GAP;
 
   if (origin) {
-    const rowH = drawRow(ctx, PAD_X + BOX_PAD, y + BOX_PAD, labelW, valueW, origin.key, origin.value, false);
+    const rowH = drawRow(ctx, x + BOX_PAD, y + BOX_PAD, labelW, valueW, origin.key, origin.value, false);
     const boxH = rowH - ROW_GAP + BOX_PAD * 2;
-    drawBoxStart(ctx, PAD_X, y, contentW, boxH, draw);
-    if (draw) drawRow(ctx, PAD_X + BOX_PAD, y + BOX_PAD, labelW, valueW, origin.key, origin.value, true);
+    drawBoxStart(ctx, originX + PAD_X, y, contentW, boxH, draw);
+    if (draw) drawRow(ctx, x + BOX_PAD, y + BOX_PAD, labelW, valueW, origin.key, origin.value, true);
     y += boxH + SECTION_GAP;
   }
 
@@ -151,7 +159,7 @@ function layoutAndMaybeDraw(
     ctx.font = "700 9px Inter, sans-serif";
     if (draw) {
       ctx.fillStyle = "#3a506b";
-      ctx.fillText(section.title.toUpperCase(), PAD_X, y + 9);
+      ctx.fillText(section.title.toUpperCase(), x, y + 9);
     }
     y += SECTION_TITLE_H;
 
@@ -208,14 +216,14 @@ function layoutAndMaybeDraw(
       return iy;
     };
 
-    const contentBottom = measureInner(false, PAD_X + BOX_PAD, y + BOX_PAD);
+    const contentBottom = measureInner(false, x + BOX_PAD, y + BOX_PAD);
     const boxH = contentBottom - y - ROW_GAP + BOX_PAD * 2;
-    drawBoxStart(ctx, PAD_X, y, contentW, boxH, draw);
-    if (draw) measureInner(true, PAD_X + BOX_PAD, y + BOX_PAD);
+    drawBoxStart(ctx, originX + PAD_X, y, contentW, boxH, draw);
+    if (draw) measureInner(true, x + BOX_PAD, y + BOX_PAD);
     y += boxH + SECTION_GAP;
   }
 
-  return y;
+  return y - y0;
 }
 
 /**
