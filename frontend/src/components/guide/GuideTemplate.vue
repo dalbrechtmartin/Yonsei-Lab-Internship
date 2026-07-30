@@ -204,7 +204,6 @@
             v-model:show-legend="showLegend"
             v-model:show-median="showMedian"
             v-model:show-trend="showTrend"
-            v-model:show-axis-names="showAxisNames"
             v-model:selected-domains="selectedDomains"
             v-model:selected-origins="selectedOrigins"
             v-model:selected-material-classes="selectedMaterialClasses"
@@ -245,7 +244,6 @@
             v-model:show-legend="showLegend"
             v-model:show-median="showMedian"
             v-model:show-trend="showTrend"
-            v-model:show-axis-names="showAxisNames"
             v-model:selected-domains="selectedDomains"
             v-model:selected-origins="selectedOrigins"
             v-model:selected-material-classes="selectedMaterialClasses"
@@ -274,7 +272,6 @@
               { label: t('guide.steps.controls.display.pareto.label'), body: t('guide.steps.controls.display.pareto.body') },
               { label: t('guide.steps.controls.display.legend.label'), body: t('guide.steps.controls.display.legend.body') },
               { label: t('guide.steps.controls.display.median.label'), body: t('guide.steps.controls.display.median.body') },
-              { label: t('guide.steps.controls.display.axisNames.label'), body: t('guide.steps.controls.display.axisNames.body') },
             ]"
           />
         </div>
@@ -303,7 +300,6 @@
             v-model:show-legend="showLegend"
             v-model:show-median="showMedian"
             v-model:show-trend="showTrend"
-            v-model:show-axis-names="showAxisNames"
             v-model:selected-domains="selectedDomains"
             v-model:selected-origins="selectedOrigins"
             v-model:selected-material-classes="selectedMaterialClasses"
@@ -375,7 +371,6 @@
               :show-median="showMedian"
               :show-trend="showTrend"
               :show-pareto="showPareto"
-              :show-axis-names="showAxisNames"
               :x-axis-numeric="true"
               :group-color-map="groupColorMap"
             />
@@ -506,9 +501,9 @@
                generator FomChart instance after the last page, and its
                exposed getPngDataUrl) rather than the live interactive
                component -- with its own title and every overlay switched on
-               (trend line, Pareto frontier, axis-name prefixes) so this one
-               figure doubles as a showcase of what the export can carry,
-               instead of reusing the plain config from "reading the chart". -->
+               (trend line, Pareto frontier) so this one figure doubles as a
+               showcase of what the export can carry, instead of reusing the
+               plain config from "reading the chart". -->
           <div class="guide-callout-region" style="width: 400px">
             <img v-if="exportChartPngUrl" :src="exportChartPngUrl" class="block w-full" :alt="t('fomcharts.export.png')" />
           </div>
@@ -615,9 +610,9 @@
          never appears in the PDF itself) purely so page 9's export figure
          can show a genuine "Export chart image (.png)" instead of the live
          interactive component -- with its own title and every overlay on
-         (trend line, Pareto frontier, axis names) for a richer showcase
-         than "reading the chart"'s deliberately plain config. See
-         exportChartPngUrl below. -->
+         (trend line, Pareto frontier) for a richer showcase than "reading
+         the chart"'s deliberately plain config. See exportChartPngUrl
+         below. -->
     <div style="width: 700px">
       <FomChart
         ref="exportChartGenRef"
@@ -632,7 +627,6 @@
         :show-median="true"
         :show-trend="true"
         :show-pareto="true"
-        :show-axis-names="true"
         :x-axis-numeric="true"
         :group-color-map="groupColorMap"
       />
@@ -826,7 +820,6 @@ const chartTitle = ref("");
 const showLegend = ref(true);
 const showMedian = ref(true);
 const showTrend = ref(false);
-const showAxisNames = ref(false);
 const showPareto = ref(false);
 const highlightGroup = ref<string | null>(null);
 const selectedDomains = ref<string[]>([]);
@@ -978,7 +971,7 @@ async function captureGuideArtifacts() {
     });
   }
 
-  // Display section: scale / trend line / pareto / legend / median / axis names.
+  // Display section: scale / trend line / pareto / legend / median.
   if (displayControlsWrap.value) {
     const c = displayControlsWrap.value;
     [
@@ -987,7 +980,6 @@ async function captureGuideArtifacts() {
       t("fomcharts.controls.pareto"),
       t("fomcharts.legend.toggle"),
       t("fomcharts.medianLine.toggle"),
-      t("fomcharts.controls.axisNames"),
     ].forEach((label) => {
       push(displayMarks, markRow(c, label));
     });
