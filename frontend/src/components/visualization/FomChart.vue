@@ -5,7 +5,7 @@
         {{ t("fomcharts.type.scatter") }}
       </h2>
       <TooltipProvider :delay-duration="200">
-        <div class="flex items-center gap-1.5">
+        <div ref="badgesRowRef" class="flex items-center gap-1.5">
           <span
             v-if="needsReviewCount > 0"
             class="flex items-center gap-1 bg-amber-500/15 text-amber-800 text-xs font-medium pl-2.5 pr-1.5 py-0.5 rounded whitespace-nowrap"
@@ -57,7 +57,7 @@
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
 import { computed, provide, ref } from "vue";
-import { use, registerTheme } from "echarts/core";
+import { use, registerTheme, getInstanceByDom } from "echarts/core";
 import { CanvasRenderer } from "echarts/renderers";
 import { ScatterChart, LineChart } from "echarts/charts";
 import {
@@ -165,6 +165,7 @@ const emit = defineEmits<{
 }>();
 
 const chartRef = ref<InstanceType<typeof VChart> | null>(null);
+const badgesRowRef = ref<HTMLElement | null>(null);
 
 const displayTitle = computed(() => props.chartTitle.trim());
 
@@ -681,11 +682,17 @@ const handleChartClick = (params: any) => {
   });
 };
 
+/** The current chart render as a PNG data URL -- split out of exportPng so
+ * the guide can show a genuine "Export chart image" example (see
+ * GuideTemplate.vue) instead of just the live interactive component. */
+const getPngDataUrl = (): string | null =>
+  chartRef.value?.getDataURL({ type: "png", pixelRatio: 2, backgroundColor: "#fff" }) ?? null;
+
 /** Downloads the current chart render as a PNG -- used by the workspace's
  * Export menu. Mirrors echarts' own toolbox "save as image" action, just
  * triggerable from outside the chart. */
 const exportPng = (filename = "fom_chart.png") => {
-  const url = chartRef.value?.getDataURL({ type: "png", pixelRatio: 2, backgroundColor: "#fff" });
+  const url = getPngDataUrl();
   if (!url) return;
   const a = document.createElement("a");
   a.href = url;
@@ -695,7 +702,62 @@ const exportPng = (filename = "fom_chart.png") => {
   document.body.removeChild(a);
 };
 
-defineExpose({ exportPng });
+// Guide-only: the badges row is real DOM (GuideTemplate can already box it
+// with the normal getBoundingClientRect-based helpers once it has this
+// element) -- exposed the same way chartRef itself is used internally.
+const getBadgesRow = (): HTMLElement | null => badgesRowRef.value;
+
+/** Guide-only: the chart's own DOM node, in whatever CSS transform scale
+ * the guide is currently rendering it at -- paired with getMedianLabelRect/
+ * getLegendRect below (which report positions in echarts' own, pre-scale
+ * pixel space) so GuideTemplate can convert one into the other and box
+ * canvas-drawn content the same way it boxes real DOM elements everywhere
+ * else in the guide. */
+const getChartDom = (): HTMLElement | null => chartRef.value?.getDom() ?? null;
+
+type PixelRect = { left: number; top: number; width: number; height: number };
+
+/** Guide-only: the median line's label, read from echarts' own live layout
+ * rather than guessed -- the label sits at the grid's horizontal center,
+ * and that center shifts with the x-axis name's length (nameGap/containLabel
+ * grow the grid's right margin for a longer translated name), which is
+ * exactly what made a hardcoded pixel guess drift out of ring in some
+ * locales. getInstanceByDom + the grid coordinate system's own rect is the
+ * only way to read back where echarts actually put it, since none of this
+ * is real DOM (CanvasRenderer draws it straight onto the canvas). */
+const getMedianLabelRect = (): PixelRect | null => {
+  if (!props.showMedian) return null;
+  const dom = chartRef.value?.getDom();
+  const raw = dom ? getInstanceByDom(dom) : undefined;
+  if (!raw) return null;
+  // `getModel`/`coordinateSystem` aren't part of echarts' typed public API
+  // surface, but reading a live grid's rendered rect back is a long-standing,
+  // stable pattern -- worth it here to avoid re-deriving (and drifting from)
+  // the same layout math chartOption above uses to place the grid.
+  const grid = (raw as any).getModel?.()?.getComponent?.("grid", 0)?.coordinateSystem?.getRect?.();
+  const y = raw.convertToPixel({ yAxisIndex: 0 }, medianValue.value);
+  if (!grid || typeof y !== "number" || Number.isNaN(y)) return null;
+  return { left: grid.x + grid.width / 2 - 75, top: y - 18, width: 150, height: 36 };
+};
+
+/** Guide-only: the legend's live top position (see getMedianLabelRect for
+ * why this can't be read off real DOM) -- horizontally it's always centered
+ * on the whole canvas (`left: "center"`, not grid-relative), so only the
+ * vertical position needs to be read back; a fixed generous width covers
+ * the legend regardless of how long its (locale-invariant, data-literal)
+ * group names run. */
+const getLegendRect = (): PixelRect | null => {
+  if (!props.showLegend) return null;
+  const inst = chartRef.value;
+  if (!inst) return null;
+  const legendOpt = (inst.getOption() as any)?.legend?.[0];
+  if (!legendOpt || legendOpt.show === false) return null;
+  const width = inst.getWidth();
+  const top = typeof legendOpt.top === "number" ? legendOpt.top : 4;
+  return { left: width / 2 - 75, top: top - 6, width: 150, height: 30 };
+};
+
+defineExpose({ exportPng, getPngDataUrl, getBadgesRow, getChartDom, getMedianLabelRect, getLegendRect });
 
 // Rough pixel-width estimate for reserving grid margin for an axis name --
 // echarts' containLabel does not reliably account for axis *names* (as

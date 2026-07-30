@@ -107,7 +107,7 @@
 
           <div v-if="initialLayers.length > 0" class="flex flex-col gap-1 rounded-md border border-secondary/20 bg-card px-2 py-1.5">
             <div class="flex items-center justify-between gap-2">
-              <span class="truncate text-[10.5px] text-secondary">{{ layerStructureColumnName }} ({{ initialLayers.length }})</span>
+              <span class="truncate text-[10.5px] text-secondary">{{ t("fomcharts.annotations.layerStructure") }} ({{ initialLayers.length }})</span>
               <Dialog>
                 <Tooltip>
                   <TooltipTrigger as-child>
@@ -128,7 +128,7 @@
                     <span class="font-mono text-primary">{{ note.ref }}</span>
                     <span class="ml-1.5 font-normal text-ink">{{ note.title }}</span>
                   </DialogTitle>
-                  <DialogDescription>{{ layerStructureColumnName }}</DialogDescription>
+                  <DialogDescription>{{ t("fomcharts.annotations.layerStructure") }}</DialogDescription>
                   <div v-if="structureExtraFields.length" class="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-xs">
                     <template v-for="f in structureExtraFields" :key="f.key">
                       <span class="text-muted-foreground">{{ f.key }}</span>
@@ -266,7 +266,7 @@ import type { DataRow } from "@/utils/columnTypes";
 import type { StructureLayer } from "@/utils/layerStructure";
 import { exportLayerStackPng } from "@/utils/layerStackExport";
 import { exportFieldListPng } from "@/utils/fieldListExport";
-import { exportAnnotationPng } from "@/utils/annotationExport";
+import { exportAnnotationPng, renderAnnotationPng, type AnnotationExportSection } from "@/utils/annotationExport";
 import { downloadTextFile } from "@/utils/textExport";
 
 const { t } = useI18n();
@@ -352,19 +352,25 @@ const downloadNoteTxt = () => downloadTextFile(props.note.note, `notes_${props.n
 // Structure's raw-text preview) -- a quick glance without opening the dialog.
 const foldFieldsPreview = computed(() => props.foldFields.map((f) => f.value).join(" · "));
 
+const buildExportSections = (): AnnotationExportSection[] => [
+  { title: t("fomcharts.annotations.mode"), rows: props.leadingFields, text: props.modeDescription ?? undefined },
+  {
+    title: t("fomcharts.annotations.layerStructure"),
+    rows: structureExtraFields.value,
+    layers: props.initialLayers,
+  },
+  { title: t("fomcharts.annotations.metrics"), rows: exportMetricsRows.value },
+  { title: t("fomcharts.annotations.notes"), text: props.note.note || undefined },
+];
+
 const downloadAllPng = () =>
-  exportAnnotationPng(
-    { ref: props.note.ref, title: props.note.title },
-    originField.value,
-    [
-      { title: t("fomcharts.annotations.mode"), rows: props.leadingFields, text: props.modeDescription ?? undefined },
-      {
-        title: props.layerStructureColumnName ?? t("fomcharts.annotations.zoomLayers"),
-        rows: structureExtraFields.value,
-        layers: props.initialLayers,
-      },
-      { title: t("fomcharts.annotations.metrics"), rows: exportMetricsRows.value },
-      { title: t("fomcharts.annotations.notes"), text: props.note.note || undefined },
-    ],
-  );
+  exportAnnotationPng({ ref: props.note.ref, title: props.note.title }, originField.value, buildExportSections());
+
+/** Guide-only: renders this card's full "Export this pin" PNG without
+ * triggering a download, so the guide can show a real example instead of a
+ * mockup (see GuideTemplate.vue's export page). */
+const getExportDataUrl = (): string | null =>
+  renderAnnotationPng({ ref: props.note.ref, title: props.note.title }, originField.value, buildExportSections());
+
+defineExpose({ getExportDataUrl });
 </script>

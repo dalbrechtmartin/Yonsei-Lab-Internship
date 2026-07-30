@@ -40,6 +40,7 @@
           <AnnotationCard
             v-for="note in sortedAnnotations"
             :key="note.id"
+            ref="cardRefs"
             :note="note"
             :expanded="isExpanded(note.id)"
             :description-expanded="isDescriptionExpanded(note.id)"
@@ -251,4 +252,15 @@ const siblingsFor = (note: Annotation): DataRow[] =>
     if (String(row.ref ?? row.Ref ?? "") !== note.ref) return false;
     return !props.annotations.some((a) => rowsEqual(a.row, row));
   });
+
+// Guide-only: v-for + ref="cardRefs" collects one entry per rendered card,
+// in the same order as sortedAnnotations -- looking a note up by id (rather
+// than assuming a fixed index) keeps this correct regardless of the current
+// sort order.
+const cardRefs = ref<InstanceType<typeof AnnotationCard>[]>([]);
+const getExportDataUrl = (noteId: string): string | null => {
+  const idx = sortedAnnotations.value.findIndex((n) => n.id === noteId);
+  return idx >= 0 ? (cardRefs.value[idx]?.getExportDataUrl() ?? null) : null;
+};
+defineExpose({ getExportDataUrl });
 </script>

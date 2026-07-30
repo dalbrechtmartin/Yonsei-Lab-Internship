@@ -219,20 +219,20 @@ function layoutAndMaybeDraw(
 }
 
 /**
- * Exports one pinned point's entire card -- header, Origin, Mode, Layer
+ * Renders one pinned point's entire card -- header, Origin, Mode, Layer
  * Structure (with Material Class/Base Materials), Metrics, and the personal
- * Note -- as a single PNG, so a researcher building a report doesn't have
- * to stitch together the per-section downloads by hand.
+ * Note -- onto a canvas and returns it as a PNG data URL, without triggering
+ * a download. Split out of exportAnnotationPng so the guide can show a real
+ * (not mocked) example of what that export looks like.
  */
-export function exportAnnotationPng(
+export function renderAnnotationPng(
   source: { ref: string; title: string },
   origin: { key: string; value: string } | null,
   sections: AnnotationExportSection[],
-  filename?: string,
-): void {
+): string | null {
   const measureCanvas = document.createElement("canvas");
   const measureCtx = measureCanvas.getContext("2d");
-  if (!measureCtx) return;
+  if (!measureCtx) return null;
   const height = layoutAndMaybeDraw(measureCtx, source, origin, sections, false);
 
   const canvas = document.createElement("canvas");
@@ -242,13 +242,28 @@ export function exportAnnotationPng(
   canvas.style.width = `${WIDTH}px`;
   canvas.style.height = `${height}px`;
   const ctx = canvas.getContext("2d");
-  if (!ctx) return;
+  if (!ctx) return null;
   ctx.scale(scale, scale);
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, WIDTH, height);
   layoutAndMaybeDraw(ctx, source, origin, sections, true);
 
-  const url = canvas.toDataURL("image/png");
+  return canvas.toDataURL("image/png");
+}
+
+/**
+ * Exports one pinned point's entire card as a single PNG file, so a
+ * researcher building a report doesn't have to stitch together the per-
+ * section downloads by hand.
+ */
+export function exportAnnotationPng(
+  source: { ref: string; title: string },
+  origin: { key: string; value: string } | null,
+  sections: AnnotationExportSection[],
+  filename?: string,
+): void {
+  const url = renderAnnotationPng(source, origin, sections);
+  if (!url) return;
   const a = document.createElement("a");
   a.href = url;
   a.download = filename ?? `pin_${source.ref.replace(/[^a-z0-9_-]+/gi, "_")}.png`;

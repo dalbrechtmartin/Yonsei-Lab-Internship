@@ -359,10 +359,11 @@
            wrapper instead, sized identically, letting badges float outside
            the inner box without either covering real content or being
            clipped themselves. -->
-      <div class="relative mx-auto" style="width: 480px">
+      <div ref="readingWrap" class="relative mx-auto" style="width: 480px">
         <div class="guide-callout-region" style="width: 480px; height: 392px; overflow: hidden">
           <div style="width: 686px; transform: scale(0.7); transform-origin: top left">
             <FomChart
+              ref="readingChartRef"
               :chart-data="sampleRows"
               :columns="sampleColumns"
               :y-axis="selectedYAxis"
@@ -458,6 +459,7 @@
       <div class="flex items-start gap-9">
         <div ref="annotationsWrap" class="guide-callout-region relative shrink-0" style="width: 280px">
           <AnnotationsPanel
+            ref="annotationsPanelRef"
             v-model:open="annotationsOpen"
             v-model:show-only-annotated="showOnlyAnnotated"
             :annotations="annotations"
@@ -498,33 +500,31 @@
       <h2 class="mb-2 text-xl font-semibold">{{ t("guide.steps.export.title") }}</h2>
       <p class="mb-4 text-sm leading-relaxed text-justify text-ink">{{ t("guide.steps.export.body") }}</p>
 
-      <div class="flex gap-5">
-        <div class="flex-1">
-          <div class="guide-callout-region" style="width: 280px; height: 346px; overflow: hidden">
-            <div style="width: 466px; transform: scale(0.6); transform-origin: top left">
-              <FomChart
-            :chart-data="sampleRows"
-            :columns="sampleColumns"
-            :y-axis="selectedYAxis"
-            :x-axis="selectedXAxis"
-            :group-by="groupBy"
-            :y-axis-scale="yAxisScale"
-            :chart-title="chartTitle"
-            :show-legend="showLegend"
-            :show-median="showMedian"
-            :show-trend="showTrend"
-            :show-pareto="showPareto"
-            :show-axis-names="showAxisNames"
-            :x-axis-numeric="true"
-            :group-color-map="groupColorMap"
-          />
-            </div>
+      <div class="flex items-start gap-5">
+        <div>
+          <!-- A genuine "Export chart image (.png)" render (see the hidden
+               generator FomChart instance after the last page, and its
+               exposed getPngDataUrl) rather than the live interactive
+               component -- with its own title and every overlay switched on
+               (trend line, Pareto frontier, axis-name prefixes) so this one
+               figure doubles as a showcase of what the export can carry,
+               instead of reusing the plain config from "reading the chart". -->
+          <div class="guide-callout-region" style="width: 400px">
+            <img v-if="exportChartPngUrl" :src="exportChartPngUrl" class="block w-full" :alt="t('fomcharts.export.png')" />
           </div>
-          <p class="mt-1.5 max-w-65 text-xs leading-snug text-secondary">{{ t("guide.steps.export.chartCaption") }}</p>
+          <p class="mt-1.5 max-w-80 text-xs leading-snug text-secondary">{{ t("guide.steps.export.chartCaption") }}</p>
         </div>
-        <div class="flex-1">
-          <div class="guide-callout-region font-mono text-xs leading-relaxed text-ink" style="min-height: 346px; white-space: pre-wrap">{{ sampleNoteText }}</div>
-          <p class="mt-1.5 max-w-65 text-xs leading-snug text-secondary">{{ t("guide.steps.export.noteCaption") }}</p>
+        <div>
+          <!-- A genuine render of "Export this pin" (see AnnotationsPanel's
+               exposed getExportDataUrl) rather than the single note's raw
+               .txt content -- the full combined-card export is the more
+               interesting one to show. Sized to width only (no fixed
+               height/crop) so the whole card stays visible regardless of
+               how tall its content runs. -->
+          <div class="guide-callout-region" style="width: 260px">
+            <img v-if="pinExportDataUrl" :src="pinExportDataUrl" class="block w-full" :alt="t('fomcharts.annotations.exportPin')" />
+          </div>
+          <p class="mt-1.5 max-w-65 text-xs leading-snug text-secondary">{{ t("guide.steps.export.pinExportCaption") }}</p>
         </div>
       </div>
 
@@ -609,11 +609,39 @@
 
       <GuideFooter :page="PAGE_MODE2" />
     </section>
+
+    <!-- Generator-only: renders off to the side of every real `.guide-page`
+         (pdfExport.ts only ever captures `.guide-page` elements, so this
+         never appears in the PDF itself) purely so page 9's export figure
+         can show a genuine "Export chart image (.png)" instead of the live
+         interactive component -- with its own title and every overlay on
+         (trend line, Pareto frontier, axis names) for a richer showcase
+         than "reading the chart"'s deliberately plain config. See
+         exportChartPngUrl below. -->
+    <div style="width: 700px">
+      <FomChart
+        ref="exportChartGenRef"
+        :chart-data="sampleRows"
+        :columns="sampleColumns"
+        :y-axis="selectedYAxis"
+        :x-axis="selectedXAxis"
+        :group-by="groupBy"
+        :y-axis-scale="yAxisScale"
+        :chart-title="exportChartTitle"
+        :show-legend="true"
+        :show-median="true"
+        :show-trend="true"
+        :show-pareto="true"
+        :show-axis-names="true"
+        :x-axis-numeric="true"
+        :group-color-map="groupColorMap"
+      />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, h, nextTick, onMounted, ref, useTemplateRef } from "vue";
+import { computed, h, nextTick, onMounted, ref, useTemplateRef, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import {
   ChevronDown,
@@ -652,7 +680,7 @@ import {
 import logoUrl from "@/assets/logo.svg";
 import yonseiSymbol from "@/assets/yonsei-logo.svg";
 import yonseiOptica from "@/assets/yonsei-optica.svg";
-import { findByText, markRect, markRow, markLabel, markFilterBlock, type GuideMark } from "./guideAnnotate";
+import { findByText, markRect, markRow, markLabel, markFilterBlock, markCanvasRect, type GuideMark } from "./guideAnnotate";
 
 const { t, locale } = useI18n();
 
@@ -701,12 +729,17 @@ const tocEntries = computed(() => [
 ]);
 
 // ---------------------------------------------------------------------
-// Worked example dataset (Mode 1 only) -- six photonic resonator sensor
-// designs, each reported once experimentally (EXP) and once from
-// simulation (SIM). Column names follow the same conventions the real
-// app's column detectors (utils/columnTypes.ts) look for, so every real
-// component mounted below behaves exactly as it would on a real uploaded
-// file, not a hand-faked illustration.
+// Worked example dataset (Mode 1 only) -- six ALL-DIELECTRIC photonic
+// resonator sensor designs (the platform this tool's actual users mostly
+// work with -- no metal/plasmonic devices), each reported once
+// experimentally (EXP) and once from simulation (SIM). FOM (Sensitivity /
+// FWHM, the standard RI-sensor figure of merit) is a real computed column
+// here rather than left out, so the guide's chart actually plots FOM by
+// default and the bubble-size-by-FOM behavior (see FomChart's
+// bubbleSizeFor) isn't silently untested. Column names follow the same
+// conventions the real app's column detectors (utils/columnTypes.ts) look
+// for, so every real component mounted below behaves exactly as it would
+// on a real uploaded file, not a hand-faked illustration.
 // ---------------------------------------------------------------------
 const sampleColumns = [
   "Ref",
@@ -716,31 +749,41 @@ const sampleColumns = [
   "Base Materials",
   "Mode ID",
   "Resonance Wavelength (nm)",
-  "Q-Factor",
+  "Q-factor",
+  "FOM (RIU^-1)",
   "Sensitivity (nm/RIU)",
   "FWHM (nm)",
   "Layer Structure",
-  "Review Status",
+  "Review status",
   "Notes",
 ];
 
+// "Approve (AI)" (not bare "Approve") matches backend/prompt.txt's Review
+// status vocabulary exactly, since this dataset models what that extractor
+// would actually hand back to a researcher.
 function sampleRow(data: Record<string, unknown>): DataRow {
-  return { "Mode ID": 1, "Review Status": "Approve", Notes: "", ...data };
+  return { "Mode ID": 1, "Review status": "Approve (AI)", Notes: "", ...data };
 }
 
+// Layer Structure here follows backend/prompt.txt's own rules: "+"-joined
+// bare material names (thickness in parentheses only where stated),
+// standard chemical formulas in Base Materials (Si3N4, not SiN; PMMA, not
+// the category name "Polymer"), and inert substrates (glass, quartz) never
+// appear at all -- rule 3 strictly excludes them, so a genuine extraction
+// from this backend would never produce one either.
 const sampleRows: DataRow[] = [
-  sampleRow({ Ref: "R1", Title: "High-Q silicon microring resonator RI sensor", Origin: "EXP", "Material Class": "Dielectric", "Base Materials": "Si;SiO2", "Resonance Wavelength (nm)": 1550, "Q-Factor": 42000, "Sensitivity (nm/RIU)": 65, "FWHM (nm)": 0.037, "Layer Structure": "Si core / SiO2 cladding" }),
-  sampleRow({ Ref: "R1", Title: "High-Q silicon microring resonator RI sensor", Origin: "SIM", "Material Class": "Dielectric", "Base Materials": "Si;SiO2", "Resonance Wavelength (nm)": 1550, "Q-Factor": 51000, "Sensitivity (nm/RIU)": 70, "FWHM (nm)": 0.03, "Layer Structure": "Si core / SiO2 cladding" }),
-  sampleRow({ Ref: "R2", Title: "Silicon-nitride ring resonator for biosensing", Origin: "EXP", "Material Class": "Dielectric", "Base Materials": "SiN;SiO2", "Resonance Wavelength (nm)": 1310, "Q-Factor": 88000, "Sensitivity (nm/RIU)": 40, "FWHM (nm)": 0.015, "Layer Structure": "SiN core / SiO2 cladding" }),
-  sampleRow({ Ref: "R2", Title: "Silicon-nitride ring resonator for biosensing", Origin: "SIM", "Material Class": "Dielectric", "Base Materials": "SiN;SiO2", "Resonance Wavelength (nm)": 1310, "Q-Factor": 96000, "Sensitivity (nm/RIU)": 45, "FWHM (nm)": 0.014, "Layer Structure": "SiN core / SiO2 cladding" }),
-  sampleRow({ Ref: "R3", Title: "Plasmonic gold nanodisk array LSPR sensor", Origin: "EXP", "Material Class": "Metal", "Base Materials": "Au", "Resonance Wavelength (nm)": 780, "Q-Factor": 120, "Sensitivity (nm/RIU)": 320, "FWHM (nm)": 6.5, "Layer Structure": "Au nanodisk array / glass", "Review Status": "Edit", Notes: "FWHM estimated from the published linewidth plot (Q ≈ λ / FWHM)." }),
-  sampleRow({ Ref: "R3", Title: "Plasmonic gold nanodisk array LSPR sensor", Origin: "SIM", "Material Class": "Metal", "Base Materials": "Au", "Resonance Wavelength (nm)": 780, "Q-Factor": 150, "Sensitivity (nm/RIU)": 340, "FWHM (nm)": 5.2, "Layer Structure": "Au nanodisk array / glass" }),
-  sampleRow({ Ref: "R4", Title: "Hybrid dielectric-metal disk resonator on a gold mirror", Origin: "EXP", "Material Class": "Dielectric;Metal", "Base Materials": "Si;Au", "Resonance Wavelength (nm)": 1064, "Q-Factor": 3200, "Sensitivity (nm/RIU)": 210, "FWHM (nm)": 0.33, "Layer Structure": "Si disk / Au mirror" }),
-  sampleRow({ Ref: "R4", Title: "Hybrid dielectric-metal disk resonator on a gold mirror", Origin: "SIM", "Material Class": "Dielectric;Metal", "Base Materials": "Si;Au", "Resonance Wavelength (nm)": 1064, "Q-Factor": 3900, "Sensitivity (nm/RIU)": 230, "FWHM (nm)": 0.27, "Layer Structure": "Si disk / Au mirror" }),
-  sampleRow({ Ref: "R5", Title: "InP Mach-Zehnder interferometer sensor", Origin: "EXP", "Material Class": "Dielectric", "Base Materials": "InP", "Resonance Wavelength (nm)": 1550, "Q-Factor": 1200, "Sensitivity (nm/RIU)": 180, "FWHM (nm)": 1.3, "Layer Structure": "InP rib waveguide" }),
-  sampleRow({ Ref: "R5", Title: "InP Mach-Zehnder interferometer sensor", Origin: "SIM", "Material Class": "Dielectric", "Base Materials": "InP", "Resonance Wavelength (nm)": 1550, "Q-Factor": 1500, "Sensitivity (nm/RIU)": 190, "FWHM (nm)": 1.0, "Layer Structure": "InP rib waveguide" }),
-  sampleRow({ Ref: "R6", Title: "Polymer microring resonator for label-free detection", Origin: "EXP", "Material Class": "Dielectric", "Base Materials": "Polymer;SiO2", "Resonance Wavelength (nm)": 1300, "Q-Factor": 2600, "Sensitivity (nm/RIU)": 95, "FWHM (nm)": 0.5, "Layer Structure": "Polymer core / SiO2 cladding" }),
-  sampleRow({ Ref: "R6", Title: "Polymer microring resonator for label-free detection", Origin: "SIM", "Material Class": "Dielectric", "Base Materials": "Polymer;SiO2", "Resonance Wavelength (nm)": 1300, "Q-Factor": 3100, "Sensitivity (nm/RIU)": 100, "FWHM (nm)": 0.42, "Layer Structure": "Polymer core / SiO2 cladding" }),
+  sampleRow({ Ref: "R1", Title: "High-Q silicon microring resonator RI sensor", Origin: "EXP", "Material Class": "Dielectric", "Base Materials": "Si;SiO2", "Resonance Wavelength (nm)": 1550, "Q-factor": 42000, "FOM (RIU^-1)": 1757, "Sensitivity (nm/RIU)": 65, "FWHM (nm)": 0.037, "Layer Structure": "Si + SiO2" }),
+  sampleRow({ Ref: "R1", Title: "High-Q silicon microring resonator RI sensor", Origin: "SIM", "Material Class": "Dielectric", "Base Materials": "Si;SiO2", "Resonance Wavelength (nm)": 1550, "Q-factor": 51000, "FOM (RIU^-1)": 2333, "Sensitivity (nm/RIU)": 70, "FWHM (nm)": 0.03, "Layer Structure": "Si + SiO2" }),
+  sampleRow({ Ref: "R2", Title: "Silicon-nitride ring resonator for biosensing", Origin: "EXP", "Material Class": "Dielectric", "Base Materials": "Si3N4;SiO2", "Resonance Wavelength (nm)": 1310, "Q-factor": 88000, "FOM (RIU^-1)": 2667, "Sensitivity (nm/RIU)": 40, "FWHM (nm)": 0.015, "Layer Structure": "Si3N4 + SiO2" }),
+  sampleRow({ Ref: "R2", Title: "Silicon-nitride ring resonator for biosensing", Origin: "SIM", "Material Class": "Dielectric", "Base Materials": "Si3N4;SiO2", "Resonance Wavelength (nm)": 1310, "Q-factor": 96000, "FOM (RIU^-1)": 3214, "Sensitivity (nm/RIU)": 45, "FWHM (nm)": 0.014, "Layer Structure": "Si3N4 + SiO2" }),
+  sampleRow({ Ref: "R3", Title: "All-dielectric guided-mode resonance biosensor", Origin: "EXP", "Material Class": "Dielectric", "Base Materials": "Si3N4;SiO2;Ta2O5", "Resonance Wavelength (nm)": 850, "Q-factor": 15000, "FOM (RIU^-1)": 3158, "Sensitivity (nm/RIU)": 180, "FWHM (nm)": 0.057, "Layer Structure": "Si3N4(200nm) + SiO2(400nm) + Ta2O5(120nm)", "Review status": "Edit", Notes: "FWHM digitized from a log-scale transmission plot -- flagged for review." }),
+  sampleRow({ Ref: "R3", Title: "All-dielectric guided-mode resonance biosensor", Origin: "SIM", "Material Class": "Dielectric", "Base Materials": "Si3N4;SiO2;Ta2O5", "Resonance Wavelength (nm)": 850, "Q-factor": 18000, "FOM (RIU^-1)": 4043, "Sensitivity (nm/RIU)": 190, "FWHM (nm)": 0.047, "Layer Structure": "Si3N4(200nm) + SiO2(400nm) + Ta2O5(120nm)" }),
+  sampleRow({ Ref: "R4", Title: "All-dielectric silicon disk resonator on a Bragg mirror", Origin: "EXP", "Material Class": "Dielectric", "Base Materials": "Si;SiO2;Ta2O5", "Resonance Wavelength (nm)": 1064, "Q-factor": 5200, "FOM (RIU^-1)": 1050, "Sensitivity (nm/RIU)": 210, "FWHM (nm)": 0.2, "Layer Structure": "Si(300nm) + SiO2(200nm) + Ta2O5(150nm) + SiO2(200nm) + Ta2O5(150nm)" }),
+  sampleRow({ Ref: "R4", Title: "All-dielectric silicon disk resonator on a Bragg mirror", Origin: "SIM", "Material Class": "Dielectric", "Base Materials": "Si;SiO2;Ta2O5", "Resonance Wavelength (nm)": 1064, "Q-factor": 6100, "FOM (RIU^-1)": 1353, "Sensitivity (nm/RIU)": 230, "FWHM (nm)": 0.17, "Layer Structure": "Si(300nm) + SiO2(200nm) + Ta2O5(150nm) + SiO2(200nm) + Ta2O5(150nm)" }),
+  sampleRow({ Ref: "R5", Title: "InP Mach-Zehnder interferometer sensor", Origin: "EXP", "Material Class": "Dielectric;Semiconductor", "Base Materials": "InP;SiO2", "Resonance Wavelength (nm)": 1550, "Q-factor": 1200, "FOM (RIU^-1)": 138, "Sensitivity (nm/RIU)": 180, "FWHM (nm)": 1.3, "Layer Structure": "InP + SiO2" }),
+  sampleRow({ Ref: "R5", Title: "InP Mach-Zehnder interferometer sensor", Origin: "SIM", "Material Class": "Dielectric;Semiconductor", "Base Materials": "InP;SiO2", "Resonance Wavelength (nm)": 1550, "Q-factor": 1500, "FOM (RIU^-1)": 190, "Sensitivity (nm/RIU)": 190, "FWHM (nm)": 1.0, "Layer Structure": "InP + SiO2" }),
+  sampleRow({ Ref: "R6", Title: "Polymer microring resonator for label-free detection", Origin: "EXP", "Material Class": "Dielectric;Polymer", "Base Materials": "PMMA;SiO2", "Resonance Wavelength (nm)": 1300, "Q-factor": 2600, "FOM (RIU^-1)": 190, "Sensitivity (nm/RIU)": 95, "FWHM (nm)": 0.5, "Layer Structure": "PMMA + SiO2" }),
+  sampleRow({ Ref: "R6", Title: "Polymer microring resonator for label-free detection", Origin: "SIM", "Material Class": "Dielectric;Polymer", "Base Materials": "PMMA;SiO2", "Resonance Wavelength (nm)": 1300, "Q-factor": 3100, "FOM (RIU^-1)": 238, "Sensitivity (nm/RIU)": 100, "FWHM (nm)": 0.42, "Layer Structure": "PMMA + SiO2" }),
 ];
 
 const columnTypes = detectColumnTypes(sampleRows, sampleColumns);
@@ -773,9 +816,9 @@ const baseMaterialsCounts = countTokensBy(baseMaterialsColumn, sampleRows);
 const groupByExemptColumns = [...compositeColumns, modeIdColumn].filter((c): c is string => !!c);
 const groupByColumns = groupableColumns(sampleRows, categoricalColumns, groupByExemptColumns);
 
-// Fixed illustrative chart configuration -- Q-factor (log scale) against
+// Fixed illustrative chart configuration -- FOM (log scale) against
 // resonance wavelength, colored by Origin (EXP vs SIM), median line on.
-const selectedYAxis = ref<string | null>("Q-Factor");
+const selectedYAxis = ref<string | null>("FOM (RIU^-1)");
 const selectedXAxis = ref<string | null>("Resonance Wavelength (nm)");
 const groupBy = ref<string | null>(originColumn);
 const yAxisScale = ref<"log" | "value">("log");
@@ -791,6 +834,12 @@ const selectedOrigins = ref<string[]>([...originValues]);
 const selectedMaterialClasses = ref<string[]>([...materialClassValues]);
 const selectedBaseMaterials = ref<string[]>([...baseMaterialsValues]);
 
+// Page 9's export figure only -- a title, like every axis name in this
+// sample dataset, is exactly what a researcher would type/see regardless of
+// the guide's own language, so it stays a plain literal rather than an
+// i18n key (see the axis names/EXP/SIM literals above).
+const exportChartTitle = "FOM vs. Resonance Wavelength";
+
 const groupColorMap = computed<Record<string, string>>(() => (originColumn ? assignGroupColors(originValues) : {}));
 const plottableRows = computed(() => filterPlottable(filterPlottable(sampleRows, selectedYAxis.value), selectedXAxis.value));
 
@@ -801,9 +850,9 @@ const annotations = ref<Annotation[]>([
   {
     id: "demo-r3-exp",
     ref: "R3",
-    title: "Plasmonic gold nanodisk array LSPR sensor",
+    title: "All-dielectric guided-mode resonance biosensor",
     row: sampleRows[4],
-    note: "FWHM estimated from the published linewidth plot (Q ≈ λ / FWHM) -- flagged for review.",
+    note: "FWHM digitized from a log-scale transmission plot -- flagged for review.",
     createdAt: Date.now() - 60_000,
   },
   {
@@ -815,7 +864,19 @@ const annotations = ref<Annotation[]>([
     createdAt: Date.now(),
   },
 ]);
-const sampleNoteText = annotations.value[0].note;
+
+// Guide-only: page 9's "full point export" example -- a genuine render of
+// "Export this pin" for the R3 (guided-mode resonance) demo annotation,
+// fetched from AnnotationsPanel's exposed getExportDataUrl once it's
+// mounted (see onMounted below) rather than faked.
+const pinExportDataUrl = ref<string | null>(null);
+
+// Guide-only: page 9's "chart image export" example -- a genuine
+// "Export chart image (.png)" render from the hidden generator FomChart
+// instance below the last page (see its exposed getPngDataUrl), fetched
+// once mounted (see onMounted below) rather than showing the live component.
+const exportChartGenRef = useTemplateRef<InstanceType<typeof FomChart>>("exportChartGenRef");
+const exportChartPngUrl = ref<string | null>(null);
 
 // -----------------------------------------------------------------------
 // Callout rings -- every mark below is measured from the real rendered DOM
@@ -829,6 +890,9 @@ const displayControlsWrap = useTemplateRef<HTMLDivElement>("displayControlsWrap"
 const filtersWrap = useTemplateRef<HTMLDivElement>("filtersWrap");
 const statsWrap = useTemplateRef<HTMLDivElement>("statsWrap");
 const annotationsWrap = useTemplateRef<HTMLDivElement>("annotationsWrap");
+const readingWrap = useTemplateRef<HTMLDivElement>("readingWrap");
+const readingChartRef = useTemplateRef<InstanceType<typeof FomChart>>("readingChartRef");
+const annotationsPanelRef = useTemplateRef<InstanceType<typeof AnnotationsPanel>>("annotationsPanelRef");
 
 const toolbarMarks = ref<GuideMark[]>([]);
 const chartMarks = ref<GuideMark[]>([]);
@@ -837,23 +901,31 @@ const filterMarks = ref<GuideMark[]>([]);
 const statsMarks = ref<GuideMark[]>([]);
 const annotationMarks = ref<GuideMark[]>([]);
 
-// Approximate marks over the chart's canvas: individual points/legend/median
-// line are pixels drawn by ECharts, not separate DOM nodes, so these are
-// calibrated percentages of the 480x392 callout box rather than measured
-// elements -- the only figure in this guide that isn't DOM-measured.
-// Mark 1's real content (measured live) runs flush to the figure's own
-// right edge with zero slack -- it must span the full badge row (up to
-// x=480) so its ring's own right-side number badge lands in the blank
-// margin just outside the figure instead of on top of the real content.
-const readingMarks = ref<GuideMark[]>([
-  { top: 7, left: 256, width: 224, height: 22 },
-  { top: 40, left: 148, width: 130, height: 40 },
-  { top: 172, left: 118, width: 150, height: 22 },
-]);
+// Badges are real DOM (measured the normal way, via FomChart's exposed
+// getBadgesRow); the legend and median line are pixels ECharts draws
+// straight onto its canvas, so FomChart exposes their live layout instead
+// (see getLegendRect/getMedianLabelRect) and markCanvasRect converts that
+// into a ring relative to this figure. All three used to be a fixed pixel
+// guess -- the median line's label sits at the grid's horizontal center,
+// which shifts with the x-axis name's length (a much longer translated
+// name grows the grid's right margin), so a hardcoded box drifted out of
+// ring in some locales. Populated once in onMounted below.
+const readingMarks = ref<GuideMark[]>([]);
 
+// Idempotent -- must be safe to call again after a live language switch
+// (see the locale watcher below), by which point a section this already
+// opened on a previous run is still open under its NEW-locale button label.
+// CollapsibleSection has no exposed open state to read, but the click
+// handler's own `:style="{ gridTemplateRows: open ? '1fr' : '0fr' }"` on the
+// very next sibling is an unambiguous, translation-independent signal of
+// its current state -- clicking unconditionally would otherwise re-close a
+// section that was already open, since the button just toggles.
 function openSection(root: HTMLElement | null, title: string) {
   const button = root ? Array.from(root.querySelectorAll("button")).find((b) => b.textContent?.trim() === title) : undefined;
-  button?.click();
+  if (!button) return;
+  const body = button.nextElementSibling as HTMLElement | null;
+  if (body?.style.gridTemplateRows === "1fr") return;
+  button.click();
 }
 
 // CollapsibleSection animates open/closed over 250ms (grid-template-rows
@@ -861,16 +933,29 @@ function openSection(root: HTMLElement | null, title: string) {
 // mid-collapse/expand and produces wrong, squashed callout rects. Waiting
 // out the transition (a plain timeout, since there's no 'transitionend'
 // to await here across every affected row at once) before measuring is
-// simplest and safe -- this only runs once, off-screen, before capture.
+// simplest and safe.
 const settle = (ms = 320) => new Promise((resolve) => setTimeout(resolve, ms));
 
-onMounted(async () => {
+// Every ring, measurement and captured PNG below is derived from rendered,
+// translated text -- correct only for whatever locale was active the moment
+// this ran. GuideTemplate is mounted once for the app's whole session (see
+// HomeView.vue), so a user switching language later via the app's own
+// switcher does NOT remount it -- without re-running this after `locale`
+// changes (see the watcher below), every ring and PNG would silently keep
+// showing the language active at first mount instead of the current one.
+async function captureGuideArtifacts() {
   await nextTick();
 
   openSection(displayControlsWrap.value, t("fomcharts.sections.display"));
   openSection(filtersWrap.value, t("fomcharts.sections.filters"));
   await nextTick();
   await settle();
+
+  // Reset before repopulating -- this function re-runs on every locale
+  // switch (see the watcher below), and `push` only ever appends.
+  for (const marks of [toolbarMarks, chartMarks, displayMarks, filterMarks, statsMarks, annotationMarks, readingMarks]) {
+    marks.value = [];
+  }
 
   const push = (arr: typeof toolbarMarks, mark: GuideMark | null) => {
     if (mark) arr.value.push(mark);
@@ -938,6 +1023,37 @@ onMounted(async () => {
     const card = cardRef?.closest(".rounded-\\[10px\\]") as HTMLElement | null;
     push(annotationMarks, card ? markRect(c, card, 4) : null);
   }
+
+  // Reading the chart: badges (real DOM), legend, median line (both live
+  // only on ECharts' canvas -- see FomChart's getLegendRect/
+  // getMedianLabelRect). Pushed in the same order as readingMarks' legend
+  // (badges, legend, median) so the numbered rings stay in sync with it.
+  if (readingWrap.value && readingChartRef.value) {
+    const wrap = readingWrap.value;
+    const chart = readingChartRef.value;
+    const badgesEl = chart.getBadgesRow();
+    push(readingMarks, badgesEl ? markRect(wrap, badgesEl, 4) : null);
+    const chartDom = chart.getChartDom();
+    const legendRect = chart.getLegendRect();
+    push(readingMarks, chartDom && legendRect ? markCanvasRect(wrap, chartDom, legendRect) : null);
+    const medianRect = chart.getMedianLabelRect();
+    push(readingMarks, chartDom && medianRect ? markCanvasRect(wrap, chartDom, medianRect) : null);
+  }
+
+  // Page 9's "full point export" figure -- see AnnotationsPanel's exposed
+  // getExportDataUrl.
+  pinExportDataUrl.value = annotationsPanelRef.value?.getExportDataUrl("demo-r3-exp") ?? null;
+  exportChartPngUrl.value = exportChartGenRef.value?.getPngDataUrl() ?? null;
+}
+
+onMounted(() => {
+  captureGuideArtifacts();
+});
+
+// Re-run on a live language switch -- see captureGuideArtifacts' own comment
+// for why a fresh capture is needed rather than relying on the initial one.
+watch(locale, () => {
+  captureGuideArtifacts();
 });
 
 defineExpose({ rootEl });

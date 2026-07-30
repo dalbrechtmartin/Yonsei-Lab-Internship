@@ -163,7 +163,7 @@
     },
     "scenario": {
       "title": "Exemple fil rouge utilisé dans cette section",
-      "body": "Les captures ci-dessous proviennent toutes d'un même exemple : six capteurs résonateurs photoniques (anneaux en silicium et en nitrure de silicium, nanodisque plasmonique en or, disque hybride diélectrique-métal, interféromètre InP et anneau polymère), chacun rapporté une fois par la mesure (EXP) et une fois par la simulation (SIM). Nous comparons leur facteur de qualité (Q) à la longueur d'onde de résonance."
+      "body": "Les captures ci-dessous proviennent toutes d'un même exemple : six capteurs résonateurs photoniques tout-diélectrique (anneaux en silicium et en nitrure de silicium, réseau à résonance de mode guidé, disque en silicium sur miroir de Bragg diélectrique, interféromètre InP et anneau polymère), chacun rapporté une fois par la mesure (EXP) et une fois par la simulation (SIM). Nous comparons leur FOM (Sensibilité / FWHM) à la longueur d'onde de résonance."
     },
     "steps": {
       "import": {
@@ -186,7 +186,7 @@
         "figureDisplayCaption": "Figure 4 — La section Affichage, ouverte.",
         "chart": {
           "title": { "label": "Titre du graphique", "body": "un nom optionnel affiché au-dessus du graphique — utile avant un export PNG." },
-          "yAxis": { "label": "Axe Y", "body": "la colonne numérique tracée verticalement, ex. Q-Factor. Seules les colonnes numériques sont proposées." },
+          "yAxis": { "label": "Axe Y", "body": "la colonne numérique tracée verticalement, ex. FOM ou Q-factor. Seules les colonnes numériques sont proposées." },
           "xAxis": { "label": "Axe X", "body": "la colonne tracée horizontalement — numérique ou catégorielle, selon le contenu du fichier." }
         },
         "display": {
@@ -202,17 +202,17 @@
         "title": "3. Filtres",
         "body": "Les filtres restreignent le jeu de données sans modifier le fichier d'origine — décocher une puce masque cette valeur partout (graphique, statistiques, exports) jusqu'à ce qu'elle soit recochée. Ils n'apparaissent que si le fichier contient réellement la colonne correspondante.",
         "figureCaption": "Figure 5 — La section Filtres, montrant Origine, Classe de matériau et Matériaux de base pour notre exemple.",
-        "note": "Classe de matériau et Matériaux de base sont des filtres « composites » : une cellule comme « Diélectrique;Métal » compte pour les deux puces à la fois, et décocher l'une des deux exclut toute ligne qui la mentionne, même combinée à autre chose.",
+        "note": "Classe de matériau et Matériaux de base sont des filtres « composites » : une cellule comme « Diélectrique;Semi-conducteur » compte pour les deux puces à la fois, et décocher l'une des deux exclut toute ligne qui la mentionne, même combinée à autre chose.",
         "marks": {
           "origin": { "label": "Origine", "body": "inclut ou exclut les enregistrements expérimentaux (EXP) et simulés (SIM)." },
           "materialClass": { "label": "Classe de matériau", "body": "filtre par catégorie de matériau — une cellule combinée compte pour chaque catégorie qu'elle liste." },
-          "baseMaterials": { "label": "Matériaux de base", "body": "filtre par matériau précis (Si, Au, SiN...) — même traitement combiné que Classe de matériau." }
+          "baseMaterials": { "label": "Matériaux de base", "body": "filtre par matériau précis (Si, SiN, Ta2O5...) — même traitement combiné que Classe de matériau." }
         }
       },
       "reading": {
         "title": "4. Lire et interagir avec le graphique",
         "body": "Chaque point correspond à un enregistrement rapporté. Les couleurs suivent la colonne « Regrouper / Colorer par » actuelle — ici, Origine.",
-        "figure4Caption": "Figure 6 — Le graphique de notre exemple : facteur de qualité Q (axe Y, échelle log) en fonction de la longueur d'onde de résonance (axe X), coloré par Origine — orange pour EXP, bleu pour SIM —, avec la ligne médiane et la légende visibles.",
+        "figure4Caption": "Figure 6 — Le graphique de notre exemple : FOM (axe Y, échelle log) en fonction de la longueur d'onde de résonance (axe X), coloré par Origine — orange pour EXP, bleu pour SIM —, avec la ligne médiane et la légende visibles.",
         "marks": {
           "badges": { "label": "Indicateurs", "body": "nombre d'échantillons, répartition EXP/SIM, et nombre de points signalés pour révision." },
           "legend": { "label": "Légende", "body": "une couleur par groupe — dans l'application, cliquer sur une entrée isole cette série." },
@@ -248,8 +248,8 @@
       "export": {
         "title": "7. Exporter vos résultats",
         "body": "Tout ce que propose le Mode 1 peut quitter l'application sous une forme réutilisable ailleurs : le jeu de données filtré en tableur, le graphique en image, et le détail de n'importe quel point épinglé en petit PNG ou fichier texte autonome.",
-        "chartCaption": "L'export du graphique en image — identique à ce que produit « Exporter → Image du graphique (.png) », puisqu'il provient du même graphique.",
-        "noteCaption": "Le contenu de la note exportée (.txt) d'un point épinglé — exactement ce qu'enregistre « Télécharger .txt », pré-rempli depuis la colonne Notes du fichier.",
+        "chartCaption": "Figure 9 — L'export du graphique en image, produit par « Exporter → Image du graphique (.png) » — un titre, une ligne de tendance, une frontière de Pareto et les préfixes de nom d'axe ont été activés pour montrer tout ce que peut contenir cet export.",
+        "pinExportCaption": "Figure 10 — L'export complet d'un point épinglé, produit par « Exporter ce point » — tout ce que contient la carte (Origine, Mode, une structure à plusieurs couches, Métriques et la note) réuni en une seule image PNG.",
         "formatsTitle": "Formats du jeu de données et du graphique",
         "formats": {
           "csv": "les lignes filtrées sous forme de fichier CSV.",
@@ -414,6 +414,7 @@
       "expandDetails": "Afficher les détails",
       "collapseDetails": "Masquer les détails",
       "zoomLayers": "Voir la structure des couches",
+      "layerStructure": "Structure des couches",
       "metrics": "Mesures",
       "zoomMetrics": "Voir les mesures",
       "downloadPng": "Télécharger en PNG",
