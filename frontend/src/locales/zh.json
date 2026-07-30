@@ -9,7 +9,10 @@
     "home": "主页",
     "visualization": "可视化",
     "extraction": "提取",
-    "comingSoon": "开发中"
+    "comingSoon": "开发中",
+    "openMenu": "打开菜单",
+    "closeMenu": "关闭菜单",
+    "language": "语言"
   },
   "view": {
     "home": {
@@ -43,7 +46,8 @@
         "eyebrow": "分析工作区",
         "title": "可视化您的数据",
         "description": "导入 Excel 文件以查看数据集、比较坐标轴，并将数据导出为 CSV。"
-      }
+      },
+      "mobileBlocked": "注意：为了获得更好的体验，建议使用电脑进行可视化操作。可视化功能在移动设备上不可用。"
     },
     "extraction": {
       "batchExtraction": {
@@ -63,7 +67,10 @@
   },
   "status": {
     "uploading": "文件上传中...",
+    "converting": "您的文件列与预期格式不符 -- 正在自动转换，可能需要一点时间...",
     "success": "文件上传成功.",
+    "convertedSuccess": "您的文件列与预期格式不符，已自动转换。部分数据可能缺失 -- 请在使用前核对结果。",
+    "conversionFailed": "无法将此文件自动转换为预期格式。请手动调整格式后重试，或尝试其他文件。",
     "error": "文件上传时发生错误.",
     "noMatchingPins": "没有任何已固定的点符合当前的筛选条件或坐标轴，因此已关闭“仅显示已固定的点”。",
     "dismiss": "关闭消息"
@@ -194,8 +201,7 @@
           "trendLine": { "label": "趋势线", "body": "对所绘制的点拟合一条直线。需要数值型 X 轴且至少有两个不同的值。" },
           "pareto": { "label": "帕累托前沿", "body": "突出显示非支配点——即在两个坐标轴上都不逊于任何其他点的记录。" },
           "legend": { "label": "显示图例", "body": "将分组颜色（以及趋势线/帕累托叠加层）绘制在图表本身上，以便导出 PNG 时一并包含。" },
-          "median": { "label": "中位线", "body": "在当前所绘制 Y 轴的中位数位置绘制一条虚线。" },
-          "axisNames": { "label": "显示 X/Y 标记", "body": "在每个坐标轴名称前加上 “X ·” / “Y ·” 前缀——当两个坐标轴都是数值型且外观相似时尤其有用。" }
+          "median": { "label": "中位线", "body": "在当前所绘制 Y 轴的中位数位置绘制一条虚线。" }
         }
       },
       "filters": {
@@ -248,7 +254,7 @@
       "export": {
         "title": "7. 导出结果",
         "body": "模式一中的所有内容都可以以可在其他地方复用的形式导出：筛选后的数据集可导出为表格，图表可导出为图片，任意固定点的详情也可导出为小型独立的 PNG 或文本文件。",
-        "chartCaption": "图 9 ——由“导出 → 图表图片（.png）”生成的图表图片导出效果——已开启标题、趋势线、帕累托前沿和坐标轴名称前缀，尽可能展示这一导出功能能够包含的全部内容。",
+        "chartCaption": "图 9 ——由“导出 → 图表图片（.png）”生成的图表图片导出效果——已开启标题、趋势线和帕累托前沿，尽可能展示这一导出功能能够包含的全部内容。",
         "pinExportCaption": "图 10 ——由“导出此引脚”生成的某个固定点的完整导出——卡片上的全部信息（Origin、Mode、多层结构、Metrics 与备注）合并为一张 PNG 图片。",
         "formatsTitle": "数据集与图表格式",
         "formats": {
@@ -325,7 +331,7 @@
       "trendUnavailable": "趋势线：点数不足",
       "trendType": "曲线类型",
       "pareto": "Pareto frontier",
-      "axisNames": "显示 X/Y 标记"
+      "mergeMultiCategory": "合并多类别数据点"
     },
     "trendType": {
       "auto": "自动（最佳拟合）",
@@ -346,7 +352,12 @@
       "materialClass": "Material Class",
       "baseMaterials": "Base Materials",
       "remove": "移除 {label}",
-      "add": "添加 {label}"
+      "add": "添加 {label}",
+      "exclusionMode": {
+        "label": "排除模式",
+        "strict": "严格",
+        "lenient": "宽松"
+      }
     },
     "legend": {
       "toggle": "显示图例"
@@ -361,6 +372,7 @@
       "linear": "线性"
     },
     "unknownGroup": "未知",
+    "alsoInGroups": "同时归类为：{groups}",
     "needsReview": "⚠ 审核状态：待修改",
     "flaggedHint": "虚线边框 = 已标记待审核",
     "reviewWarning": "{count} 项待审核",
@@ -383,10 +395,10 @@
       "median": "中位数",
       "std": "σ",
       "tooltips": {
-        "n": "该组中具有有效、已绘制 Y 轴值的点的数量 — 与图表中绘制的点相同。",
+        "n": "该组在图表中绘制的点的数量。",
         "mean": "该组已绘制 Y 轴值的平均值。",
-        "median": "该组已绘制 Y 轴值排序后的中间值 — 当该组为唯一或被单独隔离显示时，与图表上的虚线中位数线一致。",
-        "std": "该组已绘制 Y 轴值的标准差 — 表示各点相对均值的离散程度。"
+        "median": "该组已绘制 Y 轴值的中位数。单独隔离该组时与虚线中位数线一致。",
+        "std": "该组 Y 轴值的标准差：各点相对均值的离散程度。"
       },
       "isolate": "在图表中单独突出显示该组（不影响统计数据）",
       "isolateActive": "点击可取消突出显示",
@@ -395,12 +407,12 @@
     },
     "annotations": {
       "title": "注释",
-      "tooltip": "点击图表上的任意点即可将其固定于此处。勾选两个或以上的固定项，即可在图表下方的表格中并排比较它们的数值。",
+      "tooltip": "点击任意点即可将其固定于此处。勾选 2 个或以上进行比较。",
       "empty": "暂无固定项 — 点击图表上的任意点即可将其收藏以便日后比较。",
       "remove": "删除注释",
       "clearAll": "全部清除",
       "showOnlyPinned": "仅显示已固定的点",
-      "showOnlyPinnedTooltip": "隐藏图表中除以下已固定项之外的所有点 —\"比较分组\"面板的统计数据也会相应缩小到这个选择范围。",
+      "showOnlyPinnedTooltip": "隐藏除以下已固定项之外的所有点。统计数据也会缩小到这个选择范围。",
       "pinSiblings": "+ 固定另外 {count} 个点",
       "compareLabel": "选中以进行比较",
       "notePlaceholder": "添加备注...",
@@ -419,29 +431,34 @@
       "zoomMetrics": "查看指标",
       "downloadPng": "下载 PNG",
       "mode": "模式",
-      "exportPin": "导出此引脚"
+      "exportPin": "导出此引脚",
+      "compareLimitReached": "已达到比较上限（最多 {max} 个）"
     },
     "compare": {
       "title": "比较已固定的点",
+      "description": "选择要包含的部分，并可选择为此比较图像添加标题。",
       "clearSelection": "清除选择",
-      "titleRow": "标题",
-      "noteRow": "备注",
-      "export": {
-        "csv": "CSV (.csv)",
-        "xlsx": "Excel (.xlsx)",
-        "png": "表格图片 (.png)"
-      }
+      "compareButton": "比较（{count}）",
+      "hint": "选择 2 到 {max} 个已固定的点进行比较。",
+      "selectedCount": "已选择 {count} 个",
+      "titleLabel": "标题（可选）",
+      "titlePlaceholder": "例如：环形谐振器 vs 光栅传感器",
+      "sectionsLabel": "显示",
+      "origin": "来源",
+      "downloadPng": "下载比较图像",
+      "empty": "请至少选择一个要包含的部分。"
     },
     "tooltips": {
-      "groupBy": "按此列为数据点着色，便于一目了然地比较各组。请选择取值较少的列，如 Origin 或 Material Class。",
-      "scale": "对数刻度可以让跨越多个数量级的 FOM 值保持清晰可读。线性刻度则在各值之间保持相等间距。",
-      "legend": "在图表上直接绘制系列图例（分组、中位数、趋势线），以便将图表导出为图片时也包含图例。",
-      "median": "在当前绘制的数据点的 Y 值中位数处绘制一条虚线。",
-      "trendLine": "对已绘制的数据点拟合一条曲线以显示总体趋势。仅当 X 轴为数值型列（例如 Sensitivity、Q-factor）时可用 — 对 Material Class 这样的分类轴而言，趋势没有意义。“自动”会尝试多种曲线形态，并保留拟合度最好（R² 最高）的一种，而不是把一条直线强加在实际呈曲线分布的数据上。",
-      "trendType": "趋势线所拟合的数学模型：线性 (y = a + bx)、指数 (y = a·e^(bx))、对数 (y = a + b·ln(x)，需要 x > 0)、幂函数 (y = a·x^b，需要 x > 0 且 y > 0)，或多项式（二次曲线，至少需要 3 个点）。“自动”会拟合数据支持的每一种模型，并选择 R² 最高的那个。",
-      "pareto": "Pareto frontier",
-      "axisNames": "在每个坐标轴名称前加上一个小的“X ·”/“Y ·”标记，方便区分是哪个轴 -- 坐标轴名称本身始终显示。",
-      "trendUnavailable": "趋势线至少需要 2 个 X 值不同的点 -- 点数不足时（例如只剩一个点的孤立分组），开关已打开但没有可绘制的内容。"
+      "groupBy": "按此列为数据点着色，便于一目了然地比较各组。",
+      "scale": "对数可以让跨越多个数量级的值保持清晰可读。线性则在各值之间保持相等间距。",
+      "legend": "在图表上直接绘制图例，以便导出为图片时也包含图例。",
+      "median": "在已绘制数据点的 Y 值中位数处绘制一条虚线。",
+      "trendLine": "对已绘制的数据点拟合一条曲线以显示总体趋势。需要数值型 X 轴；“自动”会选择拟合度最好的形态。",
+      "trendType": "趋势线所拟合的数学模型（线性、指数、对数、幂函数或多项式）。“自动”会选择 R² 最高的那个。",
+      "pareto": "突出显示非支配点——即在两个坐标轴上都不逊于任何其他点的记录。",
+      "trendUnavailable": "至少需要 2 个 X 值不同的点才能绘制。",
+      "exclusionMode": "严格：只要数据点包含一个未勾选的材料/类别，就会消失。宽松：只有全部取消勾选时才会消失。",
+      "mergeMultiCategory": "多类别数据点默认按类别各绘制一次。开启此选项后，每个数据点只显示一个渐变标记。"
     }
   }
 }

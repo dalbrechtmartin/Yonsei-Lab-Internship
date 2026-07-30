@@ -9,7 +9,10 @@
     "home": "Accueil",
     "visualization": "Visualisation",
     "extraction": "Extraction",
-    "comingSoon": "En cours de développement"
+    "comingSoon": "En cours de développement",
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu",
+    "language": "Langue"
   },
   "view": {
     "home": {
@@ -43,7 +46,8 @@
         "eyebrow": "Espace d'analyse",
         "title": "Visualisez vos données",
         "description": "Importez un fichier Excel pour explorer le jeu de données, comparer les axes et exporter les données au format CSV."
-      }
+      },
+      "mobileBlocked": "Attention, pour une meilleure expérience, il est recommandé d'utiliser un PC pour la visualisation. La visualisation n'est pas disponible sur mobile."
     },
     "extraction": {
       "batchExtraction": {
@@ -63,7 +67,10 @@
   },
   "status": {
     "uploading": "Téléchargement du fichier...",
+    "converting": "Les colonnes de votre fichier ne correspondent pas au format attendu -- conversion automatique en cours, cela peut prendre un instant...",
     "success": "Fichier téléchargé avec succès.",
+    "convertedSuccess": "Les colonnes de votre fichier ne correspondaient pas au format attendu, il a donc été converti automatiquement. Certaines données peuvent manquer -- vérifiez le résultat avant de vous y fier.",
+    "conversionFailed": "Impossible de convertir automatiquement ce fichier au format attendu. Reformatez-le manuellement ou essayez un autre fichier.",
     "error": "Erreur lors du téléchargement du fichier.",
     "noMatchingPins": "Aucun point épinglé ne correspond aux filtres ou axes actuels, \"Afficher uniquement les points épinglés\" a donc été désactivé.",
     "dismiss": "Fermer le message"
@@ -194,8 +201,7 @@
           "trendLine": { "label": "Ligne de tendance", "body": "trace une régression linéaire sur les points affichés. Nécessite un axe X numérique avec au moins deux valeurs distinctes." },
           "pareto": { "label": "Frontière de Pareto", "body": "met en évidence les points non dominés — aucun autre point ne fait mieux sur les deux axes à la fois." },
           "legend": { "label": "Afficher la légende", "body": "dessine les couleurs de groupe (et une éventuelle tendance/Pareto) sur le graphique, pour qu'elles apparaissent dans un export PNG." },
-          "median": { "label": "Ligne médiane", "body": "trace une ligne pointillée à la valeur médiane de l'axe Y actuellement affiché." },
-          "axisNames": { "label": "Afficher les repères X/Y", "body": "préfixe le nom de chaque axe par « X · » / « Y · » — utile quand les deux axes sont numériques et se ressemblent." }
+          "median": { "label": "Ligne médiane", "body": "trace une ligne pointillée à la valeur médiane de l'axe Y actuellement affiché." }
         }
       },
       "filters": {
@@ -248,7 +254,7 @@
       "export": {
         "title": "7. Exporter vos résultats",
         "body": "Tout ce que propose le Mode 1 peut quitter l'application sous une forme réutilisable ailleurs : le jeu de données filtré en tableur, le graphique en image, et le détail de n'importe quel point épinglé en petit PNG ou fichier texte autonome.",
-        "chartCaption": "Figure 9 — L'export du graphique en image, produit par « Exporter → Image du graphique (.png) » — un titre, une ligne de tendance, une frontière de Pareto et les préfixes de nom d'axe ont été activés pour montrer tout ce que peut contenir cet export.",
+        "chartCaption": "Figure 9 — L'export du graphique en image, produit par « Exporter → Image du graphique (.png) » — un titre, une ligne de tendance et une frontière de Pareto ont été activés pour montrer tout ce que peut contenir cet export.",
         "pinExportCaption": "Figure 10 — L'export complet d'un point épinglé, produit par « Exporter ce point » — tout ce que contient la carte (Origine, Mode, une structure à plusieurs couches, Métriques et la note) réuni en une seule image PNG.",
         "formatsTitle": "Formats du jeu de données et du graphique",
         "formats": {
@@ -325,7 +331,7 @@
       "trendUnavailable": "Ligne de tendance : pas assez de points",
       "trendType": "Type de courbe",
       "pareto": "Frontière de Pareto",
-      "axisNames": "Afficher les repères X/Y"
+      "mergeMultiCategory": "Fusionner les points multi-catégories"
     },
     "trendType": {
       "auto": "Auto (meilleur ajustement)",
@@ -346,7 +352,12 @@
       "materialClass": "Classe de matériau",
       "baseMaterials": "Matériaux de base",
       "remove": "Retirer {label}",
-      "add": "Ajouter {label}"
+      "add": "Ajouter {label}",
+      "exclusionMode": {
+        "label": "Mode d'exclusion",
+        "strict": "Strict",
+        "lenient": "Permissif"
+      }
     },
     "legend": {
       "toggle": "Afficher la légende"
@@ -361,6 +372,7 @@
       "linear": "Linéaire"
     },
     "unknownGroup": "Inconnu",
+    "alsoInGroups": "Aussi classé comme : {groups}",
     "needsReview": "⚠ Statut de révision : À modifier",
     "flaggedHint": "Contour pointillé = signalé pour révision",
     "reviewWarning": "{count} à vérifier",
@@ -383,10 +395,10 @@
       "median": "Médiane",
       "std": "σ",
       "tooltips": {
-        "n": "Nombre de points ayant une valeur d'axe Y valide et affichée dans ce groupe — les mêmes points que ceux tracés sur le graphique.",
-        "mean": "Moyenne des valeurs d'axe Y affichées pour ce groupe.",
-        "median": "Valeur médiane des valeurs d'axe Y affichées pour ce groupe une fois triées — correspond à la ligne médiane pointillée du graphique lorsque ce groupe est seul ou isolé.",
-        "std": "Écart-type des valeurs d'axe Y affichées pour ce groupe — mesure la dispersion des points autour de la moyenne."
+        "n": "Nombre de points de ce groupe affichés sur le graphique.",
+        "mean": "Moyenne des valeurs d'axe Y de ce groupe.",
+        "median": "Valeur médiane des valeurs d'axe Y de ce groupe. Correspond à la ligne pointillée du graphique quand ce groupe est isolé.",
+        "std": "Écart-type des valeurs d'axe Y de ce groupe : dispersion autour de la moyenne."
       },
       "isolate": "Isoler ce groupe sur le graphique (n'affecte pas les statistiques)",
       "isolateActive": "Cliquez pour annuler l'isolement",
@@ -395,12 +407,12 @@
     },
     "annotations": {
       "title": "Annotations",
-      "tooltip": "Cliquez sur un point du graphique pour l'épingler ici. Cochez deux épingles ou plus pour comparer leurs valeurs côte à côte dans un tableau sous le graphique.",
+      "tooltip": "Cliquez sur un point pour l'épingler ici. Cochez 2 épingles ou plus pour les comparer.",
       "empty": "Aucune épingle pour l'instant — cliquez sur un point du graphique pour le marquer en vue d'une comparaison ultérieure.",
       "remove": "Supprimer l'annotation",
       "clearAll": "Tout effacer",
       "showOnlyPinned": "Afficher uniquement les points épinglés",
-      "showOnlyPinnedTooltip": "Masque tous les points du graphique sauf ceux épinglés ci-dessous — les statistiques du panneau \"Comparer les groupes\" se restreignent aussi à cette sélection.",
+      "showOnlyPinnedTooltip": "Masque tous les points sauf ceux épinglés ci-dessous. Les statistiques se limitent aussi à cette sélection.",
       "pinSiblings": "+ Épingler {count} autre(s) point(s)",
       "compareLabel": "Sélectionner pour comparer",
       "notePlaceholder": "Ajoutez une note...",
@@ -419,29 +431,34 @@
       "zoomMetrics": "Voir les mesures",
       "downloadPng": "Télécharger en PNG",
       "mode": "Mode",
-      "exportPin": "Exporter ce point"
+      "exportPin": "Exporter ce point",
+      "compareLimitReached": "Limite de comparaison atteinte (max {max})"
     },
     "compare": {
       "title": "Comparer les points épinglés",
+      "description": "Choisissez les sections à inclure et, si vous le souhaitez, un titre pour cette image de comparaison.",
       "clearSelection": "Effacer la sélection",
-      "titleRow": "Titre",
-      "noteRow": "Note",
-      "export": {
-        "csv": "CSV (.csv)",
-        "xlsx": "Excel (.xlsx)",
-        "png": "Image du tableau (.png)"
-      }
+      "compareButton": "Comparer ({count})",
+      "hint": "Sélectionnez entre 2 et {max} points épinglés pour les comparer.",
+      "selectedCount": "{count} sélectionné(s)",
+      "titleLabel": "Titre (optionnel)",
+      "titlePlaceholder": "ex. Résonateurs en anneau vs réseaux à mode guidé",
+      "sectionsLabel": "Afficher",
+      "origin": "Origine",
+      "downloadPng": "Télécharger l'image de comparaison",
+      "empty": "Choisissez au moins une section à inclure."
     },
     "tooltips": {
-      "groupBy": "Colore les points selon cette colonne pour comparer des groupes d'un coup d'œil. Choisissez une colonne à faible cardinalité comme Origin ou Material Class.",
-      "scale": "L'échelle log garde lisibles des valeurs de FOM qui s'étendent sur plusieurs ordres de grandeur. L'échelle linéaire garde un espacement égal entre les valeurs.",
-      "legend": "Trace la légende des séries (groupes, médiane, ligne de tendance) directement sur le graphique, afin qu'elle soit incluse lors de l'export du graphique en image.",
-      "median": "Trace une ligne pointillée à la valeur médiane de l'axe Y des points actuellement affichés.",
-      "trendLine": "Ajuste une courbe à travers les points affichés pour montrer la tendance générale. Disponible seulement quand l'axe X est une colonne numérique (ex. Sensitivity, Q-factor) — une tendance par rapport à une catégorie comme Material Class n'aurait pas de sens. « Auto » essaie plusieurs formes de courbe et garde celle qui s'ajuste le mieux (R² le plus élevé), au lieu de forcer une droite sur des données qui sont en réalité courbes.",
-      "trendType": "Le modèle mathématique ajusté par la ligne de tendance : Linéaire (y = a + bx), Exponentielle (y = a·e^(bx)), Logarithmique (y = a + b·ln(x), nécessite x > 0), Puissance (y = a·x^b, nécessite x > 0 et y > 0), ou Polynomiale (courbe de degré 2, nécessite au moins 3 points). « Auto » ajuste chaque modèle compatible avec les données et garde celui dont le R² est le plus élevé.",
-      "pareto": "Met en surbrillance l'ensemble de points non dominés — les enregistrements non surpassés sur les deux axes par aucun autre point — en tant que ligne, en supposant que des valeurs X et Y plus élevées sont meilleures.",
-      "axisNames": "Ajoute un petit repère « X · »/« Y · » devant le nom de chaque axe, pour savoir lequel est lequel -- le nom de l'axe reste toujours affiché.",
-      "trendUnavailable": "La ligne de tendance nécessite au moins 2 points avec des valeurs X différentes -- avec moins (ex. un groupe isolé à un seul point), elle est activée mais n'a rien à tracer."
+      "groupBy": "Colore les points selon cette colonne pour comparer des groupes d'un coup d'œil.",
+      "scale": "Log garde lisibles des valeurs qui s'étendent sur plusieurs ordres de grandeur. Linéaire garde un espacement égal entre les valeurs.",
+      "legend": "Affiche la légende directement sur le graphique, incluse lors de l'export en image.",
+      "median": "Trace une ligne pointillée à la valeur médiane de l'axe Y affiché.",
+      "trendLine": "Ajuste une courbe à travers les points pour montrer la tendance générale. Nécessite un axe X numérique ; « Auto » choisit la forme qui s'ajuste le mieux.",
+      "trendType": "Modèle mathématique ajusté par la ligne de tendance (linéaire, exponentielle, logarithmique, puissance ou polynomiale). « Auto » garde celui dont le R² est le plus élevé.",
+      "pareto": "Met en surbrillance les points non dominés — non surpassés sur les deux axes par aucun autre point.",
+      "trendUnavailable": "Nécessite au moins 2 points avec des valeurs X différentes pour être tracée.",
+      "exclusionMode": "Strict exclut un point dès qu'il contient un matériau/classe décoché. Permissif ne l'exclut que si tous ses matériaux/classes sont décochés.",
+      "mergeMultiCategory": "Un point multi-catégories s'affiche normalement une fois par catégorie. Active cette option pour n'afficher qu'un seul marqueur en dégradé."
     }
   }
 }
