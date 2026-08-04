@@ -16,7 +16,7 @@
             class="min-w-0 flex-1 truncate font-mono text-[10px]"
             style="color: rgba(0, 0, 0, 0.72); text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3)"
           >
-            {{ layer.material }}<template v-if="layer.thicknessNm !== null"> · {{ layer.thicknessNm }}nm</template>
+            {{ layerLabel(layer) }}
           </span>
         </div>
       </div>
@@ -29,7 +29,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { darkenColor, isMetal, lightenColor, materialColor, type StructureLayer } from "@/utils/layerStructure";
+import { darkenColor, isMetal, layerLabel, lightenColor, materialColor, type StructureLayer } from "@/utils/layerStructure";
 
 const props = defineProps<{
   layers: StructureLayer[];

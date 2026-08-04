@@ -1,4 +1,4 @@
-import { materialColor, type StructureLayer } from "./layerStructure";
+import { layerLabel, materialColor, type StructureLayer } from "./layerStructure";
 
 /**
  * Renders a pinned point's Layer Structure as a labeled stack diagram onto a
@@ -96,7 +96,7 @@ export function exportLayerStackPng(
     ctx.strokeStyle = "rgba(0,0,0,0.15)";
     ctx.strokeRect(padX, y, barW, h);
 
-    const label = layer.thicknessNm !== null ? `${layer.material} · ${layer.thicknessNm}nm` : layer.material;
+    const label = layerLabel(layer);
     ctx.font = "600 12px 'IBM Plex Mono', monospace";
     ctx.fillStyle = "rgba(0,0,0,0.72)";
     ctx.fillText(label, padX + 10, y + h / 2 + 4);
