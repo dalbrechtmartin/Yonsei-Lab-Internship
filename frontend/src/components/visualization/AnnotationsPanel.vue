@@ -4,7 +4,6 @@
       <template #title>
         <span class="flex items-center gap-1.5">
           {{ t("fomcharts.annotations.title") }}
-          <InfoTooltip :text="t('fomcharts.annotations.tooltip')" />
         </span>
       </template>
       <template #header-suffix>
@@ -30,39 +29,30 @@
 
         <div v-if="annotations.length > 0" class="mb-2.5 flex items-center justify-between gap-2">
           <span class="flex items-center gap-1 text-xs text-ink">
-            {{ t("fomcharts.annotations.showOnlyPinned") }}
             <InfoTooltip :text="t('fomcharts.annotations.showOnlyPinnedTooltip')" />
+            {{ t("fomcharts.annotations.showOnlyPinned") }}
           </span>
           <Switch v-model="showOnlyAnnotated" />
         </div>
 
-        <!-- min-w-0 + truncate on the hint span is load-bearing: a flex
-             item's default min-width is auto (= its content width), so
-             without it long hint text refused to shrink and pushed
-             "Effacer la sélection" + "Comparer" past the container's right
-             edge the moment a selection existed. The left text also no
-             longer repeats the button's own "Comparer (N)" label once
-             something is selected -- it said the same thing twice. -->
-        <div v-if="annotations.length > 0" class="mb-2.5 flex items-center justify-between gap-2 rounded-md border border-secondary/15 bg-card px-2.5 py-1.5">
-          <span class="min-w-0 flex-1 truncate text-[10.5px] text-secondary">
-            {{ selectedIds.size > 0 ? t("fomcharts.compare.selectedCount", { count: selectedIds.size }) : t("fomcharts.compare.hint", { max: compareMax }) }}
-          </span>
-          <div class="flex shrink-0 items-center gap-2.5">
-            <Button v-if="selectedIds.size > 0" variant="link" size="xs" class="h-auto shrink-0 p-0 text-[10.5px]" @click="clearSelection">
-              {{ t("fomcharts.compare.clearSelection") }}
-            </Button>
-            <Button
-              size="xs"
-              class="shrink-0 bg-primary text-primary-foreground hover:bg-primary/90"
-              :disabled="selectedIds.size < 2"
-              @click="showCompareDialog = true"
-            >
-              {{ t("fomcharts.compare.compareButton", { count: selectedIds.size }) }}
-            </Button>
-          </div>
+        <!-- Only shown once there's something to compare, so this bar doesn't
+             take up space with a single (or zero) pin. -->
+        <div v-if="annotations.length > 1" class="mb-2.5 flex items-center justify-between gap-2">
+          <Button
+            size="xs"
+            class="shrink-0 bg-primary text-primary-foreground hover:bg-primary/90"
+            :disabled="selectedIds.size < 2"
+            @click="showCompareDialog = true"
+          >
+            <GitCompare class="size-3.5" />
+            {{ t("fomcharts.compare.compareButton", { count: selectedIds.size }) }}
+          </Button>
+          <Button variant="link" size="xs" class="h-auto p-0 text-[10.5px]" @click="toggleSelectAll">
+            {{ t(allSelected ? "fomcharts.compare.deselectAll" : "fomcharts.compare.selectAll") }}
+          </Button>
         </div>
 
-        <div v-if="annotations.length > 0" class="flex max-h-105 flex-col gap-2 overflow-y-auto">
+        <div v-if="annotations.length > 0" class="flex max-h-88 flex-col gap-2 overflow-x-hidden overflow-y-auto">
           <AnnotationCard
             v-for="note in sortedAnnotations"
             :key="note.id"
@@ -107,6 +97,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
+import { GitCompare } from "@lucide/vue";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -117,6 +108,8 @@ import AnnotationCard from "./AnnotationCard.vue";
 import CompareDialog from "./CompareDialog.vue";
 import { annotationFieldColumns } from "@/utils/annotationFields";
 import { buildAnnotationCardData, type AnnotationCardData } from "@/utils/annotationCardData";
+import type { AnnotationExportSection } from "@/utils/annotationExport";
+import { renderComparePng, type ComparePinData } from "@/utils/compareExport";
 import {
   findBaseMaterialsColumn,
   findDomainColumn,
@@ -128,6 +121,7 @@ import {
   type DataRow,
 } from "@/utils/columnTypes";
 import { parseLayerStructure, type StructureLayer } from "@/utils/layerStructure";
+import { formatUnitSuperscripts } from "@/utils/columnTypes";
 
 const { t } = useI18n();
 
@@ -226,9 +220,11 @@ const foldFieldColumns = computed(() =>
   ),
 );
 
+// formatUnitSuperscripts on the key only -- display text, never used to
+// index note.row again once built here.
 const fieldRowsFor = (note: Annotation, cols: string[]) =>
   cols.map((col) => ({
-    key: col,
+    key: formatUnitSuperscripts(col),
     value: note.row[col] === null || note.row[col] === undefined || note.row[col] === "" ? "—" : String(note.row[col]),
   }));
 const leadingFieldsFor = (note: Annotation) => fieldRowsFor(note, leadingFieldColumns.value);
@@ -308,46 +304,102 @@ const clearSelection = () => {
   selectedIds.value = new Set();
 };
 
+// "Select all" is capped at compareMax same as individual toggles above --
+// selects the first compareMax pins in the current sort order. Once that cap
+// (or the full list, if smaller) is reached, the same button flips to a
+// "deselect all" action instead of just becoming a no-op.
+const allSelected = computed(() => {
+  const selectableCount = Math.min(compareMax, sortedAnnotations.value.length);
+  return selectableCount > 0 && selectedIds.value.size >= selectableCount;
+});
+const toggleSelectAll = () => {
+  if (allSelected.value) {
+    clearSelection();
+  } else {
+    selectedIds.value = new Set(sortedAnnotations.value.slice(0, compareMax).map((a) => a.id));
+  }
+};
+
 // A pin selected for compare can still be removed from the panel entirely
 // (see @remove) -- prune stale ids so the compare count/dialog never holds
-// onto a reference to an annotation that no longer exists.
+// onto a reference to an annotation that no longer exists. The same watcher
+// also auto-selects freshly pinned points for comparison (up to compareMax)
+// -- pinning is already the "I care about this point" signal, so requiring a
+// second, separate click on the compare checkbox just to line it up for
+// comparison was redundant busywork.
 watch(
   () => props.annotations,
-  (list) => {
+  (list, oldList) => {
     const ids = new Set(list.map((a) => a.id));
-    if ([...selectedIds.value].some((id) => !ids.has(id))) {
-      selectedIds.value = new Set([...selectedIds.value].filter((id) => ids.has(id)));
+    let next = selectedIds.value;
+    let changed = false;
+    if ([...next].some((id) => !ids.has(id))) {
+      next = new Set([...next].filter((id) => ids.has(id)));
+      changed = true;
     }
+    const oldIds = new Set((oldList ?? []).map((a) => a.id));
+    const added = list.filter((a) => !oldIds.has(a.id));
+    if (added.length > 0 && next.size < compareMax) {
+      const updated = new Set(next);
+      for (const a of added) {
+        if (updated.size >= compareMax) break;
+        updated.add(a.id);
+      }
+      next = updated;
+      changed = true;
+    }
+    if (changed) selectedIds.value = next;
   },
 );
 
 // Built from the exact same per-note field rules AnnotationCard uses for its
-// own single-pin export (see annotationCardData.ts) -- kept in the sorted
-// list's current order so the compare columns read left-to-right the same
-// way the pins are currently sorted in this panel.
+// own single-pin export (see annotationCardData.ts), shared by both the
+// selection-driven compareData below and the guide's getComparePngDataUrl.
+const cardDataFor = (note: Annotation): AnnotationCardData =>
+  buildAnnotationCardData({
+    ref: note.ref,
+    title: note.title,
+    row: note.row,
+    note: note.note,
+    xAxis: props.xAxis,
+    yAxis: props.yAxis,
+    layerStructureColumnName: layerStructureColumnName.value,
+    materialClassColumnName: materialClassColumnName.value,
+    baseMaterialsColumnName: baseMaterialsColumnName.value,
+    originColumnName: originColumnName.value,
+    leadingFields: leadingFieldsFor(note),
+    foldFields: foldFieldsFor(note),
+    modeDescription: modeDescriptionFor(note),
+    layers: layersFor(note),
+    layerStructureRaw: layerStructureRawFor(note),
+  });
+
+// Kept in the sorted list's current order so the compare columns read
+// left-to-right the same way the pins are currently sorted in this panel.
 const compareData = computed<AnnotationCardData[]>(() =>
-  sortedAnnotations.value
-    .filter((note) => selectedIds.value.has(note.id))
-    .map((note) =>
-      buildAnnotationCardData({
-        ref: note.ref,
-        title: note.title,
-        row: note.row,
-        note: note.note,
-        xAxis: props.xAxis,
-        yAxis: props.yAxis,
-        layerStructureColumnName: layerStructureColumnName.value,
-        materialClassColumnName: materialClassColumnName.value,
-        baseMaterialsColumnName: baseMaterialsColumnName.value,
-        originColumnName: originColumnName.value,
-        leadingFields: leadingFieldsFor(note),
-        foldFields: foldFieldsFor(note),
-        modeDescription: modeDescriptionFor(note),
-        layers: layersFor(note),
-        layerStructureRaw: layerStructureRawFor(note),
-      }),
-    ),
+  sortedAnnotations.value.filter((note) => selectedIds.value.has(note.id)).map(cardDataFor),
 );
+
+// Guide-only: renders the same side-by-side comparison CompareDialog draws
+// (mirroring its own AnnotationCardData -> ComparePinData mapping with every
+// section toggle at its default "on"), without needing to actually open the
+// dialog -- pdfExport.ts only ever captures `.guide-page` elements, and a
+// Dialog's content teleports outside that tree, so a real open/screenshot
+// isn't an option here.
+const comparePinsFor = (ids: string[]): ComparePinData[] =>
+  ids
+    .map((id) => sortedAnnotations.value.find((note) => note.id === id))
+    .filter((note): note is Annotation => !!note)
+    .map(cardDataFor)
+    .map((d) => {
+      const sections: AnnotationExportSection[] = [];
+      if (d.modeRows.length > 0 || d.modeDescription) sections.push({ title: t("fomcharts.annotations.mode"), rows: d.modeRows, text: d.modeDescription ?? undefined });
+      if (d.structureExtraFields.length > 0 || d.layers.length > 0) sections.push({ title: t("fomcharts.annotations.layerStructure"), rows: d.structureExtraFields, layers: d.layers });
+      if (d.metricsRows.length > 0) sections.push({ title: t("fomcharts.annotations.metrics"), rows: d.metricsRows });
+      if (d.note) sections.push({ title: t("fomcharts.annotations.notes"), text: d.note });
+      return { ref: d.ref, title: d.title, origin: d.origin, sections };
+    });
+const getComparePngDataUrl = (ids: string[], title: string | null = null): string | null => renderComparePng(title, comparePinsFor(ids));
 
 // Guide-only: v-for + ref="cardRefs" collects one entry per rendered card,
 // in the same order as sortedAnnotations -- looking a note up by id (rather
@@ -358,5 +410,9 @@ const getExportDataUrl = (noteId: string): string | null => {
   const idx = sortedAnnotations.value.findIndex((n) => n.id === noteId);
   return idx >= 0 ? (cardRefs.value[idx]?.getExportDataUrl() ?? null) : null;
 };
-defineExpose({ getExportDataUrl });
+const getMetricsExportDataUrl = (noteId: string): string | null => {
+  const idx = sortedAnnotations.value.findIndex((n) => n.id === noteId);
+  return idx >= 0 ? (cardRefs.value[idx]?.getMetricsExportDataUrl() ?? null) : null;
+};
+defineExpose({ getExportDataUrl, getMetricsExportDataUrl, getComparePngDataUrl });
 </script>

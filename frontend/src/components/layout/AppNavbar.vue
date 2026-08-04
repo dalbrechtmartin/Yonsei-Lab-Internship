@@ -1,6 +1,6 @@
 <template>
   <nav
-    class="sticky top-0 z-20 flex h-16 w-full items-center justify-between border-b border-secondary/15 bg-card/90 px-3 shadow-[0_1px_0_rgba(58,80,107,0.08)] backdrop-blur-xl sm:px-6"
+    class="relative z-20 flex h-16 w-full shrink-0 items-center justify-between border-b border-secondary/15 bg-card/90 px-3 shadow-[0_1px_0_rgba(58,80,107,0.08)] backdrop-blur-xl sm:px-6"
   >
     <RouterLink to="/" class="flex items-center gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
       <img src="@/assets/logo.svg" class="h-7 w-7" alt="" />

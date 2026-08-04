@@ -4,8 +4,8 @@
       <div class="mt-2.5 flex flex-col gap-2.5">
         <div class="flex items-center gap-2 text-xs text-secondary">
           <span class="flex shrink-0 items-center gap-1">
-            {{ t("fomcharts.controls.groupBy") }}
             <InfoTooltip :text="t('fomcharts.tooltips.groupBy')" />
+            {{ t("fomcharts.controls.groupBy") }}
           </span>
           <Select v-model="groupBySelectValue">
             <SelectTrigger size="sm" class="w-full min-w-0 bg-card">
@@ -26,8 +26,8 @@
              case a "merge" choice actually changes anything on the chart. -->
         <div v-if="isCompositeGroupBy" class="flex items-center justify-between gap-2 text-xs">
           <span class="flex items-center gap-1 text-ink">
-            {{ t("fomcharts.controls.mergeMultiCategory") }}
             <InfoTooltip :text="t('fomcharts.tooltips.mergeMultiCategory')" />
+            {{ t("fomcharts.controls.mergeMultiCategory") }}
           </span>
           <Switch v-model="mergeMultiCategoryPoints" />
         </div>
@@ -35,11 +35,42 @@
         <div class="h-px w-full bg-secondary/15" />
 
         <div class="flex min-w-0 flex-1 flex-col gap-1 rounded-[10px] border border-secondary/15 bg-secondary/5 p-3">
+        <!-- Only worth the extra chrome once there are enough groups that
+             scanning/scrolling the full list gets tedious -- with a handful
+             of groups, the plain list below is already the fastest way to
+             scan them. -->
+        <label v-if="groups.length > VISIBLE_GROUP_LIMIT" class="relative mb-1 block">
+          <Search class="pointer-events-none absolute top-1/2 left-2 size-3 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            v-model="searchQuery"
+            type="text"
+            :placeholder="t('fomcharts.stats.searchPlaceholder')"
+            class="h-7 bg-card pr-6.5 pl-6.5 text-[11.5px]"
+          />
+          <button
+            v-if="searchQuery"
+            type="button"
+            class="absolute top-1/2 right-1.5 flex size-4 -translate-y-1/2 items-center justify-center rounded text-muted-foreground hover:bg-secondary/10 hover:text-ink"
+            :aria-label="t('fomcharts.pointsTable.clearSearch')"
+            @click="searchQuery = ''"
+          >
+            <X class="size-3" />
+          </button>
+        </label>
+        <p v-if="groups.length > 0 && filteredGroups.length === 0" class="px-1 py-2 text-center text-[11px] text-muted-foreground">
+          {{ t("fomcharts.stats.noMatch") }}
+        </p>
+        <!-- Capped + internally scrollable, same system as DataPointsTable's
+             own group list (see its max-h-88 wrapper) -- otherwise "Show
+             more" on a high-cardinality group-by (e.g. Base Materials) could
+             render dozens of cards and grow this whole panel, and the
+             Espace d'analyse card around it, well past the chart's height. -->
+        <div class="flex max-h-88 flex-col gap-1 overflow-x-hidden overflow-y-auto">
         <!-- Every group renders as a compact one-line row by default -- the full
              tile grid (or the low-N note) only shows once expanded via the
              chevron, so the panel stays scannable even with many groups. -->
         <div
-          v-for="group in groups"
+          v-for="group in visibleGroups"
           :key="group.label"
           class="group flex flex-col gap-1 rounded-lg border-b border-secondary/10 px-2 pt-2 pb-2 last:border-0"
           :class="[
@@ -91,8 +122,8 @@
                 <div v-if="group.tiles.length > 1" class="grid grid-cols-2 gap-1.5">
                   <div v-for="tile in group.tiles" :key="tile.key" class="rounded-md bg-white/60 px-2 py-1.5">
                     <div class="flex items-center gap-1 text-[9.5px] tracking-wide text-muted-foreground uppercase">
-                      {{ tile.label }}
                       <InfoTooltip :text="tile.tooltip" />
+                      {{ tile.label }}
                     </div>
                     <div class="font-mono text-[13px] text-ink">{{ tile.value }}</div>
                   </div>
@@ -104,6 +135,20 @@
             </div>
           </div>
         </div>
+        <!-- Collapsed groups stay reachable without scrolling the whole list
+             -- hidden only while the search box is empty (a search should
+             never hide a match the researcher was specifically looking for,
+             see visibleGroups/hiddenGroupsCount). -->
+        <button
+          v-if="hiddenGroupsCount > 0 || (showAllGroups && groups.length > VISIBLE_GROUP_LIMIT && !searchQuery.trim())"
+          type="button"
+          class="mt-1 flex items-center justify-center gap-1 rounded-md px-2 py-1.5 text-[11px] font-medium text-secondary transition hover:bg-secondary/10 hover:text-ink"
+          @click="showAllGroups = !showAllGroups"
+        >
+          <ChevronDown class="size-3 transition-transform duration-200" :class="showAllGroups ? 'rotate-180' : ''" />
+          {{ showAllGroups ? t("fomcharts.stats.showLess") : t("fomcharts.stats.showMore", { count: hiddenGroupsCount }) }}
+        </button>
+        </div>
         </div>
       </div>
     </CollapsibleSection>
@@ -113,7 +158,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
-import { ChevronDown, Target } from "@lucide/vue";
+import { ChevronDown, Search, Target, X } from "@lucide/vue";
 import labTheme from "@/assets/themes/okabe-ito-palette.json";
 import { computeStats, formatStat, extractUnit } from "@/utils/stats";
 import { keptTokens, type DataRow } from "@/utils/columnTypes";
@@ -122,16 +167,20 @@ import CollapsibleSection from "@/components/shared/CollapsibleSection.vue";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
 
 const { t } = useI18n();
 
 const props = withDefaults(
   defineProps<{
-    // Already filtered to rows with a plottable (numeric) yAxis value — see
+    // Already filtered to rows with a plottable yAxis value — see
     // filterPlottable in utils/stats.ts, applied upstream in
     // VisualizationView so the stats here always match what the chart draws.
     rows: DataRow[];
     yAxis: string | null;
+    // False when yAxis is a categorical column (e.g. Material Class) --
+    // mean/median/σ are meaningless there, so tilesFor below shows n only.
+    yAxisNumeric?: boolean;
     // Columns eligible for "Group / Color by" (already capped to
     // low-cardinality columns, plus composite/Mode ID exemptions -- see
     // VisualizationView's groupByColumns).
@@ -163,7 +212,7 @@ const props = withDefaults(
     // still carries it.
     groupBySelectedTokens?: string[] | null;
   }>(),
-  { compositeColumns: () => [], groupColorMap: () => ({}), groupBySelectedTokens: null },
+  { compositeColumns: () => [], groupColorMap: () => ({}), groupBySelectedTokens: null, yAxisNumeric: true },
 );
 defineEmits<{
   "toggle-highlight": [group: string];
@@ -241,8 +290,6 @@ const MIN_STATS_N = 3;
 
 const groups = computed(() => {
   const yAxis = props.yAxis;
-  const values = (rows: DataRow[]) =>
-    yAxis ? rows.map((row) => Number(row[yAxis])).filter((v) => !isNaN(v)) : [];
 
   // n is a plain count -- no unit. mean/median/σ are actual measurements in
   // whatever unit the Y-axis column itself is in (e.g. "nm/RIU"), so they
@@ -250,9 +297,16 @@ const groups = computed(() => {
   const unit = extractUnit(yAxis);
   const withUnit = (value: string) => (unit ? `${value} ${unit}` : value);
 
-  const tilesFor = (stats: ReturnType<typeof computeStats>) => {
-    const nTile = { key: "n", label: t("fomcharts.stats.n"), tooltip: t("fomcharts.stats.tooltips.n"), value: String(stats.n) };
-    if (stats.n < MIN_STATS_N) return [nTile];
+  // n is always just how many rows are in this group -- computed off the
+  // rows themselves, not off however many of them happened to parse as a
+  // number, so a categorical Y (where none of them do) doesn't read as an
+  // empty group. mean/median/σ stay numeric-only: meaningless for a
+  // category axis, so a categorical Y shows n alone, same as a numeric Y
+  // with too few points for MIN_STATS_N to bother with real statistics.
+  const tilesFor = (rows: DataRow[]) => {
+    const nTile = { key: "n", label: t("fomcharts.stats.n"), tooltip: t("fomcharts.stats.tooltips.n"), value: String(rows.length) };
+    if (!props.yAxisNumeric || rows.length < MIN_STATS_N || !yAxis) return [nTile];
+    const stats = computeStats(rows.map((row) => Number(row[yAxis])).filter((v) => !isNaN(v)));
     return [
       nTile,
       { key: "mean", label: t("fomcharts.stats.mean"), tooltip: t("fomcharts.stats.tooltips.mean"), value: withUnit(formatStat(stats.mean)) },
@@ -272,10 +326,27 @@ const groups = computed(() => {
       {
         label: t("fomcharts.stats.all"),
         color: palette[0],
-        tiles: tilesFor(computeStats(values(props.rows))),
+        tiles: tilesFor(props.rows),
       },
     ];
   }
+
+  // Ranked most-populous-first (alphabetical tiebreak) rather than plain
+  // alphabetical -- this order is what decides which groups stay visible by
+  // default once there are more than VISIBLE_GROUP_LIMIT of them (see
+  // visibleGroups below), so the ones collapsed away are consistently the
+  // rarest, least-informative ones rather than an arbitrary alphabetical
+  // tail. The idx-based palette fallback below only ever matters for a
+  // label groupColorMap doesn't cover, so re-ordering it doesn't change any
+  // color actually shown in practice.
+  const rank = (entries: { label: string; rows: DataRow[] }[]) =>
+    [...entries]
+      .sort((a, b) => b.rows.length - a.rows.length || a.label.localeCompare(b.label))
+      .map(({ label, rows }, idx) => ({
+        label,
+        color: props.groupColorMap[label] ?? palette[idx % palette.length],
+        tiles: tilesFor(rows),
+      }));
 
   if (isCompositeGroupBy.value) {
     // keptTokens (not the raw cell) so a token excluded via the lenient
@@ -283,24 +354,59 @@ const groups = computed(() => {
     // because a surviving row still carries it -- see FomChart's identical
     // compositeGroupTokens and VisualizationView's groupBySelectedTokens.
     const rowTokens = (row: DataRow) => keptTokens(row[groupByCol], props.groupBySelectedTokens);
-    const labels = Array.from(new Set(props.rows.flatMap(rowTokens))).sort();
-    return labels.map((label, idx) => ({
-      label,
-      color: props.groupColorMap[label] ?? palette[idx % palette.length],
-      tiles: tilesFor(computeStats(values(props.rows.filter((row) => rowTokens(row).includes(label))))),
-    }));
+    const labels = Array.from(new Set(props.rows.flatMap(rowTokens)));
+    return rank(labels.map((label) => ({ label, rows: props.rows.filter((row) => rowTokens(row).includes(label)) })));
   }
 
   const labelFor = (row: DataRow) => {
     const v = row[groupByCol];
     return v === null || v === undefined || v === "" ? t("fomcharts.unknownGroup") : String(v);
   };
-  const labels = Array.from(new Set(props.rows.map(labelFor))).sort();
+  const labels = Array.from(new Set(props.rows.map(labelFor)));
 
-  return labels.map((label, idx) => ({
-    label,
-    color: props.groupColorMap[label] ?? palette[idx % palette.length],
-    tiles: tilesFor(computeStats(values(props.rows.filter((row) => labelFor(row) === label)))),
-  }));
+  return rank(labels.map((label) => ({ label, rows: props.rows.filter((row) => labelFor(row) === label) })));
+});
+
+// Search + collapse-beyond-N only earn their place once there are enough
+// groups that the plain list becomes tedious to scan/scroll (see the
+// template's own v-if gating the search box) -- VISIBLE_GROUP_LIMIT matches
+// FomChart's own on-chart-legend cap (MAX_INLINE_GROUP_LEGEND) so both
+// surface the same "top groups" by default.
+const VISIBLE_GROUP_LIMIT = 6;
+const searchQuery = ref("");
+// Local, ephemeral UI state -- reset per mount, not worth lifting to the
+// parent (same reasoning as expandedGroup above).
+const showAllGroups = ref(false);
+
+const filteredGroups = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase();
+  if (!q) return groups.value;
+  return groups.value.filter((g) => g.label.toLowerCase().includes(q));
+});
+
+// A search is always shown in full -- collapsing search RESULTS would hide
+// the exact group a researcher typed a name to find, defeating the point of
+// searching in the first place. The collapse only ever applies to the
+// unfiltered, full list.
+const visibleGroups = computed(() => {
+  if (searchQuery.value.trim() || showAllGroups.value || filteredGroups.value.length <= VISIBLE_GROUP_LIMIT) {
+    return filteredGroups.value;
+  }
+  return filteredGroups.value.slice(0, VISIBLE_GROUP_LIMIT);
+});
+
+const hiddenGroupsCount = computed(() =>
+  searchQuery.value.trim() ? 0 : Math.max(0, filteredGroups.value.length - visibleGroups.value.length),
+);
+
+// A stale search string surviving a groupBy switch could otherwise silently
+// hide every card with no way back -- if the new column has few enough
+// values that the search box itself no longer renders (see the template's
+// own VISIBLE_GROUP_LIMIT gate), the leftover query would keep filtering
+// filteredGroups down to nothing behind a search box the researcher can no
+// longer see or clear.
+watch(groupBy, () => {
+  searchQuery.value = "";
+  showAllGroups.value = false;
 });
 </script>

@@ -1,4 +1,4 @@
-import { darkenColor, materialColor, type StructureLayer } from "./layerStructure";
+import { darkenColor, layerLabel, materialColor, type StructureLayer } from "./layerStructure";
 
 export interface AnnotationExportSection {
   title: string;
@@ -9,25 +9,102 @@ export interface AnnotationExportSection {
 
 export const WIDTH = 460;
 export const PAD_X = 20;
-const BOX_PAD = 12;
-const ROW_LINE_H = 15;
-const ROW_GAP = 8;
-const SECTION_GAP = 16;
-const SECTION_TITLE_H = 16;
+export const BOX_PAD = 12;
+export const ROW_LINE_H = 15;
+export const ROW_GAP = 8;
+export const SECTION_GAP = 16;
+export const SECTION_TITLE_H = 16;
 const MIN_LAYER_H = 26;
 const EXTRA_LAYER_H = 34;
-const BORDER = "rgba(58,80,107,0.22)";
-const BOX_BG = "#f8fafc";
-const LABEL_FONT = "400 11px Inter, sans-serif";
-const VALUE_FONT = '600 12px "IBM Plex Mono", monospace';
-const LABEL_COLOR = "#52616b";
-const VALUE_COLOR = "#1c2541";
+export const BORDER = "rgba(58,80,107,0.22)";
+export const BOX_BG = "#f8fafc";
+export const LABEL_FONT = "400 11px Inter, sans-serif";
+export const VALUE_FONT = '600 12px "IBM Plex Mono", monospace';
+export const LABEL_COLOR = "#52616b";
+export const VALUE_COLOR = "#1c2541";
 
-function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
+// Every distinct family+weight this file (and compareExport.ts) sets via
+// ctx.font. Canvas text silently falls back to a generic font for any
+// @font-face it hasn't already loaded -- and, unlike DOM text, never
+// re-paints on its own once the real one arrives, so a caller that memoizes
+// a measured layout (see CompareDialog's `plan`) can get stuck with row
+// heights measured against the (narrower) fallback forever. document.fonts
+// only *starts* loading a given face the first time something requests it,
+// so waiting on document.fonts.ready alone can still race: if nothing else
+// on the page happened to need "IBM Plex Mono" 700 yet, ready may resolve
+// before that request is even made. Explicitly loading these exact faces
+// sidesteps that.
+const CANVAS_FONT_FACES = ["400 12px Inter", "700 12px Inter", "400 12px 'IBM Plex Mono'", "600 12px 'IBM Plex Mono'", "700 12px 'IBM Plex Mono'"];
+let canvasFontsLoadPromise: Promise<unknown> | null = null;
+export function ensureCanvasFontsLoaded(): Promise<unknown> {
+  if (typeof document === "undefined" || !("fonts" in document)) return Promise.resolve();
+  if (!canvasFontsLoadPromise) {
+    canvasFontsLoadPromise = Promise.all(CANVAS_FONT_FACES.map((f) => document.fonts.load(f).catch(() => undefined)));
+  }
+  return canvasFontsLoadPromise;
+}
+
+/**
+ * Hard-wraps a single unbreakable token (no whitespace for wrapText to break
+ * on) that's still wider than maxWidth on its own -- e.g. a semicolon-joined
+ * list like "2D Material;Dielectric;Metal" is one "word" to wrapText, and
+ * without this it just ran off the edge of its box instead of wrapping.
+ * Prefers breaking right after a semicolon/comma (keeping it attached to the
+ * piece before it, so a materials list still reads as a list); falls back to
+ * a hard character wrap for a single piece that's long even on its own (e.g.
+ * one long, delimiter-free material name).
+ */
+function breakLongToken(ctx: CanvasRenderingContext2D, token: string, maxWidth: number): string[] {
+  if (ctx.measureText(token).width <= maxWidth) return [token];
+  const pieces = token.split(/(?<=[;,])/).filter(Boolean);
+  const lines: string[] = [];
+  let line = "";
+  for (const piece of pieces) {
+    if (ctx.measureText(piece).width > maxWidth) {
+      if (line) {
+        lines.push(line);
+        line = "";
+      }
+      let chunk = "";
+      for (const ch of piece) {
+        const candidate = chunk + ch;
+        if (ctx.measureText(candidate).width > maxWidth && chunk) {
+          lines.push(chunk);
+          chunk = ch;
+        } else {
+          chunk = candidate;
+        }
+      }
+      line = chunk;
+      continue;
+    }
+    const candidate = line + piece;
+    if (ctx.measureText(candidate).width > maxWidth && line) {
+      lines.push(line);
+      line = piece;
+    } else {
+      line = candidate;
+    }
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
+export function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
   const words = text.split(/\s+/).filter(Boolean);
   const lines: string[] = [];
   let line = "";
   for (const word of words) {
+    if (ctx.measureText(word).width > maxWidth) {
+      if (line) {
+        lines.push(line);
+        line = "";
+      }
+      const broken = breakLongToken(ctx, word, maxWidth);
+      lines.push(...broken.slice(0, -1));
+      line = broken[broken.length - 1] ?? "";
+      continue;
+    }
     const candidate = line ? `${line} ${word}` : word;
     if (ctx.measureText(candidate).width > maxWidth && line) {
       lines.push(line);
@@ -40,7 +117,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number)
   return lines;
 }
 
-function layerHeights(layers: StructureLayer[]): number[] {
+export function layerHeights(layers: StructureLayer[]): number[] {
   const known = layers.map((l) => l.thicknessNm).filter((v): v is number => v !== null);
   const min = known.length ? Math.min(...known) : 0;
   const max = known.length ? Math.max(...known) : 0;
@@ -195,7 +272,7 @@ export function layoutAndMaybeDraw(
             ctx.fillRect(innerX + mainW, iy, sideW, h);
             ctx.strokeStyle = "rgba(0,0,0,0.15)";
             ctx.strokeRect(innerX, iy, innerContentW, h);
-            const label = layer.thicknessNm !== null ? `${layer.material} · ${layer.thicknessNm}nm` : layer.material;
+            const label = layerLabel(layer);
             ctx.font = "600 11px 'IBM Plex Mono', monospace";
             ctx.fillStyle = "rgba(0,0,0,0.72)";
             ctx.fillText(label, innerX + 8, iy + h / 2 + 4);

@@ -1,4 +1,4 @@
-import type { DataRow } from "./columnTypes";
+import { formatUnitSuperscripts, type DataRow } from "./columnTypes";
 import type { StructureLayer } from "./layerStructure";
 
 export interface FieldRow {
@@ -29,7 +29,7 @@ const rowField = (row: DataRow, col: string | null): FieldRow | null => {
   if (!col) return null;
   const raw = row[col];
   if (raw === null || raw === undefined || raw === "") return null;
-  return { key: col, value: String(raw) };
+  return { key: formatUnitSuperscripts(col), value: String(raw) };
 };
 
 /**
@@ -61,7 +61,7 @@ export function buildAnnotationCardData(input: {
 
   const axisBadges = [{ axis: input.xAxis }, { axis: input.yAxis }]
     .filter(({ axis }) => axis && axis !== input.layerStructureColumnName)
-    .map(({ axis }) => ({ key: axis as string, value: displayValue(input.row[axis as string]) }));
+    .map(({ axis }) => ({ key: formatUnitSuperscripts(axis as string), value: displayValue(input.row[axis as string]) }));
 
   const structureExtraFields = [rowField(input.row, input.materialClassColumnName), rowField(input.row, input.baseMaterialsColumnName)].filter(
     (f): f is FieldRow => f !== null,

@@ -86,10 +86,22 @@
       "
     >
       <div class="mx-auto grid max-w-280 grid-cols-1 gap-5 sm:grid-cols-2">
-        <RouterLink
-          to="/visualization"
-          class="flex animate-in fade-in slide-in-from-bottom-4 flex-col rounded-[1.25rem] border border-white/55 bg-card/90 p-7 text-left shadow-xl shadow-slate-900/5 backdrop-blur-xl fill-mode-both delay-300 transition-shadow duration-200 hover:shadow-2xl focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:outline-none sm:p-8"
+        <div
+          class="relative flex animate-in fade-in slide-in-from-bottom-4 flex-col rounded-[1.25rem] border border-white/55 bg-card/90 p-7 text-left shadow-xl shadow-slate-900/5 backdrop-blur-xl fill-mode-both delay-300 transition-shadow duration-200 hover:shadow-2xl sm:p-8"
         >
+          <!-- Stretched-link overlay: keeps the whole card clickable (same
+               UX as before) while leaving room for a second, genuinely
+               separate interactive control below (the sample dataset
+               download) that must NOT also trigger this navigation. Painted
+               above the plain-text content (browsers stack a positioned,
+               z-index:0 element after in-flow static content) but below the
+               download button, which gets its own stacking context via
+               `relative z-10`. -->
+          <RouterLink
+            to="/visualization"
+            class="absolute inset-0 rounded-[1.25rem] focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:outline-none"
+            :aria-label="t('view.home.tools.visualization.cta')"
+          />
           <p
             class="text-[11px] font-bold tracking-[0.08em] text-primary uppercase"
           >
@@ -101,14 +113,31 @@
           <p class="mt-2.5 text-[13px] leading-[1.6] text-secondary">
             {{ t("view.home.tools.visualization.body") }}
           </p>
-          <div class="mt-auto pt-5">
+          <div class="mt-auto flex flex-wrap items-center gap-2.5 pt-5">
             <span
               class="inline-block rounded-[7px] bg-primary px-5 py-2.5 text-[13px] font-semibold text-white"
             >
               {{ t("view.home.tools.visualization.cta") }} →
             </span>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger as-child>
+                <button
+                  type="button"
+                  class="relative z-10 inline-flex items-center gap-1.5 rounded-[7px] border border-border bg-white/70 px-4 py-2.5 text-[13px] font-medium text-ink transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:outline-none"
+                >
+                  <Download class="size-3.5" />
+                  {{ t("view.home.tools.visualization.sampleData") }}
+                  <ChevronDown class="size-2.5" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem @select="downloadSampleDataset('csv')">{{ t("fomcharts.export.csv") }}</DropdownMenuItem>
+                <DropdownMenuItem @select="downloadSampleDataset('xlsx')">{{ t("fomcharts.export.xlsx") }}</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-        </RouterLink>
+        </div>
 
         <RouterLink
           v-if="!extractionLocked"
@@ -164,10 +193,11 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
-import { Lock } from "@lucide/vue";
+import { ChevronDown, Download, Lock } from "@lucide/vue";
 import { RouterLink } from "vue-router";
 import { useI18n } from "vue-i18n";
 import GuideTemplate from "@/components/guide/GuideTemplate.vue";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { exportGuideToPdf } from "@/utils/pdfExport";
 import yonseiSymbol from "@/assets/yonsei-logo.svg";
 import yonseiOptica from "@/assets/yonsei-optica.svg";
@@ -195,5 +225,16 @@ async function downloadGuide() {
   } finally {
     generatingGuide.value = false;
   }
+}
+
+// Static files shipped in public/ -- a richer, standalone dataset for
+// first-time visitors to try the tool with, deliberately separate from
+// public/sample-guide-data.csv (that one stays pinned to the PDF guide's
+// own screenshots and hardcoded row references, see GuideTemplate.vue).
+function downloadSampleDataset(format: "csv" | "xlsx") {
+  const link = document.createElement("a");
+  link.href = `/sample-fom-dataset.${format}`;
+  link.download = `sample-fom-dataset.${format}`;
+  link.click();
 }
 </script>
