@@ -3,13 +3,13 @@
     "title": "λLens"
   },
   "footer": {
-    "copyright": "© {year} λLens — Yonsei University Photonics Lab. All rights reserved."
+    "copyright": "© {year} λLens, Yonsei Photonics Lab. All rights reserved."
   },
   "nav": {
     "home": "Home",
     "visualization": "Visualization",
     "extraction": "Extraction",
-    "comingSoon": "Under development",
+    "comingSoon": "Coming soon",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
     "language": "Language"
@@ -18,42 +18,43 @@
     "home": {
       "hero": {
         "eyebrow": "Yonsei lab internship project",
-        "title": "Automated extraction and interactive visualization of photonics FOM data",
-        "description": "Pull structured figure-of-merit data out of papers, then inspect wavelength, Q-factor, and sensitivity trends in one workspace.",
+        "title": "Extraction and visualization of photonics FOM data",
+        "description": "Pull FOM data out of your papers. Explore wavelength, Q-factor and sensitivity trends in one workspace.",
         "cta": "Visualize your data",
-        "manual": "Download user manual"
+        "manual": "Download the manual"
       },
       "tools": {
         "visualization": {
-          "eyebrow": "Available now",
+          "eyebrow": "Available",
           "title": "Visualization",
-          "body": "Import an Excel or CSV dataset, choose your axes and group-by column, and explore the FOM distribution on a log or linear scatter plot. Pin annotations, export the filtered set.",
-          "cta": "Open workspace"
+          "body": "Import an Excel or CSV file, pick your axes, and explore your FOM on a chart. Pin points, export your data.",
+          "cta": "Open the tool",
+          "sampleData": "Sample data"
         },
         "extraction": {
           "eyebrow": "Locked",
-          "eyebrowUnlocked": "Available now",
+          "eyebrowUnlocked": "Available",
           "title": "Extraction",
-          "body": "Drop one or more PDF papers, pick a Gemini model, and get back a structured Excel export.",
-          "lockedNote": "Being reworked -- unavailable in this build.",
-          "cta": "Start extraction"
+          "body": "Drop your PDF papers, pick a Gemini model, and get an Excel file back.",
+          "lockedNote": "Being reworked. Unavailable in this build.",
+          "cta": "Start"
         }
       }
     },
     "visualization": {
-      "description": "Visualize your data in interactive charts. You can import an Excel file or extract data from PDF papers.",
+      "description": "Visualize your data in interactive charts, from an Excel file or PDF papers.",
       "hero": {
         "eyebrow": "Analysis workspace",
         "title": "Visualize your data",
-        "description": "Import an Excel file to inspect the dataset, compare axes, and export the data as CSV."
+        "description": "Import an Excel file to explore, compare and export your data."
       },
-      "mobileBlocked": "For a better experience, we recommend using a PC for visualization. Visualization is not available on mobile."
+      "mobileBlocked": "Visualization isn't available on mobile. Use a PC for a better experience."
     },
     "extraction": {
       "batchExtraction": {
         "legend": "Batch Extraction",
-        "title": "Extract paper data from PDFs",
-        "description": "Drop one or more PDFs to generate a structured Excel export. The extraction process may take a few minutes depending on the number of papers."
+        "title": "Extract data from PDFs",
+        "description": "Drop your PDFs to generate an Excel file. This can take a few minutes depending on the number of papers."
       }
     }
   },
@@ -62,29 +63,30 @@
     "export": "Export"
   },
   "dropzone": {
-    "title": "Drag and drop your Excel or CSV file here",
+    "title": "Drop your Excel or CSV file here",
     "subtitle": "or click to browse"
   },
   "status": {
     "uploading": "Uploading file...",
-    "converting": "Your file's columns don't match the expected format -- converting it automatically, this can take a moment...",
-    "success": "File imported successfully. You can now adjust the axes or export the data.",
-    "convertedSuccess": "Your file's columns didn't match the expected format, so we converted it automatically. Some fields may be missing -- double-check the result before relying on it.",
-    "conversionFailed": "We couldn't automatically convert this file to the expected format. Please reformat it manually or try another file.",
-    "error": "We couldn't import that file. Please try another Excel or CSV file.",
-    "noMatchingPins": "None of your pinned points match the current filters or axes, so \"Show only pinned\" was turned back off.",
+    "converting": "Columns not recognized. Converting automatically...",
+    "success": "File imported successfully.",
+    "convertedSuccess": "File converted automatically, its columns didn't match the expected format. Check the result, some data may be missing.",
+    "conversionFailed": "Couldn't convert this file automatically. Reformat it manually or try another file.",
+    "error": "We couldn't import that file.",
+    "multipleSheets": "This workbook has more than one sheet. Import a file with a single sheet.",
+    "noMatchingPins": "No pinned points match the current filters, so \"Pinned points only\" was turned off.",
     "dismiss": "Dismiss message"
   },
   "extraction": {
     "dropzone": {
-      "title": "Drag and drop your PDF papers here",
-      "subtitle": "or click to browse (up to 10 files supported)"
+      "title": "Drop your PDF papers here",
+      "subtitle": "or click to browse (up to 10 files)"
     },
-    "processing": "Extracting data from {count} paper(s), this can take a while...",
-    "success": "PDFs processed successfully. Your Excel export has been saved.",
-    "partialSuccess": "Some files could not be processed and were skipped. Your Excel export only includes the ones that succeeded.",
-    "error": "We couldn't extract those PDFs. Please try again.",
-    "quotaExceeded": "Gemini's free-tier quota has already been reached. Try again later or with fewer files.",
+    "processing": "Extracting {count} paper(s)...",
+    "success": "Extraction done. Your Excel file has been saved.",
+    "partialSuccess": "Some files were skipped. The export only includes the ones that succeeded.",
+    "error": "Something went wrong extracting those PDFs.",
+    "quotaExceeded": "Gemini's free-tier quota is already reached. Try again later or with fewer files.",
     "ready": {
       "heading": "Your export is ready",
       "save": "Save as…"
@@ -93,23 +95,23 @@
       "quota": "Gemini's free-tier quota was reached for {count} file(s).",
       "unavailable": "The model was temporarily unavailable for {count} file(s).",
       "error": "An unexpected error occurred for {count} file(s).",
-      "retryIn": "Retrying automatically in {seconds}s -- nothing already processed is lost."
+      "retryIn": "Retrying in {seconds}s. Nothing is lost."
     },
     "modelSelector": {
       "title": "Extraction model",
       "description": "Choose which Gemini model analyzes your papers.",
       "default": {
         "title": "Default",
-        "description": "Tries the newest, most capable model first, then automatically falls back to a faster or cheaper one if it runs out of quota mid-batch.",
-        "warning": "The model used can change partway through the batch due to rate limits — check the \"Model Used\" column in the export to see what actually ran on each paper."
+        "description": "Tries the most capable model first, then falls back to a faster one if the quota runs out.",
+        "warning": "The model can change mid-batch due to rate limits. Check the \"Model Used\" column in the export for details."
       },
       "flash": {
         "title": "gemini-3.5-flash",
-        "description": "The best balance of accuracy and speed. Recommended for most batches."
+        "description": "Best balance of accuracy and speed. Recommended for most batches."
       },
       "lite": {
         "title": "gemini-3.5-flash-lite",
-        "description": "Fastest and cheapest, but more prone to reasoning mistakes such as layer order or internal consistency."
+        "description": "Fastest and cheapest, but more prone to reasoning mistakes."
       }
     },
     "progress": {
@@ -121,7 +123,7 @@
         "done": "Done",
         "failed": "Failed"
       },
-      "heading": "Extracting data from your papers…",
+      "heading": "Extracting your papers…",
       "overall": "{done} / {total} files processed",
       "etaRemaining": "~{eta} remaining"
     }
@@ -131,7 +133,7 @@
     "filenameBase": "User_Guide",
     "meta": {
       "subtitle": "User Guide",
-      "lab": "Research Tool — Yonsei Lab",
+      "lab": "Research Tool, Yonsei Lab",
       "version": "Version"
     },
     "footer": {
@@ -141,148 +143,391 @@
       "cover": "Cover",
       "intro": "Introduction",
       "toc": "Table of contents",
-      "mode1Import": "Mode 1 — Import your dataset",
-      "mode1Controls": "Mode 1 — Axes & display",
-      "mode1Filters": "Mode 1 — Filters",
-      "mode1Reading": "Mode 1 — Reading the chart",
-      "mode1Compare": "Mode 1 — Compare groups",
-      "mode1Annotate": "Mode 1 — Pin & annotate",
-      "mode1Export": "Mode 1 — Export your results",
-      "mode1UseCases": "Mode 1 — Use cases",
+      "mode1Import": "1. Import your dataset",
+      "mode1Controls": "2. Axes and display",
+      "mode1Filters": "3. Filters",
+      "mode1Reading": "4. Reading the chart",
+      "mode1Compare": "5. Compare groups",
+      "mode1DataTable": "6. Manage your data points",
+      "mode1AddPoint1": "7. Add a point: the essentials",
+      "mode1AddPoint2": "8. Add a point: structure & notes",
+      "mode1Annotate": "9. Pin and annotate",
+      "mode1ComparePins": "10. Compare pinned points",
+      "mode1ExportChart": "11. Export the chart",
+      "mode1ExportPin": "12. Export a pinned point",
       "mode2": "Mode 2 (coming soon)"
     },
     "intro": {
       "title": "Introduction",
       "abstractTitle": "Abstract",
-      "abstractBody": "λLens is a research tool built during a Yonsei University Photonics Lab internship to speed up how the lab surveys the literature on integrated photonic sensors. Pulling figure-of-merit values — resonance wavelength, sensitivity, Q-factor, FWHM — out of papers by hand does not scale past a handful of references. λLens combines a guided PDF-extraction pipeline with an interactive visualization workspace, so a researcher can go from a folder of papers to a filterable, exportable comparison chart in minutes rather than days.",
+      "abstractBody": "λLens is a research tool built during a Yonsei Photonics Lab internship, to speed up literature reviews on integrated photonic sensors. Pulling FOM values (wavelength, sensitivity, Q-factor, FWHM) out of papers by hand doesn't scale past a handful of references. λLens combines guided PDF extraction with interactive visualization: from a folder of papers to an exportable chart in minutes, not days.",
       "guideTitle": "How to use this guide",
-      "guideBody": "This guide documents Mode 1 (Excel-to-Plot visualization), which is complete and ready to use — see the table of contents on the next page. Mode 2 (PDF extraction and validation) is still under active development and will be documented here once it stabilizes.",
-      "authorTitle": "About the author",
-      "authorBody": "λLens was developed by Danaé A.M. as part of a research internship at the Yonsei University Photonics Lab."
+      "guideBody": "This guide documents Mode 1 (Excel-to-Plot visualization), complete and ready to use. Mode 2 (PDF extraction and validation) will be documented once it stabilizes.",
+      "contextTitle": "Context",
+      "contextBody": "λLens was built at Yonsei University's MPBEL, within the wider optics and photonics community described below.",
+      "yonsei": "One of South Korea's oldest and most prestigious research universities, based in Seoul.",
+      "mpbel": "Yonsei Medical Physics and Biomedical Engineering Lab (Yonsei Cancer Center, Radiation Oncology), led by Prof. Jin Sung Kim. Medical image reconstruction (CT/MR/PET), AI-driven radiomics, radiation therapy research.",
+      "spie": "The international society for optics and photonics: conferences, publications and education.",
+      "optica": "The leading global society for light science and technology (formerly OSA)."
     },
     "toc": {
       "title": "Table of contents",
-      "hint": "Click any entry to jump to that page."
+      "hint": "Click any entry to jump there directly."
     },
     "mode1": {
       "eyebrow": "Mode 1",
-      "title": "Excel-to-Plot visualization"
+      "title": "Excel-to-Plot visualization",
+      "partIntro": "The following pages walk through the Excel-to-Plot workspace step by step, from import to export."
     },
     "scenario": {
-      "title": "Worked example used throughout this section",
-      "body": "The screenshots below all come from one running example: six all-dielectric photonic resonator sensor designs (silicon and silicon-nitride rings, a guided-mode resonance grating, a silicon disk on a dielectric Bragg mirror, an InP interferometer, and a polymer ring), each reported once from measurement (EXP) and once from simulation (SIM). We compare their FOM (Sensitivity / FWHM) against resonance wavelength."
+      "title": "Example used in this section",
+      "body": "The screenshots below all come from one example: six photonic resonator sensors (silicon and silicon-nitride rings, a guided-mode resonance grating, a silicon disk on a Bragg mirror, an InP interferometer, and a polymer ring), each measured (EXP) and simulated (SIM). We compare their FOM (Sensitivity / FWHM) against resonance wavelength."
     },
     "steps": {
       "import": {
         "title": "1. Import your dataset",
-        "overviewTitle": "The workspace at a glance",
-        "overviewBody": "Once a file is loaded, the workspace has three parts: a control panel on the left (axes, display, filters), the scatter chart in the middle, and a right-hand panel for comparing groups and annotating points. Every one of them is documented in this guide.",
-        "body": "From the Visualization tool, drop an Excel or CSV file onto the dropzone below, or click it to browse for one.",
-        "figure1Caption": "Figure 1 — The import dropzone: drag an Excel or CSV file here, or click to browse (.xlsx, .xls, .csv, up to 10 MB).",
-        "figure2Caption": "Figure 2 — The workspace toolbar once a file is loaded.",
+        "overviewBody": "Once a file is loaded, the workspace has three parts: controls on the left (axes, display, filters), the chart in the middle, and a right-hand panel for comparing groups and annotating points.",
+        "body": "Drop an Excel or CSV file onto the dropzone below, or click it to browse.",
+        "figure1Caption": "Fig. 1: import dropzone (.xlsx, .xls, .csv, up to 10 MB).",
+        "sampleDataLink": "↓ No data yet? Download the sample used in this guide (.csv).",
+        "figure2Caption": "Fig. 2: workspace toolbar, file loaded.",
         "toolbar": {
-          "import": { "label": "Import", "body": "opens the dropzone again to load a different file, replacing the current dataset." },
-          "export": { "label": "Export", "body": "offers the filtered dataset as CSV or Excel, or the chart as a PNG image (see page 9)." },
-          "reset": { "label": "Reset", "body": "restores the default axes, display options and filters for the loaded dataset, without re-importing it." }
-        }
+          "import": {
+            "label": "Import",
+            "body": "opens the dropzone again to load a different file."
+          },
+          "export": {
+            "label": "Export",
+            "body": "exports the filtered data as CSV/Excel, or the chart as PNG."
+          },
+          "reset": {
+            "label": "Reset",
+            "body": "restores the default axes, display and filters, without re-importing."
+          }
+        },
+        "aiNote": "Columns that aren't recognized trigger an automatic AI conversion before loading. Check the result: some fields may come back missing or reworded."
       },
       "controls": {
-        "title": "2. Axes and display options",
-        "body": "The Chart section (top) picks what gets plotted; the Display section (below it) controls how it's drawn. Only one section is expanded at a time — click a section's header to switch.",
-        "figureChartCaption": "Figure 3 — The Chart section, open.",
-        "figureDisplayCaption": "Figure 4 — The Display section, open.",
+        "title": "2. Axes and display",
+        "body": "The Chart section picks what gets plotted. The Display section controls how it's drawn. Click a section header to open it.",
+        "figureChartCaption": "Fig. 3: Chart section.",
+        "figureDisplayCaption": "Fig. 4: Display section.",
         "chart": {
-          "title": { "label": "Chart title", "body": "an optional name shown above the chart — useful before a PNG export." },
-          "yAxis": { "label": "Y-Axis", "body": "the numeric column plotted vertically, e.g. FOM or Q-factor. Only numeric columns are offered." },
-          "xAxis": { "label": "X-Axis", "body": "the column plotted horizontally — numeric or categorical, depending on what the sheet contains." }
+          "title": {
+            "label": "Chart title",
+            "body": "optional name shown above the chart, useful before a PNG export. Auto-fills as \"Y / X\" until edited or cleared."
+          },
+          "axes": {
+            "label": "Y-Axis / X-Axis",
+            "body": "either can be numeric or categorical. The chain icon links them (blocks picking the same column twice) or unlinks them; the ⇅ icon swaps them."
+          }
         },
         "display": {
-          "scale": { "label": "Scale", "body": "toggles the Y axis between logarithmic and linear — log keeps values that span several orders of magnitude readable." },
-          "trendLine": { "label": "Trend line", "body": "fits a straight line through the plotted points. Needs a numeric X axis with at least two distinct values." },
-          "pareto": { "label": "Pareto frontier", "body": "highlights the non-dominated points — records not beaten on both axes by any other point." },
-          "legend": { "label": "Show legend", "body": "draws the group colors (and any trend/Pareto overlay) on the chart itself, so they're included in a PNG export." },
-          "median": { "label": "Median line", "body": "draws a dashed line at the median value of the Y axis currently plotted." }
+          "scale": {
+            "label": "Scale",
+            "body": "toggles the Y axis between log and linear. Log keeps widely spread values readable."
+          },
+          "trendLine": {
+            "label": "Trend line",
+            "body": "fits a curve to the points. A dropdown picks its shape."
+          },
+          "pareto": {
+            "label": "Pareto frontier",
+            "body": "highlights the non-dominated points, better than every other point on both axes."
+          },
+          "legend": {
+            "label": "Show legend",
+            "body": "draws the group colors on the chart itself, included in a PNG export."
+          },
+          "median": {
+            "label": "Median line",
+            "body": "draws a dashed line at the median value of the plotted Y axis."
+          },
+          "pointSize": {
+            "label": "Point size",
+            "body": "\"Size by a measurement\" scales points by a column. The slider sets the max size."
+          }
         }
       },
       "filters": {
         "title": "3. Filters",
-        "body": "Filters narrow the dataset down without changing the underlying file — unchecking a chip hides that value everywhere (chart, stats, exports) until it's checked again. They only appear when the sheet actually has a matching column.",
-        "figureCaption": "Figure 5 — The Filters section, showing Origin, Material Class and Base Materials for our worked example.",
-        "note": "Material Class and Base Materials are \"composite\" filters: a cell like \"Dielectric;Semiconductor\" counts toward both chips at once, and unchecking either one drops any row that lists it, even combined with something else.",
+        "body": "Filters narrow the dataset without changing the file. Each category is a dropdown: click to check or uncheck values. A summary strip always shows what's active. A category only appears if the file has that column.",
+        "figureCaption": "Fig. 5: Filters section, fully expanded.",
+        "note": "Material Class and Base Materials are composite filters: a cell like \"Dielectric;Semiconductor\" counts toward every value it lists. The exclusion mode above decides what happens if only some listed values stay checked: Lenient (default) keeps a row if one value is checked; Strict requires all of them.",
         "marks": {
-          "origin": { "label": "Origin", "body": "includes or excludes experimental (EXP) and simulated (SIM) records." },
-          "materialClass": { "label": "Material Class", "body": "filters by material category — a combined cell counts toward every category it lists." },
-          "baseMaterials": { "label": "Base Materials", "body": "filters by specific material (Si, SiN, Ta2O5, ...) — same combined-cell handling as Material Class." }
+          "needsReview": {
+            "label": "Hide needs-review",
+            "body": "hides records marked \"Edit\", already shown with a dashed outline on the chart. Off by default."
+          },
+          "domain": {
+            "label": "Domain",
+            "body": "classifies records as wavelength or frequency domain. By default only wavelength is kept if the file has both."
+          },
+          "origin": {
+            "label": "Origin",
+            "body": "includes or excludes experimental (EXP) and simulated (SIM) records."
+          },
+          "materialClass": {
+            "label": "Material Class",
+            "body": "filters by material category. A combined cell counts toward every category it lists."
+          },
+          "baseMaterials": {
+            "label": "Base Materials",
+            "body": "filters by specific material (Si, SiN, Ta2O5...), same handling as Material Class."
+          },
+          "exclusionMode": {
+            "label": "Exclusion mode",
+            "body": "switches between Lenient (one checked value is enough) and Strict (all must be checked)."
+          }
         }
       },
       "reading": {
-        "title": "4. Reading and interacting with the chart",
-        "body": "Every point is one reported record. Colors follow the current \"Group / Color by\" column — here, Origin.",
-        "figure4Caption": "Figure 6 — The scatter chart for our worked example: FOM (Y, log scale) against resonance wavelength (X), colored by Origin — orange for EXP, blue for SIM — with the median line and legend visible.",
+        "title": "4. Reading the chart",
+        "body": "Every point is one record. Colors follow the \"Group / Color by\" column, here Origin.",
+        "figure4Caption": "Fig. 6: FOM vs resonance wavelength, log scale, colored by Origin, sized by Sensitivity.",
         "marks": {
-          "badges": { "label": "Status badges", "body": "sample count, the EXP/SIM breakdown, and how many points are flagged for review." },
-          "legend": { "label": "Legend", "body": "one color per group — in the live app, clicking an entry isolates that series." },
-          "median": { "label": "Median line", "body": "the dashed line marking the median value of the axis currently plotted." }
+          "badges": {
+            "label": "Status badges",
+            "body": "sample count, the EXP/SIM split, and how many points are flagged for review."
+          },
+          "legend": {
+            "label": "Legend",
+            "body": "one color per group. Clicking an entry isolates that series."
+          },
+          "pointSize": {
+            "label": "Point size",
+            "body": "size can encode a third column: bigger means higher value. Here, Sensitivity."
+          },
+          "median": {
+            "label": "Median line",
+            "body": "dashed line at the median value of the plotted axis."
+          },
+          "flagged": {
+            "label": "Dashed outline",
+            "body": "flags a value the AI extraction wasn't fully confident about."
+          },
+          "zoomControls": {
+            "label": "Zoom controls",
+            "body": "lock/unlock, zoom in/out, reset. Locked by default, so an accidental scroll doesn't zoom the chart instead of the page."
+          }
         },
         "interactions": {
-          "hover": { "label": "Hover", "body": "shows the full wavelength, Q-factor and other metrics for a point." },
-          "zoom": { "label": "Scroll / drag", "body": "zooms and pans inside the plot to inspect a region closely." },
-          "click": { "label": "Click", "body": "pins a point so it can be compared later — see the next page." }
-        }
+          "hover": {
+            "label": "Hover",
+            "body": "shows the full wavelength, Q-factor and other metrics for a point."
+          },
+          "zoom": {
+            "label": "Scroll / drag",
+            "body": "zooms and pans once unlocked. The +/−/reset buttons do the same, reset always works."
+          },
+          "click": {
+            "label": "Click",
+            "body": "pins a point to compare it later."
+          },
+          "rightClick": {
+            "label": "Right-click",
+            "body": "opens the Edit / Reset / Pin / Hide / Delete menu, same as its Data points row."
+          }
+        },
+        "flaggedNote": "A dashed outline flags a value from an AI extraction the model itself wasn't sure about. Mode 1 never validates or discards a record on its own: this outline just means nobody has reviewed it yet. That review happens in Mode 2's upcoming validation screen; doing it now is optional."
       },
       "compare": {
         "title": "5. Compare groups",
-        "body": "The Compare groups panel summarizes whatever column is picked as \"Group / Color by\" — here, Origin — with per-group statistics that always match exactly what the chart is showing.",
-        "figureCaption": "Figure 7 — The Compare groups panel, showing EXP and SIM.",
+        "body": "The Compare groups panel summarizes the \"Group / Color by\" column (here Origin), with stats that always match the chart. Past a handful of groups, a search box and a \"Show more\" link keep the list manageable.",
+        "figureCaption": "Fig. 7: Compare groups panel, EXP vs SIM.",
         "marks": {
-          "groupBySelect": { "label": "Group / Color by", "body": "picks which column splits the chart (and this panel) into colored groups." },
-          "groupCard": { "label": "Group card", "body": "click to isolate that group on the chart (dims the rest); the chevron expands n, mean, median and σ." }
+          "groupBySelect": {
+            "label": "Group / Color by",
+            "body": "picks the column that splits the chart (and this panel) into colored groups."
+          },
+          "groupCard": {
+            "label": "Group card",
+            "body": "click to isolate that group on the chart. The chevron expands count, mean, median and σ."
+          }
         },
-        "note": "Mean, median and σ only appear once a group has at least 3 points — below that, they'd describe individual values rather than a real distribution."
+        "note": "Mean, median and σ only appear from 3 points per group: below that, it wouldn't be a real distribution.",
+        "mergeNote": "When grouping by a composite column (Material Class or Base Materials), a \"Merge multi-category points\" switch appears, on automatically the moment that grouping is picked. Off, a multi-category row plots once per category, for accurate stats. On, it collapses into one multi-color marker, cleaner to read but only hideable via its first category."
+      },
+      "dataTable": {
+        "title": "6. Manage your data points",
+        "body": "The Data points tab lists every record currently plotted, grouped by reference. Search, sort, and act on any point: hide it, edit it, pin it, or delete it.",
+        "figureCaption": "Fig. 8: Data points tab, R6/SIM hidden, R3/EXP and R1/SIM pinned.",
+        "marks": {
+          "filters": {
+            "label": "All / Visible / Hidden",
+            "body": "filter chips with live counts. Search and sort narrow the list further."
+          },
+          "pinnedGroup": {
+            "label": "Pinned group",
+            "body": "pulls every pinned point out of its normal group, so it's never lost behind a filter or a collapsed group."
+          },
+          "addData": {
+            "label": "Add data",
+            "body": "opens the point-entry wizard covered on the next two pages."
+          }
+        },
+        "actionsTitle": "Row actions",
+        "actions": {
+          "click": "click a row, or its eye icon, to hide/show it. Disabled while pinned; unpin first.",
+          "menu": "the ⋯ menu, or right-click: Edit, Reset (once edited), Pin/Unpin, Delete permanently (irreversible this session)."
+        },
+        "note": "Hovering a row previews that point on the chart; a hidden row previews as a faint dashed outline where it would reappear. Editing any point, manual or from a document, marks it \"Edited\"."
+      },
+      "addPoint1": {
+        "title": "7. Add a point manually",
+        "body": "\"Add data\", in the Data points tab, opens a 4-step wizard to plot your own sensor design, measured or simulated, alongside the literature. It never touches the imported file, but it does appear in exports.",
+        "stepperCaption": "Fig. 9: step indicator. Only the current step is picked out; the others aren't a done/undone trail.",
+        "essentialsTitle": "Step 1: Essentials",
+        "essentialsBody": "A label, this chart's current axis values (always required, so the point can be placed), Domain, Origin, and marker shape.",
+        "figureEssentialsCaption": "Fig. 10: Essentials, step 1 of 4.",
+        "metricsTitle": "Step 2: Metrics",
+        "metricsBody": "Only the measurement columns this dataset actually has. Q-factor computes itself the instant Resonance Wavelength and FWHM are both filled in.",
+        "figureMetricsCaption": "Fig. 11: Metrics, step 2 of 4, Q-factor auto-computed.",
+        "marks": {
+          "label": {
+            "label": "Sensor label",
+            "body": "required. Shown in the chart tooltip and the data points list."
+          },
+          "axes": {
+            "label": "Axis values",
+            "body": "required: the Y and X columns currently plotted. Every other field on this page is optional."
+          },
+          "domainOrigin": {
+            "label": "Domain & Origin",
+            "body": "Origin defaults to SIM: a manually entered point is more often a design than a measurement."
+          },
+          "shape": {
+            "label": "Point shape",
+            "body": "circle, diamond, or star. Manual points default to diamond."
+          },
+          "metrics": {
+            "label": "Measurements",
+            "body": "Sensitivity, FWHM, and any other numeric column this dataset has."
+          },
+          "qFactor": {
+            "label": "Q-factor",
+            "body": "auto-computed as λ / FWHM once both are filled in. \"Enter a different value\" hands back manual control."
+          }
+        }
+      },
+      "addPoint2": {
+        "title": "8. Structure, notes & the result",
+        "body": "Step 3 builds the sensor's materials and layer stack. Step 4 is for notes. The point then appears on the chart immediately.",
+        "structureTitle": "Step 3: Structure & materials",
+        "structureBody": "A locked cascade: Base Materials first, then Material Class (auto-suggested from those materials), then Layer Structure. Each level unlocks once the previous one has a value.",
+        "figureStructureCaption": "Fig. 12: Structure & materials, step 3 of 4.",
+        "finishTitle": "Step 4: Finish",
+        "finishBody": "Notes, and a reminder that this point has no source document: it's marked as such on the chart, in the data points list, and in every export.",
+        "converterCaption": "A scratch calculator (µm/pm → nm) for converting a paper's value by hand.",
+        "resultTitle": "The result",
+        "resultCaption": "Fig. 13: the new point on the chart, a gold-outlined diamond with a brief pulse ring where it lands.",
+        "resultBody": "\"N added manually\" appears next to the sample count. A toggle in the Data points tab decides whether manual points count toward the median, trend line and Pareto frontier.",
+        "marks": {
+          "baseMaterials": {
+            "label": "1. Base Materials",
+            "body": "search or add a value: what this point is physically made of."
+          },
+          "materialClass": {
+            "label": "2. Material Class",
+            "body": "pre-checked from what this dataset pairs with those materials. Edit it by hand and the auto-suggestion stops."
+          },
+          "layerStructure": {
+            "label": "3. Layer Structure",
+            "body": "drag to reorder, set a thickness in nm, and a repeat count for periodic stacks. A live preview updates as you go."
+          }
+        }
       },
       "annotate": {
-        "title": "6. Pin and annotate points",
-        "body": "Clicking any chart point pins it here as a card — a lightweight, session-only bookmark for comparing a handful of specific records without the rest of the dataset competing for attention.",
-        "figureCaption": "Figure 8 — The Annotations panel with two pinned points, one of them flagged for review.",
+        "title": "9. Pin and annotate",
+        "body": "Clicking a chart point pins it here as a card, a lightweight session-only bookmark for comparing specific records. Click a card's header to expand it.",
+        "figureCaption": "Fig. 14: Annotations panel.",
+        "expandTitle": "What expanding a card reveals",
+        "expandIntro": "Expanding a card reveals four more sections (see Fig. 18, page 16):",
         "marks": {
-          "sort": { "label": "Sort", "body": "orders pinned cards by when they were added, or by their reference." },
-          "showOnlyPinned": { "label": "Show only pinned points", "body": "narrows the chart and the Compare groups panel down to exactly the pinned rows." },
-          "card": { "label": "Pinned card", "body": "reference, title, plotted axis values, and an editable note — pre-filled from the sheet's Notes/Evidence columns when available." }
-        },
-        "extra": "Expanding a card also surfaces a \"pin this paper's other rows\" shortcut when siblings exist, a Layer Structure viewer, and a Metrics box — each with its own zoom dialog and a dedicated PNG export (see the next page)."
+          "sort": {
+            "label": "Sort",
+            "body": "orders pinned cards by date added or by reference."
+          },
+          "showOnlyPinned": {
+            "label": "Show only pinned points",
+            "body": "narrows the chart and the Compare groups panel down to pinned rows."
+          },
+          "compareSelect": {
+            "label": "Compare selection",
+            "body": "check a card, or use Select all / Deselect all. Pinning a card auto-selects it too, up to 6, then \"Compare (N)\" opens a side-by-side export."
+          },
+          "card": {
+            "label": "Pinned card",
+            "body": "reference, title and plotted axis values. Click to expand."
+          },
+          "siblings": {
+            "label": "Pin this paper's other rows",
+            "body": "one-click shortcut for a paper's other records, while any remain unpinned."
+          },
+          "layerStructure": {
+            "label": "Layer Structure",
+            "body": "a visual layer stack with thicknesses. The zoom icon opens a larger, exportable PNG view."
+          },
+          "metrics": {
+            "label": "Metrics",
+            "body": "measurements not already in the header. The zoom icon opens a larger, exportable PNG view."
+          },
+          "notes": {
+            "label": "Notes",
+            "body": "an editable note, pre-filled from the Notes/Evidence columns when available."
+          }
+        }
       },
-      "export": {
-        "title": "7. Export your results",
-        "body": "Everything in Mode 1 can leave the app in a form you can reuse elsewhere: the filtered dataset as a spreadsheet, the chart as an image, and any pinned point's details as a small standalone PNG or text file.",
-        "chartCaption": "Figure 9 — The chart image export, produced by \"Export → Chart image (.png)\" — a title, trend line and Pareto frontier have been turned on to show the full range of what can go into it.",
-        "pinExportCaption": "Figure 10 — One pinned point's full export, produced by \"Export this pin\" — everything on the card (Origin, Mode, a multi-layer structure, Metrics and the note) combined into a single PNG.",
-        "formatsTitle": "Dataset and chart formats",
+      "comparePins": {
+        "title": "10. Comparing pinned points",
+        "body": "Selecting 2 or more pinned cards (up to 6) enables the \"Compare (N)\" button, opening a view with the points side by side. The title pre-fills from the pinned references and stays editable.",
+        "figureCaption": "Fig. 15: comparing the two points pinned on page 13.",
+        "sections": {
+          "origin": "whether the record is measured (EXP) or simulated (SIM).",
+          "mode": "the Mode ID and, when present, its description.",
+          "structure": "Material Class, Base Materials, and the layer stack.",
+          "metrics": "every plotted or recorded numeric value.",
+          "notes": "the free-text note attached to the pin."
+        },
+        "note": "Each section can be turned off before exporting. Capped at 6 pins to stay legible.",
+        "markupTitle": "Mark up the comparison",
+        "markupBody": "Before exporting, draw directly on the preview: a pen (3 colors) to circle or annotate a detail, an eraser, or click a row to band-highlight it across every column.",
+        "markupMarks": {
+          "tools": {
+            "label": "Tools",
+            "body": "View (default), Pen, Eraser, or Highlight a row."
+          },
+          "clear": {
+            "label": "Clear markup",
+            "body": "removes every stroke and highlight. Keeps the title and section choices."
+          }
+        }
+      },
+      "exportChart": {
+        "title": "11. Exporting the chart",
+        "body": "The filtered dataset exports as a spreadsheet, and the chart as configured exports as an image.",
+        "chartCaption": "Fig. 16: grouped by Material Class, merge on.",
+        "chartCaption2": "Fig. 17: grouped by Base Materials, merge off.",
+        "mergeExplain": "\"Merge multi-category points\" applies to any composite column, on automatically the moment you group by one. On (left), a multi-category record collapses into one multi-color marker. Off (right), it plots once per token, each with its own color.",
+        "formatsTitle": "Export formats",
         "formats": {
           "csv": "the filtered rows as a CSV file.",
           "xlsx": "the filtered rows as an Excel workbook.",
-          "png": "the chart exactly as displayed, including title, legend and any overlay."
-        },
-        "pinFormatsTitle": "Per-pin exports",
-        "pinFormats": {
-          "note": "the note text, as its own .txt file.",
-          "fields": "the Metrics box (or Layer Structure) as a small, self-contained PNG image.",
-          "all": "everything on the card — Mode, structure, metrics and note — as one combined PNG."
+          "png": "the chart exactly as displayed, with title, legend and any overlay."
         }
       },
-      "useCases": {
-        "title": "8. Example use cases",
-        "intro": "A few ways the controls above combine in practice, using the same worked example.",
-        "compareExpSim": {
-          "title": "Checking measurement against simulation",
-          "body": "Keep both Origin values checked, group by Origin, and turn on the median line: if the EXP median sits well below the SIM one, simulations may be systematically optimistic for this dataset."
-        },
-        "reviewFlagged": {
-          "title": "Triaging records that need a second look",
-          "body": "The \"flagged for review\" badge marks records whose FWHM was estimated rather than read directly. Pin one, open its note, and check the estimation method before trusting the value."
-        },
-        "publicationFigure": {
-          "title": "Preparing a figure for a paper",
-          "body": "Filter down to the material platforms you're comparing, turn on the legend and axis markers for clarity, then export the chart as a PNG — it's already sized and labeled for reuse."
+      "exportPin": {
+        "title": "12. Exporting a pinned point",
+        "body": "A pinned point's details also export on their own, at three levels: everything in one image, or just its layer structure.",
+        "pinExportCaption": "Fig. 18: every field combined into one PNG.",
+        "metricsExportCaption": "Fig. 19: numeric measurements only, no structure or notes.",
+        "layerPopupCaption": "Fig. 20: the Layer Structure viewer.",
+        "layerOrderNote": "Layers are listed top to bottom as written in the file: the first is whichever material light reaches first, not necessarily the thickest. This preserves the paper's own physical order.",
+        "pinFormatsTitle": "Per-pin export formats",
+        "pinFormats": {
+          "note": "the note text, as its own .txt file.",
+          "fields": "the Metrics box (or Layer Structure) as a small standalone PNG.",
+          "all": "everything on the card (Mode, structure, metrics, note) as one PNG."
         }
       }
     },
@@ -291,18 +536,27 @@
       "title": "PDF extraction & validation",
       "comingSoon": {
         "title": "Coming soon",
-        "body": "The PDF extraction and validation workflow is still under active development. This guide will be updated with full documentation once that feature is ready."
+        "body": "The PDF extraction and validation workflow is still under development. This guide will be updated once that feature is ready."
       },
       "preview": {
         "title": "What's coming",
         "rules": {
           "title": "AI extraction rules",
-          "body": "Gemini will read each paper against a fixed set of business rules — substrate checks, wavelength-domain validation — before proposing a value for review."
+          "body": "Gemini extracts wavelength-domain records only, keeps an EXP/SIM pair of the same mode under one Mode ID, and restricts Material Class to a fixed vocabulary. Inert substrates like glass never appear in Layer Structure, and a periodic stack (e.g. a 10-period Bragg mirror) collapses into one \"(A/B) x10\" notation instead of being listed layer by layer."
+        },
+        "columns": {
+          "title": "Extracted columns",
+          "body": "Reference, title, Mode ID/description, Material Class, Base Materials, Layer Structure, Origin, Domain, Resonance Wavelength, FOM, Sensitivity, FWHM, Q-factor, plus the source text and its page/figure location."
         },
         "validation": {
-          "title": "Human-in-the-loop validation",
-          "body": "A split-screen view will let you approve, edit or exclude each extracted value next to its source page before it's added to your dataset."
+          "title": "Human validation",
+          "body": "A split-screen view will show each proposed value next to its source page, to approve, edit or exclude it."
         }
+      },
+      "wireframe": {
+        "title": "What the review screen might look like",
+        "badge": "Theoretical",
+        "caption": "An early, unstyled wireframe of the planned split-screen review. Layout and copy are illustrative and will change."
       }
     }
   },
@@ -311,27 +565,38 @@
     "type": {
       "scatter": "Scatter Plot"
     },
-    "toolbox": {
-      "feature": {
-        "saveAsImage": {
-          "title": "Save as Image"
-        }
-      }
+    "zoom": {
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "reset": "Reset zoom",
+      "lock": "Lock zoom",
+      "unlock": "Unlock zoom"
     },
     "controls": {
       "title": "Chart Title",
       "titlePlaceholder": "No title",
+      "titlePlaceholderExample": "{y} / {x}",
       "clearTitle": "Clear title",
       "xAxis": "X-Axis",
       "yAxis": "Y-Axis",
+      "axisGroupNumeric": "Numeric",
+      "axisGroupCategorical": "Categorical",
+      "editAxis": "Edit {axis}",
+      "swapAxes": "Swap X and Y axes",
+      "axisLinked": "Linked axes",
+      "axisLinkedHint": "Linked: prevents X and Y from sharing the same axis",
+      "axisUnlinkedHint": "Independent: X and Y may share the same axis",
       "groupBy": "Group / Color by",
       "none": "None",
       "trendLine": "Trend line",
-      "trendLineHint": "Requires a numeric X axis",
+      "trendLineHint": "Requires numeric X and Y axes",
       "trendUnavailable": "Trend line: not enough points",
       "trendType": "Curve type",
       "pareto": "Pareto frontier",
-      "mergeMultiCategory": "Merge multi-category points"
+      "mergeMultiCategory": "Merge multi-category points",
+      "pointSizeByValue": "Size by a measurement",
+      "pointSizeBy": "Measurement",
+      "pointSize": "Point size"
     },
     "trendType": {
       "auto": "Auto (best fit)",
@@ -357,7 +622,14 @@
         "label": "Exclusion mode",
         "strict": "Strict",
         "lenient": "Lenient"
-      }
+      },
+      "selectAll": "Select all",
+      "deselectAll": "Deselect all",
+      "allDomains": "All domains",
+      "allOrigins": "All origins",
+      "allMaterialClasses": "All material classes",
+      "allBaseMaterials": "All base materials",
+      "excludeNeedsReview": "Hide needs-review ({count})"
     },
     "legend": {
       "toggle": "Show legend"
@@ -367,15 +639,21 @@
       "toggle": "Show median"
     },
     "scale": {
-      "label": "Scale:",
+      "label": "Scale",
       "log": "Log",
       "linear": "Linear"
     },
+    "pointSizeLegend": "Size: {column} ({min}–{max})",
+    "trendLineExplain": "Curve fitted by least-squares regression.",
+    "paretoExplain": "Connects the non-dominated points: no other point is better on both X and Y.",
+    "pointSizeLegendExplain": "The larger the point, the higher its {column} value.",
     "unknownGroup": "Unknown",
     "alsoInGroups": "Also classified as: {groups}",
     "needsReview": "⚠ Review status: Edit",
     "flaggedHint": "Dashed outline = flagged for review",
     "reviewWarning": "{count} to review",
+    "manualCount": "{count} added manually",
+    "manualHint": "Diamond markers with a gold outline are points you added manually. They aren't from a document.",
     "workspace": {
       "title": "Analysis workspace",
       "pinHint": "Click a point to pin an annotation",
@@ -403,15 +681,18 @@
       "isolate": "Isolate this group on the chart (doesn't affect the stats)",
       "isolateActive": "Click to clear the isolation",
       "showDetails": "Show details",
-      "hideDetails": "Hide details"
+      "hideDetails": "Hide details",
+      "searchPlaceholder": "Search a category...",
+      "noMatch": "No category matches your search.",
+      "showMore": "Show {count} more",
+      "showLess": "Show less"
     },
     "annotations": {
       "title": "Annotations",
-      "tooltip": "Click any point to pin it here. Check 2 or more pins to compare them.",
-      "empty": "No pins yet — click any point on the chart to bookmark it for later comparison.",
+      "empty": "No pins yet. Click any point on the chart to bookmark it.",
       "remove": "Remove annotation",
       "clearAll": "Clear all",
-      "showOnlyPinned": "Show only pinned points",
+      "showOnlyPinned": "Pinned points only",
       "showOnlyPinnedTooltip": "Hides every point except the ones pinned below. Stats narrow down to this same selection too.",
       "pinSiblings": "+ Pin {count} other point(s)",
       "compareLabel": "Select to compare",
@@ -436,29 +717,180 @@
     },
     "compare": {
       "title": "Compare pinned points",
-      "description": "Pick which sections to include and, optionally, a title for this comparison image.",
-      "clearSelection": "Clear selection",
+      "description": "Pick which sections to include and, optionally, a title for this image.",
+      "selectAll": "Select all",
+      "deselectAll": "Deselect all",
       "compareButton": "Compare ({count})",
-      "hint": "Select 2 to {max} pinned points to compare them.",
-      "selectedCount": "{count} selected",
       "titleLabel": "Title (optional)",
       "titlePlaceholder": "e.g. Ring resonators vs. grating sensors",
+      "titleAuto": "Comparison: {refs}",
+      "clearTitle": "Clear title",
       "sectionsLabel": "Show",
       "origin": "Origin",
+      "tools": {
+        "none": "View",
+        "pen": "Pen",
+        "eraser": "Eraser",
+        "highlightRow": "Highlight a row",
+        "penColor": "Pen color",
+        "clear": "Clear markup",
+        "penHint": "Draw freely over the preview to highlight or circle a detail.",
+        "eraserHint": "Erase strokes drawn with the pen.",
+        "highlightRowHint": "Click a row to highlight it across every column."
+      },
       "downloadPng": "Download comparison PNG",
       "empty": "Pick at least one section to include."
+    },
+    "addPoint": {
+      "title": "Add a data point",
+      "description": "Compare your own sensor against the literature. It isn't saved to the file, but it does appear in exports.",
+      "editTitle": "Edit this point",
+      "editDescription": "Change any value below. The original values stay recoverable with \"Reset this point\", separate from the toolbar's general \"Reset\".",
+      "steps": {
+        "essentials": "Essentials",
+        "metrics": "Metrics",
+        "structure": "Structure & materials",
+        "finish": "Finish"
+      },
+      "back": "Back",
+      "next": "Next",
+      "saveWithoutDetails": "Save without more details",
+      "saveChanges": "Save changes",
+      "noStructureFields": "This dataset has no structure/material columns to fill in.",
+      "noMetricFields": "This dataset has no extra metric columns to fill in.",
+      "modeIdHint": "Optional. Leave blank if not relevant.",
+      "noBaseMaterialsYet": "Add a Base Material above first. A layer can only be made of a material already listed there.",
+      "structureIntro": "Base Materials → Material Class → Layer Structure: each level unlocks once the previous one has a value.",
+      "structureLocked": "Locked until {field} has a value.",
+      "materialClassSuggestedHint": "Suggested from the materials you picked -- check the box(es) that apply, or adjust them.",
+      "tagsSelectedCount": "{n} selected",
+      "layersSummary": "{n} layers · {thickness} µm",
+      "modeSectionLabel": "Mode ID & description (optional)",
+      "materialsRemaining": "Still to place: {materials}",
+      "alreadyEditedHint": "This point was already edited. Saving now updates it again. \"Reset this point\" (in Data points) always restores the original values.",
+      "clearField": "Clear",
+      "qFactorHint": "Q-factor measures how sharp the resonance is: Q = λ / FWHM. Not stated directly? Compute it from those two values.",
+      "autoComputedBadge": "Auto-computed",
+      "useManualQFactor": "Enter a different value",
+      "useComputedQFactor": "Use the computed value (≈ {value})",
+      "shapeCircle": "Circle",
+      "shapeDiamond": "Diamond",
+      "shapeStar": "Star",
+      "labelField": "Sensor label",
+      "labelPlaceholder": "e.g. My SiN ring resonator",
+      "fields": {
+        "resonanceWavelength": "Resonance Wavelength",
+        "fom": "FOM",
+        "sensitivity": "Sensitivity",
+        "fwhm": "FWHM",
+        "qFactor": "Q-factor",
+        "domain": "Domain",
+        "origin": "Origin",
+        "materialClass": "Material Class",
+        "baseMaterials": "Base Materials",
+        "layerStructure": "Layer Structure",
+        "modeId": "Mode ID",
+        "modeDescription": "Mode Description"
+      },
+      "fieldPlaceholders": {
+        "resonanceWavelength": "e.g. 1550",
+        "fom": "e.g. 0.85",
+        "sensitivity": "e.g. 120",
+        "fwhm": "e.g. 25",
+        "qFactor": "e.g. 5000",
+        "modeId": "e.g. 1",
+        "modeDescription": "e.g. TE0"
+      },
+      "sections": {
+        "axes": "Chart axes",
+        "metrics": "Metrics",
+        "context": "Context",
+        "structure": "Structure & materials",
+        "shape": "Point shape",
+        "notes": "Notes"
+      },
+      "converter": {
+        "trigger": "Unit converter",
+        "title": "Unit converter",
+        "hint": "Every field here is in its canonical unit (nm / nm/RIU). Convert here, then type the result into the field.",
+        "valuePlaceholder": "Value",
+        "copy": "Copy",
+        "copied": "Copied!"
+      },
+      "tagsPlaceholder": "Search or add a value...",
+      "addNew": "Add",
+      "noMatches": "No suggestions yet",
+      "removeTag": "Remove {value}",
+      "addLayer": "Add layer",
+      "removeLayer": "Remove layer {n}",
+      "layerMaterialPlaceholder": "Material (e.g. Au)",
+      "layerThicknessPlaceholder": "e.g. 450",
+      "layerRepeatLabel": "Repeat count for layer {n}",
+      "layerRepeatHint": "How many times this layer (or period, with the rows next to it) repeats. E.g. 10 for a 10x Bragg mirror period. Leave blank otherwise.",
+      "layerPreview": "Preview",
+      "notesPlaceholder": "Any extra context worth remembering about this point...",
+      "provenanceHint": "This point is added manually, not sourced from a document. It's marked as such everywhere: chart, table, exports.",
+      "save": "Save",
+      "toolbarButton": "Add data",
+      "includeInStats": "Include my added points in statistics",
+      "includeInStatsHint": "When off, your added points still appear on the chart, but are excluded from the median, trend line, Pareto frontier, and sample count.",
+      "exportSourceManual": "Manual entry (not from a document)",
+      "exportSourceDocument": "Document"
+    },
+    "pointsTable": {
+      "title": "Data points",
+      "searchPlaceholder": "Search a point...",
+      "clearSearch": "Clear search",
+      "sort": {
+        "ref": "By reference",
+        "title": "By title",
+        "valueDesc": "Highest value first",
+        "valueAsc": "Lowest value first"
+      },
+      "sortLabel": "Sort list",
+      "filters": {
+        "all": "All",
+        "visible": "Visible",
+        "hidden": "Hidden"
+      },
+      "empty": "Nothing plotted yet.",
+      "noResults": "No point matches your search.",
+      "noHidden": "No hidden points.",
+      "untitled": "Untitled",
+      "otherGroup": "No reference",
+      "hide": "Hide",
+      "edit": "Edit",
+      "resetPoint": "Reset",
+      "editedBadge": "Edited",
+      "deletePermanently": "Delete",
+      "deleteConfirm": "Permanently delete this point? Can't be undone this session (re-import the file to get it back).",
+      "unhide": "Show",
+      "moreActions": "More actions",
+      "pin": "Pin",
+      "unpin": "Unpin",
+      "pinnedGroup": "Pinned",
+      "pinnedHint": "Stays here even when hidden from the chart. A pinned point is never lost.",
+      "pinGuardHint": "Unpin first to hide or delete",
+      "pinGroup": "Pin whole group",
+      "unpinGroup": "Unpin whole group",
+      "hideGroup": "Hide whole group",
+      "showOnlyGroup": "Show only these points"
     },
     "tooltips": {
       "groupBy": "Colors points by this column so you can compare groups at a glance.",
       "scale": "Log keeps values that span several orders of magnitude readable. Linear keeps equal spacing between values.",
       "legend": "Draws the legend on the chart itself, so it's included when exporting as an image.",
       "median": "Draws a dashed line at the median Y value of the points plotted.",
-      "trendLine": "Fits a curve through the points to show the overall trend. Needs a numeric X axis; \"Auto\" picks whichever shape fits best.",
+      "trendLine": "Fits a curve through the points to show the overall trend. Needs numeric X and Y axes; \"Auto\" picks whichever shape fits best.",
       "trendType": "The mathematical model the trend line fits (linear, exponential, logarithmic, power, or polynomial). \"Auto\" keeps whichever has the highest R².",
-      "pareto": "Highlights the non-dominated points — not beaten on both axes by any other point.",
+      "pareto": "Highlights the non-dominated points, not beaten on both axes by any other point.",
       "trendUnavailable": "Needs at least 2 points with different X values to draw anything.",
       "exclusionMode": "Strict excludes a point as soon as it contains one unchecked material/class. Lenient only excludes it once ALL of its materials/classes are unchecked.",
-      "mergeMultiCategory": "A multi-category point normally plots once per category. Turn this on to show a single gradient marker instead."
+      "mergeMultiCategory": "A multi-category point normally plots once per category. Turn this on to show a single gradient marker instead.",
+      "excludeNeedsReview": "Hides points whose Review status is \"Edit\" (the dashed outline on the chart).",
+      "pointSizeMode": "Turn on to size each point by a chosen measurement; off for one flat size everywhere.",
+      "pointSizeBy": "The measurement that drives point size while \"Size by a measurement\" is on.",
+      "pointSize": "Point size: the maximum size in \"by measurement\" mode, or the single flat size in constant mode."
     }
   }
 }
