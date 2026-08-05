@@ -160,7 +160,7 @@
     },
     "intro": {
       "title": "为什么选择 λLens？",
-      "abstractBody": "λLens 加快了集成光子传感器的文献综述速度。手动提取 FOM 数值（波长、灵敏度、Q 因子、FWHM），一旦超过少数几篇文献便难以为继。λLens 将 PDF 提取与可视化都自动化：从一个论文文件夹到一张可导出的图表，只需几分钟，而不是几天。",
+      "abstractBody": "λLens 加快了集成光子传感器的文献综述速度。手动比对十几篇论文，意味着为同样的 FOM 数值（波长、灵敏度、Q 因子、FWHM）反复整理表格、复制粘贴，还容易抄错数据。λLens 将 PDF 提取与可视化都自动化：从一个论文文件夹到一张可导出的图表，只需几分钟，而不是几天。",
       "guideBody": "本指南介绍今天就可直接使用的模式一（Excel 转图表可视化）。模式二（PDF 提取）将在稳定后加入。",
       "contextBody": "λLens 开发于延世大学 MPBEL，与下方介绍的国际光学与光子学社区紧密相连。",
       "diagram": {
@@ -175,12 +175,34 @@
     },
     "toc": {
       "title": "目录",
-      "hint": "点击任意条目即可直接跳转。"
+      "hint": "点击任意条目即可直接跳转。",
+      "desc": {
+        "intro": "一眼看懂 λLens。",
+        "mode1Import": "导入 Excel 或 CSV 文件。",
+        "mode1Controls": "选择坐标轴，调整显示。",
+        "mode1Filters": "不改动文件，缩小数据范围。",
+        "mode1Reading": "读懂图上的每一个点。",
+        "mode1Compare": "按类别分组比较。",
+        "mode1DataTable": "搜索、排序、隐藏、置顶。",
+        "mode1AddPoint1": "新点的名称、坐标轴与指标。",
+        "mode1AddPoint2": "材料、结构与结果。",
+        "mode1Annotate": "置顶数据点以便比较。",
+        "mode1ComparePins": "并排对比，附带标注。",
+        "mode1ExportChart": "筛选后的数据与图表图片。",
+        "mode1ExportPin": "单独导出一个置顶点。",
+        "mode2": "PDF 自动提取，即将推出。"
+      }
     },
     "mode1": {
       "eyebrow": "模式一",
       "title": "Excel 转图表可视化",
-      "partIntro": "以下各页将逐步介绍 Excel 转图表工作区，从导入到导出。"
+      "partIntro": "以下各页将逐步介绍 Excel 转图表工作区，从导入到导出。",
+      "flow": {
+        "import": "导入",
+        "configure": "配置",
+        "annotate": "标注",
+        "export": "导出"
+      }
     },
     "scenario": {
       "title": "本节使用的示例",
@@ -345,11 +367,15 @@
           },
           "groupCard": {
             "label": "分组卡片",
-            "body": "点击可突出显示该分组。点击箭头展开数量、平均值、中位数和 σ。"
+            "body": "点击可突出显示该分组。"
+          },
+          "groupDetails": {
+            "label": "分组详情",
+            "body": "点击箭头展开该分组的数量、平均值、中位数和 σ。"
           }
         },
         "note": "只有分组至少有 3 个点时才显示平均值、中位数和 σ，低于此数量则不是真正的分布。",
-        "mergeNote": "按复合列（材料等级或基础材料）分组时会出现「合并多类别数据点」开关，并在选择该分组方式的瞬间自动开启。关闭时，多类别行按类别各绘制一次，统计准确。开启后合并为一个多色标记，更易读，但只能通过第一个类别隐藏。"
+        "mergeNote": "按复合列（材料等级、基础材料）分组时会出现「合并多类别数据点」开关，默认开启。开关前后的对比图见第 15 页图 16-17。"
       },
       "dataTable": {
         "title": "6. 管理数据点",
@@ -417,10 +443,10 @@
         "title": "8. 结构、备注与结果",
         "body": "第 3 步构建传感器的材料与层叠结构，第 4 步用于填写备注。填写完成后，该点会立即出现在图表上。",
         "structureTitle": "第 3 步：结构与材料",
-        "structureBody": "一个锁定的级联流程：先填 Base Materials，再填 Material Class（根据这些材料自动建议），最后是 Layer Structure。每一级都要等上一级有值才会解锁。",
+        "structureBody": "锁定级联：Base Materials，然后 Material Class（自动建议），然后 Layer Structure。每一级都要等上一级有值才解锁。",
         "figureStructureCaption": "图 12：结构与材料，共 4 步中的第 3 步。",
         "finishTitle": "第 4 步：完成",
-        "finishBody": "填写备注，并提醒你该点没有来源文档：图表、数据点列表以及每次导出中都会同样标注这一点。",
+        "finishBody": "该点的自由备注，可选填。",
         "converterCaption": "一个用于手动换算的速查计算器（µm/pm → nm），方便把论文中的数值换算后填入。",
         "resultTitle": "结果",
         "resultCaption": "图 13：图表上新增的数据点，一个带金色描边的菱形，落点处会有短暂的脉冲光圈。",
@@ -553,7 +579,11 @@
         "title": "即将推出的内容",
         "rules": {
           "title": "AI 提取规则",
-          "body": "Gemini 仅提取波长域记录，将同一模式的 EXP/SIM 数据对归入同一个 Mode ID，并将材料等级限制在固定词汇表内。玻璃等惰性基底不会出现在 Layer Structure 中，周期性堆叠（例如 10 周期布拉格反射镜）会归并为一个「(A/B) x10」记号，而不是逐层列出。"
+          "items": {
+            "scope": "仅提取波长域记录。每对 EXP/SIM 数据归入同一个 Mode ID。",
+            "vocab": "材料等级取自固定词汇表。玻璃等惰性基底不会出现在 Layer Structure 中。",
+            "periodic": "周期性堆叠（例如 10 周期布拉格反射镜）会归并为一个「(A/B) x10」记号，而不是逐层列出。"
+          }
         },
         "columns": {
           "title": "提取的列",
@@ -779,7 +809,7 @@
       "noBaseMaterialsYet": "请先在上方添加一种基础材料，层只能使用已列出的材料。",
       "structureIntro": "基础材料 → 材料类别 → 层结构：上一级填写数值后，下一级才会解锁。",
       "structureLocked": "在{field}填写数值之前保持锁定。",
-      "materialClassSuggestedHint": "根据所选材料自动建议 -- 勾选适用项，或自行调整。",
+      "materialClassSuggestedHint": "根据所选材料自动建议。勾选适用项，或自行调整。",
       "tagsSelectedCount": "已选 {n} 项",
       "layersSummary": "{n} 层 · {thickness} µm",
       "modeSectionLabel": "模式 ID 与说明（可选）",

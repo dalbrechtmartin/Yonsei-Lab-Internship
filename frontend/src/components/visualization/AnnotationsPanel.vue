@@ -52,7 +52,11 @@
           </Button>
         </div>
 
-        <div v-if="annotations.length > 0" class="flex max-h-88 flex-col gap-2 overflow-x-hidden overflow-y-auto">
+        <div
+          v-if="annotations.length > 0"
+          class="flex flex-col gap-2 overflow-x-hidden"
+          :class="unboundedList ? '' : 'max-h-88 overflow-y-auto'"
+        >
           <AnnotationCard
             v-for="note in sortedAnnotations"
             :key="note.id"
@@ -148,6 +152,10 @@ const props = defineProps<{
   xAxis: string | null;
   yAxis: string | null;
   groupBy: string | null;
+  // The real sidebar caps the card list at max-h-88 and scrolls -- the
+  // guide's own demo instance needs an expanded card to render in full,
+  // uncropped, for its own figure, so it opts out of that cap instead.
+  unboundedList?: boolean;
 }>();
 defineEmits<{
   remove: [id: string];

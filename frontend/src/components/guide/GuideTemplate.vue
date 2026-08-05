@@ -106,12 +106,10 @@
         <p class="mb-2 max-w-md text-sm leading-relaxed text-ink">{{ t("guide.intro.guideBody") }}</p>
         <p class="mb-6 max-w-md text-sm leading-relaxed text-secondary">{{ t("guide.intro.contextBody") }}</p>
 
-        <!-- Yonsei and Optica reuse real, rights-cleared local marks (Optica's
-             own standalone SVG here, not the yonsei-optica.svg lockup built
-             for sitting next to Yonsei's mark on the cover); SPIE now has one
-             too. MPBEL doesn't have a valid asset yet (the file shipped for
-             it is an empty export with no paths), so it keeps the plain
-             monogram badge -- same visual weight, no invented artwork. -->
+        <!-- Yonsei, MPBEL, SPIE and Optica all reuse real, rights-cleared
+             local marks (Optica's own standalone SVG here, not the
+             yonsei-optica.svg lockup built for sitting next to Yonsei's mark
+             on the cover). -->
         <div class="flex w-full max-w-md items-center justify-center gap-8 border-t border-border pt-4">
           <div class="flex flex-col items-center gap-1.5">
             <img :src="yonseiSymbol" alt="Yonsei University" class="h-8 w-auto" />
@@ -119,7 +117,7 @@
           </div>
           <div class="h-8 w-px bg-border" />
           <div class="flex flex-col items-center gap-1.5">
-            <span class="flex h-8 items-center rounded bg-primary/10 px-2 font-mono text-[10px] font-bold tracking-wide text-primary">MPBEL</span>
+            <img :src="mpbelLogo" alt="MPBEL" class="h-7 w-auto" />
             <span class="text-[11px] text-secondary">MPBEL<sup>2</sup></span>
           </div>
           <div class="h-8 w-px bg-border" />
@@ -167,14 +165,17 @@
             {{ t("guide.mode1.eyebrow") }} — {{ t("guide.mode1.title") }}
           </div>
           <div
-            class="guide-toc-row group flex items-center gap-2.5 px-4 py-1.5"
+            class="guide-toc-row group flex items-center gap-3 px-4 py-2"
             :class="[idx % 2 === 1 ? 'bg-muted/25' : 'bg-white', entry.group === 'mode1' ? 'pl-9' : '', idx > 0 ? 'border-t border-border/70' : '']"
             :data-toc-target="entry.page"
           >
-            <span class="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <component :is="entry.icon" class="size-3" />
+            <span class="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <component :is="entry.icon" class="size-3.5" />
             </span>
-            <span class="flex-1 text-sm text-ink">{{ entry.label }}</span>
+            <span class="min-w-0 flex-1">
+              <span class="block text-sm font-medium text-ink">{{ entry.label }}</span>
+              <span class="block truncate text-[11px] text-secondary">{{ entry.desc }}</span>
+            </span>
             <span class="h-0 w-6 flex-none -translate-y-1 border-b border-dotted border-secondary/50" />
             <span class="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary font-mono text-[11px] font-semibold text-white">
               {{ entry.page }}
@@ -198,10 +199,21 @@
         <p class="text-xs font-semibold tracking-[0.35em] text-secondary uppercase">{{ t("guide.mode1.eyebrow") }}</p>
         <h2 class="max-w-lg text-3xl font-bold text-ink">{{ t("guide.mode1.title") }}</h2>
         <p class="max-w-sm text-sm leading-relaxed text-secondary">{{ t("guide.mode1.partIntro") }}</p>
-        <ul class="mt-2 flex flex-col items-start gap-1.5 text-left">
-          <li v-for="entry in mode1TocEntries" :key="entry.page" class="flex items-center gap-2.5 text-sm text-ink">
-            <span class="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <component :is="entry.icon" class="size-3" />
+        <div class="mt-2 flex items-center justify-center gap-4 rounded-2xl border border-border bg-muted/20 px-8 py-6">
+          <template v-for="(step, i) in mode1FlowSteps" :key="step.label">
+            <div class="flex flex-col items-center gap-1.5">
+              <span class="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <component :is="step.icon" class="size-5" />
+              </span>
+              <span class="max-w-20 text-[10.5px] leading-tight font-medium text-ink">{{ step.label }}</span>
+            </div>
+            <ArrowRight v-if="i < mode1FlowSteps.length - 1" class="size-4 shrink-0 text-secondary/40" />
+          </template>
+        </div>
+        <ul class="mt-1 grid max-w-md grid-cols-2 gap-x-6 gap-y-1 text-left">
+          <li v-for="entry in mode1TocEntries" :key="entry.page" class="flex items-center gap-2 text-xs text-secondary">
+            <span class="flex size-4 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[9px] font-semibold text-primary">
+              {{ entry.page - PAGE_MODE1_IMPORT + 1 }}
             </span>
             {{ entry.label }}
           </li>
@@ -581,6 +593,7 @@
             :items="[
               { label: t('guide.steps.compare.marks.groupBySelect.label'), body: t('guide.steps.compare.marks.groupBySelect.body') },
               { label: t('guide.steps.compare.marks.groupCard.label'), body: t('guide.steps.compare.marks.groupCard.body') },
+              { label: t('guide.steps.compare.marks.groupDetails.label'), body: t('guide.steps.compare.marks.groupDetails.body') },
             ]"
           />
         </div>
@@ -750,7 +763,7 @@
           </div>
         </div>
 
-        <GuideMarkRing v-for="(m, i) in addPoint1Marks" :key="i" :mark="m" :number="i + 1" />
+        <GuideMarkRing v-for="(m, i) in addPoint1Marks" :key="i" :mark="m" :number="i + 1" :side="i < 2 ? 'left' : undefined" />
       </TooltipProvider>
       </div>
       <p class="mx-auto mt-1.5 max-w-120 text-center text-[11px] leading-snug text-secondary">{{ t("guide.steps.addPoint1.stepperCaption") }}</p>
@@ -777,18 +790,18 @@
       :data-outline-title="t('guide.outline.mode1AddPoint2')"
     >
       <GuideHeader />
-      <p class="mb-1.5 text-xs font-semibold tracking-[0.3em] text-secondary uppercase">{{ t("guide.mode1.eyebrow") }}</p>
-      <h2 class="mb-2 text-xl font-semibold">{{ t("guide.steps.addPoint2.title") }}</h2>
-      <p class="mb-1.5 text-sm leading-relaxed text-justify text-ink">{{ t("guide.steps.addPoint2.body") }}</p>
+      <p class="mb-0.5 text-xs font-semibold tracking-[0.3em] text-secondary uppercase">{{ t("guide.mode1.eyebrow") }}</p>
+      <h2 class="mb-1 text-xl font-semibold">{{ t("guide.steps.addPoint2.title") }}</h2>
+      <p class="mb-1 text-sm leading-relaxed text-justify text-ink">{{ t("guide.steps.addPoint2.body") }}</p>
 
-      <div class="flex items-start gap-6">
-        <div ref="addPoint2Wrap" class="guide-callout-region relative shrink-0" style="width: 290px">
-          <h3 class="mb-1 text-sm font-semibold text-primary">{{ t("guide.steps.addPoint2.structureTitle") }}</h3>
-          <p class="mb-1.5 text-[11px] leading-snug text-secondary">{{ t("guide.steps.addPoint2.structureBody") }}</p>
+      <div ref="addPoint2Wrap" class="guide-callout-region relative">
+        <h3 class="mb-0.5 text-sm font-semibold text-primary">{{ t("guide.steps.addPoint2.structureTitle") }}</h3>
+        <p class="mb-1 text-[11px] leading-snug text-secondary">{{ t("guide.steps.addPoint2.structureBody") }}</p>
 
+        <div class="grid grid-cols-2 gap-x-5">
           <div v-if="addPointBaseMaterialsField" ref="addPointNode1Wrap" class="flex gap-2">
             <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-[10.5px] font-bold text-primary-foreground">1</span>
-            <div class="min-w-0 flex-1 pb-1">
+            <div class="min-w-0 flex-1">
               <p class="mb-1 text-[11px] font-bold text-ink">{{ addPointFieldLabel(addPointBaseMaterialsField) }}</p>
               <MaterialsTagsField
                 v-model="addPointTags[addPointBaseMaterialsField.column]"
@@ -800,7 +813,7 @@
 
           <div v-if="addPointMaterialClassField" ref="addPointNode2Wrap" class="flex gap-2">
             <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-[10.5px] font-bold text-primary-foreground">2</span>
-            <div class="min-w-0 flex-1 pb-1">
+            <div class="min-w-0 flex-1">
               <p class="mb-0.5 text-[11px] font-bold text-ink">{{ addPointFieldLabel(addPointMaterialClassField) }}</p>
               <p class="mb-0.5 text-[10px] text-muted-foreground">{{ t("fomcharts.addPoint.materialClassSuggestedHint") }}</p>
               <MaterialsTagsField
@@ -811,50 +824,51 @@
               />
             </div>
           </div>
-
-          <div v-if="addPointLayerField" ref="addPointNode3Wrap" class="flex gap-2">
-            <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-[10.5px] font-bold text-primary-foreground">3</span>
-            <div class="min-w-0 flex-1">
-              <p class="mb-1 text-[11px] font-bold text-ink">{{ addPointFieldLabel(addPointLayerField) }}</p>
-              <LayerStructureField v-model="addPointLayers" :material-options="addPointTags[addPointBaseMaterialsField?.column ?? ''] ?? []" />
-            </div>
-          </div>
-
-          <GuideMarkRing v-for="(m, i) in addPoint2Marks" :key="i" :mark="m" :number="i + 1" />
         </div>
 
-        <div class="flex-1 pt-1">
-          <p class="mb-1.5 text-[11px] leading-snug text-secondary">{{ t("guide.steps.addPoint2.figureStructureCaption") }}</p>
-          <GuideMarkLegend
-            :compact="true"
-            :items="[
-              { label: t('guide.steps.addPoint2.marks.baseMaterials.label'), body: t('guide.steps.addPoint2.marks.baseMaterials.body') },
-              { label: t('guide.steps.addPoint2.marks.materialClass.label'), body: t('guide.steps.addPoint2.marks.materialClass.body') },
-              { label: t('guide.steps.addPoint2.marks.layerStructure.label'), body: t('guide.steps.addPoint2.marks.layerStructure.body') },
-            ]"
-          />
-
-          <div class="mt-2">
-            <h3 class="mb-1 text-sm font-semibold text-primary">{{ t("guide.steps.addPoint2.finishTitle") }}</h3>
-            <p class="mb-1 text-[11px] leading-snug text-secondary">{{ t("guide.steps.addPoint2.finishBody") }}</p>
-            <Textarea :model-value="addPointNotes" readonly class="h-9 text-sm" />
-            <Alert variant="info" class="mt-1 gap-1.5 py-1">
-              <Info class="size-3.5" />
-              <AlertDescription class="text-[10px] text-ink/80">{{ t("fomcharts.addPoint.provenanceHint") }}</AlertDescription>
-            </Alert>
+        <div v-if="addPointLayerField" ref="addPointNode3Wrap" class="mt-1.5 flex gap-2 border-t border-secondary/10 pt-1.5">
+          <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-[10.5px] font-bold text-primary-foreground">3</span>
+          <div class="min-w-0 flex-1">
+            <p class="mb-1 text-[11px] font-bold text-ink">{{ addPointFieldLabel(addPointLayerField) }}</p>
+            <LayerStructureField v-model="addPointLayers" :material-options="addPointTags[addPointBaseMaterialsField?.column ?? ''] ?? []" />
           </div>
+        </div>
 
-          <div class="mt-1.5 flex items-center gap-2">
+        <GuideMarkRing v-for="(m, i) in addPoint2Marks" :key="i" :mark="m" :number="i + 1" />
+      </div>
+      <p class="mt-0.5 text-[11px] leading-snug text-secondary">{{ t("guide.steps.addPoint2.figureStructureCaption") }}</p>
+      <GuideMarkLegend
+        class="mt-0.5"
+        :compact="true"
+        :items="[
+          { label: t('guide.steps.addPoint2.marks.baseMaterials.label'), body: t('guide.steps.addPoint2.marks.baseMaterials.body') },
+          { label: t('guide.steps.addPoint2.marks.materialClass.label'), body: t('guide.steps.addPoint2.marks.materialClass.body') },
+          { label: t('guide.steps.addPoint2.marks.layerStructure.label'), body: t('guide.steps.addPoint2.marks.layerStructure.body') },
+        ]"
+      />
+
+      <div class="mt-0.5 flex items-start gap-6">
+        <div class="flex-1">
+          <h3 class="mb-0.5 text-sm font-semibold text-primary">{{ t("guide.steps.addPoint2.finishTitle") }}</h3>
+          <p class="mb-1 text-[10.5px] leading-snug text-secondary">{{ t("guide.steps.addPoint2.finishBody") }}</p>
+          <Textarea :model-value="addPointNotes" readonly class="h-7 text-sm" />
+          <Alert variant="info" class="mt-1 gap-1.5 py-0.5">
+            <Info class="size-3.5" />
+            <AlertDescription class="text-[10px] text-ink/80">{{ t("fomcharts.addPoint.provenanceHint") }}</AlertDescription>
+          </Alert>
+        </div>
+        <div class="w-52 shrink-0 pt-4.5">
+          <div class="flex items-center gap-1.5">
             <UnitConverterPopover v-model:open="unitConverterOpen" />
-            <p class="text-[10px] leading-snug text-secondary">{{ t("guide.steps.addPoint2.converterCaption") }}</p>
+            <p class="text-[9.5px] leading-snug text-secondary">{{ t("guide.steps.addPoint2.converterCaption") }}</p>
           </div>
         </div>
       </div>
 
       <div class="mt-1">
         <h3 class="mb-1 text-sm font-semibold text-primary">{{ t("guide.steps.addPoint2.resultTitle") }}</h3>
-        <div class="mx-auto guide-callout-region" style="width: 270px; height: 120px; overflow: hidden">
-          <div style="width: 700px; transform: scale(0.36); transform-origin: top left">
+        <div class="mx-auto guide-callout-region" style="width: 250px; height: 122px; overflow: hidden">
+          <div style="width: 700px; transform: scale(0.347); transform-origin: top left">
             <FomChart
               :chart-data="addPointResultRows"
               :columns="sampleColumns"
@@ -872,8 +886,8 @@
             />
           </div>
         </div>
-        <p class="mx-auto mt-1.5 max-w-120 text-center text-[11px] leading-snug text-secondary">{{ t("guide.steps.addPoint2.resultCaption") }}</p>
-        <p class="mx-auto mt-1 max-w-120 text-center text-[10.5px] leading-snug text-secondary">{{ t("guide.steps.addPoint2.resultBody") }}</p>
+        <p class="mx-auto mt-1 max-w-2xl text-center text-[11px] leading-snug text-secondary">{{ t("guide.steps.addPoint2.resultCaption") }}</p>
+        <p class="mx-auto mt-0.5 max-w-2xl text-center text-[10.5px] leading-snug text-secondary">{{ t("guide.steps.addPoint2.resultBody") }}</p>
       </div>
 
       <GuideFooter :page="PAGE_MODE1_ADDPOINT2" />
@@ -889,17 +903,13 @@
       <h2 class="mb-2 text-xl font-semibold">{{ t("guide.steps.annotate.title") }}</h2>
       <p class="mb-3 text-sm leading-relaxed text-justify text-ink">{{ t("guide.steps.annotate.body") }}</p>
 
-      <div class="flex items-start gap-9">
-        <!-- Both demo cards stay COLLAPSED here (unlike earlier drafts,
-             which pre-expanded R3 to also ring its inner sections) -- an
-             expanded card's full content (siblings shortcut, Layer
-             Structure, Metrics, Notes) genuinely doesn't fit next to the
-             panel's own controls on one page, and squeezing it in via a
-             scaled/clipped wrapper repeatedly misplaced those rings against
-             content that ends up rendered outside the clipped viewport.
-             What's inside an expanded card is instead shown in full, at
-             native size, by Fig. 12 on page 13 -- see the note below. -->
-        <div ref="annotationsWrap" class="guide-callout-region relative shrink-0" style="width: 280px">
+      <div class="flex items-start gap-7">
+        <!-- R1 stays collapsed (a real second card, for contrast), but R3 is
+             expanded for real -- the same click a researcher would make --
+             so Layer Structure / Metrics / Notes render at native size
+             instead of only being described in prose (see
+             captureGuideArtifacts). -->
+        <div ref="annotationsWrap" class="guide-callout-region relative shrink-0" style="width: 300px">
           <AnnotationsPanel
             ref="annotationsPanelRef"
             v-model:open="annotationsOpen"
@@ -910,30 +920,25 @@
             :x-axis="selectedXAxis"
             :y-axis="selectedYAxis"
             :group-by="groupBy"
+            :unbounded-list="true"
           />
           <GuideMarkRing v-for="(m, i) in annotationMarks" :key="i" :mark="m" :number="i + 1" />
         </div>
         <div class="flex-1 pt-1">
           <p class="mb-2 text-xs leading-snug text-secondary">{{ t("guide.steps.annotate.figureCaption") }}</p>
           <GuideMarkLegend
+            :compact="true"
             :items="[
               { label: t('guide.steps.annotate.marks.sort.label'), body: t('guide.steps.annotate.marks.sort.body') },
               { label: t('guide.steps.annotate.marks.showOnlyPinned.label'), body: t('guide.steps.annotate.marks.showOnlyPinned.body') },
               { label: t('guide.steps.annotate.marks.compareSelect.label'), body: t('guide.steps.annotate.marks.compareSelect.body') },
               { label: t('guide.steps.annotate.marks.card.label'), body: t('guide.steps.annotate.marks.card.body') },
+              { label: t('guide.steps.annotate.marks.siblings.label'), body: t('guide.steps.annotate.marks.siblings.body') },
+              { label: t('guide.steps.annotate.marks.layerStructure.label'), body: t('guide.steps.annotate.marks.layerStructure.body') },
+              { label: t('guide.steps.annotate.marks.metrics.label'), body: t('guide.steps.annotate.marks.metrics.body') },
+              { label: t('guide.steps.annotate.marks.notes.label'), body: t('guide.steps.annotate.marks.notes.body') },
             ]"
           />
-        </div>
-      </div>
-
-      <div class="mt-4">
-        <p class="mb-1.5 text-sm font-semibold text-primary">{{ t("guide.steps.annotate.expandTitle") }}</p>
-        <p class="mb-2 text-xs leading-snug text-secondary">{{ t("guide.steps.annotate.expandIntro") }}</p>
-        <div class="grid grid-cols-2 gap-x-5 gap-y-1.5 text-xs">
-          <p><strong class="text-primary">{{ t("guide.steps.annotate.marks.siblings.label") }}</strong> — {{ t("guide.steps.annotate.marks.siblings.body") }}</p>
-          <p><strong class="text-primary">{{ t("guide.steps.annotate.marks.layerStructure.label") }}</strong> — {{ t("guide.steps.annotate.marks.layerStructure.body") }}</p>
-          <p><strong class="text-primary">{{ t("guide.steps.annotate.marks.metrics.label") }}</strong> — {{ t("guide.steps.annotate.marks.metrics.body") }}</p>
-          <p><strong class="text-primary">{{ t("guide.steps.annotate.marks.notes.label") }}</strong> — {{ t("guide.steps.annotate.marks.notes.body") }}</p>
         </div>
       </div>
 
@@ -959,19 +964,19 @@
                two demo pins pinned on page 13 -- not the live dialog itself,
                since Dialog content teleports outside the `.guide-page` tree
                pdfExport.ts captures. -->
-          <div class="guide-callout-region" style="width: 300px">
+          <div class="guide-callout-region" style="width: 440px">
             <img v-if="comparePngUrl" :src="comparePngUrl" class="block w-full" :alt="t('fomcharts.compare.title')" />
           </div>
-          <p class="mx-auto mt-2 max-w-75 text-center text-[11px] leading-snug text-secondary">{{ t("guide.steps.comparePins.figureCaption") }}</p>
+          <p class="mx-auto mt-2 max-w-110 text-center text-[11px] leading-snug text-secondary">{{ t("guide.steps.comparePins.figureCaption") }}</p>
         </div>
 
         <div class="flex-1 pt-1">
-          <div class="grid grid-cols-1 gap-y-1.5 text-xs">
-            <p><strong class="text-primary">{{ t("fomcharts.compare.origin") }}</strong> — {{ t("guide.steps.comparePins.sections.origin") }}</p>
-            <p><strong class="text-primary">{{ t("fomcharts.annotations.mode") }}</strong> — {{ t("guide.steps.comparePins.sections.mode") }}</p>
-            <p><strong class="text-primary">{{ t("fomcharts.annotations.layerStructure") }}</strong> — {{ t("guide.steps.comparePins.sections.structure") }}</p>
-            <p><strong class="text-primary">{{ t("fomcharts.annotations.metrics") }}</strong> — {{ t("guide.steps.comparePins.sections.metrics") }}</p>
-            <p><strong class="text-primary">{{ t("fomcharts.annotations.notes") }}</strong> — {{ t("guide.steps.comparePins.sections.notes") }}</p>
+          <div class="flex flex-col gap-1.5 text-xs">
+            <p class="flex gap-1.5"><Check class="mt-0.5 size-3 shrink-0 text-primary" /><span><strong class="text-primary">{{ t("fomcharts.compare.origin") }} :</strong> {{ t("guide.steps.comparePins.sections.origin") }}</span></p>
+            <p class="flex gap-1.5"><Check class="mt-0.5 size-3 shrink-0 text-primary" /><span><strong class="text-primary">{{ t("fomcharts.annotations.mode") }} :</strong> {{ t("guide.steps.comparePins.sections.mode") }}</span></p>
+            <p class="flex gap-1.5"><Check class="mt-0.5 size-3 shrink-0 text-primary" /><span><strong class="text-primary">{{ t("fomcharts.annotations.layerStructure") }} :</strong> {{ t("guide.steps.comparePins.sections.structure") }}</span></p>
+            <p class="flex gap-1.5"><Check class="mt-0.5 size-3 shrink-0 text-primary" /><span><strong class="text-primary">{{ t("fomcharts.annotations.metrics") }} :</strong> {{ t("guide.steps.comparePins.sections.metrics") }}</span></p>
+            <p class="flex gap-1.5"><Check class="mt-0.5 size-3 shrink-0 text-primary" /><span><strong class="text-primary">{{ t("fomcharts.annotations.notes") }} :</strong> {{ t("guide.steps.comparePins.sections.notes") }}</span></p>
           </div>
 
           <!-- Mark-up toolbar -- a hand-assembled mock (same real Button/
@@ -1080,12 +1085,30 @@
       </div>
 
       <div class="mt-3">
-        <h3 class="mb-1.5 text-sm font-semibold text-primary">{{ t("guide.steps.exportChart.formatsTitle") }}</h3>
-        <ul class="flex flex-col gap-1 text-sm text-ink">
-          <li><strong class="font-mono text-ink">{{ t("fomcharts.export.csv") }}</strong> — {{ t("guide.steps.exportChart.formats.csv") }}</li>
-          <li><strong class="font-mono text-ink">{{ t("fomcharts.export.xlsx") }}</strong> — {{ t("guide.steps.exportChart.formats.xlsx") }}</li>
-          <li><strong class="font-mono text-ink">{{ t("fomcharts.export.png") }}</strong> — {{ t("guide.steps.exportChart.formats.png") }}</li>
-        </ul>
+        <h3 class="mb-2 text-sm font-semibold text-primary">{{ t("guide.steps.exportChart.formatsTitle") }}</h3>
+        <div class="grid grid-cols-3 gap-3">
+          <div class="flex items-start gap-2 rounded-xl border border-border bg-muted/20 px-3 py-2.5">
+            <span class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><FileText class="size-4" /></span>
+            <div class="min-w-0">
+              <p class="font-mono text-xs font-semibold text-ink">{{ t("fomcharts.export.csv") }}</p>
+              <p class="text-[10.5px] leading-snug text-secondary">{{ t("guide.steps.exportChart.formats.csv") }}</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-2 rounded-xl border border-border bg-muted/20 px-3 py-2.5">
+            <span class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><FileSpreadsheet class="size-4" /></span>
+            <div class="min-w-0">
+              <p class="font-mono text-xs font-semibold text-ink">{{ t("fomcharts.export.xlsx") }}</p>
+              <p class="text-[10.5px] leading-snug text-secondary">{{ t("guide.steps.exportChart.formats.xlsx") }}</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-2 rounded-xl border border-border bg-muted/20 px-3 py-2.5">
+            <span class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><FileImage class="size-4" /></span>
+            <div class="min-w-0">
+              <p class="font-mono text-xs font-semibold text-ink">{{ t("fomcharts.export.png") }}</p>
+              <p class="text-[10.5px] leading-snug text-secondary">{{ t("guide.steps.exportChart.formats.png") }}</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <GuideFooter :page="PAGE_MODE1_EXPORT_CHART" />
@@ -1105,7 +1128,7 @@
         <div>
           <!-- A genuine render of "Export this pin" (see AnnotationsPanel's
                exposed getExportDataUrl) -- the full combined-card export. -->
-          <div class="guide-callout-region" style="width: 210px">
+          <div class="guide-callout-region" style="width: 222px">
             <img v-if="pinExportDataUrl" :src="pinExportDataUrl" class="block w-full" :alt="t('fomcharts.annotations.exportPin')" />
           </div>
           <p class="mt-1.5 text-[10.5px] leading-snug text-secondary">{{ t("guide.steps.exportPin.pinExportCaption") }}</p>
@@ -1115,7 +1138,7 @@
                (see AnnotationCard's exposed getMetricsExportDataUrl) --
                numeric fields only, no structure/notes, for when only the
                measurements matter. -->
-          <div class="guide-callout-region" style="width: 190px">
+          <div class="guide-callout-region" style="width: 202px">
             <img v-if="metricsExportDataUrl" :src="metricsExportDataUrl" class="block w-full" :alt="t('fomcharts.annotations.metrics')" />
           </div>
           <p class="mt-1.5 text-[10.5px] leading-snug text-secondary">{{ t("guide.steps.exportPin.metricsExportCaption") }}</p>
@@ -1128,7 +1151,7 @@
                reconstruction feeding the same genuine LayerStack component
                the real dialog renders with R3's actual parsed layers, so
                the materials/thicknesses shown are real data, not a mockup. -->
-          <div class="guide-callout-region" style="width: 210px">
+          <div class="guide-callout-region" style="width: 222px">
             <div class="overflow-hidden rounded-lg border border-secondary/20 bg-white shadow-sm">
               <div class="flex items-center justify-between border-b border-secondary/15 bg-secondary/5 px-2 py-1">
                 <span class="text-[10px] font-semibold text-secondary">{{ t("fomcharts.annotations.layerStructure") }}</span>
@@ -1153,11 +1176,29 @@
 
       <div class="mt-3">
         <h3 class="mb-2 text-sm font-semibold text-primary">{{ t("guide.steps.exportPin.pinFormatsTitle") }}</h3>
-        <ul class="flex flex-col gap-1.5 text-sm text-ink">
-          <li><strong>{{ t("fomcharts.annotations.downloadTxt") }}</strong> — {{ t("guide.steps.exportPin.pinFormats.note") }}</li>
-          <li><strong>{{ t("fomcharts.annotations.downloadPng") }}</strong> — {{ t("guide.steps.exportPin.pinFormats.fields") }}</li>
-          <li><strong>{{ t("fomcharts.annotations.exportPin") }}</strong> — {{ t("guide.steps.exportPin.pinFormats.all") }}</li>
-        </ul>
+        <div class="grid grid-cols-3 gap-3">
+          <div class="flex items-start gap-2 rounded-xl border border-border bg-muted/20 px-3 py-2.5">
+            <span class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><FileText class="size-4" /></span>
+            <div class="min-w-0">
+              <p class="text-xs font-semibold text-ink">{{ t("fomcharts.annotations.downloadTxt") }}</p>
+              <p class="text-[10.5px] leading-snug text-secondary">{{ t("guide.steps.exportPin.pinFormats.note") }}</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-2 rounded-xl border border-border bg-muted/20 px-3 py-2.5">
+            <span class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><FileImage class="size-4" /></span>
+            <div class="min-w-0">
+              <p class="text-xs font-semibold text-ink">{{ t("fomcharts.annotations.downloadPng") }}</p>
+              <p class="text-[10.5px] leading-snug text-secondary">{{ t("guide.steps.exportPin.pinFormats.fields") }}</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-2 rounded-xl border border-border bg-muted/20 px-3 py-2.5">
+            <span class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><Download class="size-4" /></span>
+            <div class="min-w-0">
+              <p class="text-xs font-semibold text-ink">{{ t("fomcharts.annotations.exportPin") }}</p>
+              <p class="text-[10.5px] leading-snug text-secondary">{{ t("guide.steps.exportPin.pinFormats.all") }}</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <GuideFooter :page="PAGE_MODE1_EXPORT_PIN" />
@@ -1222,15 +1263,25 @@
         <h3 class="mb-2 text-sm font-semibold">{{ t("guide.mode2.preview.title") }}</h3>
         <div class="grid grid-cols-3 gap-2.5">
           <div class="rounded-lg border border-border bg-muted/30 px-3 py-2">
-            <p class="mb-0.5 text-xs font-semibold text-ink">{{ t("guide.mode2.preview.rules.title") }}</p>
-            <p class="text-[11px] leading-snug text-secondary">{{ t("guide.mode2.preview.rules.body") }}</p>
+            <p class="mb-1 flex items-center gap-1.5 text-xs font-semibold text-ink">
+              <Sparkles class="size-3.5 shrink-0 text-primary" />{{ t("guide.mode2.preview.rules.title") }}
+            </p>
+            <ul class="flex flex-col gap-1 pl-3.5 text-[11px] leading-snug text-secondary">
+              <li class="list-disc">{{ t("guide.mode2.preview.rules.items.scope") }}</li>
+              <li class="list-disc">{{ t("guide.mode2.preview.rules.items.vocab") }}</li>
+              <li class="list-disc">{{ t("guide.mode2.preview.rules.items.periodic") }}</li>
+            </ul>
           </div>
           <div class="rounded-lg border border-border bg-muted/30 px-3 py-2">
-            <p class="mb-0.5 text-xs font-semibold text-ink">{{ t("guide.mode2.preview.columns.title") }}</p>
+            <p class="mb-1 flex items-center gap-1.5 text-xs font-semibold text-ink">
+              <Table2 class="size-3.5 shrink-0 text-primary" />{{ t("guide.mode2.preview.columns.title") }}
+            </p>
             <p class="text-[11px] leading-snug text-secondary">{{ t("guide.mode2.preview.columns.body") }}</p>
           </div>
           <div class="rounded-lg border border-border bg-muted/30 px-3 py-2">
-            <p class="mb-0.5 text-xs font-semibold text-ink">{{ t("guide.mode2.preview.validation.title") }}</p>
+            <p class="mb-1 flex items-center gap-1.5 text-xs font-semibold text-ink">
+              <ClipboardCheck class="size-3.5 shrink-0 text-primary" />{{ t("guide.mode2.preview.validation.title") }}
+            </p>
             <p class="text-[11px] leading-snug text-secondary">{{ t("guide.mode2.preview.validation.body") }}</p>
           </div>
         </div>
@@ -1252,24 +1303,25 @@
              explicitly labeled "theoretical" above and in the caption so it
              can never be mistaken for a real feature. -->
         <div class="flex overflow-hidden rounded-xl border border-dashed border-border">
-          <div class="flex-1 border-r border-dashed border-border bg-muted/20 p-2.5">
-            <div class="mb-1.5 h-2 w-2/3 rounded-full bg-secondary/25" />
-            <div class="mb-1 h-1.5 w-full rounded-full bg-secondary/15" />
-            <div class="mb-1 h-1.5 w-full rounded-full bg-secondary/15" />
-            <div class="mb-1 h-1.5 w-5/6 rounded-full bg-secondary/15" />
-            <div class="mb-1.5 h-7 w-full rounded-md border border-dashed border-primary/50 bg-primary/8" />
-            <div class="mb-1 h-1.5 w-full rounded-full bg-secondary/15" />
-            <div class="h-1.5 w-4/5 rounded-full bg-secondary/15" />
+          <div class="flex-1 border-r border-dashed border-border bg-muted/20 p-4">
+            <div class="mb-2 h-2.5 w-2/3 rounded-full bg-secondary/25" />
+            <div class="mb-1.5 h-2 w-full rounded-full bg-secondary/15" />
+            <div class="mb-1.5 h-2 w-full rounded-full bg-secondary/15" />
+            <div class="mb-1.5 h-2 w-5/6 rounded-full bg-secondary/15" />
+            <div class="mb-2 h-9 w-full rounded-md border border-dashed border-primary/50 bg-primary/8" />
+            <div class="mb-1.5 h-2 w-full rounded-full bg-secondary/15" />
+            <div class="mb-1.5 h-2 w-4/5 rounded-full bg-secondary/15" />
+            <div class="h-2 w-2/3 rounded-full bg-secondary/15" />
           </div>
-          <div class="flex-1 bg-white p-2.5">
-            <div class="mb-2 h-2 w-1/2 rounded-full bg-secondary/25" />
-            <div v-for="i in 3" :key="i" class="mb-1 flex items-center gap-1.5">
-              <div class="h-1.5 w-1/3 rounded-full bg-secondary/15" />
-              <div class="h-3.5 flex-1 rounded-md border border-secondary/20 bg-muted/20" />
+          <div class="flex-1 bg-white p-4">
+            <div class="mb-3 h-2.5 w-1/2 rounded-full bg-secondary/25" />
+            <div v-for="i in 4" :key="i" class="mb-1.5 flex items-center gap-1.5">
+              <div class="h-2 w-1/3 rounded-full bg-secondary/15" />
+              <div class="h-4.5 flex-1 rounded-md border border-secondary/20 bg-muted/20" />
             </div>
-            <div class="mt-2 flex gap-1.5">
-              <div class="h-4.5 w-14 rounded-md bg-primary/20" />
-              <div class="h-4.5 w-14 rounded-md border border-secondary/20" />
+            <div class="mt-3 flex gap-2">
+              <div class="h-6 w-16 rounded-md bg-primary/20" />
+              <div class="h-6 w-16 rounded-md border border-secondary/20" />
             </div>
           </div>
         </div>
@@ -1365,6 +1417,8 @@ import {
   Download,
   Eraser,
   FileImage,
+  FileSpreadsheet,
+  FileText,
   Filter,
   FolderOpen,
   Info,
@@ -1432,9 +1486,9 @@ import yonseiSymbol from "@/assets/yonsei-logo.svg";
 import yonseiOptica from "@/assets/yonsei-optica.svg";
 // Standalone marks for the intro's logo strip (page 2) -- real, rights-cleared
 // SVGs, not the yonsei-optica.svg lockup built for pairing next to Yonsei's
-// own mark elsewhere. MPBEL has no valid asset yet (the file that exists is
-// an empty export with no paths), so it still gets the plain monogram badge.
-import spieLogo from "@/assets/spie_logo.svg";
+// own mark elsewhere.
+import mpbelLogo from "@/assets/mpbel.svg";
+import spieLogo from "@/assets/P-SPIE.svg";
 import opticaLogo from "@/assets/optica.svg";
 import { findByText, findByAttr, markRect, markRow, markLabel, markUnion, markCanvasRect, type GuideMark } from "./guideAnnotate";
 
@@ -1485,26 +1539,105 @@ function tocLabel(fullLabel: string): string {
 const mode1DividerOutlineTitle = computed(() => `${t("guide.mode1.eyebrow")} — ${t("guide.mode1.title")}`);
 
 const tocEntries = computed(() => [
-  { label: tocLabel(t("guide.outline.intro")), page: PAGE_INTRO, icon: Info, group: "front" as const },
-  { label: tocLabel(t("guide.outline.mode1Import")), page: PAGE_MODE1_IMPORT, icon: Upload, group: "mode1" as const },
-  { label: tocLabel(t("guide.outline.mode1Controls")), page: PAGE_MODE1_CONTROLS, icon: SlidersHorizontal, group: "mode1" as const },
-  { label: tocLabel(t("guide.outline.mode1Filters")), page: PAGE_MODE1_FILTERS, icon: Filter, group: "mode1" as const },
-  { label: tocLabel(t("guide.outline.mode1Reading")), page: PAGE_MODE1_READING, icon: LineChart, group: "mode1" as const },
-  { label: tocLabel(t("guide.outline.mode1Compare")), page: PAGE_MODE1_COMPARE, icon: Users, group: "mode1" as const },
-  { label: tocLabel(t("guide.outline.mode1DataTable")), page: PAGE_MODE1_DATATABLE, icon: Table2, group: "mode1" as const },
-  { label: tocLabel(t("guide.outline.mode1AddPoint1")), page: PAGE_MODE1_ADDPOINT1, icon: PlusCircle, group: "mode1" as const },
-  { label: tocLabel(t("guide.outline.mode1AddPoint2")), page: PAGE_MODE1_ADDPOINT2, icon: Layers, group: "mode1" as const },
-  { label: tocLabel(t("guide.outline.mode1Annotate")), page: PAGE_MODE1_ANNOTATE, icon: Pin, group: "mode1" as const },
-  { label: tocLabel(t("guide.outline.mode1ComparePins")), page: PAGE_MODE1_COMPARE_PINS, icon: Columns3, group: "mode1" as const },
-  { label: tocLabel(t("guide.outline.mode1ExportChart")), page: PAGE_MODE1_EXPORT_CHART, icon: Download, group: "mode1" as const },
-  { label: tocLabel(t("guide.outline.mode1ExportPin")), page: PAGE_MODE1_EXPORT_PIN, icon: FileImage, group: "mode1" as const },
-  { label: tocLabel(t("guide.outline.mode2")), page: PAGE_MODE2, icon: Construction, group: "back" as const },
+  { label: tocLabel(t("guide.outline.intro")), desc: t("guide.toc.desc.intro"), page: PAGE_INTRO, icon: Info, group: "front" as const },
+  {
+    label: tocLabel(t("guide.outline.mode1Import")),
+    desc: t("guide.toc.desc.mode1Import"),
+    page: PAGE_MODE1_IMPORT,
+    icon: Upload,
+    group: "mode1" as const,
+  },
+  {
+    label: tocLabel(t("guide.outline.mode1Controls")),
+    desc: t("guide.toc.desc.mode1Controls"),
+    page: PAGE_MODE1_CONTROLS,
+    icon: SlidersHorizontal,
+    group: "mode1" as const,
+  },
+  {
+    label: tocLabel(t("guide.outline.mode1Filters")),
+    desc: t("guide.toc.desc.mode1Filters"),
+    page: PAGE_MODE1_FILTERS,
+    icon: Filter,
+    group: "mode1" as const,
+  },
+  {
+    label: tocLabel(t("guide.outline.mode1Reading")),
+    desc: t("guide.toc.desc.mode1Reading"),
+    page: PAGE_MODE1_READING,
+    icon: LineChart,
+    group: "mode1" as const,
+  },
+  {
+    label: tocLabel(t("guide.outline.mode1Compare")),
+    desc: t("guide.toc.desc.mode1Compare"),
+    page: PAGE_MODE1_COMPARE,
+    icon: Users,
+    group: "mode1" as const,
+  },
+  {
+    label: tocLabel(t("guide.outline.mode1DataTable")),
+    desc: t("guide.toc.desc.mode1DataTable"),
+    page: PAGE_MODE1_DATATABLE,
+    icon: Table2,
+    group: "mode1" as const,
+  },
+  {
+    label: tocLabel(t("guide.outline.mode1AddPoint1")),
+    desc: t("guide.toc.desc.mode1AddPoint1"),
+    page: PAGE_MODE1_ADDPOINT1,
+    icon: PlusCircle,
+    group: "mode1" as const,
+  },
+  {
+    label: tocLabel(t("guide.outline.mode1AddPoint2")),
+    desc: t("guide.toc.desc.mode1AddPoint2"),
+    page: PAGE_MODE1_ADDPOINT2,
+    icon: Layers,
+    group: "mode1" as const,
+  },
+  {
+    label: tocLabel(t("guide.outline.mode1Annotate")),
+    desc: t("guide.toc.desc.mode1Annotate"),
+    page: PAGE_MODE1_ANNOTATE,
+    icon: Pin,
+    group: "mode1" as const,
+  },
+  {
+    label: tocLabel(t("guide.outline.mode1ComparePins")),
+    desc: t("guide.toc.desc.mode1ComparePins"),
+    page: PAGE_MODE1_COMPARE_PINS,
+    icon: Columns3,
+    group: "mode1" as const,
+  },
+  {
+    label: tocLabel(t("guide.outline.mode1ExportChart")),
+    desc: t("guide.toc.desc.mode1ExportChart"),
+    page: PAGE_MODE1_EXPORT_CHART,
+    icon: Download,
+    group: "mode1" as const,
+  },
+  {
+    label: tocLabel(t("guide.outline.mode1ExportPin")),
+    desc: t("guide.toc.desc.mode1ExportPin"),
+    page: PAGE_MODE1_EXPORT_PIN,
+    icon: FileImage,
+    group: "mode1" as const,
+  },
+  { label: tocLabel(t("guide.outline.mode2")), desc: t("guide.toc.desc.mode2"), page: PAGE_MODE2, icon: Construction, group: "back" as const },
 ]);
 
 // Mode 1's own divider page (below) previews exactly these entries -- reusing
 // tocEntries rather than a second hand-maintained list keeps the two in sync
 // automatically if a Mode 1 step is ever added, renamed or reordered.
 const mode1TocEntries = computed(() => tocEntries.value.filter((e) => e.group === "mode1"));
+
+const mode1FlowSteps = computed(() => [
+  { label: t("guide.mode1.flow.import"), icon: Upload },
+  { label: t("guide.mode1.flow.configure"), icon: SlidersHorizontal },
+  { label: t("guide.mode1.flow.annotate"), icon: Pin },
+  { label: t("guide.mode1.flow.export"), icon: Download },
+]);
 
 // ---------------------------------------------------------------------
 // Worked example dataset (Mode 1 only) -- six ALL-DIELECTRIC photonic
@@ -1559,7 +1692,7 @@ const sampleRows: DataRow[] = [
   sampleRow({ Ref: "R1", Title: "High-Q silicon microring resonator RI sensor", Origin: "SIM", "Material Class": "Dielectric", "Base Materials": "Si;SiO2", "Resonance Wavelength (nm)": 1550, "Q-factor": 51000, "FOM (RIU^-1)": 2333, "Sensitivity (nm/RIU)": 70, "FWHM (nm)": 0.03, "Layer Structure": "Si + SiO2" }),
   sampleRow({ Ref: "R2", Title: "Silicon-nitride ring resonator for biosensing", Origin: "EXP", "Material Class": "Dielectric", "Base Materials": "Si3N4;SiO2", "Resonance Wavelength (nm)": 1310, "Q-factor": 88000, "FOM (RIU^-1)": 2667, "Sensitivity (nm/RIU)": 40, "FWHM (nm)": 0.015, "Layer Structure": "Si3N4 + SiO2" }),
   sampleRow({ Ref: "R2", Title: "Silicon-nitride ring resonator for biosensing", Origin: "SIM", "Material Class": "Dielectric", "Base Materials": "Si3N4;SiO2", "Resonance Wavelength (nm)": 1310, "Q-factor": 96000, "FOM (RIU^-1)": 3214, "Sensitivity (nm/RIU)": 45, "FWHM (nm)": 0.014, "Layer Structure": "Si3N4 + SiO2" }),
-  sampleRow({ Ref: "R3", Title: "All-dielectric guided-mode resonance biosensor", Origin: "EXP", "Material Class": "Dielectric", "Base Materials": "Si3N4;SiO2;Ta2O5", "Resonance Wavelength (nm)": 850, "Q-factor": 15000, "FOM (RIU^-1)": 3158, "Sensitivity (nm/RIU)": 180, "FWHM (nm)": 0.057, "Layer Structure": "Si3N4(200nm) + SiO2(400nm) + Ta2O5(120nm)", "Review status": "Edit", Notes: "FWHM digitized from a log-scale transmission plot -- flagged for review." }),
+  sampleRow({ Ref: "R3", Title: "All-dielectric guided-mode resonance biosensor", Origin: "EXP", "Material Class": "Dielectric", "Base Materials": "Si3N4;SiO2;Ta2O5", "Resonance Wavelength (nm)": 850, "Q-factor": 15000, "FOM (RIU^-1)": 3158, "Sensitivity (nm/RIU)": 180, "FWHM (nm)": 0.057, "Layer Structure": "Si3N4(200nm) + SiO2(400nm) + Ta2O5(120nm)", "Review status": "Edit", Notes: "FWHM digitized from a log-scale transmission plot. Flagged for review." }),
   sampleRow({ Ref: "R3", Title: "All-dielectric guided-mode resonance biosensor", Origin: "SIM", "Material Class": "Dielectric", "Base Materials": "Si3N4;SiO2;Ta2O5", "Resonance Wavelength (nm)": 850, "Q-factor": 18000, "FOM (RIU^-1)": 4043, "Sensitivity (nm/RIU)": 190, "FWHM (nm)": 0.047, "Layer Structure": "Si3N4(200nm) + SiO2(400nm) + Ta2O5(120nm)" }),
   sampleRow({ Ref: "R4", Title: "All-dielectric silicon disk resonator on a Bragg mirror", Origin: "EXP", "Material Class": "Dielectric", "Base Materials": "Si;SiO2;Ta2O5", "Resonance Wavelength (nm)": 1064, "Q-factor": 5200, "FOM (RIU^-1)": 1050, "Sensitivity (nm/RIU)": 210, "FWHM (nm)": 0.2, "Layer Structure": "Si(300nm) + SiO2(200nm) + Ta2O5(150nm) + SiO2(200nm) + Ta2O5(150nm)" }),
   sampleRow({ Ref: "R4", Title: "All-dielectric silicon disk resonator on a Bragg mirror", Origin: "SIM", "Material Class": "Dielectric", "Base Materials": "Si;SiO2;Ta2O5", "Resonance Wavelength (nm)": 1064, "Q-factor": 6100, "FOM (RIU^-1)": 1353, "Sensitivity (nm/RIU)": 230, "FWHM (nm)": 0.17, "Layer Structure": "Si(300nm) + SiO2(200nm) + Ta2O5(150nm) + SiO2(200nm) + Ta2O5(150nm)" }),
@@ -1665,7 +1798,7 @@ const annotations = ref<Annotation[]>([
     ref: "R3",
     title: "All-dielectric guided-mode resonance biosensor",
     row: sampleRows[4],
-    note: "FWHM digitized from a log-scale transmission plot -- flagged for review.",
+    note: "FWHM digitized from a log-scale transmission plot. Flagged for review.",
     createdAt: Date.now() - 60_000,
   },
   {
@@ -2040,13 +2173,27 @@ async function captureGuideArtifacts() {
     const groupBtn = findByText(c, "button", "EXP");
     const groupRow = groupBtn?.parentElement as HTMLElement | null;
     push(statsMarks, groupRow ? markRect(c, groupRow, 4) : null);
+
+    // Expand the EXP group's own detail tiles for real -- the same chevron
+    // click a researcher would make -- so the "count, mean, median, sigma"
+    // breakdown mark 2's legend already describes is actually visible,
+    // instead of only being described.
+    const detailsBtn = groupRow ? findByAttr(groupRow, "button", "aria-label", t("fomcharts.stats.showDetails")) : null;
+    if (detailsBtn) {
+      detailsBtn.click();
+      await nextTick();
+      await settle();
+    }
+    const groupOuter = groupRow?.parentElement as HTMLElement | null;
+    const tileGrid = groupOuter?.querySelector(".pt-1.pl-4") as HTMLElement | null;
+    push(statsMarks, tileGrid ? markRect(c, tileGrid, 4) : null);
   }
 
   // Annotations: sort select, "show only pinned" row, compare selection bar,
-  // then the R3 demo card itself (pre-expanded by expandDemoAnnotation
-  // above) -- its header, siblings shortcut, Layer Structure box, Metrics
-  // box and Notes box, in the same top-to-bottom order they actually render
-  // in (see AnnotationCard.vue), so the numbered rings stay in sync.
+  // R3's own card header, then -- once R3 is expanded below -- its siblings
+  // shortcut, Layer Structure box, Metrics box and Notes box, in the same
+  // top-to-bottom order they actually render in (see AnnotationCard.vue), so
+  // the numbered rings stay in sync.
   if (annotationsWrap.value) {
     const c = annotationsWrap.value;
     // The sort control has no visible caption of its own -- only its
@@ -2059,16 +2206,43 @@ async function captureGuideArtifacts() {
     // The panel-level compare bar only renders once a pin is selected (see
     // AnnotationsPanel), and no pins are selected at capture time -- so this
     // rings the per-card checkbox instead, the actual control a researcher
-    // checks first to start a comparison.
-    push(annotationMarks, markRow(c, t("fomcharts.annotations.compareLabel")));
+    // checks first to start a comparison. Boxes the whole row (the
+    // checkbox's own label's parent), not just the label -- R1 also carries
+    // a "pin siblings" shortcut button on that same row, which a ring sized
+    // to only the label left outside its own circle.
+    const compareLabelSpan = findByText(c, "span", t("fomcharts.annotations.compareLabel"));
+    const compareRow = compareLabelSpan?.closest("label")?.parentElement as HTMLElement | null;
+    push(annotationMarks, compareRow ? markRect(c, compareRow, 4) : null);
 
-    // Both demo cards stay collapsed on this page (see the template's own
-    // comment) -- only the card's own header/summary is ringed here. What's
-    // inside an EXPANDED card is shown separately, at native size, by the
-    // export figure on page 13 instead of being squeezed onto this page.
     const cardRef = findByText(c, "span", "R3");
     const cardHeader = cardRef?.closest("button") as HTMLElement | null;
     push(annotationMarks, cardHeader ? markRect(c, cardHeader, 4) : null);
+
+    // Expand R3 for real -- the same click a researcher would make -- rather
+    // than only describing what's inside in prose. Guarded by its own
+    // aria-label so a later locale-switch re-run (this whole function fires
+    // again, see the watcher below) doesn't click it a second time and
+    // toggle it back closed.
+    if (cardHeader?.getAttribute("aria-label") === t("fomcharts.annotations.expandDetails")) {
+      cardHeader.click();
+      await nextTick();
+      await settle();
+    }
+    // R1 (still collapsed) carries the same hidden Layer Structure/Metrics/
+    // Notes boxes in the DOM (just visually collapsed), so every lookup
+    // below is scoped to R3's own card root, not the whole panel, or it
+    // could just as easily match R1's invisible copies instead.
+    const r3Card = cardHeader?.parentElement?.parentElement?.parentElement as HTMLElement | null;
+    if (r3Card) {
+      const siblingsBtn = findByAttr(r3Card, "button", "aria-label", t("fomcharts.annotations.pinSiblings", { count: 1 }));
+      push(annotationMarks, siblingsBtn ? markRect(c, siblingsBtn, 4) : null);
+      const layerBox = findByText(r3Card, "span", t("fomcharts.annotations.layerStructure"))?.closest(".rounded-md") as HTMLElement | null;
+      push(annotationMarks, layerBox ? markRect(c, layerBox, 4) : null);
+      const metricsBox = findByText(r3Card, "span", t("fomcharts.annotations.metrics"))?.closest(".rounded-md") as HTMLElement | null;
+      push(annotationMarks, metricsBox ? markRect(c, metricsBox, 4) : null);
+      const notesBox = findByText(r3Card, "span", t("fomcharts.annotations.notes"))?.closest(".rounded-md") as HTMLElement | null;
+      push(annotationMarks, notesBox ? markRect(c, notesBox, 4) : null);
+    }
   }
 
   // Reading the chart: badges (real DOM), legend, point-size legend, median
@@ -2231,7 +2405,7 @@ const markNumBadgeStyle = {
 // elements it creates internally (the inner span) never receive it, so a
 // scoped ".guide-mark-num" rule silently never matches. Inline styles
 // sidestep that entirely.
-const GuideMarkRing = (props: { mark: GuideMark; number: number; side?: "right" | "top" }) =>
+const GuideMarkRing = (props: { mark: GuideMark; number: number; side?: "right" | "left" | "top" }) =>
   h(
     "div",
     {
@@ -2245,7 +2419,9 @@ const GuideMarkRing = (props: { mark: GuideMark; number: number; side?: "right" 
           style:
             props.side === "top"
               ? { ...markNumBadgeStyle, position: "absolute", left: "50%", bottom: "100%", marginBottom: "6px", transform: "translateX(-50%)" }
-              : { ...markNumBadgeStyle, position: "absolute", top: "50%", left: "100%", marginLeft: "6px", transform: "translateY(-50%)" },
+              : props.side === "left"
+                ? { ...markNumBadgeStyle, position: "absolute", top: "50%", right: "100%", marginRight: "6px", transform: "translateY(-50%)" }
+                : { ...markNumBadgeStyle, position: "absolute", top: "50%", left: "100%", marginLeft: "6px", transform: "translateY(-50%)" },
         },
         String(props.number),
       ),

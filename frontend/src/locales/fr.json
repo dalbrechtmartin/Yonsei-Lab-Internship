@@ -160,7 +160,7 @@
     },
     "intro": {
       "title": "Pourquoi λLens ?",
-      "abstractBody": "λLens accélère la revue de littérature sur les capteurs photoniques intégrés. Relever les valeurs de FOM à la main (longueur d'onde, sensibilité, facteur Q, FWHM) ne passe pas à l'échelle au-delà de quelques articles. λLens automatise l'extraction PDF puis la visualisation : d'un dossier d'articles à un graphique exportable en quelques minutes, plutôt qu'en plusieurs jours.",
+      "abstractBody": "λLens accélère la revue de littérature sur les capteurs photoniques intégrés. Comparer une dizaine d'articles à la main, c'est autant de tableurs, de copier-coller et d'erreurs de saisie pour les mêmes valeurs de FOM (longueur d'onde, sensibilité, facteur Q, FWHM). λLens automatise l'extraction PDF puis la visualisation : d'un dossier d'articles à un graphique exportable en quelques minutes, plutôt qu'en plusieurs jours.",
       "guideBody": "Ce guide couvre le Mode 1 (visualisation Excel-to-Plot), entièrement disponible aujourd'hui. Le Mode 2 (extraction PDF) sera ajouté une fois stabilisé.",
       "contextBody": "λLens a été développé au MPBEL, à l'Université Yonsei, au sein de la communauté internationale de l'optique et de la photonique présentée ci-dessous.",
       "diagram": {
@@ -175,12 +175,34 @@
     },
     "toc": {
       "title": "Sommaire",
-      "hint": "Cliquez sur une entrée pour y accéder directement."
+      "hint": "Cliquez sur une entrée pour y accéder directement.",
+      "desc": {
+        "intro": "Pourquoi λLens, en un coup d'œil.",
+        "mode1Import": "Déposer un fichier Excel ou CSV.",
+        "mode1Controls": "Choisir les axes et régler l'affichage.",
+        "mode1Filters": "Restreindre les données sans les modifier.",
+        "mode1Reading": "Lire chaque point du nuage.",
+        "mode1Compare": "Regrouper et comparer par catégorie.",
+        "mode1DataTable": "Chercher, trier, masquer, épingler.",
+        "mode1AddPoint1": "Nom, axes et mesures d'un nouveau point.",
+        "mode1AddPoint2": "Matériaux, structure et résultat.",
+        "mode1Annotate": "Épingler des points pour les comparer.",
+        "mode1ComparePins": "Comparaison côte à côte, annotée.",
+        "mode1ExportChart": "Données filtrées et graphique en image.",
+        "mode1ExportPin": "Un point épinglé, exporté seul.",
+        "mode2": "Extraction PDF automatique, bientôt disponible."
+      }
     },
     "mode1": {
       "eyebrow": "Mode 1",
       "title": "Visualisation Excel-to-Plot",
-      "partIntro": "Les pages suivantes détaillent l'espace Excel-to-Plot étape par étape, de l'import à l'export."
+      "partIntro": "Les pages suivantes détaillent l'espace Excel-to-Plot étape par étape, de l'import à l'export.",
+      "flow": {
+        "import": "Importer",
+        "configure": "Configurer",
+        "annotate": "Annoter",
+        "export": "Exporter"
+      }
     },
     "scenario": {
       "title": "Exemple utilisé dans cette section",
@@ -345,11 +367,15 @@
           },
           "groupCard": {
             "label": "Carte de groupe",
-            "body": "cliquez pour isoler ce groupe sur le graphique. La flèche déplie effectif, moyenne, médiane et σ."
+            "body": "cliquez pour isoler ce groupe sur le graphique."
+          },
+          "groupDetails": {
+            "label": "Détails du groupe",
+            "body": "effectif, moyenne, médiane et σ pour ce groupe, révélés par la flèche."
           }
         },
         "note": "Moyenne, médiane et σ n'apparaissent qu'à partir de 3 points par groupe : en dessous, ce ne serait pas une vraie distribution.",
-        "mergeNote": "En regroupant par une colonne composite (Classe de matériau ou Matériaux de base), un interrupteur « Fusionner les points multi-catégories » apparaît, activé automatiquement dès ce regroupement choisi. Désactivé, une ligne multi-catégories est tracée une fois par catégorie, pour des statistiques exactes. Activé, elle devient un seul repère multicolore, plus lisible mais masquable seulement via sa première catégorie."
+        "mergeNote": "Groupé par une colonne composite (Classe de matériau, Matériaux de base), un interrupteur « Fusionner les points multi-catégories » apparaît, activé par défaut. Avant/après en image : Fig. 16-17, page 15."
       },
       "dataTable": {
         "title": "6. Gérer vos points de données",
@@ -417,10 +443,10 @@
         "title": "8. Structure, notes et résultat",
         "body": "L'étape 3 construit les matériaux et la pile de couches du capteur. L'étape 4 est pour les notes. Le point apparaît ensuite immédiatement sur le graphique.",
         "structureTitle": "Étape 3 : Structure et matériaux",
-        "structureBody": "Une cascade verrouillée : Matériaux de base d'abord, puis Classe de matériau (suggérée à partir de ces matériaux), puis Structure de couches. Chaque niveau se déverrouille une fois le précédent renseigné.",
+        "structureBody": "Cascade verrouillée : Matériaux de base, puis Classe de matériau (suggérée), puis Structure de couches. Chaque niveau se déverrouille une fois le précédent renseigné.",
         "figureStructureCaption": "Fig. 12 : Structure et matériaux, étape 3 sur 4.",
         "finishTitle": "Étape 4 : Finaliser",
-        "finishBody": "Des notes, et un rappel que ce point n'a pas de document source : il est signalé comme tel partout, sur le graphique, dans la liste des points de données, et dans chaque export.",
+        "finishBody": "Notes libres, facultatives, pour ce point.",
         "converterCaption": "Une calculette de secours (µm/pm → nm) pour convertir à la main une valeur tirée d'un article.",
         "resultTitle": "Le résultat",
         "resultCaption": "Fig. 13 : le nouveau point sur le graphique, un losange à contour doré avec un bref halo pulsé à l'endroit où il atterrit.",
@@ -553,7 +579,11 @@
         "title": "À venir",
         "rules": {
           "title": "Règles d'extraction par IA",
-          "body": "Gemini n'extrait que les enregistrements en longueur d'onde, regroupe une paire EXP/SIM du même mode sous un seul Mode ID, et limite Classe de matériau à un vocabulaire fixe. Les substrats inertes comme le verre ne figurent jamais dans Layer Structure, et une pile périodique (ex. un miroir de Bragg à 10 périodes) devient une seule notation « (A/B) x10 » plutôt qu'une liste couche par couche."
+          "items": {
+            "scope": "Uniquement les enregistrements en longueur d'onde. Un seul Mode ID par paire EXP/SIM.",
+            "vocab": "Classe de matériau tirée d'un vocabulaire fixe. Les substrats inertes comme le verre restent hors de Layer Structure.",
+            "periodic": "Une pile périodique (un miroir de Bragg à 10 périodes, par exemple) devient une seule notation « (A/B) x10 », pas une liste couche par couche."
+          }
         },
         "columns": {
           "title": "Colonnes extraites",
@@ -779,7 +809,7 @@
       "noBaseMaterialsYet": "Ajoutez d'abord un matériau de base ci-dessus. Une couche ne peut être faite que d'un matériau déjà listé.",
       "structureIntro": "Matériaux de base → Classe de matériau → Structure des couches : chaque niveau se déverrouille dès que le précédent a une valeur.",
       "structureLocked": "Verrouillé tant que {field} n'a pas de valeur.",
-      "materialClassSuggestedHint": "Suggéré à partir des matériaux choisis -- cochez ce qui s'applique, ou ajustez.",
+      "materialClassSuggestedHint": "Suggéré à partir des matériaux choisis. Cochez ce qui s'applique, ou ajustez.",
       "tagsSelectedCount": "{n} sélectionné(s)",
       "layersSummary": "{n} couches · {thickness} µm",
       "modeSectionLabel": "ID et description du mode (optionnel)",

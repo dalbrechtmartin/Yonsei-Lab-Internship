@@ -160,7 +160,7 @@
     },
     "intro": {
       "title": "Why λLens?",
-      "abstractBody": "λLens speeds up literature reviews on integrated photonic sensors. Pulling FOM values by hand (wavelength, sensitivity, Q-factor, FWHM) doesn't scale past a handful of papers. λLens automates PDF extraction, then visualization: from a folder of papers to an exportable chart in minutes, not days.",
+      "abstractBody": "λLens speeds up literature reviews on integrated photonic sensors. Comparing a dozen papers by hand means as many spreadsheets, copy-pastes, and transcription slips for the same FOM values (wavelength, sensitivity, Q-factor, FWHM). λLens automates PDF extraction, then visualization: from a folder of papers to an exportable chart in minutes, not days.",
       "guideBody": "This guide covers Mode 1 (Excel-to-Plot visualization), fully available today. Mode 2 (PDF extraction) will be added once it stabilizes.",
       "contextBody": "λLens was built at Yonsei University's MPBEL, within the international optics and photonics community introduced below.",
       "diagram": {
@@ -175,12 +175,34 @@
     },
     "toc": {
       "title": "Table of contents",
-      "hint": "Click any entry to jump there directly."
+      "hint": "Click any entry to jump there directly.",
+      "desc": {
+        "intro": "Why λLens, at a glance.",
+        "mode1Import": "Drop in an Excel or CSV file.",
+        "mode1Controls": "Choose axes, tune the display.",
+        "mode1Filters": "Narrow the data without touching the file.",
+        "mode1Reading": "Read every point on the chart.",
+        "mode1Compare": "Group and compare by category.",
+        "mode1DataTable": "Search, sort, hide, pin.",
+        "mode1AddPoint1": "Name, axes and metrics for a new point.",
+        "mode1AddPoint2": "Materials, structure and result.",
+        "mode1Annotate": "Pin points to compare them.",
+        "mode1ComparePins": "Side-by-side, annotated comparison.",
+        "mode1ExportChart": "Filtered data and chart as an image.",
+        "mode1ExportPin": "One pinned point, exported alone.",
+        "mode2": "Automatic PDF extraction, coming soon."
+      }
     },
     "mode1": {
       "eyebrow": "Mode 1",
       "title": "Excel-to-Plot visualization",
-      "partIntro": "The following pages walk through the Excel-to-Plot workspace step by step, from import to export."
+      "partIntro": "The following pages walk through the Excel-to-Plot workspace step by step, from import to export.",
+      "flow": {
+        "import": "Import",
+        "configure": "Configure",
+        "annotate": "Annotate",
+        "export": "Export"
+      }
     },
     "scenario": {
       "title": "Example used in this section",
@@ -345,11 +367,15 @@
           },
           "groupCard": {
             "label": "Group card",
-            "body": "click to isolate that group on the chart. The chevron expands count, mean, median and σ."
+            "body": "click to isolate that group on the chart."
+          },
+          "groupDetails": {
+            "label": "Group details",
+            "body": "count, mean, median and σ for this group, revealed by the chevron."
           }
         },
         "note": "Mean, median and σ only appear from 3 points per group: below that, it wouldn't be a real distribution.",
-        "mergeNote": "When grouping by a composite column (Material Class or Base Materials), a \"Merge multi-category points\" switch appears, on automatically the moment that grouping is picked. Off, a multi-category row plots once per category, for accurate stats. On, it collapses into one multi-color marker, cleaner to read but only hideable via its first category."
+        "mergeNote": "Grouping by a composite column (Material Class, Base Materials) adds a \"Merge multi-category points\" switch, on by default. See it before/after in Figs. 16-17, page 15."
       },
       "dataTable": {
         "title": "6. Manage your data points",
@@ -417,10 +443,10 @@
         "title": "8. Structure, notes & the result",
         "body": "Step 3 builds the sensor's materials and layer stack. Step 4 is for notes. The point then appears on the chart immediately.",
         "structureTitle": "Step 3: Structure & materials",
-        "structureBody": "A locked cascade: Base Materials first, then Material Class (auto-suggested from those materials), then Layer Structure. Each level unlocks once the previous one has a value.",
+        "structureBody": "Locked cascade: Base Materials, then Material Class (auto-suggested), then Layer Structure. Each unlocks once the last has a value.",
         "figureStructureCaption": "Fig. 12: Structure & materials, step 3 of 4.",
         "finishTitle": "Step 4: Finish",
-        "finishBody": "Notes, and a reminder that this point has no source document: it's marked as such on the chart, in the data points list, and in every export.",
+        "finishBody": "Optional free-text notes for this point.",
         "converterCaption": "A scratch calculator (µm/pm → nm) for converting a paper's value by hand.",
         "resultTitle": "The result",
         "resultCaption": "Fig. 13: the new point on the chart, a gold-outlined diamond with a brief pulse ring where it lands.",
@@ -553,7 +579,11 @@
         "title": "What's coming",
         "rules": {
           "title": "AI extraction rules",
-          "body": "Gemini extracts wavelength-domain records only, keeps an EXP/SIM pair of the same mode under one Mode ID, and restricts Material Class to a fixed vocabulary. Inert substrates like glass never appear in Layer Structure, and a periodic stack (e.g. a 10-period Bragg mirror) collapses into one \"(A/B) x10\" notation instead of being listed layer by layer."
+          "items": {
+            "scope": "Wavelength-domain records only. One Mode ID per EXP/SIM pair.",
+            "vocab": "Material Class from a fixed vocabulary. Inert substrates like glass stay out of Layer Structure.",
+            "periodic": "A periodic stack (a 10-period Bragg mirror, say) becomes one \"(A/B) x10\" notation, not a layer-by-layer list."
+          }
         },
         "columns": {
           "title": "Extracted columns",
@@ -779,7 +809,7 @@
       "noBaseMaterialsYet": "Add a Base Material above first. A layer can only be made of a material already listed there.",
       "structureIntro": "Base Materials → Material Class → Layer Structure: each level unlocks once the previous one has a value.",
       "structureLocked": "Locked until {field} has a value.",
-      "materialClassSuggestedHint": "Suggested from the materials you picked -- check the box(es) that apply, or adjust them.",
+      "materialClassSuggestedHint": "Suggested from the materials you picked. Check the box(es) that apply, or adjust them.",
       "tagsSelectedCount": "{n} selected",
       "layersSummary": "{n} layers · {thickness} µm",
       "modeSectionLabel": "Mode ID & description (optional)",
