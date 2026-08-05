@@ -65,63 +65,84 @@
     >
       <GuideHeader />
 
-      <h2 class="mb-2.5 text-xl font-semibold">{{ t("guide.intro.title") }}</h2>
+      <!-- Single-column "hero" layout -- the PDF-folder -> guided-extraction
+           -> chart diagram carries the page as its main visual (rather than
+           being boxed into a text card), with the four institutions moved
+           from a 2x2 card grid to a compact logo strip + numbered footnotes,
+           like a real letterhead/paper citation rather than a spec sheet.
+           Everything below the header centers together as ONE group (not
+           just the text block stretched to fill the page) -- this page has
+           noticeably less total content than the card grid it replaces, and
+           centering only the text left a dead gap before the logo strip,
+           which stayed pinned to the bottom next to the footer. -->
+      <div class="flex flex-1 flex-col items-center justify-center text-center">
+        <p class="mb-1.5 text-xs font-semibold tracking-[0.3em] text-secondary uppercase">{{ t("guide.outline.intro") }}</p>
+        <h2 class="mb-3 text-2xl font-bold text-ink">{{ t("guide.intro.title") }}</h2>
+        <p class="mb-4 max-w-md text-sm leading-relaxed text-ink">{{ t("guide.intro.abstractBody") }}</p>
 
-      <div class="mb-2.5">
-        <h3 class="mb-1 text-base font-semibold text-primary">{{ t("guide.intro.abstractTitle") }}</h3>
-        <p class="text-sm leading-relaxed text-justify text-ink">{{ t("guide.intro.abstractBody") }}</p>
-      </div>
+        <div class="mb-4 flex items-center justify-center gap-4 rounded-2xl border border-border bg-muted/20 px-8 py-5">
+          <div class="flex flex-col items-center gap-1.5">
+            <span class="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <FolderOpen class="size-5" />
+            </span>
+            <span class="max-w-20 text-[11px] leading-tight font-medium text-ink">{{ t("guide.intro.diagram.folder") }}</span>
+          </div>
+          <ArrowRight class="size-4 shrink-0 text-secondary/50" />
+          <div class="flex flex-col items-center gap-1.5">
+            <span class="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Sparkles class="size-5" />
+            </span>
+            <span class="max-w-20 text-[11px] leading-tight font-medium text-ink">{{ t("guide.intro.diagram.extraction") }}</span>
+          </div>
+          <ArrowRight class="size-4 shrink-0 text-secondary/50" />
+          <div class="flex flex-col items-center gap-1.5">
+            <span class="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <LineChart class="size-5" />
+            </span>
+            <span class="max-w-20 text-[11px] leading-tight font-medium text-ink">{{ t("guide.intro.diagram.chart") }}</span>
+          </div>
+        </div>
 
-      <div class="mb-3">
-        <h3 class="mb-1 text-base font-semibold text-primary">{{ t("guide.intro.guideTitle") }}</h3>
-        <p class="text-sm leading-relaxed text-justify text-ink">{{ t("guide.intro.guideBody") }}</p>
-      </div>
+        <p class="mb-2 max-w-md text-sm leading-relaxed text-ink">{{ t("guide.intro.guideBody") }}</p>
+        <p class="mb-6 max-w-md text-sm leading-relaxed text-secondary">{{ t("guide.intro.contextBody") }}</p>
 
-      <div>
-        <h3 class="mb-1 text-base font-semibold text-primary">{{ t("guide.intro.contextTitle") }}</h3>
-        <p class="mb-2 text-sm leading-relaxed text-justify text-ink">{{ t("guide.intro.contextBody") }}</p>
-        <!-- Each block's URL is a real clickable PDF link (see pdfExport.ts's
-             data-external-link handling), same mechanism as the sample
-             dataset link on the Import page -- these point at each
-             institution's own site rather than this app's origin. Yonsei and
-             Optica reuse the same mark assets already shipped for the cover
-             page and the app's own hero band (real, rights-cleared local
-             SVGs); MPBEL and SPIE don't have a locally vetted logo asset yet,
-             so they get a plain monogram badge instead of a fabricated mark
-             -- same visual weight, no invented artwork. -->
-        <div class="grid grid-cols-2 gap-2.5">
-          <div class="rounded-lg border border-border bg-muted/20 px-3 py-2">
-            <div class="mb-1 flex h-5 items-center">
-              <img :src="yonseiSymbol" alt="" class="h-5 w-auto" />
-            </div>
-            <p class="mb-0.5 text-xs font-semibold text-ink">Yonsei University</p>
-            <p class="text-[11px] leading-snug text-secondary">{{ t("guide.intro.yonsei") }}</p>
-            <p class="mt-1 text-[10px] text-primary underline" data-external-link="https://www.yonsei.ac.kr/en_sc/">yonsei.ac.kr</p>
+        <!-- Yonsei and Optica reuse real, rights-cleared local marks (Optica's
+             own standalone SVG here, not the yonsei-optica.svg lockup built
+             for sitting next to Yonsei's mark on the cover); SPIE now has one
+             too. MPBEL doesn't have a valid asset yet (the file shipped for
+             it is an empty export with no paths), so it keeps the plain
+             monogram badge -- same visual weight, no invented artwork. -->
+        <div class="flex w-full max-w-md items-center justify-center gap-8 border-t border-border pt-4">
+          <div class="flex flex-col items-center gap-1.5">
+            <img :src="yonseiSymbol" alt="Yonsei University" class="h-8 w-auto" />
+            <span class="text-[11px] text-secondary">Yonsei<sup>1</sup></span>
           </div>
-          <div class="rounded-lg border border-border bg-muted/20 px-3 py-2">
-            <div class="mb-1 flex h-5 items-center">
-              <span class="flex h-5 items-center rounded bg-primary/10 px-1.5 font-mono text-[10px] font-bold tracking-wide text-primary">MPBEL</span>
-            </div>
-            <p class="mb-0.5 text-xs font-semibold text-ink">MPBEL</p>
-            <p class="text-[11px] leading-snug text-secondary">{{ t("guide.intro.mpbel") }}</p>
-            <p class="mt-1 text-[10px] text-primary underline" data-external-link="http://mpbel.yonsei.ac.kr/eng/index.php">mpbel.yonsei.ac.kr</p>
+          <div class="h-8 w-px bg-border" />
+          <div class="flex flex-col items-center gap-1.5">
+            <span class="flex h-8 items-center rounded bg-primary/10 px-2 font-mono text-[10px] font-bold tracking-wide text-primary">MPBEL</span>
+            <span class="text-[11px] text-secondary">MPBEL<sup>2</sup></span>
           </div>
-          <div class="rounded-lg border border-border bg-muted/20 px-3 py-2">
-            <div class="mb-1 flex h-5 items-center">
-              <span class="flex h-5 items-center rounded bg-primary/10 px-1.5 font-mono text-[10px] font-bold tracking-wide text-primary">SPIE</span>
-            </div>
-            <p class="mb-0.5 text-xs font-semibold text-ink">SPIE</p>
-            <p class="text-[11px] leading-snug text-secondary">{{ t("guide.intro.spie") }}</p>
-            <p class="mt-1 text-[10px] text-primary underline" data-external-link="https://spie.org/">spie.org</p>
+          <div class="h-8 w-px bg-border" />
+          <div class="flex flex-col items-center gap-1.5">
+            <img :src="spieLogo" alt="SPIE" class="h-7 w-auto" />
+            <span class="text-[11px] text-secondary">SPIE<sup>3</sup></span>
           </div>
-          <div class="rounded-lg border border-border bg-muted/20 px-3 py-2">
-            <div class="mb-1 flex h-5 items-center">
-              <img :src="yonseiOptica" alt="" class="h-5 w-auto" style="filter: brightness(0)" />
-            </div>
-            <p class="mb-0.5 text-xs font-semibold text-ink">Optica</p>
-            <p class="text-[11px] leading-snug text-secondary">{{ t("guide.intro.optica") }}</p>
-            <p class="mt-1 text-[10px] text-primary underline" data-external-link="https://www.optica.org/">optica.org</p>
+          <div class="h-8 w-px bg-border" />
+          <div class="flex flex-col items-center gap-1.5">
+            <img :src="opticaLogo" alt="Optica" class="h-6 w-auto" />
+            <span class="text-[11px] text-secondary">Optica<sup>4</sup></span>
           </div>
+        </div>
+
+        <!-- Each footnote's URL is a real clickable PDF link (see
+             pdfExport.ts's data-external-link handling), same mechanism as
+             the sample dataset link on the Import page -- pointing at each
+             institution's own site rather than this app's origin. -->
+        <div class="mt-3 flex max-w-md flex-col gap-1 text-left text-[9.5px] leading-snug text-secondary">
+          <p><sup>1</sup> {{ t("guide.intro.yonsei") }} <span class="text-primary underline" data-external-link="https://www.yonsei.ac.kr/en_sc/">yonsei.ac.kr</span></p>
+          <p><sup>2</sup> {{ t("guide.intro.mpbel") }} <span class="text-primary underline" data-external-link="http://mpbel.yonsei.ac.kr/eng/index.php">mpbel.yonsei.ac.kr</span></p>
+          <p><sup>3</sup> {{ t("guide.intro.spie") }} <span class="text-primary underline" data-external-link="https://spie.org/">spie.org</span></p>
+          <p><sup>4</sup> {{ t("guide.intro.optica") }} <span class="text-primary underline" data-external-link="https://www.optica.org/">optica.org</span></p>
         </div>
       </div>
 
@@ -1157,13 +1178,40 @@
             <strong class="font-semibold">{{ t("guide.mode2.comingSoon.title") }}</strong> — {{ t("guide.mode2.comingSoon.body") }}
           </p>
         </div>
+
+        <!-- A small, purely iconographic flow (no fabricated screenshot,
+             same "theoretical" caution as page 18's wireframe) previewing
+             the three planned stages. -->
+        <div class="mt-1 flex items-center justify-center gap-2.5">
+          <div class="flex flex-col items-center gap-1">
+            <span class="flex size-9 items-center justify-center rounded-lg bg-secondary/10 text-secondary">
+              <Upload class="size-4" />
+            </span>
+            <span class="text-[10px] text-secondary">{{ t("guide.mode2.divider.flow.upload") }}</span>
+          </div>
+          <ArrowRight class="size-3.5 shrink-0 text-secondary/40" />
+          <div class="flex flex-col items-center gap-1">
+            <span class="flex size-9 items-center justify-center rounded-lg bg-secondary/10 text-secondary">
+              <Sparkles class="size-4" />
+            </span>
+            <span class="text-[10px] text-secondary">{{ t("guide.mode2.divider.flow.extract") }}</span>
+          </div>
+          <ArrowRight class="size-3.5 shrink-0 text-secondary/40" />
+          <div class="flex flex-col items-center gap-1">
+            <span class="flex size-9 items-center justify-center rounded-lg bg-secondary/10 text-secondary">
+              <ClipboardCheck class="size-4" />
+            </span>
+            <span class="text-[10px] text-secondary">{{ t("guide.mode2.divider.flow.review") }}</span>
+          </div>
+        </div>
+        <p class="text-[10px] text-secondary/70 italic">{{ t("guide.mode2.divider.caption") }}</p>
       </div>
       <GuideFooter :page="PAGE_MODE2_DIVIDER" />
     </section>
 
     <!-- ============================= PAGE 18 -- Mode 2: what's coming ============================= -->
     <section
-      class="guide-page box-border flex h-[297mm] w-[210mm] flex-col bg-white p-[15mm]"
+      class="guide-page box-border flex h-[297mm] w-[210mm] flex-col bg-white p-[15mm] break-after-page"
       :data-outline-title="`${t('guide.outline.mode2')} — ${t('guide.mode2.preview.title')}`"
     >
       <GuideHeader />
@@ -1230,6 +1278,27 @@
       <GuideFooter :page="PAGE_MODE2" />
     </section>
 
+    <!-- ============================= PAGE 19 -- About the author (colophon) ============================= -->
+    <!-- Deliberately quiet: no GuideHeader/GuideFooter (this is the book's
+         colophon, not another chapter page), no photo, no profile chips --
+         a centered block of continuous prose between two thin rules, with
+         the signature bottom-right, per the handoff brief's own direction. -->
+    <section
+      class="guide-page box-border flex h-[297mm] w-[210mm] flex-col bg-white p-[18mm]"
+      :data-outline-title="t('guide.outline.about')"
+    >
+      <div class="flex-1" />
+      <div class="mx-auto flex max-w-md flex-col items-center gap-4 text-center">
+        <div class="h-px w-16 bg-border" />
+        <p class="text-xs font-semibold tracking-[0.3em] text-secondary uppercase">{{ t("guide.about.eyebrow") }}</p>
+        <p class="text-sm leading-relaxed text-ink">{{ t("guide.about.body") }}</p>
+        <p class="text-sm leading-relaxed text-ink">{{ t("guide.about.supervision") }}</p>
+        <div class="h-px w-16 bg-border" />
+      </div>
+      <div class="flex-1" />
+      <p class="self-end text-sm text-secondary italic">{{ t("guide.about.signoff") }}</p>
+    </section>
+
     <!-- Generator-only: renders off to the side of every real `.guide-page`
          (pdfExport.ts only ever captures `.guide-page` elements, so this
          never appears in the PDF itself) purely so the export-chart page's
@@ -1287,14 +1356,17 @@
 import { computed, h, nextTick, onMounted, ref, useTemplateRef, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import {
+  ArrowRight,
   Check,
   ChevronDown,
+  ClipboardCheck,
   Columns3,
   Construction,
   Download,
   Eraser,
   FileImage,
   Filter,
+  FolderOpen,
   Info,
   LayoutGrid,
   Layers,
@@ -1306,6 +1378,7 @@ import {
   RotateCcw,
   Rows3,
   SlidersHorizontal,
+  Sparkles,
   Table2,
   Target,
   Upload,
@@ -1357,6 +1430,12 @@ import {
 import logoUrl from "@/assets/logo.svg";
 import yonseiSymbol from "@/assets/yonsei-logo.svg";
 import yonseiOptica from "@/assets/yonsei-optica.svg";
+// Standalone marks for the intro's logo strip (page 2) -- real, rights-cleared
+// SVGs, not the yonsei-optica.svg lockup built for pairing next to Yonsei's
+// own mark elsewhere. MPBEL has no valid asset yet (the file that exists is
+// an empty export with no paths), so it still gets the plain monogram badge.
+import spieLogo from "@/assets/spie_logo.svg";
+import opticaLogo from "@/assets/optica.svg";
 import { findByText, findByAttr, markRect, markRow, markLabel, markUnion, markCanvasRect, type GuideMark } from "./guideAnnotate";
 
 const { t, locale } = useI18n();
@@ -1386,7 +1465,11 @@ const PAGE_MODE1_EXPORT_CHART = 15;
 const PAGE_MODE1_EXPORT_PIN = 16;
 const PAGE_MODE2_DIVIDER = 17;
 const PAGE_MODE2 = 18;
-const TOTAL_PAGES = 18;
+// Page 19 (About the author) is a colophon: it gets its own PDF bookmark
+// (data-outline-title, like every other page) but no GuideFooter/page
+// number and no tocEntries listing, matching a book colophon's usual quiet,
+// unlisted convention -- so it has no PAGE_ constant of its own here.
+const TOTAL_PAGES = 19;
 
 // Every outline label follows "<Mode N> — <rest>" in all four locales
 // (checked en/fr/ko/zh -- always the same em-dash separator), so the

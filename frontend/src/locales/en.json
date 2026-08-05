@@ -155,20 +155,23 @@
       "mode1ComparePins": "10. Compare pinned points",
       "mode1ExportChart": "11. Export the chart",
       "mode1ExportPin": "12. Export a pinned point",
-      "mode2": "Mode 2 (coming soon)"
+      "mode2": "Mode 2 (coming soon)",
+      "about": "About the author"
     },
     "intro": {
-      "title": "Introduction",
-      "abstractTitle": "Abstract",
-      "abstractBody": "λLens is a research tool built during a Yonsei Photonics Lab internship, to speed up literature reviews on integrated photonic sensors. Pulling FOM values (wavelength, sensitivity, Q-factor, FWHM) out of papers by hand doesn't scale past a handful of references. λLens combines guided PDF extraction with interactive visualization: from a folder of papers to an exportable chart in minutes, not days.",
-      "guideTitle": "How to use this guide",
-      "guideBody": "This guide documents Mode 1 (Excel-to-Plot visualization), complete and ready to use. Mode 2 (PDF extraction and validation) will be documented once it stabilizes.",
-      "contextTitle": "Context",
-      "contextBody": "λLens was built at Yonsei University's MPBEL, within the wider optics and photonics community described below.",
-      "yonsei": "One of South Korea's oldest and most prestigious research universities, based in Seoul.",
-      "mpbel": "Yonsei Medical Physics and Biomedical Engineering Lab (Yonsei Cancer Center, Radiation Oncology), led by Prof. Jin Sung Kim. Medical image reconstruction (CT/MR/PET), AI-driven radiomics, radiation therapy research.",
-      "spie": "The international society for optics and photonics: conferences, publications and education.",
-      "optica": "The leading global society for light science and technology (formerly OSA)."
+      "title": "Why λLens?",
+      "abstractBody": "λLens speeds up literature reviews on integrated photonic sensors. Pulling FOM values by hand (wavelength, sensitivity, Q-factor, FWHM) doesn't scale past a handful of papers. λLens automates PDF extraction, then visualization: from a folder of papers to an exportable chart in minutes, not days.",
+      "guideBody": "This guide covers Mode 1 (Excel-to-Plot visualization), fully available today. Mode 2 (PDF extraction) will be added once it stabilizes.",
+      "contextBody": "λLens was built at Yonsei University's MPBEL, within the international optics and photonics community introduced below.",
+      "diagram": {
+        "folder": "Paper folder",
+        "extraction": "Guided extraction",
+        "chart": "Chart & export"
+      },
+      "yonsei": "Founded 1885, one of South Korea's oldest and most prestigious research universities, Seoul.",
+      "mpbel": "Medical Physics and Biomedical Engineering Lab, Yonsei University (Yonsei Cancer Center), directed by Prof. Jin Sung Kim. Medical image reconstruction, AI for radio-oncology, particle therapy research.",
+      "spie": "International society for optics and photonics, founded 1955. 25,000+ members, conferences and publications.",
+      "optica": "Founded 1916 as the Optical Society of America (OSA), the world's leading society for light science."
     },
     "toc": {
       "title": "Table of contents",
@@ -538,6 +541,14 @@
         "title": "Coming soon",
         "body": "The PDF extraction and validation workflow is still under development. This guide will be updated once that feature is ready."
       },
+      "divider": {
+        "flow": {
+          "upload": "Upload PDFs",
+          "extract": "AI extraction",
+          "review": "Human review"
+        },
+        "caption": "A theoretical preview of the planned workflow."
+      },
       "preview": {
         "title": "What's coming",
         "rules": {
@@ -558,6 +569,12 @@
         "badge": "Theoretical",
         "caption": "An early, unstyled wireframe of the planned split-screen review. Layout and copy are illustrative and will change."
       }
+    },
+    "about": {
+      "eyebrow": "About the author",
+      "body": "This guide was designed and built by Danaé Albrecht-Martin, a software engineering intern (apprentice at CNAM Grand Est) from July 6 to September 6, 2026, at Yonsei University's MPBEL. Her role spanned all of λLens: application architecture, the PDF extraction pipeline, and the interactive visualization interface.",
+      "supervision": "Supervised by Professor Donghyun Kim (Yonsei University, School of Electrical and Electronic Engineering; Fellow of SPIE/Optica, Senior Member IEEE, President of the OSK), and Inseop (MPBEL).",
+      "signoff": "— Danaé Albrecht-Martin, September 2026"
     }
   },
   "fomcharts": {

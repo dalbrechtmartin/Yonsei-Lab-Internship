@@ -155,20 +155,23 @@
       "mode1ComparePins": "10. Comparer des points épinglés",
       "mode1ExportChart": "11. Exporter le graphique",
       "mode1ExportPin": "12. Exporter un point",
-      "mode2": "Mode 2 (à venir)"
+      "mode2": "Mode 2 (à venir)",
+      "about": "À propos de l'auteure"
     },
     "intro": {
-      "title": "Introduction",
-      "abstractTitle": "Résumé",
-      "abstractBody": "λLens est un outil de recherche développé pendant un stage au Laboratoire de Photonique de Yonsei, pour accélérer la revue de littérature sur les capteurs photoniques intégrés. Extraire à la main les valeurs de FOM (longueur d'onde, sensibilité, facteur Q, FWHM) ne passe pas à l'échelle au-delà de quelques articles. λLens combine extraction PDF guidée et visualisation interactive : d'un dossier d'articles à un graphique exportable en quelques minutes, pas en plusieurs jours.",
-      "guideTitle": "Comment utiliser ce guide",
-      "guideBody": "Ce guide documente le Mode 1 (visualisation Excel-to-Plot), complet et prêt à l'emploi. Le Mode 2 (extraction et validation PDF) sera documenté une fois stabilisé.",
-      "contextTitle": "Contexte",
-      "contextBody": "λLens a été développé au MPBEL de l'Université de Yonsei, au sein de la communauté optique et photonique présentée ci-dessous.",
-      "yonsei": "L'une des universités de recherche les plus anciennes et prestigieuses de Corée du Sud, basée à Séoul.",
-      "mpbel": "Yonsei Medical Physics and Biomedical Engineering Lab (Yonsei Cancer Center, radio-oncologie), dirigé par le Pr Jin Sung Kim. Reconstruction d'images médicales (CT/IRM/TEP), radiomique par IA, recherche en radiothérapie.",
-      "spie": "Société internationale pour l'optique et la photonique : conférences, publications et formation.",
-      "optica": "Première société mondiale dédiée à la science de la lumière (anciennement OSA)."
+      "title": "Pourquoi λLens ?",
+      "abstractBody": "λLens accélère la revue de littérature sur les capteurs photoniques intégrés. Relever les valeurs de FOM à la main (longueur d'onde, sensibilité, facteur Q, FWHM) ne passe pas à l'échelle au-delà de quelques articles. λLens automatise l'extraction PDF puis la visualisation : d'un dossier d'articles à un graphique exportable en quelques minutes, plutôt qu'en plusieurs jours.",
+      "guideBody": "Ce guide couvre le Mode 1 (visualisation Excel-to-Plot), entièrement disponible aujourd'hui. Le Mode 2 (extraction PDF) sera ajouté une fois stabilisé.",
+      "contextBody": "λLens a été développé au MPBEL, à l'Université Yonsei, au sein de la communauté internationale de l'optique et de la photonique présentée ci-dessous.",
+      "diagram": {
+        "folder": "Dossier PDF",
+        "extraction": "Extraction guidée",
+        "chart": "Graphique & export"
+      },
+      "yonsei": "Fondée en 1885, l'une des plus anciennes et prestigieuses universités de recherche de Corée du Sud, à Séoul.",
+      "mpbel": "Laboratoire de physique médicale et d'ingénierie biomédicale de l'Université Yonsei (Yonsei Cancer Center), dirigé par le Pr Jin Sung Kim. Reconstruction d'images médicales, IA appliquée à la radio-oncologie, recherche en thérapie par particules.",
+      "spie": "Société internationale pour l'optique et la photonique, fondée en 1955. Plus de 25 000 membres, conférences et publications.",
+      "optica": "Fondée en 1916 sous le nom d'Optical Society of America, société de référence mondiale pour la science de la lumière."
     },
     "toc": {
       "title": "Sommaire",
@@ -538,6 +541,14 @@
         "title": "Bientôt disponible",
         "body": "Le flux d'extraction et de validation PDF est encore en développement. Ce guide sera complété une fois cette fonctionnalité prête."
       },
+      "divider": {
+        "flow": {
+          "upload": "Importer des PDF",
+          "extract": "Extraction IA",
+          "review": "Relecture humaine"
+        },
+        "caption": "Aperçu théorique du futur processus."
+      },
       "preview": {
         "title": "À venir",
         "rules": {
@@ -558,6 +569,12 @@
         "badge": "Théorique",
         "caption": "Ébauche non stylisée de l'écran partagé envisagé. Mise en page et texte sont illustratifs et évolueront."
       }
+    },
+    "about": {
+      "eyebrow": "À propos de l'auteure",
+      "body": "Ce guide a été conçu et développé par Danaé Albrecht-Martin, stagiaire en ingénierie logicielle (apprentie au CNAM Grand Est), du 6 juillet au 6 septembre 2026, au MPBEL de l'Université Yonsei. Son rôle a couvert l'ensemble de λLens : architecture de l'application, pipeline d'extraction PDF et interface de visualisation interactive.",
+      "supervision": "Encadrement : Professeur Donghyun Kim (Yonsei University, School of Electrical and Electronic Engineering ; Fellow SPIE/Optica, Senior Member IEEE, President de l'OSK), et Inseop (MPBEL).",
+      "signoff": "— Danaé Albrecht-Martin, septembre 2026"
     }
   },
   "fomcharts": {
