@@ -140,7 +140,6 @@
         </div>
 
         <RouterLink
-          v-if="!extractionLocked"
           to="/extraction"
           class="flex animate-in fade-in slide-in-from-bottom-4 flex-col rounded-[1.25rem] border border-white/55 bg-card/90 p-7 text-left shadow-xl shadow-slate-900/5 backdrop-blur-xl fill-mode-both delay-500 transition-shadow duration-200 hover:shadow-2xl focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:outline-none sm:p-8"
         >
@@ -163,25 +162,6 @@
             </span>
           </div>
         </RouterLink>
-
-        <div
-          v-else
-          class="flex animate-in fade-in slide-in-from-bottom-4 flex-col rounded-[1.25rem] border border-white/55 bg-card/90 p-7 opacity-65 shadow-xl shadow-slate-900/5 backdrop-blur-xl fill-mode-both delay-500 duration-500 sm:p-8"
-        >
-          <p
-            class="flex items-center gap-1.5 text-[11px] font-bold tracking-[0.08em] text-secondary uppercase"
-          >
-            {{ t("view.home.tools.extraction.eyebrow") }}
-            <Lock class="size-3" />
-          </p>
-          <h3 class="mt-2.5 text-[20px] font-semibold text-ink">
-            {{ t("view.home.tools.extraction.title") }}
-          </h3>
-          <p class="mt-2.5 text-[13px] leading-[1.6] text-secondary">
-            {{ t("view.home.tools.extraction.body") }}
-            {{ t("view.home.tools.extraction.lockedNote") }}
-          </p>
-        </div>
       </div>
     </div>
 
@@ -193,7 +173,7 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
-import { ChevronDown, Download, Lock } from "@lucide/vue";
+import { ChevronDown, Download } from "@lucide/vue";
 import { RouterLink } from "vue-router";
 import { useI18n } from "vue-i18n";
 import GuideTemplate from "@/components/guide/GuideTemplate.vue";
@@ -205,10 +185,6 @@ import yonseiCampus from "@/assets/yonsei-university.jpg";
 
 const { t, locale } = useI18n();
 
-// Extraction is locked in deployed builds while its next version is being
-// reworked -- see the matching lock in AppNavbar.vue and the router guard.
-const extractionLocked = import.meta.env.PROD;
-
 const guideTemplateRef = ref<InstanceType<typeof GuideTemplate> | null>(null);
 const generatingGuide = ref(false);
 
@@ -217,6 +193,11 @@ async function downloadGuide() {
 
   generatingGuide.value = true;
   try {
+    // The guide being mounted doesn't mean its rings/PNG exports have
+    // finished computing yet -- they re-run async on every locale switch,
+    // so exporting right after switching language could otherwise snapshot
+    // pages mid-capture.
+    await guideTemplateRef.value.waitUntilReady();
     await exportGuideToPdf(
       guideTemplateRef.value.rootEl,
       `${t("guide.filenameBase")}_${t("app.title")}_${locale.value.toUpperCase()}.pdf`,

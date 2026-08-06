@@ -155,7 +155,7 @@
       "mode1ComparePins": "10. 比较固定点",
       "mode1ExportChart": "11. 导出图表",
       "mode1ExportPin": "12. 导出固定点",
-      "mode2": "模式二（即将推出）",
+      "mode2": "模式二（PDF 提取）",
       "about": "关于作者"
     },
     "intro": {
@@ -190,7 +190,7 @@
         "mode1ComparePins": "并排对比，附带标注。",
         "mode1ExportChart": "筛选后的数据与图表图片。",
         "mode1ExportPin": "单独导出一个置顶点。",
-        "mode2": "PDF 自动提取，即将推出。"
+        "mode2": "应用中已可使用，尚无详细文档。"
       }
     },
     "mode1": {
@@ -520,15 +520,15 @@
         },
         "note": "每个部分都可在导出前单独关闭。最多支持 6 个固定点，以保证图片清晰。",
         "markupTitle": "在对比图上标注",
-        "markupBody": "导出前可直接在预览图上绘制：用画笔（3 种颜色）圈出或标注细节，用橡皮擦擦除，或点击某一行使其在所有列中高亮显示。",
+        "markupBody": "导出前可自由标注预览图：绘图、框选、箭头、便利贴和图章，每种都可以选择颜色。",
         "markupMarks": {
           "tools": {
-            "label": "工具",
-            "body": "查看（默认）、画笔、橡皮擦，或行高亮。"
+            "label": "工具栏",
+            "body": "选择、平移、画笔（可选颜色）、行高亮、框选、箭头、便利贴、橡皮擦；收藏/已验证/排除图章；撤销/重做。"
           },
           "clear": {
-            "label": "清除标注",
-            "body": "清除所有笔迹和高亮，标题与已选部分保持不变。"
+            "label": "重置标注",
+            "body": "清除所有笔迹、图形和便利贴，标题与已选部分保持不变。"
           }
         }
       },
@@ -563,9 +563,9 @@
     "mode2": {
       "eyebrow": "模式二",
       "title": "PDF 提取与校验",
-      "comingSoon": {
-        "title": "即将推出",
-        "body": "PDF 提取与校验流程仍在开发中。功能就绪后本指南将同步更新。"
+      "status": {
+        "title": "已可使用，尚无详细文档",
+        "body": "模式二现已可以在 λLens 中使用。本指南目前只做了简要介绍。审核与验证界面仍在完善中。"
       },
       "divider": {
         "flow": {
@@ -573,10 +573,21 @@
           "extract": "AI 提取",
           "review": "人工审核"
         },
-        "caption": "计划中工作流程的理论预览。"
+        "caption": "导入与提取已经可用。人工审核仍在设计中。"
+      },
+      "today": {
+        "title": "今天",
+        "body": "上传一个或多个 PDF，选择模型，即可获得 Excel 或 CSV 文件。目前还没有审核界面，提取的数值尚未逐页核对。",
+        "flow": {
+          "upload": "上传 PDF",
+          "model": "选择模型",
+          "progress": "实时进度",
+          "export": "导出（.xlsx/.csv）"
+        }
       },
       "preview": {
         "title": "即将推出的内容",
+        "intro": "让这个流程更可靠的计划改进：",
         "rules": {
           "title": "AI 提取规则",
           "items": {
@@ -774,16 +785,66 @@
       "clearTitle": "清除标题",
       "sectionsLabel": "显示",
       "origin": "来源",
+      "cancel": "取消",
+      "chips": {
+        "hint": "拖动标签或使用箭头即可实时重新排序列。点击 × 可在不关闭窗口的情况下移除该点。",
+        "addPoint": "添加点",
+        "moveLeft": "前移",
+        "moveRight": "后移",
+        "remove": "从比较中移除 {ref}",
+        "reverse": "反转顺序"
+      },
+      "sort": {
+        "selection": "选择顺序",
+        "ref": "按参考编号（A-Z）",
+        "metricAsc": "按 {metric}（从低到高）",
+        "metricDesc": "按 {metric}（从高到低）"
+      },
       "tools": {
-        "none": "无",
+        "groupTools": "工具",
+        "groupColor": "颜色",
+        "groupStamps": "图章",
+        "groupHistory": "历史记录",
+        "pointer": "选择",
+        "pointerHint": "点击某个标注以选中它，拖动可移动它，然后点击出现的 × 或按 Delete 键将其移除。",
+        "pan": "抓手",
+        "panHint": "拖动以在预览图中移动视图。提示：使用其他工具时按住空格键可临时切换为抓手。",
         "pen": "画笔",
-        "eraser": "橡皮擦",
-        "highlightRow": "高亮一行",
-        "penColor": "画笔颜色",
-        "clear": "清除标记",
         "penHint": "在预览图上自由绘制，以突出重要细节。",
-        "eraserHint": "擦除用画笔绘制的笔迹。",
-        "highlightRowHint": "点击一行即可在所有列中高亮显示该行。"
+        "penColor": "画笔颜色",
+        "eraser": "橡皮擦",
+        "eraserHint": "在一个或多个标注上拖动即可擦除它们。",
+        "highlightRow": "高亮一行",
+        "highlightRowHint": "点击一行即可在所有列中高亮显示该行。",
+        "frame": "框选 / 椭圆",
+        "frameHint": "拖动以圈出某个数值。",
+        "arrow": "箭头",
+        "arrowHint": "拖动以绘制指向细节的箭头。",
+        "postit": "便利贴",
+        "postitHint": "点击放置便签并输入文字。拖动可移动位置，双击可再次编辑。",
+        "postitPlaceholder": "备注...",
+        "editPostit": "编辑便签",
+        "stampHint": "点击列上任意位置即可盖上所选图章。",
+        "undo": "撤销",
+        "redo": "重做",
+        "zoomIn": "放大",
+        "zoomOut": "缩小",
+        "fitToScreen": "适应屏幕",
+        "reset": "重置标注",
+        "removeAnnotation": "移除标注"
+      },
+      "stamps": {
+        "favorite": "收藏",
+        "validated": "已验证",
+        "exclude": "排除"
+      },
+      "bestWorst": {
+        "label": "按此项高亮最优/最差",
+        "none": "无"
+      },
+      "badges": {
+        "measured": "实测",
+        "simulated": "模拟"
       },
       "downloadPng": "下载比较图像",
       "empty": "请至少选择一个要包含的部分。"

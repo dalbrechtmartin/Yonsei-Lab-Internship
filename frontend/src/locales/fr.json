@@ -155,7 +155,7 @@
       "mode1ComparePins": "10. Comparer des points épinglés",
       "mode1ExportChart": "11. Exporter le graphique",
       "mode1ExportPin": "12. Exporter un point",
-      "mode2": "Mode 2 (à venir)",
+      "mode2": "Mode 2 (extraction PDF)",
       "about": "À propos de l'auteure"
     },
     "intro": {
@@ -190,7 +190,7 @@
         "mode1ComparePins": "Comparaison côte à côte, annotée.",
         "mode1ExportChart": "Données filtrées et graphique en image.",
         "mode1ExportPin": "Un point épinglé, exporté seul.",
-        "mode2": "Extraction PDF automatique, bientôt disponible."
+        "mode2": "Accessible dans l'application, pas encore documenté en détail."
       }
     },
     "mode1": {
@@ -520,15 +520,15 @@
         },
         "note": "Chaque section peut être désactivée avant l'export. Limité à 6 points pour rester lisible.",
         "markupTitle": "Annoter la comparaison",
-        "markupBody": "Avant d'exporter, dessinez directement sur l'aperçu : un stylo (3 couleurs) pour entourer ou annoter un détail, une gomme, ou cliquez sur une ligne pour la surligner sur toutes les colonnes.",
+        "markupBody": "Avant d'exporter, annotez librement l'aperçu : dessin, cadres, flèches, post-it et tampons, chacun dans une couleur au choix.",
         "markupMarks": {
           "tools": {
-            "label": "Outils",
-            "body": "Vue (par défaut), Stylo, Gomme, ou Surligner une ligne."
+            "label": "Barre d'outils",
+            "body": "sélection, main, stylo (avec couleur), surligner une ligne, cadre, flèche, post-it, gomme ; tampons favori/validé/à exclure ; annuler/rétablir."
           },
           "clear": {
-            "label": "Effacer les surlignages",
-            "body": "supprime tous les traits et surlignages. Garde le titre et les sections choisies."
+            "label": "Réinitialiser les annotations",
+            "body": "supprime tous les traits, formes et post-it. Garde le titre et les sections choisies."
           }
         }
       },
@@ -563,9 +563,9 @@
     "mode2": {
       "eyebrow": "Mode 2",
       "title": "Extraction PDF et validation",
-      "comingSoon": {
-        "title": "Bientôt disponible",
-        "body": "Le flux d'extraction et de validation PDF est encore en développement. Ce guide sera complété une fois cette fonctionnalité prête."
+      "status": {
+        "title": "Accessible, pas encore documenté en détail",
+        "body": "Le Mode 2 est utilisable dès aujourd'hui dans λLens. Ce guide n'en couvre pour l'instant que les grandes lignes. L'écran de relecture et de validation est encore en cours de perfectionnement."
       },
       "divider": {
         "flow": {
@@ -573,10 +573,21 @@
           "extract": "Extraction IA",
           "review": "Relecture humaine"
         },
-        "caption": "Aperçu théorique du futur processus."
+        "caption": "Import et extraction fonctionnent déjà. La relecture humaine est encore en conception."
+      },
+      "today": {
+        "title": "Aujourd'hui",
+        "body": "Déposez un ou plusieurs PDF, choisissez un modèle, et récupérez un fichier Excel ou CSV. Pas encore d'écran de relecture : les valeurs extraites ne sont pas vérifiées page par page.",
+        "flow": {
+          "upload": "Déposer des PDF",
+          "model": "Choisir un modèle",
+          "progress": "Suivi en direct",
+          "export": "Exporter (.xlsx/.csv)"
+        }
       },
       "preview": {
         "title": "À venir",
+        "intro": "Les prochaines améliorations, pour fiabiliser ce flux :",
         "rules": {
           "title": "Règles d'extraction par IA",
           "items": {
@@ -774,16 +785,66 @@
       "clearTitle": "Effacer le titre",
       "sectionsLabel": "Afficher",
       "origin": "Origine",
+      "cancel": "Annuler",
+      "chips": {
+        "hint": "Glissez une puce, ou utilisez les flèches, pour réordonner les colonnes en direct. Le × retire un point sans fermer cette fenêtre.",
+        "addPoint": "Ajouter un point",
+        "moveLeft": "Déplacer plus tôt",
+        "moveRight": "Déplacer plus tard",
+        "remove": "Retirer {ref} de la comparaison",
+        "reverse": "Inverser l'ordre"
+      },
+      "sort": {
+        "selection": "Ordre de sélection",
+        "ref": "Référence (A-Z)",
+        "metricAsc": "Par {metric} (croissant)",
+        "metricDesc": "Par {metric} (décroissant)"
+      },
       "tools": {
-        "none": "Aucun",
+        "groupTools": "Outils",
+        "groupColor": "Couleur",
+        "groupStamps": "Tampons",
+        "groupHistory": "Historique",
+        "pointer": "Sélection",
+        "pointerHint": "Cliquez une annotation pour la sélectionner, glissez-la pour la déplacer, puis utilisez la × qui apparaît ou appuyez sur Suppr pour la retirer.",
+        "pan": "Main",
+        "panHint": "Glissez pour vous déplacer dans l'aperçu. Astuce : maintenez Espace avec un autre outil pour déplacer temporairement.",
         "pen": "Stylo",
-        "eraser": "Gomme",
-        "highlightRow": "Surligner une ligne",
-        "penColor": "Couleur du stylo",
-        "clear": "Effacer les surlignages",
         "penHint": "Dessinez librement sur l'aperçu pour surligner ou entourer un détail.",
-        "eraserHint": "Effacez les traits dessinés avec le stylo.",
-        "highlightRowHint": "Cliquez sur une ligne pour la mettre en évidence dans toutes les colonnes."
+        "penColor": "Couleur du stylo",
+        "eraser": "Gomme",
+        "eraserHint": "Glissez sur une ou plusieurs annotations pour les effacer.",
+        "highlightRow": "Surligner une ligne",
+        "highlightRowHint": "Cliquez sur une ligne pour la mettre en évidence dans toutes les colonnes.",
+        "frame": "Cadre / ellipse",
+        "frameHint": "Glissez sur une valeur pour l'entourer.",
+        "arrow": "Flèche",
+        "arrowHint": "Glissez pour tracer une flèche vers un détail.",
+        "postit": "Post-it",
+        "postitHint": "Cliquez pour poser une note et tapez votre texte. Glissez-la pour la déplacer, double-cliquez pour la modifier à nouveau.",
+        "postitPlaceholder": "Note...",
+        "editPostit": "Modifier la note",
+        "stampHint": "Cliquez n'importe où sur une colonne pour y apposer le tampon sélectionné.",
+        "undo": "Annuler",
+        "redo": "Rétablir",
+        "zoomIn": "Zoomer",
+        "zoomOut": "Dézoomer",
+        "fitToScreen": "Ajuster à l'écran",
+        "reset": "Réinitialiser les annotations",
+        "removeAnnotation": "Retirer l'annotation"
+      },
+      "stamps": {
+        "favorite": "Favori",
+        "validated": "Validé",
+        "exclude": "À exclure"
+      },
+      "bestWorst": {
+        "label": "Repérer le meilleur/pire par",
+        "none": "Aucun"
+      },
+      "badges": {
+        "measured": "Mesuré",
+        "simulated": "Simulé"
       },
       "downloadPng": "Télécharger l'image de comparaison",
       "empty": "Choisissez au moins une section à inclure."

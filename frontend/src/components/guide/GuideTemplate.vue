@@ -857,7 +857,7 @@
             <AlertDescription class="text-[10px] text-ink/80">{{ t("fomcharts.addPoint.provenanceHint") }}</AlertDescription>
           </Alert>
         </div>
-        <div class="w-52 shrink-0 pt-4.5">
+        <div class="w-52 shrink-0 pt-9">
           <div class="flex items-center gap-1.5">
             <UnitConverterPopover v-model:open="unitConverterOpen" />
             <p class="text-[9.5px] leading-snug text-secondary">{{ t("guide.steps.addPoint2.converterCaption") }}</p>
@@ -964,13 +964,13 @@
                two demo pins pinned on page 13 -- not the live dialog itself,
                since Dialog content teleports outside the `.guide-page` tree
                pdfExport.ts captures. -->
-          <div class="guide-callout-region" style="width: 440px">
+          <div class="guide-callout-region" style="width: 360px">
             <img v-if="comparePngUrl" :src="comparePngUrl" class="block w-full" :alt="t('fomcharts.compare.title')" />
           </div>
-          <p class="mx-auto mt-2 max-w-110 text-center text-[11px] leading-snug text-secondary">{{ t("guide.steps.comparePins.figureCaption") }}</p>
+          <p class="mx-auto mt-2 max-w-90 text-center text-[11px] leading-snug text-secondary">{{ t("guide.steps.comparePins.figureCaption") }}</p>
         </div>
 
-        <div class="flex-1 pt-1">
+        <div class="min-w-0 flex-1 pt-1">
           <div class="flex flex-col gap-1.5 text-xs">
             <p class="flex gap-1.5"><Check class="mt-0.5 size-3 shrink-0 text-primary" /><span><strong class="text-primary">{{ t("fomcharts.compare.origin") }} :</strong> {{ t("guide.steps.comparePins.sections.origin") }}</span></p>
             <p class="flex gap-1.5"><Check class="mt-0.5 size-3 shrink-0 text-primary" /><span><strong class="text-primary">{{ t("fomcharts.annotations.mode") }} :</strong> {{ t("guide.steps.comparePins.sections.mode") }}</span></p>
@@ -978,55 +978,101 @@
             <p class="flex gap-1.5"><Check class="mt-0.5 size-3 shrink-0 text-primary" /><span><strong class="text-primary">{{ t("fomcharts.annotations.metrics") }} :</strong> {{ t("guide.steps.comparePins.sections.metrics") }}</span></p>
             <p class="flex gap-1.5"><Check class="mt-0.5 size-3 shrink-0 text-primary" /><span><strong class="text-primary">{{ t("fomcharts.annotations.notes") }} :</strong> {{ t("guide.steps.comparePins.sections.notes") }}</span></p>
           </div>
+        </div>
+      </div>
 
-          <!-- Mark-up toolbar -- a hand-assembled mock (same real Button/
-               icon components as CompareDialog's own toolbar) rather than
-               the live dialog, same teleport constraint as the comparison
-               image above. "Pen" is picked as the active tool so its color
-               palette actually renders (see markupActiveTool's own comment). -->
-          <div class="mt-3">
-            <h3 class="mb-1 text-sm font-semibold text-primary">{{ t("guide.steps.comparePins.markupTitle") }}</h3>
-            <p class="mb-2 text-xs leading-snug text-secondary">{{ t("guide.steps.comparePins.markupBody") }}</p>
-            <div ref="markupBlockWrap" class="relative flex items-center gap-2.5">
-              <div ref="markupToolsWrap" class="inline-flex overflow-hidden rounded-lg border border-secondary/20 bg-card">
+      <!-- Mark-up toolbar -- a hand-assembled mock (same real Button/icon
+           components, grouped exactly like CompareDialog's own toolbar)
+           rather than the live dialog, same teleport constraint as the
+           comparison image above. Full page width, not squeezed into the
+           right column above, since the real toolbar now has four groups
+           (Konva-based free-form annotations, not just a pen). "Pen" is
+           picked as the active tool so its color swatches render. -->
+      <div class="mt-3">
+        <h3 class="mb-1 text-sm font-semibold text-primary">{{ t("guide.steps.comparePins.markupTitle") }}</h3>
+        <p class="mb-2 text-xs leading-snug text-secondary">{{ t("guide.steps.comparePins.markupBody") }}</p>
+        <div ref="markupBlockWrap" class="relative flex flex-wrap items-end gap-x-4 gap-y-2">
+          <div ref="markupToolsWrap" class="flex flex-wrap items-end gap-x-3 gap-y-2">
+            <div class="flex flex-col gap-1">
+              <span class="pl-0.5 text-[9px] font-bold tracking-wider text-muted-foreground uppercase">{{ t("fomcharts.compare.tools.groupTools") }}</span>
+              <div class="inline-flex overflow-hidden rounded-lg border border-secondary/20 bg-card">
                 <Button type="button" variant="ghost" size="icon-xs" class="rounded-none text-secondary">
                   <MousePointer2 class="size-3.5" />
+                </Button>
+                <Button type="button" variant="ghost" size="icon-xs" class="rounded-none text-secondary">
+                  <Hand class="size-3.5" />
                 </Button>
                 <Button type="button" variant="ghost" size="icon-xs" class="rounded-none bg-primary font-semibold text-primary-foreground hover:bg-primary hover:text-primary-foreground">
                   <Pen class="size-3.5" />
                 </Button>
                 <Button type="button" variant="ghost" size="icon-xs" class="rounded-none text-secondary">
-                  <Eraser class="size-3.5" />
-                </Button>
-                <Button type="button" variant="ghost" size="icon-xs" class="rounded-none text-secondary">
                   <Rows3 class="size-3.5" />
                 </Button>
+                <Button type="button" variant="ghost" size="icon-xs" class="rounded-none text-secondary">
+                  <Ellipse class="size-3.5" />
+                </Button>
+                <Button type="button" variant="ghost" size="icon-xs" class="rounded-none text-secondary">
+                  <ArrowUpRight class="size-3.5" />
+                </Button>
+                <Button type="button" variant="ghost" size="icon-xs" class="rounded-none text-secondary">
+                  <StickyNote class="size-3.5" />
+                </Button>
+                <Button type="button" variant="ghost" size="icon-xs" class="rounded-none text-secondary">
+                  <Eraser class="size-3.5" />
+                </Button>
               </div>
-              <div class="flex items-center gap-1.5">
-                <button
+            </div>
+            <div class="flex flex-col gap-1">
+              <span class="pl-0.5 text-[9px] font-bold tracking-wider text-muted-foreground uppercase">{{ t("fomcharts.compare.tools.groupStamps") }}</span>
+              <div class="inline-flex overflow-hidden rounded-lg border border-secondary/20 bg-card">
+                <Button type="button" variant="ghost" size="icon-xs" class="rounded-none text-secondary">
+                  <Star class="size-3.5" />
+                </Button>
+                <Button type="button" variant="ghost" size="icon-xs" class="rounded-none text-secondary">
+                  <CheckCircle2 class="size-3.5" />
+                </Button>
+                <Button type="button" variant="ghost" size="icon-xs" class="rounded-none text-secondary">
+                  <X class="size-3.5" />
+                </Button>
+              </div>
+            </div>
+            <div class="flex flex-col gap-1">
+              <span class="pl-0.5 text-[9px] font-bold tracking-wider text-muted-foreground uppercase">{{ t("fomcharts.compare.tools.groupColor") }}</span>
+              <div class="flex h-7 items-center gap-1.5">
+                <span
                   v-for="c in markupPenColors"
                   :key="c"
-                  type="button"
                   class="size-4 rounded-full border-2"
                   :class="markupPenColor === c ? 'border-ink' : 'border-transparent'"
                   :style="{ background: c }"
                 />
               </div>
-              <Button variant="link" size="xs" class="h-auto shrink-0 p-0 text-[10.5px]">
-                {{ t("fomcharts.compare.tools.clear") }}
-              </Button>
-              <GuideMarkRing v-for="(m, i) in comparePinsMarks" :key="i" :mark="m" :number="i + 1" side="top" />
             </div>
-            <GuideMarkLegend
-              class="mt-2"
-              :compact="true"
-              :items="[
-                { label: t('guide.steps.comparePins.markupMarks.tools.label'), body: t('guide.steps.comparePins.markupMarks.tools.body') },
-                { label: t('guide.steps.comparePins.markupMarks.clear.label'), body: t('guide.steps.comparePins.markupMarks.clear.body') },
-              ]"
-            />
+            <div class="flex flex-col gap-1">
+              <span class="pl-0.5 text-[9px] font-bold tracking-wider text-muted-foreground uppercase">{{ t("fomcharts.compare.tools.groupHistory") }}</span>
+              <div class="inline-flex overflow-hidden rounded-lg border border-secondary/20 bg-card">
+                <Button type="button" variant="ghost" size="icon-xs" class="rounded-none text-secondary" disabled>
+                  <Undo2 class="size-3.5" />
+                </Button>
+                <Button type="button" variant="ghost" size="icon-xs" class="rounded-none text-secondary" disabled>
+                  <Redo2 class="size-3.5" />
+                </Button>
+              </div>
+            </div>
           </div>
+          <Button variant="link" size="xs" class="h-auto shrink-0 pb-1 text-[10.5px]">
+            {{ t("fomcharts.compare.tools.reset") }}
+          </Button>
+          <GuideMarkRing v-for="(m, i) in comparePinsMarks" :key="i" :mark="m" :number="i + 1" side="top" />
         </div>
+        <GuideMarkLegend
+          class="mt-2"
+          :compact="true"
+          :items="[
+            { label: t('guide.steps.comparePins.markupMarks.tools.label'), body: t('guide.steps.comparePins.markupMarks.tools.body') },
+            { label: t('guide.steps.comparePins.markupMarks.clear.label'), body: t('guide.steps.comparePins.markupMarks.clear.body') },
+          ]"
+        />
       </div>
 
       <div class="mt-3 rounded-xl border border-border bg-muted/30 px-4 py-2.5">
@@ -1213,26 +1259,28 @@
       <div class="flex flex-1 flex-col items-center justify-center gap-5 text-center">
         <p class="text-xs font-semibold tracking-[0.35em] text-secondary uppercase">{{ t("guide.mode2.eyebrow") }}</p>
         <h2 class="max-w-lg text-3xl font-bold text-ink">{{ t("guide.mode2.title") }}</h2>
-        <div class="flex max-w-md items-center gap-3 rounded-xl border border-dashed border-border bg-muted/20 px-4 py-2.5 text-left">
-          <p class="text-xl">🚧</p>
+        <div class="flex max-w-md items-center gap-3 rounded-xl border border-border bg-muted/20 px-4 py-2.5 text-left">
+          <Info class="size-5 shrink-0 text-primary" />
           <p class="text-xs leading-snug text-ink">
-            <strong class="font-semibold">{{ t("guide.mode2.comingSoon.title") }}</strong> — {{ t("guide.mode2.comingSoon.body") }}
+            <strong class="font-semibold">{{ t("guide.mode2.status.title") }}.</strong>
+            {{ t("guide.mode2.status.body") }}
           </p>
         </div>
 
-        <!-- A small, purely iconographic flow (no fabricated screenshot,
-             same "theoretical" caution as page 18's wireframe) previewing
-             the three planned stages. -->
+        <!-- Import and extraction are real and already usable (see page 18's
+             "Aujourd'hui" section) -- only Human review is still being
+             designed, so it alone stays in the dimmer, unstyled "not real
+             yet" treatment the whole flow used to share. -->
         <div class="mt-1 flex items-center justify-center gap-2.5">
           <div class="flex flex-col items-center gap-1">
-            <span class="flex size-9 items-center justify-center rounded-lg bg-secondary/10 text-secondary">
+            <span class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <Upload class="size-4" />
             </span>
             <span class="text-[10px] text-secondary">{{ t("guide.mode2.divider.flow.upload") }}</span>
           </div>
           <ArrowRight class="size-3.5 shrink-0 text-secondary/40" />
           <div class="flex flex-col items-center gap-1">
-            <span class="flex size-9 items-center justify-center rounded-lg bg-secondary/10 text-secondary">
+            <span class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <Sparkles class="size-4" />
             </span>
             <span class="text-[10px] text-secondary">{{ t("guide.mode2.divider.flow.extract") }}</span>
@@ -1250,17 +1298,52 @@
       <GuideFooter :page="PAGE_MODE2_DIVIDER" />
     </section>
 
-    <!-- ============================= PAGE 18 -- Mode 2: what's coming ============================= -->
+    <!-- ============================= PAGE 18 -- Mode 2: today & what's coming ============================= -->
     <section
       class="guide-page box-border flex h-[297mm] w-[210mm] flex-col bg-white p-[15mm] break-after-page"
-      :data-outline-title="`${t('guide.outline.mode2')} — ${t('guide.mode2.preview.title')}`"
+      :data-outline-title="`${t('guide.outline.mode2')}: ${t('guide.mode2.today.title')}`"
     >
       <GuideHeader />
       <p class="mb-1.5 text-xs font-semibold tracking-[0.3em] text-secondary uppercase">{{ t("guide.mode2.eyebrow") }}</p>
       <h2 class="mb-3 text-xl font-semibold">{{ t("guide.mode2.title") }}</h2>
 
+      <div>
+        <h3 class="mb-1 text-sm font-semibold text-primary">{{ t("guide.mode2.today.title") }}</h3>
+        <p class="mb-2 text-[11.5px] leading-snug text-ink">{{ t("guide.mode2.today.body") }}</p>
+        <div class="flex items-center justify-center gap-3 rounded-xl border border-border bg-muted/20 px-4 py-3">
+          <div class="flex flex-col items-center gap-1">
+            <span class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Upload class="size-4" />
+            </span>
+            <span class="text-[10px] text-secondary">{{ t("guide.mode2.today.flow.upload") }}</span>
+          </div>
+          <ArrowRight class="size-3.5 shrink-0 text-secondary/40" />
+          <div class="flex flex-col items-center gap-1">
+            <span class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Cpu class="size-4" />
+            </span>
+            <span class="text-[10px] text-secondary">{{ t("guide.mode2.today.flow.model") }}</span>
+          </div>
+          <ArrowRight class="size-3.5 shrink-0 text-secondary/40" />
+          <div class="flex flex-col items-center gap-1">
+            <span class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Activity class="size-4" />
+            </span>
+            <span class="text-[10px] text-secondary">{{ t("guide.mode2.today.flow.progress") }}</span>
+          </div>
+          <ArrowRight class="size-3.5 shrink-0 text-secondary/40" />
+          <div class="flex flex-col items-center gap-1">
+            <span class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Download class="size-4" />
+            </span>
+            <span class="text-[10px] text-secondary">{{ t("guide.mode2.today.flow.export") }}</span>
+          </div>
+        </div>
+      </div>
+
       <div class="mt-3">
-        <h3 class="mb-2 text-sm font-semibold">{{ t("guide.mode2.preview.title") }}</h3>
+        <h3 class="mb-1 text-sm font-semibold">{{ t("guide.mode2.preview.title") }}</h3>
+        <p class="mb-2 text-[11px] leading-snug text-secondary">{{ t("guide.mode2.preview.intro") }}</p>
         <div class="grid grid-cols-3 gap-2.5">
           <div class="rounded-lg border border-border bg-muted/30 px-3 py-2">
             <p class="mb-1 flex items-center gap-1.5 text-xs font-semibold text-ink">
@@ -1408,19 +1491,24 @@
 import { computed, h, nextTick, onMounted, ref, useTemplateRef, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import {
+  Activity,
   ArrowRight,
+  ArrowUpRight,
   Check,
+  CheckCircle2,
   ChevronDown,
   ClipboardCheck,
   Columns3,
-  Construction,
+  Cpu,
   Download,
+  Ellipse,
   Eraser,
   FileImage,
   FileSpreadsheet,
   FileText,
   Filter,
   FolderOpen,
+  Hand,
   Info,
   LayoutGrid,
   Layers,
@@ -1429,14 +1517,19 @@ import {
   Pen,
   Pin,
   PlusCircle,
+  Redo2,
   RotateCcw,
   Rows3,
   SlidersHorizontal,
   Sparkles,
+  Star,
+  StickyNote,
   Table2,
   Target,
+  Undo2,
   Upload,
   Users,
+  X,
 } from "@lucide/vue";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -1624,7 +1717,7 @@ const tocEntries = computed(() => [
     icon: FileImage,
     group: "mode1" as const,
   },
-  { label: tocLabel(t("guide.outline.mode2")), desc: t("guide.toc.desc.mode2"), page: PAGE_MODE2, icon: Construction, group: "back" as const },
+  { label: tocLabel(t("guide.outline.mode2")), desc: t("guide.toc.desc.mode2"), page: PAGE_MODE2, icon: Cpu, group: "back" as const },
 ]);
 
 // Mode 1's own divider page (below) previews exactly these entries -- reusing
@@ -1959,10 +2052,11 @@ const metricsExportDataUrl = ref<string | null>(null);
 const comparePngUrl = ref<string | null>(null);
 
 // Page 14's hand-assembled markup toolbar mock -- "Pen" is the one styled
-// active in the template below (rather than the default "View"), so its
-// 3-color palette actually renders, since the palette only ever shows while
-// a pen is active (see CompareDialog's own v-if="activeTool === 'pen'").
-const markupPenColors = ["#ffca28", "#ff8a65", "#f06292"];
+// active in the template below (rather than the default "Selection"), so
+// its color swatches actually render, since the palette only ever shows
+// while a drawing tool is active. Same 4 colorblind-safe Okabe-Ito swatches
+// as the real ANNOTATION_COLORS (see utils/compareExport.ts), not invented.
+const markupPenColors = ["#0072b2", "#e69f00", "#009e73", "#cc79a7"];
 const markupPenColor = markupPenColors[0];
 
 // Guide-only: page 11's chart image export examples -- genuine
@@ -2055,7 +2149,7 @@ function openSection(root: HTMLElement | null, title: string) {
 // out the transition (a plain timeout, since there's no 'transitionend'
 // to await here across every affected row at once) before measuring is
 // simplest and safe.
-const settle = (ms = 320) => new Promise((resolve) => setTimeout(resolve, ms));
+const settle = (ms = 450) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Every ring, measurement and captured PNG below is derived from rendered,
 // translated text -- correct only for whatever locale was active the moment
@@ -2322,8 +2416,8 @@ async function captureGuideArtifacts() {
   if (markupBlockWrap.value) {
     const c = markupBlockWrap.value;
     push(comparePinsMarks, markupToolsWrap.value ? markRect(c, markupToolsWrap.value, 4) : null);
-    const clearBtn = findByText(c, "button", t("fomcharts.compare.tools.clear"));
-    push(comparePinsMarks, clearBtn ? markRect(c, clearBtn, 4) : null);
+    const resetBtn = findByText(c, "button", t("fomcharts.compare.tools.reset"));
+    push(comparePinsMarks, resetBtn ? markRect(c, resetBtn, 4) : null);
   }
 
   // Page 12's "full point export" / "Metrics" export figures -- see
@@ -2337,17 +2431,33 @@ async function captureGuideArtifacts() {
   exportChartPngUrl2.value = exportChartGenRef2.value?.getPngDataUrl() ?? null;
 }
 
+// downloadGuide() in HomeView.vue only knows GuideTemplate is *mounted*, not
+// that its async rings/PNG exports (this function) have actually finished --
+// captureGuideArtifacts re-runs on every locale switch too, so a download
+// fired right after switching language could otherwise snapshot pages
+// mid-capture (missing images, rings from the previous locale). Tracking the
+// latest run's promise here lets waitUntilReady() below make that wait
+// explicit instead of relying on how much real time happens to pass first.
+let captureTask: Promise<void> = Promise.resolve();
+function scheduleCapture() {
+  captureTask = captureGuideArtifacts();
+}
+
 onMounted(() => {
-  captureGuideArtifacts();
+  scheduleCapture();
 });
 
 // Re-run on a live language switch -- see captureGuideArtifacts' own comment
 // for why a fresh capture is needed rather than relying on the initial one.
 watch(locale, () => {
-  captureGuideArtifacts();
+  scheduleCapture();
 });
 
-defineExpose({ rootEl });
+async function waitUntilReady() {
+  await captureTask;
+}
+
+defineExpose({ rootEl, waitUntilReady });
 
 // -----------------------------------------------------------------------
 // Tiny local presentational components -- kept in this file since they're

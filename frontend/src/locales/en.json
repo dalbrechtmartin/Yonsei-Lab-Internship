@@ -155,7 +155,7 @@
       "mode1ComparePins": "10. Compare pinned points",
       "mode1ExportChart": "11. Export the chart",
       "mode1ExportPin": "12. Export a pinned point",
-      "mode2": "Mode 2 (coming soon)",
+      "mode2": "Mode 2 (PDF extraction)",
       "about": "About the author"
     },
     "intro": {
@@ -190,7 +190,7 @@
         "mode1ComparePins": "Side-by-side, annotated comparison.",
         "mode1ExportChart": "Filtered data and chart as an image.",
         "mode1ExportPin": "One pinned point, exported alone.",
-        "mode2": "Automatic PDF extraction, coming soon."
+        "mode2": "Available in the app, not yet documented in detail."
       }
     },
     "mode1": {
@@ -520,15 +520,15 @@
         },
         "note": "Each section can be turned off before exporting. Capped at 6 pins to stay legible.",
         "markupTitle": "Mark up the comparison",
-        "markupBody": "Before exporting, draw directly on the preview: a pen (3 colors) to circle or annotate a detail, an eraser, or click a row to band-highlight it across every column.",
+        "markupBody": "Before exporting, freely annotate the preview: drawing, frames, arrows, sticky notes and stamps, each in a color of your choice.",
         "markupMarks": {
           "tools": {
-            "label": "Tools",
-            "body": "View (default), Pen, Eraser, or Highlight a row."
+            "label": "Toolbar",
+            "body": "selection, pan, pen (with color), highlight a row, frame, arrow, sticky note, eraser; favorite/validated/exclude stamps; undo/redo."
           },
           "clear": {
-            "label": "Clear markup",
-            "body": "removes every stroke and highlight. Keeps the title and section choices."
+            "label": "Reset annotations",
+            "body": "removes every stroke, shape and sticky note. Keeps the title and section choices."
           }
         }
       },
@@ -563,9 +563,9 @@
     "mode2": {
       "eyebrow": "Mode 2",
       "title": "PDF extraction & validation",
-      "comingSoon": {
-        "title": "Coming soon",
-        "body": "The PDF extraction and validation workflow is still under development. This guide will be updated once that feature is ready."
+      "status": {
+        "title": "Available, not yet documented in detail",
+        "body": "Mode 2 is usable today in λLens. This guide only covers it in broad strokes for now. The review and validation screen is still being refined."
       },
       "divider": {
         "flow": {
@@ -573,10 +573,21 @@
           "extract": "AI extraction",
           "review": "Human review"
         },
-        "caption": "A theoretical preview of the planned workflow."
+        "caption": "Import and extraction already work. Human review is still being designed."
+      },
+      "today": {
+        "title": "Today",
+        "body": "Drop in one or more PDFs, pick a model, and get back an Excel or CSV file. No review screen yet: extracted values aren't checked page by page.",
+        "flow": {
+          "upload": "Drop PDFs",
+          "model": "Pick a model",
+          "progress": "Live progress",
+          "export": "Export (.xlsx/.csv)"
+        }
       },
       "preview": {
         "title": "What's coming",
+        "intro": "Planned improvements to make this workflow more reliable:",
         "rules": {
           "title": "AI extraction rules",
           "items": {
@@ -774,16 +785,66 @@
       "clearTitle": "Clear title",
       "sectionsLabel": "Show",
       "origin": "Origin",
+      "cancel": "Cancel",
+      "chips": {
+        "hint": "Drag a chip, or use the arrows, to reorder columns live. Remove a point with × without closing this dialog.",
+        "addPoint": "Add point",
+        "moveLeft": "Move earlier",
+        "moveRight": "Move later",
+        "remove": "Remove {ref} from the comparison",
+        "reverse": "Reverse order"
+      },
+      "sort": {
+        "selection": "Selection order",
+        "ref": "Reference (A-Z)",
+        "metricAsc": "By {metric} (low to high)",
+        "metricDesc": "By {metric} (high to low)"
+      },
       "tools": {
-        "none": "View",
+        "groupTools": "Tools",
+        "groupColor": "Color",
+        "groupStamps": "Stamps",
+        "groupHistory": "History",
+        "pointer": "Select",
+        "pointerHint": "Click any annotation to select it, drag to move it, then use the × that appears or press Delete to remove it.",
+        "pan": "Pan",
+        "panHint": "Drag to scroll around the preview. Tip: hold Space with any other tool to pan temporarily.",
         "pen": "Pen",
-        "eraser": "Eraser",
-        "highlightRow": "Highlight a row",
-        "penColor": "Pen color",
-        "clear": "Clear markup",
         "penHint": "Draw freely over the preview to highlight or circle a detail.",
-        "eraserHint": "Erase strokes drawn with the pen.",
-        "highlightRowHint": "Click a row to highlight it across every column."
+        "penColor": "Pen color",
+        "eraser": "Eraser",
+        "eraserHint": "Drag over one or more annotations to erase them.",
+        "highlightRow": "Highlight a row",
+        "highlightRowHint": "Click a row to highlight it across every column.",
+        "frame": "Frame / ellipse",
+        "frameHint": "Drag over a value to circle it.",
+        "arrow": "Arrow",
+        "arrowHint": "Drag to draw an arrow pointing at a detail.",
+        "postit": "Sticky note",
+        "postitHint": "Click to drop a note and type your text. Drag it to move it, double-click to edit it again.",
+        "postitPlaceholder": "Note...",
+        "editPostit": "Edit note",
+        "stampHint": "Click anywhere on a column to stamp it with the selected mark.",
+        "undo": "Undo",
+        "redo": "Redo",
+        "zoomIn": "Zoom in",
+        "zoomOut": "Zoom out",
+        "fitToScreen": "Fit to screen",
+        "reset": "Reset annotations",
+        "removeAnnotation": "Remove annotation"
+      },
+      "stamps": {
+        "favorite": "Favorite",
+        "validated": "Validated",
+        "exclude": "Exclude"
+      },
+      "bestWorst": {
+        "label": "Highlight best/worst by",
+        "none": "None"
+      },
+      "badges": {
+        "measured": "Measured",
+        "simulated": "Simulated"
       },
       "downloadPng": "Download comparison PNG",
       "empty": "Pick at least one section to include."

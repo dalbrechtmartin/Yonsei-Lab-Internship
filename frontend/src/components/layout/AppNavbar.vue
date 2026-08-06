@@ -113,11 +113,7 @@ interface ToolTab {
 const tools: ToolTab[] = [
   { path: "/", labelKey: "nav.home" },
   { path: "/visualization", labelKey: "nav.visualization" },
-  // Extraction is locked in deployed builds (test + prod, both run through
-  // `vite build` per Dockerfile.frontend) while its next version is being
-  // reworked -- import.meta.env.PROD is false only under `vite dev`, which
-  // is exactly the local/dev-only access the app owner wants to keep.
-  { path: "/extraction", labelKey: "nav.extraction", locked: import.meta.env.PROD },
+  { path: "/extraction", labelKey: "nav.extraction" },
 ];
 
 const mobileMenuOpen = ref(false);

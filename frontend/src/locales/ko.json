@@ -155,7 +155,7 @@
       "mode1ComparePins": "10. 고정된 점 비교",
       "mode1ExportChart": "11. 그래프 내보내기",
       "mode1ExportPin": "12. 고정된 점 내보내기",
-      "mode2": "모드 2 (준비 중)",
+      "mode2": "모드 2 (PDF 추출)",
       "about": "저자 소개"
     },
     "intro": {
@@ -190,7 +190,7 @@
         "mode1ComparePins": "나란히 놓고 주석을 더한 비교.",
         "mode1ExportChart": "필터링된 데이터와 이미지 그래프.",
         "mode1ExportPin": "고정된 점 하나만 내보내기.",
-        "mode2": "PDF 자동 추출, 곧 제공."
+        "mode2": "앱에서 이용 가능, 아직 상세 문서는 없음."
       }
     },
     "mode1": {
@@ -520,15 +520,15 @@
         },
         "note": "각 섹션은 내보내기 전 끌 수 있습니다. 최대 6개 점으로 제한됩니다.",
         "markupTitle": "비교 이미지에 표시하기",
-        "markupBody": "내보내기 전에 미리보기 위에 직접 그릴 수 있습니다: 펜(3가지 색)으로 세부 사항을 표시하거나, 지우개를 쓰거나, 행을 클릭해 모든 열에 걸쳐 강조 표시할 수 있습니다.",
+        "markupBody": "내보내기 전에 미리보기를 자유롭게 꾸며보세요: 그리기, 도형, 화살표, 포스트잇, 도장을 각각 원하는 색으로 사용할 수 있습니다.",
         "markupMarks": {
           "tools": {
-            "label": "도구",
-            "body": "보기(기본값), 펜, 지우개, 행 강조 표시."
+            "label": "도구 모음",
+            "body": "선택, 이동, 펜(색상 선택), 행 강조 표시, 도형, 화살표, 포스트잇, 지우개, 즐겨찾기/승인/제외 도장, 실행 취소/다시 실행."
           },
           "clear": {
-            "label": "표시 지우기",
-            "body": "모든 선과 강조 표시를 지웁니다. 제목과 섹션 선택은 그대로 유지됩니다."
+            "label": "주석 초기화",
+            "body": "모든 선, 도형, 포스트잇을 지웁니다. 제목과 섹션 선택은 그대로 유지됩니다."
           }
         }
       },
@@ -563,9 +563,9 @@
     "mode2": {
       "eyebrow": "모드 2",
       "title": "PDF 추출 및 검증",
-      "comingSoon": {
-        "title": "준비 중",
-        "body": "PDF 추출 및 검증 워크플로는 아직 개발 중입니다. 기능이 준비되면 이 가이드도 업데이트됩니다."
+      "status": {
+        "title": "이용 가능, 아직 상세 문서 없음",
+        "body": "모드 2는 오늘부터 λLens에서 사용할 수 있습니다. 이 가이드는 아직 개략적인 내용만 다룹니다. 검토 및 검증 화면은 계속 다듬어지고 있습니다."
       },
       "divider": {
         "flow": {
@@ -573,10 +573,21 @@
           "extract": "AI 추출",
           "review": "사람 검토"
         },
-        "caption": "계획된 작업 흐름의 이론적 미리보기입니다."
+        "caption": "가져오기와 추출은 이미 작동합니다. 사람 검토는 아직 설계 중입니다."
+      },
+      "today": {
+        "title": "오늘",
+        "body": "PDF 한 개 이상을 올리고 모델을 선택하면 Excel 또는 CSV 파일을 받습니다. 아직 검토 화면은 없어서, 추출된 값이 페이지별로 확인되지는 않습니다.",
+        "flow": {
+          "upload": "PDF 올리기",
+          "model": "모델 선택",
+          "progress": "실시간 진행 상황",
+          "export": "내보내기(.xlsx/.csv)"
+        }
       },
       "preview": {
         "title": "앞으로 추가될 내용",
+        "intro": "이 작업 흐름을 더 안정적으로 만들 예정된 개선 사항입니다.",
         "rules": {
           "title": "AI 추출 규칙",
           "items": {
@@ -774,16 +785,66 @@
       "clearTitle": "제목 지우기",
       "sectionsLabel": "표시",
       "origin": "출처",
+      "cancel": "취소",
+      "chips": {
+        "hint": "칩을 드래그하거나 화살표를 사용해 열 순서를 바로 바꾸세요. ×를 누르면 창을 닫지 않고 포인트를 제거합니다.",
+        "addPoint": "포인트 추가",
+        "moveLeft": "앞으로 이동",
+        "moveRight": "뒤로 이동",
+        "remove": "{ref}를 비교에서 제거",
+        "reverse": "순서 반전"
+      },
+      "sort": {
+        "selection": "선택 순서",
+        "ref": "참조 (A-Z)",
+        "metricAsc": "{metric} 오름차순",
+        "metricDesc": "{metric} 내림차순"
+      },
       "tools": {
-        "none": "선택 안 함",
+        "groupTools": "도구",
+        "groupColor": "색상",
+        "groupStamps": "스탬프",
+        "groupHistory": "기록",
+        "pointer": "선택",
+        "pointerHint": "주석을 클릭해 선택하고 드래그로 이동한 다음, 나타나는 × 아이콘을 클릭하거나 Delete 키를 눌러 제거하세요.",
+        "pan": "이동",
+        "panHint": "드래그해 미리보기를 이동하세요. 팁: 다른 도구를 사용 중일 때 스페이스바를 누르고 있으면 일시적으로 이동할 수 있습니다.",
         "pen": "펜",
-        "eraser": "지우개",
-        "highlightRow": "행 강조",
-        "penColor": "펜 색상",
-        "clear": "표시 지우기",
         "penHint": "미리보기 위에 자유롭게 그려서 세부 사항을 강조하세요.",
-        "eraserHint": "펜으로 그린 선을 지웁니다.",
-        "highlightRowHint": "행을 클릭하면 모든 열에서 강조됩니다."
+        "penColor": "펜 색상",
+        "eraser": "지우개",
+        "eraserHint": "하나 이상의 주석 위로 드래그해 지우세요.",
+        "highlightRow": "행 강조",
+        "highlightRowHint": "행을 클릭하면 모든 열에서 강조됩니다.",
+        "frame": "테두리 / 타원",
+        "frameHint": "값 위를 드래그해 테두리로 표시하세요.",
+        "arrow": "화살표",
+        "arrowHint": "드래그해 세부 사항을 가리키는 화살표를 그리세요.",
+        "postit": "포스트잇",
+        "postitHint": "클릭해 메모를 놓고 텍스트를 입력하세요. 드래그로 이동하고, 더블클릭하면 다시 수정할 수 있습니다.",
+        "postitPlaceholder": "메모...",
+        "editPostit": "메모 수정",
+        "stampHint": "열 아무 곳이나 클릭해 선택한 스탬프를 찍으세요.",
+        "undo": "실행 취소",
+        "redo": "다시 실행",
+        "zoomIn": "확대",
+        "zoomOut": "축소",
+        "fitToScreen": "화면에 맞추기",
+        "reset": "주석 초기화",
+        "removeAnnotation": "주석 제거"
+      },
+      "stamps": {
+        "favorite": "즐겨찾기",
+        "validated": "확인됨",
+        "exclude": "제외"
+      },
+      "bestWorst": {
+        "label": "최고/최저 강조 기준",
+        "none": "없음"
+      },
+      "badges": {
+        "measured": "측정됨",
+        "simulated": "시뮬레이션"
       },
       "downloadPng": "비교 이미지 다운로드",
       "empty": "포함할 섹션을 하나 이상 선택하세요."
