@@ -151,10 +151,11 @@
       "mode1DataTable": "6. Gérer vos points de données",
       "mode1AddPoint1": "7. Ajouter un point : l'essentiel",
       "mode1AddPoint2": "8. Ajouter un point : structure et notes",
-      "mode1Annotate": "9. Épingler et annoter",
-      "mode1ComparePins": "10. Comparer des points épinglés",
-      "mode1ExportChart": "11. Exporter le graphique",
-      "mode1ExportPin": "12. Exporter un point",
+      "mode1AddPoint3": "9. Ajouter un point : résultat",
+      "mode1Annotate": "10. Épingler et annoter",
+      "mode1ComparePins": "11. Comparer des points épinglés",
+      "mode1ExportChart": "12. Exporter le graphique",
+      "mode1ExportPin": "13. Exporter un point",
       "mode2": "Mode 2 (extraction PDF)",
       "about": "À propos de l'auteure"
     },
@@ -185,7 +186,8 @@
         "mode1Compare": "Regrouper et comparer par catégorie.",
         "mode1DataTable": "Chercher, trier, masquer, épingler.",
         "mode1AddPoint1": "Nom, axes et mesures d'un nouveau point.",
-        "mode1AddPoint2": "Matériaux, structure et résultat.",
+        "mode1AddPoint2": "Matériaux, structure et notes.",
+        "mode1AddPoint3": "Le nouveau point sur le graphique.",
         "mode1Annotate": "Épingler des points pour les comparer.",
         "mode1ComparePins": "Comparaison côte à côte, annotée.",
         "mode1ExportChart": "Données filtrées et graphique en image.",
@@ -375,7 +377,7 @@
           }
         },
         "note": "Moyenne, médiane et σ n'apparaissent qu'à partir de 3 points par groupe : en dessous, ce ne serait pas une vraie distribution.",
-        "mergeNote": "Groupé par une colonne composite (Classe de matériau, Matériaux de base), un interrupteur « Fusionner les points multi-catégories » apparaît, activé par défaut. Avant/après en image : Fig. 16-17, page 15."
+        "mergeNote": "Groupé par une colonne composite (Classe de matériau, Matériaux de base), un interrupteur « Fusionner les points multi-catégories » apparaît, activé par défaut. Avant/après en image : Fig. 16-17, page 16."
       },
       "dataTable": {
         "title": "6. Gérer vos points de données",
@@ -440,17 +442,14 @@
         }
       },
       "addPoint2": {
-        "title": "8. Structure, notes et résultat",
-        "body": "L'étape 3 construit les matériaux et la pile de couches du capteur. L'étape 4 est pour les notes. Le point apparaît ensuite immédiatement sur le graphique.",
+        "title": "8. Structure et notes",
+        "body": "L'étape 3 construit les matériaux et la pile de couches du capteur. L'étape 4 est pour les notes, libres et facultatives.",
         "structureTitle": "Étape 3 : Structure et matériaux",
         "structureBody": "Cascade verrouillée : Matériaux de base, puis Classe de matériau (suggérée), puis Structure de couches. Chaque niveau se déverrouille une fois le précédent renseigné.",
         "figureStructureCaption": "Fig. 12 : Structure et matériaux, étape 3 sur 4.",
         "finishTitle": "Étape 4 : Finaliser",
         "finishBody": "Notes libres, facultatives, pour ce point.",
         "converterCaption": "Une calculette de secours (µm/pm → nm) pour convertir à la main une valeur tirée d'un article.",
-        "resultTitle": "Le résultat",
-        "resultCaption": "Fig. 13 : le nouveau point sur le graphique, un losange à contour doré avec un bref halo pulsé à l'endroit où il atterrit.",
-        "resultBody": "« N ajouté(s) manuellement » apparaît à côté de l'effectif d'échantillons. Un interrupteur dans l'onglet Points de données décide si les points manuels comptent dans la médiane, la ligne de tendance et la frontière de Pareto.",
         "marks": {
           "baseMaterials": {
             "label": "1. Matériaux de base",
@@ -466,12 +465,28 @@
           }
         }
       },
+      "addPoint3": {
+        "title": "9. Le résultat sur le graphique",
+        "body": "Une fois enregistré, le point apparaît immédiatement sur le graphique : un losange à contour doré, avec un bref halo pulsé à l'endroit où il atterrit.",
+        "figureCaption": "Fig. 13 : le nouveau point sur le graphique, repéré et compté à part.",
+        "marks": {
+          "manualCount": {
+            "label": "Ajouté(s) manuellement",
+            "body": "compte les points ajoutés à la main, séparément des échantillons du fichier."
+          },
+          "newPoint": {
+            "label": "Le nouveau point",
+            "body": "losange à contour doré avec un bref halo pulsé, le temps de le repérer sur le nuage."
+          }
+        },
+        "note": "Un interrupteur dans l'onglet Points de données décide si les points manuels comptent dans la médiane, la ligne de tendance et la frontière de Pareto."
+      },
       "annotate": {
-        "title": "9. Épingler et annoter",
+        "title": "10. Épingler et annoter",
         "body": "Cliquer sur un point du graphique l'épingle ici sous forme de carte, un marque-page léger propre à la session, pour comparer des enregistrements précis. Cliquez sur l'en-tête d'une carte pour la déplier.",
         "figureCaption": "Fig. 14 : panneau Annotations.",
         "expandTitle": "Ce que révèle une carte dépliée",
-        "expandIntro": "Déplier une carte révèle quatre sections supplémentaires (voir Fig. 18, page 16) :",
+        "expandIntro": "Déplier une carte révèle quatre sections supplémentaires (voir Fig. 18, page 17) :",
         "marks": {
           "sort": {
             "label": "Trier",
@@ -508,9 +523,9 @@
         }
       },
       "comparePins": {
-        "title": "10. Comparer des points épinglés",
+        "title": "11. Comparer des points épinglés",
         "body": "Sélectionner 2 cartes épinglées ou plus (jusqu'à 6) active le bouton « Comparer (N) », qui ouvre une fenêtre affichant les points côte à côte. Le titre se remplit à partir des références épinglées et reste modifiable.",
-        "figureCaption": "Fig. 15 : comparaison des deux points épinglés page 13.",
+        "figureCaption": "Fig. 15 : comparaison des deux points épinglés page 14.",
         "sections": {
           "origin": "si l'enregistrement est mesuré (EXP) ou simulé (SIM).",
           "mode": "le Mode ID et, si présente, sa description.",
@@ -539,7 +554,7 @@
         }
       },
       "exportChart": {
-        "title": "11. Exporter le graphique",
+        "title": "12. Exporter le graphique",
         "body": "Le jeu de données filtré s'exporte en tableur, et le graphique tel que configuré en image.",
         "chartCaption": "Fig. 16 : groupé par Classe de matériau, fusion activée.",
         "chartCaption2": "Fig. 17 : groupé par Matériaux de base, fusion désactivée.",
@@ -552,7 +567,7 @@
         }
       },
       "exportPin": {
-        "title": "12. Exporter un point",
+        "title": "13. Exporter un point",
         "body": "Les détails d'un point épinglé s'exportent aussi seuls, à trois niveaux : toutes les infos en une image, ou juste sa structure de couches.",
         "pinExportCaption": "Fig. 18 : tous les champs combinés en une image PNG.",
         "metricsExportCaption": "Fig. 19 : mesures numériques seules, sans structure ni notes.",

@@ -151,10 +151,11 @@
       "mode1DataTable": "6. Manage your data points",
       "mode1AddPoint1": "7. Add a point: the essentials",
       "mode1AddPoint2": "8. Add a point: structure & notes",
-      "mode1Annotate": "9. Pin and annotate",
-      "mode1ComparePins": "10. Compare pinned points",
-      "mode1ExportChart": "11. Export the chart",
-      "mode1ExportPin": "12. Export a pinned point",
+      "mode1AddPoint3": "9. Add a point: the result",
+      "mode1Annotate": "10. Pin and annotate",
+      "mode1ComparePins": "11. Compare pinned points",
+      "mode1ExportChart": "12. Export the chart",
+      "mode1ExportPin": "13. Export a pinned point",
       "mode2": "Mode 2 (PDF extraction)",
       "about": "About the author"
     },
@@ -185,7 +186,8 @@
         "mode1Compare": "Group and compare by category.",
         "mode1DataTable": "Search, sort, hide, pin.",
         "mode1AddPoint1": "Name, axes and metrics for a new point.",
-        "mode1AddPoint2": "Materials, structure and result.",
+        "mode1AddPoint2": "Materials, structure and notes.",
+        "mode1AddPoint3": "The new point on the chart.",
         "mode1Annotate": "Pin points to compare them.",
         "mode1ComparePins": "Side-by-side, annotated comparison.",
         "mode1ExportChart": "Filtered data and chart as an image.",
@@ -375,7 +377,7 @@
           }
         },
         "note": "Mean, median and σ only appear from 3 points per group: below that, it wouldn't be a real distribution.",
-        "mergeNote": "Grouping by a composite column (Material Class, Base Materials) adds a \"Merge multi-category points\" switch, on by default. See it before/after in Figs. 16-17, page 15."
+        "mergeNote": "Grouping by a composite column (Material Class, Base Materials) adds a \"Merge multi-category points\" switch, on by default. See it before/after in Figs. 16-17, page 16."
       },
       "dataTable": {
         "title": "6. Manage your data points",
@@ -440,17 +442,14 @@
         }
       },
       "addPoint2": {
-        "title": "8. Structure, notes & the result",
-        "body": "Step 3 builds the sensor's materials and layer stack. Step 4 is for notes. The point then appears on the chart immediately.",
+        "title": "8. Structure & notes",
+        "body": "Step 3 builds the sensor's materials and layer stack. Step 4 is for free, optional notes.",
         "structureTitle": "Step 3: Structure & materials",
         "structureBody": "Locked cascade: Base Materials, then Material Class (auto-suggested), then Layer Structure. Each unlocks once the last has a value.",
         "figureStructureCaption": "Fig. 12: Structure & materials, step 3 of 4.",
         "finishTitle": "Step 4: Finish",
         "finishBody": "Optional free-text notes for this point.",
         "converterCaption": "A scratch calculator (µm/pm → nm) for converting a paper's value by hand.",
-        "resultTitle": "The result",
-        "resultCaption": "Fig. 13: the new point on the chart, a gold-outlined diamond with a brief pulse ring where it lands.",
-        "resultBody": "\"N added manually\" appears next to the sample count. A toggle in the Data points tab decides whether manual points count toward the median, trend line and Pareto frontier.",
         "marks": {
           "baseMaterials": {
             "label": "1. Base Materials",
@@ -466,12 +465,28 @@
           }
         }
       },
+      "addPoint3": {
+        "title": "9. The result on the chart",
+        "body": "Once saved, the point appears on the chart immediately: a gold-outlined diamond with a brief pulse ring where it lands.",
+        "figureCaption": "Fig. 13: the new point on the chart, flagged and counted separately.",
+        "marks": {
+          "manualCount": {
+            "label": "Added manually",
+            "body": "counts points added by hand, separately from the file's own samples."
+          },
+          "newPoint": {
+            "label": "The new point",
+            "body": "gold-outlined diamond with a brief pulse ring, just long enough to spot it on the cloud."
+          }
+        },
+        "note": "A toggle in the Data points tab decides whether manual points count toward the median, trend line and Pareto frontier."
+      },
       "annotate": {
-        "title": "9. Pin and annotate",
+        "title": "10. Pin and annotate",
         "body": "Clicking a chart point pins it here as a card, a lightweight session-only bookmark for comparing specific records. Click a card's header to expand it.",
         "figureCaption": "Fig. 14: Annotations panel.",
         "expandTitle": "What expanding a card reveals",
-        "expandIntro": "Expanding a card reveals four more sections (see Fig. 18, page 16):",
+        "expandIntro": "Expanding a card reveals four more sections (see Fig. 18, page 17):",
         "marks": {
           "sort": {
             "label": "Sort",
@@ -508,9 +523,9 @@
         }
       },
       "comparePins": {
-        "title": "10. Comparing pinned points",
+        "title": "11. Comparing pinned points",
         "body": "Selecting 2 or more pinned cards (up to 6) enables the \"Compare (N)\" button, opening a view with the points side by side. The title pre-fills from the pinned references and stays editable.",
-        "figureCaption": "Fig. 15: comparing the two points pinned on page 13.",
+        "figureCaption": "Fig. 15: comparing the two points pinned on page 14.",
         "sections": {
           "origin": "whether the record is measured (EXP) or simulated (SIM).",
           "mode": "the Mode ID and, when present, its description.",
@@ -539,7 +554,7 @@
         }
       },
       "exportChart": {
-        "title": "11. Exporting the chart",
+        "title": "12. Exporting the chart",
         "body": "The filtered dataset exports as a spreadsheet, and the chart as configured exports as an image.",
         "chartCaption": "Fig. 16: grouped by Material Class, merge on.",
         "chartCaption2": "Fig. 17: grouped by Base Materials, merge off.",
@@ -552,7 +567,7 @@
         }
       },
       "exportPin": {
-        "title": "12. Exporting a pinned point",
+        "title": "13. Exporting a pinned point",
         "body": "A pinned point's details also export on their own, at three levels: everything in one image, or just its layer structure.",
         "pinExportCaption": "Fig. 18: every field combined into one PNG.",
         "metricsExportCaption": "Fig. 19: numeric measurements only, no structure or notes.",

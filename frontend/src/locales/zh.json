@@ -151,10 +151,11 @@
       "mode1DataTable": "6. 管理数据点",
       "mode1AddPoint1": "7. 添加数据点：基本信息",
       "mode1AddPoint2": "8. 添加数据点：结构与备注",
-      "mode1Annotate": "9. 固定与注释",
-      "mode1ComparePins": "10. 比较固定点",
-      "mode1ExportChart": "11. 导出图表",
-      "mode1ExportPin": "12. 导出固定点",
+      "mode1AddPoint3": "9. 添加数据点：结果",
+      "mode1Annotate": "10. 固定与注释",
+      "mode1ComparePins": "11. 比较固定点",
+      "mode1ExportChart": "12. 导出图表",
+      "mode1ExportPin": "13. 导出固定点",
       "mode2": "模式二（PDF 提取）",
       "about": "关于作者"
     },
@@ -185,7 +186,8 @@
         "mode1Compare": "按类别分组比较。",
         "mode1DataTable": "搜索、排序、隐藏、置顶。",
         "mode1AddPoint1": "新点的名称、坐标轴与指标。",
-        "mode1AddPoint2": "材料、结构与结果。",
+        "mode1AddPoint2": "材料、结构与备注。",
+        "mode1AddPoint3": "图表上出现的新点。",
         "mode1Annotate": "置顶数据点以便比较。",
         "mode1ComparePins": "并排对比，附带标注。",
         "mode1ExportChart": "筛选后的数据与图表图片。",
@@ -375,7 +377,7 @@
           }
         },
         "note": "只有分组至少有 3 个点时才显示平均值、中位数和 σ，低于此数量则不是真正的分布。",
-        "mergeNote": "按复合列（材料等级、基础材料）分组时会出现「合并多类别数据点」开关，默认开启。开关前后的对比图见第 15 页图 16-17。"
+        "mergeNote": "按复合列（材料等级、基础材料）分组时会出现「合并多类别数据点」开关，默认开启。开关前后的对比图见第 16 页图 16-17。"
       },
       "dataTable": {
         "title": "6. 管理数据点",
@@ -440,17 +442,14 @@
         }
       },
       "addPoint2": {
-        "title": "8. 结构、备注与结果",
-        "body": "第 3 步构建传感器的材料与层叠结构，第 4 步用于填写备注。填写完成后，该点会立即出现在图表上。",
+        "title": "8. 结构与备注",
+        "body": "第 3 步构建传感器的材料与层叠结构，第 4 步用于填写自由备注，可选填。",
         "structureTitle": "第 3 步：结构与材料",
         "structureBody": "锁定级联：Base Materials，然后 Material Class（自动建议），然后 Layer Structure。每一级都要等上一级有值才解锁。",
         "figureStructureCaption": "图 12：结构与材料，共 4 步中的第 3 步。",
         "finishTitle": "第 4 步：完成",
         "finishBody": "该点的自由备注，可选填。",
         "converterCaption": "一个用于手动换算的速查计算器（µm/pm → nm），方便把论文中的数值换算后填入。",
-        "resultTitle": "结果",
-        "resultCaption": "图 13：图表上新增的数据点，一个带金色描边的菱形，落点处会有短暂的脉冲光圈。",
-        "resultBody": "样本计数旁会出现「已手动添加 N 个」。数据点标签页中的开关决定手动添加的点是否计入中位数、趋势线和帕累托前沿。",
         "marks": {
           "baseMaterials": {
             "label": "1. Base Materials",
@@ -466,12 +465,28 @@
           }
         }
       },
+      "addPoint3": {
+        "title": "9. 图表上的结果",
+        "body": "保存后，该点会立即出现在图表上：一个带金色描边的菱形，落点处会有短暂的脉冲光圈。",
+        "figureCaption": "图 13：图表上新增的数据点，单独标记并单独计数。",
+        "marks": {
+          "manualCount": {
+            "label": "已手动添加",
+            "body": "统计手动添加的点数，与文件自带的样本分开计算。"
+          },
+          "newPoint": {
+            "label": "新增的点",
+            "body": "带金色描边的菱形，配合短暂的脉冲光圈，方便在散点图上一眼找到。"
+          }
+        },
+        "note": "数据点标签页中的开关决定手动添加的点是否计入中位数、趋势线和帕累托前沿。"
+      },
       "annotate": {
-        "title": "9. 固定与注释",
+        "title": "10. 固定与注释",
         "body": "点击图表上的点即可将其以卡片形式固定于此，一种仅在当前会话保留的轻量书签，便于比较特定记录。点击卡片标题即可展开。",
         "figureCaption": "图 14：注释面板。",
         "expandTitle": "展开卡片后可以看到什么",
-        "expandIntro": "展开卡片会显示另外四个部分（见第 16 页图 18）：",
+        "expandIntro": "展开卡片会显示另外四个部分（见第 17 页图 18）：",
         "marks": {
           "sort": {
             "label": "排序",
@@ -508,9 +523,9 @@
         }
       },
       "comparePins": {
-        "title": "10. 比较固定点",
+        "title": "11. 比较固定点",
         "body": "选择两张或以上固定卡片（最多 6 张）会激活「比较 (N)」按钮，并排显示所选点。标题会根据已固定的参考编号自动填充，也可自行编辑。",
-        "figureCaption": "图 15：比较第 13 页固定的两个点。",
+        "figureCaption": "图 15：比较第 14 页固定的两个点。",
         "sections": {
           "origin": "该记录是测量（EXP）还是仿真（SIM）。",
           "mode": "Mode ID，以及（如有）其描述。",
@@ -539,7 +554,7 @@
         }
       },
       "exportChart": {
-        "title": "11. 导出图表",
+        "title": "12. 导出图表",
         "body": "筛选后的数据集可导出为表格，配置好的图表可导出为图片。",
         "chartCaption": "图 16：按材料等级分组，合并开启。",
         "chartCaption2": "图 17：按基础材料分组，合并关闭。",
@@ -552,7 +567,7 @@
         }
       },
       "exportPin": {
-        "title": "12. 导出固定点",
+        "title": "13. 导出固定点",
         "body": "固定点的详情也可单独导出，提供三种详细程度：合并所有字段的图片，或仅包含层结构的图片。",
         "pinExportCaption": "图 18：所有字段合并为一张 PNG。",
         "metricsExportCaption": "图 19：仅数值测量结果，不含结构或备注。",

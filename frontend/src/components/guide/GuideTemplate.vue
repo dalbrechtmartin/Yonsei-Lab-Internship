@@ -822,19 +822,19 @@
       <GuideFooter :page="PAGE_MODE1_ADDPOINT1" />
     </section>
 
-    <!-- ============================= PAGE 12 -- Mode 1: add a point, structure, notes & result ============================= -->
+    <!-- ============================= PAGE 12 -- Mode 1: add a point, structure & notes ============================= -->
     <section
       class="guide-page box-border flex h-[297mm] w-[210mm] flex-col bg-white p-[15mm] break-after-page"
       :data-outline-title="t('guide.outline.mode1AddPoint2')"
     >
       <GuideHeader />
-      <p class="mb-0.5 text-xs font-semibold tracking-[0.3em] text-secondary uppercase">{{ t("guide.mode1.eyebrow") }}</p>
-      <h2 class="mb-1 text-xl font-semibold">{{ t("guide.steps.addPoint2.title") }}</h2>
-      <p class="mb-1 text-sm leading-relaxed text-justify text-ink">{{ t("guide.steps.addPoint2.body") }}</p>
+      <p class="mb-1.5 text-xs font-semibold tracking-[0.3em] text-secondary uppercase">{{ t("guide.mode1.eyebrow") }}</p>
+      <h2 class="mb-2 text-xl font-semibold">{{ t("guide.steps.addPoint2.title") }}</h2>
+      <p class="mb-3 text-sm leading-relaxed text-justify text-ink">{{ t("guide.steps.addPoint2.body") }}</p>
 
       <div ref="addPoint2Wrap" class="guide-callout-region relative">
-        <h3 class="mb-0.5 text-sm font-semibold text-primary">{{ t("guide.steps.addPoint2.structureTitle") }}</h3>
-        <p class="mb-1 text-[11px] leading-snug text-secondary">{{ t("guide.steps.addPoint2.structureBody") }}</p>
+        <h3 class="mb-1 text-sm font-semibold text-primary">{{ t("guide.steps.addPoint2.structureTitle") }}</h3>
+        <p class="mb-2 text-[11px] leading-snug text-secondary">{{ t("guide.steps.addPoint2.structureBody") }}</p>
 
         <div class="grid grid-cols-2 gap-x-5">
           <div v-if="addPointBaseMaterialsField" ref="addPointNode1Wrap" class="flex gap-2">
@@ -874,9 +874,9 @@
 
         <GuideMarkRing v-for="(m, i) in addPoint2Marks" :key="i" :mark="m" :number="i + 1" />
       </div>
-      <p class="mt-0.5 text-[11px] leading-snug text-secondary">{{ t("guide.steps.addPoint2.figureStructureCaption") }}</p>
+      <p class="mt-1 text-[11px] leading-snug text-secondary">{{ t("guide.steps.addPoint2.figureStructureCaption") }}</p>
       <GuideMarkLegend
-        class="mt-0.5"
+        class="mt-1"
         :compact="true"
         :items="[
           { label: t('guide.steps.addPoint2.marks.baseMaterials.label'), body: t('guide.steps.addPoint2.marks.baseMaterials.body') },
@@ -885,29 +885,42 @@
         ]"
       />
 
-      <div class="mt-0.5 flex items-start gap-6">
+      <div class="mt-4 flex items-start gap-8">
         <div class="flex-1">
-          <h3 class="mb-0.5 text-sm font-semibold text-primary">{{ t("guide.steps.addPoint2.finishTitle") }}</h3>
-          <p class="mb-1 text-[10.5px] leading-snug text-secondary">{{ t("guide.steps.addPoint2.finishBody") }}</p>
-          <Textarea :model-value="addPointNotes" readonly class="h-7 text-sm" />
-          <Alert variant="info" class="mt-1 gap-1.5 py-0.5">
+          <h3 class="mb-1 text-sm font-semibold text-primary">{{ t("guide.steps.addPoint2.finishTitle") }}</h3>
+          <p class="mb-2 text-[11px] leading-snug text-secondary">{{ t("guide.steps.addPoint2.finishBody") }}</p>
+          <Textarea :model-value="addPointNotes" readonly class="h-8 text-sm" />
+          <Alert variant="info" class="mt-2 gap-1.5 py-1.5">
             <Info class="size-3.5" />
-            <AlertDescription class="text-[10px] text-ink/80">{{ t("fomcharts.addPoint.provenanceHint") }}</AlertDescription>
+            <AlertDescription class="text-[10.5px] text-ink/80">{{ t("fomcharts.addPoint.provenanceHint") }}</AlertDescription>
           </Alert>
         </div>
-        <div class="w-52 shrink-0 pt-9">
+        <div class="w-56 shrink-0 pt-9">
           <div class="flex items-center gap-1.5">
             <UnitConverterPopover v-model:open="unitConverterOpen" />
-            <p class="text-[9.5px] leading-snug text-secondary">{{ t("guide.steps.addPoint2.converterCaption") }}</p>
+            <p class="text-[10px] leading-snug text-secondary">{{ t("guide.steps.addPoint2.converterCaption") }}</p>
           </div>
         </div>
       </div>
 
-      <div class="mt-1">
-        <h3 class="mb-1 text-sm font-semibold text-primary">{{ t("guide.steps.addPoint2.resultTitle") }}</h3>
-        <div class="mx-auto guide-callout-region" style="width: 250px; height: 122px; overflow: hidden">
-          <div style="width: 700px; transform: scale(0.347); transform-origin: top left">
+      <GuideFooter :page="PAGE_MODE1_ADDPOINT2" />
+    </section>
+
+    <!-- ============================= PAGE 13 -- Mode 1: add a point, result on the chart ============================= -->
+    <section
+      class="guide-page box-border flex h-[297mm] w-[210mm] flex-col bg-white p-[15mm] break-after-page"
+      :data-outline-title="t('guide.outline.mode1AddPoint3')"
+    >
+      <GuideHeader />
+      <p class="mb-1.5 text-xs font-semibold tracking-[0.3em] text-secondary uppercase">{{ t("guide.mode1.eyebrow") }}</p>
+      <h2 class="mb-2 text-xl font-semibold">{{ t("guide.steps.addPoint3.title") }}</h2>
+      <p class="mb-3 text-sm leading-relaxed text-justify text-ink">{{ t("guide.steps.addPoint3.body") }}</p>
+
+      <div ref="addPoint3Wrap" class="relative mx-auto" style="width: 560px">
+        <div class="guide-callout-region" style="width: 560px; height: 400px; overflow: hidden">
+          <div style="width: 800px; transform: scale(0.7); transform-origin: top left">
             <FomChart
+              ref="addPoint3ChartRef"
               :chart-data="addPointResultRows"
               :columns="sampleColumns"
               :y-axis="selectedYAxis"
@@ -924,14 +937,26 @@
             />
           </div>
         </div>
-        <p class="mx-auto mt-1 max-w-2xl text-center text-[11px] leading-snug text-secondary">{{ t("guide.steps.addPoint2.resultCaption") }}</p>
-        <p class="mx-auto mt-0.5 max-w-2xl text-center text-[10.5px] leading-snug text-secondary">{{ t("guide.steps.addPoint2.resultBody") }}</p>
+        <GuideMarkRing v-for="(m, i) in addPoint3Marks" :key="i" :mark="m" :number="i + 1" side="top" />
+      </div>
+      <p class="mx-auto mt-2 max-w-120 text-center text-[11px] leading-snug text-secondary">{{ t("guide.steps.addPoint3.figureCaption") }}</p>
+
+      <GuideMarkLegend
+        class="mt-2"
+        :items="[
+          { label: t('guide.steps.addPoint3.marks.manualCount.label'), body: t('guide.steps.addPoint3.marks.manualCount.body') },
+          { label: t('guide.steps.addPoint3.marks.newPoint.label'), body: t('guide.steps.addPoint3.marks.newPoint.body') },
+        ]"
+      />
+
+      <div class="mt-3 rounded-xl border border-border bg-muted/30 px-4 py-2.5">
+        <p class="text-sm leading-relaxed text-justify text-ink">{{ t("guide.steps.addPoint3.note") }}</p>
       </div>
 
-      <GuideFooter :page="PAGE_MODE1_ADDPOINT2" />
+      <GuideFooter :page="PAGE_MODE1_ADDPOINT3" />
     </section>
 
-    <!-- ============================= PAGE 13 -- Mode 1: pin & annotate ============================= -->
+    <!-- ============================= PAGE 14 -- Mode 1: pin & annotate ============================= -->
     <section
       class="guide-page box-border flex h-[297mm] w-[210mm] flex-col bg-white p-[15mm] break-after-page"
       :data-outline-title="t('guide.outline.mode1Annotate')"
@@ -1579,6 +1604,7 @@ import {
   ClipboardCheck,
   Columns3,
   Cpu,
+  Diamond,
   Download,
   Ellipse,
   Eraser,
@@ -1689,17 +1715,18 @@ const PAGE_MODE1_COMPARE = 9;
 const PAGE_MODE1_DATATABLE = 10;
 const PAGE_MODE1_ADDPOINT1 = 11;
 const PAGE_MODE1_ADDPOINT2 = 12;
-const PAGE_MODE1_ANNOTATE = 13;
-const PAGE_MODE1_COMPARE_PINS = 14;
-const PAGE_MODE1_EXPORT_CHART = 15;
-const PAGE_MODE1_EXPORT_PIN = 16;
-const PAGE_MODE2_DIVIDER = 17;
-const PAGE_MODE2 = 18;
-// Page 19 (About the author) is a colophon: it gets its own PDF bookmark
+const PAGE_MODE1_ADDPOINT3 = 13;
+const PAGE_MODE1_ANNOTATE = 14;
+const PAGE_MODE1_COMPARE_PINS = 15;
+const PAGE_MODE1_EXPORT_CHART = 16;
+const PAGE_MODE1_EXPORT_PIN = 17;
+const PAGE_MODE2_DIVIDER = 18;
+const PAGE_MODE2 = 19;
+// Page 20 (About the author) is a colophon: it gets its own PDF bookmark
 // (data-outline-title, like every other page) but no GuideFooter/page
 // number and no tocEntries listing, matching a book colophon's usual quiet,
 // unlisted convention -- so it has no PAGE_ constant of its own here.
-const TOTAL_PAGES = 19;
+const TOTAL_PAGES = 20;
 
 // Every outline label follows "<Mode N> — <rest>" in all four locales
 // (checked en/fr/ko/zh -- always the same em-dash separator), so the
@@ -1770,6 +1797,13 @@ const tocEntries = computed(() => [
     desc: t("guide.toc.desc.mode1AddPoint2"),
     page: PAGE_MODE1_ADDPOINT2,
     icon: Layers,
+    group: "mode1" as const,
+  },
+  {
+    label: tocLabel(t("guide.outline.mode1AddPoint3")),
+    desc: t("guide.toc.desc.mode1AddPoint3"),
+    page: PAGE_MODE1_ADDPOINT3,
+    icon: Diamond,
     group: "mode1" as const,
   },
   {
@@ -2192,6 +2226,8 @@ const addPoint2Wrap = useTemplateRef<HTMLDivElement>("addPoint2Wrap");
 const addPointNode1Wrap = useTemplateRef<HTMLDivElement>("addPointNode1Wrap");
 const addPointNode2Wrap = useTemplateRef<HTMLDivElement>("addPointNode2Wrap");
 const addPointNode3Wrap = useTemplateRef<HTMLDivElement>("addPointNode3Wrap");
+const addPoint3Wrap = useTemplateRef<HTMLDivElement>("addPoint3Wrap");
+const addPoint3ChartRef = useTemplateRef<InstanceType<typeof FomChart>>("addPoint3ChartRef");
 const markupBlockWrap = useTemplateRef<HTMLDivElement>("markupBlockWrap");
 const markupToolsWrap = useTemplateRef<HTMLDivElement>("markupToolsWrap");
 const comparePinsTopWrap = useTemplateRef<HTMLDivElement>("comparePinsTopWrap");
@@ -2206,6 +2242,7 @@ const statsMarks = ref<GuideMark[]>([]);
 const dataTableMarks = ref<GuideMark[]>([]);
 const addPoint1Marks = ref<GuideMark[]>([]);
 const addPoint2Marks = ref<GuideMark[]>([]);
+const addPoint3Marks = ref<GuideMark[]>([]);
 const annotationMarks = ref<GuideMark[]>([]);
 const comparePinsTopMarks = ref<GuideMark[]>([]);
 const comparePinsMarks = ref<GuideMark[]>([]);
@@ -2271,6 +2308,7 @@ async function captureGuideArtifacts() {
     dataTableMarks,
     addPoint1Marks,
     addPoint2Marks,
+    addPoint3Marks,
     annotationMarks,
     comparePinsTopMarks,
     comparePinsMarks,
@@ -2506,6 +2544,21 @@ async function captureGuideArtifacts() {
     push(addPoint2Marks, addPointNode1Wrap.value ? markRect(c, addPointNode1Wrap.value, 4) : null);
     push(addPoint2Marks, addPointNode2Wrap.value ? markRect(c, addPointNode2Wrap.value, 4) : null);
     push(addPoint2Marks, addPointNode3Wrap.value ? markRect(c, addPointNode3Wrap.value, 4) : null);
+  }
+
+  // Page 13: Add a point, result on the chart -- the "N added manually"
+  // badge (real DOM, part of the badges row) and the new point itself (its
+  // gold-outlined bubble, found by isManual the same way getFlaggedPointRect
+  // finds the flagged one on page 8).
+  if (addPoint3Wrap.value && addPoint3ChartRef.value) {
+    const c = addPoint3Wrap.value;
+    const chart = addPoint3ChartRef.value;
+    const badgesEl = chart.getBadgesRow();
+    const manualBadge = badgesEl ? findByText(badgesEl, "span", t("fomcharts.manualCount", { count: 1 })) : null;
+    push(addPoint3Marks, manualBadge ? markRect(c, manualBadge, 4) : null);
+    const chartDom = chart.getChartDom();
+    const manualPointRect = chart.getManualPointRect();
+    push(addPoint3Marks, chartDom && manualPointRect ? markCanvasRect(c, chartDom, manualPointRect, 3) : null);
   }
 
   // Page 14: Compare pinned points -- the chip row (reorder/add/remove) and

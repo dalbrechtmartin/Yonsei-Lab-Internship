@@ -1718,7 +1718,27 @@ const getFlaggedPointRect = (): PixelRect | null => {
   return null;
 };
 
-defineExpose({ exportPng, getPngDataUrl, getBadgesRow, getChartDom, getMedianLineRect, getLegendRect, getSizeLegendRect, getFlaggedPointRect });
+/** Guide-only: same idea as getFlaggedPointRect, for the manually-added
+ * point's own gold-outlined bubble instead (see isManualRow/manualCount) --
+ * the guide's own "Add a point" worked example only ever adds one. */
+const getManualPointRect = (): PixelRect | null => {
+  const inst = chartRef.value;
+  if (!inst) return null;
+  const series = (inst.getOption() as any)?.series ?? [];
+  for (const s of series) {
+    for (const d of s.data ?? []) {
+      if (d?.isManual) {
+        const px = inst.convertToPixel({ xAxisIndex: 0, yAxisIndex: 0 }, d.value) as unknown as number[] | undefined;
+        if (!px) return null;
+        const r = (d.symbolSize ?? 10) / 2 + 6;
+        return { left: px[0] - r, top: px[1] - r, width: r * 2, height: r * 2 };
+      }
+    }
+  }
+  return null;
+};
+
+defineExpose({ exportPng, getPngDataUrl, getBadgesRow, getChartDom, getMedianLineRect, getLegendRect, getSizeLegendRect, getFlaggedPointRect, getManualPointRect });
 
 // Rough pixel-width estimate for reserving grid margin for an axis name --
 // echarts' containLabel does not reliably account for axis *names* (as
