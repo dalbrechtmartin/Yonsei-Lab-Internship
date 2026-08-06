@@ -35,46 +35,92 @@ export async function exportGuideToPdf(root: HTMLElement, filename: string, meta
   const pages = Array.from(root.querySelectorAll<HTMLElement>(".guide-page"));
   if (pages.length === 0) return;
 
+  // html2canvas re-implements text layout on its own canvas rather than
+  // reusing the browser's rendering, so it only matches the live DOM once
+  // every custom font has actually finished loading -- capturing a page
+  // while a web font is still swapping in (FOUT) rasterizes text at
+  // slightly different metrics/position than what getBoundingClientRect
+  // reports for that same text a moment later. That mismatch between the
+  // PICTURE a reader sees and the LINK HOTSPOT measured from the live DOM
+  // (see addLink below) is exactly what makes a link's clickable area read
+  // as offset from its visible text. Waiting for `document.fonts.ready`
+  // first removes that source of drift for every page at once.
+  await document.fonts.ready;
+
   const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
   pdf.setProperties({ title: meta.title, subject: meta.title, creator: "λLens" });
   pdf.setLanguage(meta.language as Parameters<typeof pdf.setLanguage>[0]);
 
+  // Link annotations are added in the SAME pass as each page's image, right
+  // after that page is captured -- not in a separate pass once every page
+  // has already been rasterized. A second pass re-measures
+  // getBoundingClientRect() at a later point in time, which is only safe if
+  // nothing on the page could have shifted between the two passes; keeping
+  // capture and measurement together removes that assumption entirely.
   for (let i = 0; i < pages.length; i++) {
-    const canvas = await html2canvas(pages[i], { scale: 2, backgroundColor: "#ffffff", useCORS: true });
+    const pageEl = pages[i];
+    const canvas = await html2canvas(pageEl, { scale: 2, backgroundColor: "#ffffff", useCORS: true });
     const imgData = canvas.toDataURL("image/jpeg", 0.95);
     if (i > 0) pdf.addPage();
     pdf.addImage(imgData, "JPEG", 0, 0, A4_WIDTH_MM, A4_HEIGHT_MM);
 
-    const outlineTitle = pages[i].dataset.outlineTitle;
+    const outlineTitle = pageEl.dataset.outlineTitle;
     if (outlineTitle) pdf.outline.add(null, outlineTitle, { pageNumber: i + 1 });
-  }
 
-  // Second pass: clickable table-of-contents rows (elements tagged with
-  // `data-toc-target="<page number>"`) become real PDF link annotations.
-  // Needs every page image to already exist (pdf.link targets a page
-  // number), so this runs after the loop above rather than inline with it.
-  pages.forEach((pageEl, i) => {
-    const links = pageEl.querySelectorAll<HTMLElement>("[data-toc-target]");
-    if (links.length === 0) return;
+    // Clickable table-of-contents rows (elements tagged with
+    // `data-toc-target="<page number>"`) become real PDF link annotations,
+    // and elements tagged with `data-external-link="<path>"` (e.g. the
+    // sample dataset download on the Import page) become clickable links
+    // out to the live app's own origin -- resolved at export time rather
+    // than baked in, so the PDF always points at wherever this build is
+    // actually hosted.
+    const tocLinks = pageEl.querySelectorAll<HTMLElement>("[data-toc-target]");
+    const externalLinks = pageEl.querySelectorAll<HTMLElement>("[data-external-link]");
+    if (tocLinks.length === 0 && externalLinks.length === 0) continue;
 
     const pageRect = pageEl.getBoundingClientRect();
     const mmPerPxX = A4_WIDTH_MM / pageRect.width;
     const mmPerPxY = A4_HEIGHT_MM / pageRect.height;
 
-    pdf.setPage(i + 1);
-    links.forEach((linkEl) => {
-      const r = linkEl.getBoundingClientRect();
-      const targetPage = Number(linkEl.dataset.tocTarget);
-      if (!targetPage) return;
+    // html2canvas re-implements text layout on its own canvas rather than
+    // reusing the browser's text engine, so the glyphs it rasterizes for a
+    // reader to click near can land a couple of px off from where
+    // getBoundingClientRect (measured from the live DOM) says that text is
+    // -- a known html2canvas limitation, not something document.fonts.ready
+    // alone fixes. Padding every hotspot out by a fixed margin on all four
+    // sides absorbs that drift directly: the target keeps its true visual
+    // position, but the clickable zone around it becomes more forgiving
+    // than the tight text bounds, so a click near the visible link still
+    // lands inside it.
+    const LINK_PAD_MM = 1.5;
+    const addLink = (el: HTMLElement, target: { pageNumber: number } | { url: string }) => {
+      const r = el.getBoundingClientRect();
       pdf.link(
-        (r.left - pageRect.left) * mmPerPxX,
-        (r.top - pageRect.top) * mmPerPxY,
-        r.width * mmPerPxX,
-        r.height * mmPerPxY,
-        { pageNumber: targetPage },
+        (r.left - pageRect.left) * mmPerPxX - LINK_PAD_MM,
+        (r.top - pageRect.top) * mmPerPxY - LINK_PAD_MM,
+        r.width * mmPerPxX + 2 * LINK_PAD_MM,
+        r.height * mmPerPxY + 2 * LINK_PAD_MM,
+        target,
       );
+    };
+    tocLinks.forEach((linkEl) => {
+      const targetPage = Number(linkEl.dataset.tocTarget);
+      // Every PAGE_* constant behind data-toc-target is a hand-maintained
+      // GuideTemplate.vue literal -- nothing here re-derives it from actual
+      // DOM order, so a page inserted/reordered without updating every
+      // downstream constant would otherwise silently mislink the TOC to the
+      // wrong page (or one that doesn't exist) instead of failing loudly.
+      if (!targetPage || targetPage < 1 || targetPage > pages.length) {
+        console.warn(`Guide PDF: ignoring data-toc-target="${linkEl.dataset.tocTarget}" -- out of range for a ${pages.length}-page document.`);
+        return;
+      }
+      addLink(linkEl, { pageNumber: targetPage });
     });
-  });
+    externalLinks.forEach((linkEl) => {
+      const path = linkEl.dataset.externalLink;
+      if (path) addLink(linkEl, { url: new URL(path, window.location.origin).toString() });
+    });
+  }
 
   pdf.save(filename);
 }

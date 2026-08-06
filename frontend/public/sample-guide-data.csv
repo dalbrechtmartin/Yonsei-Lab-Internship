@@ -1,0 +1,13 @@
+Ref,Title,Domain,Origin,Material Class,Base Materials,Mode ID,Resonance Wavelength (nm),Q-factor,FOM (RIU^-1),Sensitivity (nm/RIU),FWHM (nm),Layer Structure,Review status,Notes
+R1,High-Q silicon microring resonator RI sensor,Wavelength,EXP,Dielectric,Si;SiO2,1,1550,42000,1757,65,0.037,Si + SiO2,Approve (AI),
+R1,High-Q silicon microring resonator RI sensor,Wavelength,SIM,Dielectric,Si;SiO2,1,1550,51000,2333,70,0.03,Si + SiO2,Approve (AI),
+R2,Silicon-nitride ring resonator for biosensing,Wavelength,EXP,Dielectric,Si3N4;SiO2,1,1310,88000,2667,40,0.015,Si3N4 + SiO2,Approve (AI),
+R2,Silicon-nitride ring resonator for biosensing,Wavelength,SIM,Dielectric,Si3N4;SiO2,1,1310,96000,3214,45,0.014,Si3N4 + SiO2,Approve (AI),
+R3,All-dielectric guided-mode resonance biosensor,Wavelength,EXP,Dielectric,Si3N4;SiO2;Ta2O5,1,850,15000,3158,180,0.057,Si3N4(200nm) + SiO2(400nm) + Ta2O5(120nm),Edit,FWHM digitized from a log-scale transmission plot -- flagged for review.
+R3,All-dielectric guided-mode resonance biosensor,Wavelength,SIM,Dielectric,Si3N4;SiO2;Ta2O5,1,850,18000,4043,190,0.047,Si3N4(200nm) + SiO2(400nm) + Ta2O5(120nm),Approve (AI),
+R4,All-dielectric silicon disk resonator on a Bragg mirror,Wavelength,EXP,Dielectric,Si;SiO2;Ta2O5,1,1064,5200,1050,210,0.2,Si(300nm) + SiO2(200nm) + Ta2O5(150nm) + SiO2(200nm) + Ta2O5(150nm),Approve (AI),
+R4,All-dielectric silicon disk resonator on a Bragg mirror,Wavelength,SIM,Dielectric,Si;SiO2;Ta2O5,1,1064,6100,1353,230,0.17,Si(300nm) + SiO2(200nm) + Ta2O5(150nm) + SiO2(200nm) + Ta2O5(150nm),Approve (AI),
+R5,InP Mach-Zehnder interferometer sensor,Wavelength,EXP,Dielectric;Semiconductor,InP;SiO2,1,1550,1200,138,180,1.3,InP + SiO2,Approve (AI),
+R5,InP Mach-Zehnder interferometer sensor,Wavelength,SIM,Dielectric;Semiconductor,InP;SiO2,1,1550,1500,190,190,1.0,InP + SiO2,Approve (AI),
+R6,Polymer microring resonator for label-free detection,Wavelength,EXP,Dielectric;Polymer,PMMA;SiO2,1,1300,2600,190,95,0.5,PMMA + SiO2,Approve (AI),
+R6,Polymer microring resonator for label-free detection,Wavelength,SIM,Dielectric;Polymer,PMMA;SiO2,1,1300,3100,238,100,0.42,PMMA + SiO2,Approve (AI),

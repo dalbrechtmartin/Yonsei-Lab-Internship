@@ -66,11 +66,17 @@ def _build_xlsx_response(job: dict) -> StreamingResponse:
 async def process_excel(file: UploadFile = File(...)):
     content = await file.read()
     is_csv = (file.filename or "").lower().endswith(".csv")
-    df = (
-        pl.read_csv(io.BytesIO(content))
-        if is_csv
-        else pl.read_excel(io.BytesIO(content), engine="calamine")
-    )
+    if is_csv:
+        df = pl.read_csv(io.BytesIO(content))
+    else:
+        # sheet_id=0 loads every sheet as a {name: DataFrame} dict in a single
+        # parse -- used here purely to detect a multi-sheet workbook, which we
+        # reject outright rather than silently guessing which sheet the
+        # researcher meant (see project.pdf: only one file/sheet in at a time).
+        sheets = pl.read_excel(io.BytesIO(content), engine="calamine", sheet_id=0)
+        if len(sheets) > 1:
+            raise HTTPException(status_code=400, detail="multiple_sheets")
+        df = next(iter(sheets.values()))
     return {"columns": df.columns, "data": df.to_dicts()}
 
 

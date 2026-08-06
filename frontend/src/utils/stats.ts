@@ -1,17 +1,20 @@
 import type { DataRow } from "./columnTypes";
 
 /**
- * Rows with a missing/blank/non-numeric value in `column` must be dropped
- * before computing a chart or a stat off it -- a naive Number(row[column])
- * coerces null/"" to 0, silently faking a data point (or a stat) that the
- * researcher never reported.
+ * Rows with a missing/blank value in `column` must be dropped before
+ * computing a chart or a stat off it -- a naive Number(row[column]) coerces
+ * null/"" to 0, silently faking a data point (or a stat) that the researcher
+ * never reported. `requireNumeric` (on by default) additionally drops values
+ * that don't parse as a number -- turn it off for a column being plotted as
+ * a category (e.g. a categorical Y axis), where a non-numeric string is the
+ * expected, plottable value rather than bad data.
  */
-export function filterPlottable(rows: DataRow[], column: string | null): DataRow[] {
+export function filterPlottable(rows: DataRow[], column: string | null, requireNumeric = true): DataRow[] {
   if (!column) return rows;
   return rows.filter((row) => {
     const raw = row[column];
     if (raw === null || raw === undefined || raw === "") return false;
-    return !isNaN(Number(raw));
+    return !requireNumeric || !isNaN(Number(raw));
   });
 }
 

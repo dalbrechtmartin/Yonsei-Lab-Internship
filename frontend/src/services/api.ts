@@ -55,6 +55,12 @@ export interface CreateJobResponse {
 
 export class QuotaExceededError extends Error {}
 
+// Thrown when the uploaded workbook has more than one sheet -- the backend
+// refuses these outright (see main.py's process_excel) rather than silently
+// guessing which sheet the researcher meant, so this needs its own error
+// type to show a specific message instead of the generic upload failure.
+export class MultipleSheetsError extends Error {}
+
 function toJobStatusResponse(raw: any): JobStatusResponse {
   return {
     jobId: raw.job_id,
@@ -97,8 +103,15 @@ export const apiService = {
         method: "POST",
         body: formData,
       });
-      if (!response.ok)
+      if (!response.ok) {
+        if (response.status === 400) {
+          const body = await response.json().catch(() => null);
+          if (body?.detail === "multiple_sheets") {
+            throw new MultipleSheetsError("This workbook has more than one sheet.");
+          }
+        }
         throw new Error("Server error while uploading the file.");
+      }
       return await response.json();
     } catch (error) {
       console.error("API Error:", error);

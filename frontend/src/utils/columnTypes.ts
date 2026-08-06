@@ -1,3 +1,5 @@
+import { parseLayerStructure } from "./layerStructure";
+
 export type DataRow = Record<string, unknown>;
 
 export interface ColumnTypes {
@@ -125,11 +127,15 @@ export function guessDefaultYAxis(numericColumns: string[]): string | null {
 }
 
 /**
- * Best-effort guess for a sensible default X-axis column: prioritizes the
- * structure/material categorical-column logic (Layer Structure, when
- * present, gives the intended one-dot-per-sample layout), falling back to
- * a numeric Sensitivity column only when no categorical column exists at
- * all.
+ * Best-effort guess for a sensible default X-axis column: prioritizes
+ * Resonance Wavelength when present -- comparing FOM (or Q-factor/
+ * Sensitivity) against it across papers is this tool's own flagship
+ * example (see the user guide's worked scenario, and guessDefaultYAxis's
+ * matching FOM-first preference), a scientifically meaningful axis that
+ * works for essentially any dataset in scope. Falls back to the structure/
+ * material categorical-column logic (Layer Structure, when present, gives
+ * a one-dot-per-sample layout) for sheets without it, and finally to a
+ * numeric Sensitivity column when no categorical column exists either.
  *
  * Cardinality matters here, not just name: on a harmonized export,
  * "Material Class" (a handful of coarse buckets like "Dielectric;Metal")
@@ -144,6 +150,9 @@ export function guessDefaultXAxis(
   categoricalColumns: string[],
   numericColumns: string[] = [],
 ): string | null {
+  const resonanceWavelength = findResonanceWavelengthColumn(numericColumns);
+  if (resonanceWavelength) return resonanceWavelength;
+
   if (categoricalColumns.length > 0) {
     const structureLike = categoricalColumns.filter((c) =>
       /material|structure|layer|층|class/i.test(c),
@@ -237,6 +246,10 @@ export function findQFactorColumn(columns: string[]): string | null {
   return columns.find((c) => /q[-\s]?factor/i.test(c)) ?? null;
 }
 
+export function findFwhmColumn(columns: string[]): string | null {
+  return columns.find((c) => /\bfwhm\b/i.test(c)) ?? null;
+}
+
 export function findFomValueColumn(columns: string[]): string | null {
   return columns.find((c) => /\bfom\b/i.test(c)) ?? null;
 }
@@ -289,6 +302,90 @@ export function findNotesColumn(columns: string[]): string | null {
  */
 export function findReviewStatusColumn(columns: string[]): string | null {
   return columns.find((c) => /review\s*status/i.test(c)) ?? null;
+}
+
+/**
+ * A row is flagged "needs review" when its Review status cell reads
+ * "Edit" (see findReviewStatusColumn) -- shared by FomChart's dashed-
+ * outline marker and VisualizationView's "hide points needing review"
+ * filter, so both agree on exactly the same rows.
+ */
+export function isNeedsReviewRow(row: DataRow, reviewStatusColumn: string | null): boolean {
+  if (!reviewStatusColumn) return false;
+  const v = row[reviewStatusColumn];
+  return typeof v === "string" && /^edit$/i.test(v.trim());
+}
+
+/**
+ * Marks a row added through the "Add data" dialog (Active Benchmarking) as
+ * manually entered rather than sourced from the uploaded file/paper -- read
+ * by FomChart (distinct diamond marker + gold outline), the data points
+ * table (Remove instead of Hide), and the export helpers (Source column).
+ * Never a real spreadsheet column: it's set directly on the in-memory row
+ * object, not read from `columns`, so it never appears in fomColumns /
+ * detectColumnTypes / any axis-or-group-by picker.
+ */
+export const MANUAL_ROW_FLAG = "__manual";
+
+export function isManualRow(row: DataRow): boolean {
+  return row[MANUAL_ROW_FLAG] === true;
+}
+
+/** The three marker shapes a point can render as on the chart (see FomChart's symbol resolution). "star" is a custom SVG path -- ECharts has no built-in star symbol. */
+export type PointShape = "circle" | "diamond" | "star";
+
+/**
+ * Never a real spreadsheet column, same treatment as MANUAL_ROW_FLAG --
+ * set directly on the in-memory row so any point (manual or from the
+ * literature) can have its marker shape overridden from the point-edit
+ * dialog, independent of its origin.
+ */
+export const POINT_SHAPE_FLAG = "__shape";
+
+/** A row with no explicit choice keeps today's convention: manual points default to a diamond, everything else to a circle. */
+export function pointShape(row: DataRow): PointShape {
+  const explicit = row[POINT_SHAPE_FLAG];
+  if (explicit === "circle" || explicit === "diamond" || explicit === "star") return explicit;
+  return isManualRow(row) ? "diamond" : "circle";
+}
+
+/**
+ * Marks a row (manual or literature-sourced alike) whose values were changed
+ * through the point-edit dialog after the fact -- surfaced as a small
+ * "modified" badge (DataPointsTable, the edit dialog itself) so an edited
+ * literature value is never mistaken for what the paper/AI extraction
+ * actually said. Deliberately separate from "Review status" (see
+ * findReviewStatusColumn) -- that flag is the paper's own extraction-quality
+ * signal; this one is about a researcher's own after-the-fact correction and
+ * must not be conflated with or overwritten by it.
+ */
+export const EDITED_ROW_FLAG = "__edited";
+/** Snapshot of every field's pre-edit value, taken once on the first edit (see snapshotOriginal) -- what "reset this point" (see revertToOriginal) restores from. Never touched by the general workspace Reset, only by that point's own revert action. */
+export const ORIGINAL_SNAPSHOT_FLAG = "__original";
+
+export function isEditedRow(row: DataRow): boolean {
+  return row[EDITED_ROW_FLAG] === true;
+}
+
+/** Takes the one-time snapshot an edited row reverts to -- a no-op on a row that's already been edited before, so a second/third edit doesn't overwrite the ORIGINAL original with an already-modified version. */
+function snapshotOriginal(row: DataRow): void {
+  if (row[ORIGINAL_SNAPSHOT_FLAG] !== undefined) return;
+  row[ORIGINAL_SNAPSHOT_FLAG] = { ...row };
+}
+
+/** Applies a patch to a row in place (preserving its object identity, which is what keeps existing pins/hidden-row entries pointing at the same point -- see VisualizationView's rowsEqual), snapshotting its pre-edit state first if this is the first edit. */
+export function applyRowEdit(row: DataRow, patch: DataRow): void {
+  snapshotOriginal(row);
+  Object.assign(row, patch);
+  row[EDITED_ROW_FLAG] = true;
+}
+
+/** Restores a row to its pre-edit snapshot (see snapshotOriginal) and clears both edit flags -- a no-op if the row was never edited. Distinct from the general workspace Reset, which never touches edited points at all (see VisualizationView's resetWorkspace). */
+export function revertToOriginal(row: DataRow): void {
+  const original = row[ORIGINAL_SNAPSHOT_FLAG] as DataRow | undefined;
+  if (!original) return;
+  for (const key of Object.keys(row)) delete row[key];
+  Object.assign(row, original);
 }
 
 /**
@@ -427,14 +524,181 @@ export function groupableColumns(
 }
 
 /**
+ * One field of the "Add data" dialog (Active Benchmarking) -- resolves to a
+ * real column of the currently loaded dataset, never an invented one, so a
+ * manually entered row plots and filters exactly like any other row.
+ * `labelKey` names a fomcharts.addPoint.fields.* i18n key for the curated
+ * FOM quantities below; left undefined for the two current-axis fields,
+ * whose label is instead the axis's own (already researcher-facing) column
+ * name -- there's no canonical translation for an arbitrary harmonized
+ * export's own metric column.
+ */
+export interface ManualPointField {
+  column: string;
+  kind: "numeric" | "text" | "select" | "tags" | "layers";
+  labelKey?: string;
+  /** Required only for the two axis fields -- without a value there, the
+   * point can't be placed on the chart currently being viewed at all. */
+  required: boolean;
+  /**
+   * Suggested/selectable values:
+   * - "select": the only choices offered (existing distinct values).
+   * - "tags": existing tokens (from the imported file, e.g. Material Class/Base Materials) offered as one-click picks, but not exhaustive -- a new one can always be typed (see Combobox).
+   * - "layers": existing per-layer material names across the dataset, same "pick or type new" treatment as "tags".
+   */
+  options?: string[];
+}
+
+/**
+ * Curated, fixed set of FOM concepts a manual point can carry -- deliberately
+ * narrower than "every column in the file" (see needsAiConversion for that
+ * kind of full scan): provenance/bookkeeping columns (Ref, Title, Evidence,
+ * Notes, Page, Model used, Review status, ...) are never offered here, since
+ * a manually entered sensor has no document to cite (see MANUAL_ROW_FLAG /
+ * isManualRow, which stands in for that "reference" instead) -- Notes is the
+ * one exception, handled as its own always-present field outside this list
+ * (see AddPointDialog), since it's a free note about the manual point itself
+ * rather than provenance.
+ * Always starts with whichever columns are the CURRENT X and Y axes, even
+ * when they're not one of the canonical quantities below (e.g. a bespoke
+ * metric in a harmonized export) -- those two are the only fields that must
+ * be filled for the point to be plottable on the chart the researcher is
+ * currently looking at, so they're required and always offered first. Their
+ * kind is still resolved through the same recognized-column matching as
+ * every other field below (rather than a blunt numeric-or-text fallback) --
+ * otherwise picking, say, Layer Structure as the X-axis would silently lose
+ * the structured layer builder and fall back to a free-text input, right
+ * when this field is required to plot the point at all.
+ * A column absent from `columns` (the loaded file simply doesn't have it)
+ * is silently skipped rather than fabricated.
+ */
+export function buildManualPointFields(
+  columns: string[],
+  rows: DataRow[],
+  xAxis: string | null,
+  yAxis: string | null,
+  numericColumns: string[],
+): ManualPointField[] {
+  const materialClassCol = findMaterialClassColumn(columns);
+  const baseMaterialsCol = findBaseMaterialsColumn(columns);
+  const layerStructureCol = findLayerStructureColumn(columns);
+  const domainCol = findDomainColumn(columns);
+  const originCol = findOriginColumn(columns);
+  const modeIdCol = findModeIdColumn(columns);
+
+  const resolveKind = (column: string): ManualPointField["kind"] => {
+    // Mode ID is numeric-only per the extraction schema (see backend/prompt.txt)
+    // but detectColumnTypes deliberately forces it categorical so it still works
+    // as an X-axis/Group-by choice -- checked ahead of numericColumns here so
+    // the Add Point dialog still gives it a proper number input.
+    if (column === modeIdCol) return "numeric";
+    if (numericColumns.includes(column)) return "numeric";
+    if (column === materialClassCol || column === baseMaterialsCol) return "tags";
+    if (column === layerStructureCol) return "layers";
+    if (column === domainCol || column === originCol) return "select";
+    return "text";
+  };
+
+  const fields: ManualPointField[] = [];
+  const seen = new Set<string>();
+
+  const addField = (column: string | null, opts: { labelKey?: string; required?: boolean } = {}) => {
+    if (!column || seen.has(column)) return;
+    seen.add(column);
+    const kind = resolveKind(column);
+    const field: ManualPointField = { column, kind, labelKey: opts.labelKey, required: opts.required ?? false };
+    if (kind === "select") field.options = distinctValues(rows, column);
+    if (kind === "tags") field.options = tokenizedDistinctValues(rows, column);
+    if (kind === "layers") field.options = layerMaterialSuggestions(rows, column, baseMaterialsCol);
+    fields.push(field);
+  };
+
+  addField(yAxis, { required: true });
+  addField(xAxis, { required: true });
+
+  addField(findResonanceWavelengthColumn(columns), { labelKey: "resonanceWavelength" });
+  addField(findFomValueColumn(columns), { labelKey: "fom" });
+  addField(findSensitivityColumn(columns), { labelKey: "sensitivity" });
+  addField(findFwhmColumn(columns), { labelKey: "fwhm" });
+  addField(findQFactorColumn(columns), { labelKey: "qFactor" });
+  addField(domainCol, { labelKey: "domain" });
+  addField(originCol, { labelKey: "origin" });
+  // Base Materials before Material Class -- a researcher knows what their
+  // sensor is physically made of before they know (or care) which taxonomy
+  // bucket it falls under, and a material can genuinely belong to more than
+  // one class. Material Class comes second as a verification step: the Add
+  // Point dialog pre-suggests whichever class(es) this dataset associates
+  // with the materials just picked (see AddPointDialog's suggestedMaterialClasses),
+  // and the researcher confirms or adjusts from there.
+  addField(baseMaterialsCol, { labelKey: "baseMaterials" });
+  addField(materialClassCol, { labelKey: "materialClass" });
+  addField(layerStructureCol, { labelKey: "layerStructure" });
+  addField(modeIdCol, { labelKey: "modeId" });
+  addField(findModeDescriptionColumn(columns), { labelKey: "modeDescription" });
+
+  return fields;
+}
+
+/**
+ * Candidate material names for the Layer Structure builder's per-layer
+ * picker (see LayerStructureField) -- every material already used somewhere
+ * in the dataset's own Layer Structure stacks (parsed the same way as the
+ * read-only LayerStack visualization, see parseLayerStructure) unioned with
+ * Base Materials tokens, since a paper's Base Materials list and its Layer
+ * Structure stack name the same substances and a material worth suggesting
+ * from one is just as worth suggesting from the other.
+ */
+export function layerMaterialSuggestions(rows: DataRow[], layerStructureColumn: string | null, baseMaterialsColumn: string | null): string[] {
+  const materials = new Set<string>();
+  if (layerStructureColumn) {
+    for (const row of rows) {
+      for (const layer of parseLayerStructure(row[layerStructureColumn])) materials.add(layer.material);
+    }
+  }
+  if (baseMaterialsColumn) {
+    for (const token of tokenizedDistinctValues(rows, baseMaterialsColumn)) materials.add(token);
+  }
+  return Array.from(materials).sort();
+}
+
+/**
+ * Which Base Materials tokens co-occur with each Material Class token across
+ * the loaded dataset's own rows (e.g. a row with Material Class
+ * "2D Material" and Base Materials "Graphene" teaches this map that
+ * "2D Material" -> "Graphene") -- learned from the data itself rather than a
+ * hardcoded taxonomy, same reasoning as Material Class's own options no
+ * longer coming from backend/prompt.txt's fixed six-item list. Drives the Add
+ * Point dialog's cascading Material Class -> Base Materials suggestion (see
+ * AddPointDialog): once a class is picked, Base Materials narrows to what
+ * this dataset actually pairs with it, instead of every material in the
+ * whole file regardless of class.
+ */
+export function materialsByClass(rows: DataRow[], materialClassColumn: string | null, baseMaterialsColumn: string | null): Record<string, string[]> {
+  const map: Record<string, Set<string>> = {};
+  if (!materialClassColumn || !baseMaterialsColumn) return {};
+  for (const row of rows) {
+    const classes = tokenizeValue(row[materialClassColumn]);
+    const materials = tokenizeValue(row[baseMaterialsColumn]);
+    if (classes.length === 0 || materials.length === 0) continue;
+    for (const cls of classes) {
+      map[cls] ??= new Set<string>();
+      for (const material of materials) map[cls].add(material);
+    }
+  }
+  const out: Record<string, string[]> = {};
+  for (const [cls, set] of Object.entries(map)) out[cls] = Array.from(set).sort();
+  return out;
+}
+
+/**
  * Decides whether an uploaded sheet needs AI reformatting before
  * visualization -- reuses the same find*Column heuristics the rest of this
  * file already relies on, so "what counts as a recognizable column" stays
  * defined in exactly one place. Triggers when either:
  * - Origin or Domain is entirely absent: these drive Phase 1's "wavelength-
- *   domain, SIM-only by default" filtering (see VisualizationView's
- *   applyDefaults) -- without them that filtering silently never applies,
- *   rather than erroring, so it has to be checked for explicitly here.
+ *   domain by default" filtering (see VisualizationView's applyDefaults) --
+ *   without them that filtering silently never applies, rather than
+ *   erroring, so it has to be checked for explicitly here.
  * - No numeric metric (Resonance Wavelength/FOM/Sensitivity/Q-factor) is
  *   present at all, or no structure/material categorical column is present
  *   at all -- i.e. there's nothing worth plotting on either axis.
@@ -454,4 +718,45 @@ export function needsAiConversion(columns: string[]): boolean {
     findMaterialClassColumn(columns) !== null ||
     findBaseMaterialsColumn(columns) !== null;
   return !hasOrigin || !hasDomain || !hasMetric || !hasStructure;
+}
+
+const SUPERSCRIPT_DIGITS: Record<string, string> = {
+  "0": "⁰",
+  "1": "¹",
+  "2": "²",
+  "3": "³",
+  "4": "⁴",
+  "5": "⁵",
+  "6": "⁶",
+  "7": "⁷",
+  "8": "⁸",
+  "9": "⁹",
+  "-": "⁻",
+};
+
+/**
+ * Display-only: rewrites a caret exponent like "RIU^-1" into "RIU⁻¹" using
+ * real Unicode superscript characters -- source column names keep their
+ * literal "^-1" (upload/export/regex matching all depend on that exact
+ * text), so this must only ever be applied where a column name is being
+ * rendered as text, never to the string used to index a DataRow or to match
+ * against a column-detection regex.
+ */
+export function formatUnitSuperscripts(text: string): string {
+  return text.replace(/\^(-?\d+)/g, (_, exponent: string) =>
+    [...exponent].map((ch) => SUPERSCRIPT_DIGITS[ch] ?? ch).join(""),
+  );
+}
+
+/**
+ * Splits a column name like "FOM (RIU^-1)" into its bare name ("FOM") and
+ * display-ready unit ("RIU⁻¹", already run through formatUnitSuperscripts),
+ * for UI that renders the two on separate lines (see AxisSelector). Columns
+ * with no trailing "(...)" -- e.g. "Q-factor" -- get a null unit rather than
+ * an empty string, so callers can skip rendering a second line entirely.
+ */
+export function splitColumnUnit(column: string): { name: string; unit: string | null } {
+  const match = column.match(/^(.*?)\s*\(([^()]+)\)\s*$/);
+  if (!match) return { name: column, unit: null };
+  return { name: match[1], unit: formatUnitSuperscripts(match[2]) };
 }

@@ -50,28 +50,34 @@
         </Tooltip>
       </div>
 
-      <label
-        class="flex w-fit items-center gap-1.5 rounded py-0.5 text-[10.5px] select-none"
-        :class="compareLimitReached ? 'cursor-not-allowed text-muted-foreground/50' : 'cursor-pointer text-primary hover:text-primary/80'"
-      >
-        <Checkbox :model-value="selected" :disabled="compareLimitReached" @update:model-value="$emit('toggle-select')" />
-        {{ compareLimitReached ? t("fomcharts.annotations.compareLimitReached", { max: compareMax }) : t("fomcharts.annotations.compareLabel") }}
-      </label>
+      <div class="flex items-center justify-between gap-2">
+        <label
+          class="flex min-w-0 items-center gap-1.5 rounded py-0.5 text-[10.5px] select-none"
+          :class="compareLimitReached ? 'cursor-not-allowed text-muted-foreground/50' : 'cursor-pointer text-primary hover:text-primary/80'"
+        >
+          <Checkbox :model-value="selected" :disabled="compareLimitReached" @update:model-value="$emit('toggle-select')" />
+          <span class="truncate">{{ compareLimitReached ? t("fomcharts.annotations.compareLimitReached", { max: compareMax }) : t("fomcharts.annotations.compareLabel") }}</span>
+        </label>
+        <Tooltip v-if="siblings.length > 0">
+          <TooltipTrigger as-child>
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              class="shrink-0 text-primary hover:bg-primary/8 hover:text-primary/80"
+              :aria-label="t('fomcharts.annotations.pinSiblings', { count: siblings.length })"
+              @click="$emit('pin-siblings', siblings)"
+            >
+              <PinIcon class="size-3.5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{{ t("fomcharts.annotations.pinSiblings", { count: siblings.length }) }}</TooltipContent>
+        </Tooltip>
+      </div>
     </div>
 
     <div class="grid transition-[grid-template-rows] duration-200 ease-out" :style="{ gridTemplateRows: expanded ? '1fr' : '0fr' }">
       <div class="min-h-0 overflow-hidden">
         <div class="flex flex-col gap-2.5 px-3.5 pb-3.5">
-          <Button
-            v-if="siblings.length > 0"
-            variant="link"
-            size="xs"
-            class="h-auto justify-start p-0 text-left text-[10.5px]"
-            @click="$emit('pin-siblings', siblings)"
-          >
-            {{ t("fomcharts.annotations.pinSiblings", { count: siblings.length }) }}
-          </Button>
-
           <div v-if="originField" class="grid grid-cols-[auto_1fr] gap-x-2.5 rounded-md border border-secondary/20 bg-card px-2.5 py-2 text-xs">
             <span class="text-muted-foreground">{{ originField.key }}</span>
             <span class="font-mono font-semibold text-ink">{{ originField.value }}</span>
@@ -161,9 +167,9 @@
             </div>
           </div>
 
-          <div v-if="foldFields.length" class="flex flex-col gap-1 rounded-md border border-secondary/20 bg-card px-2 py-1.5">
+          <div v-if="exportMetricsRows.length" class="flex flex-col gap-1 rounded-md border border-secondary/20 bg-card px-2 py-1.5">
             <div class="flex items-center justify-between gap-2">
-              <span class="truncate text-[10.5px] text-secondary">{{ t("fomcharts.annotations.metrics") }} ({{ foldFields.length }})</span>
+              <span class="truncate text-[10.5px] text-secondary">{{ t("fomcharts.annotations.metrics") }} ({{ exportMetricsRows.length }})</span>
               <Dialog>
                 <Tooltip>
                   <TooltipTrigger as-child>
@@ -186,7 +192,7 @@
                   </DialogTitle>
                   <DialogDescription>{{ t("fomcharts.annotations.metrics") }}</DialogDescription>
                   <div class="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 text-xs">
-                    <template v-for="f in foldFields" :key="f.key">
+                    <template v-for="f in exportMetricsRows" :key="f.key">
                       <span class="text-muted-foreground">{{ f.key }}</span>
                       <span class="font-mono font-semibold wrap-break-word text-ink">{{ f.value }}</span>
                     </template>
@@ -261,7 +267,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
-import { ChevronDown, Download, NotebookPen, X, ZoomIn } from "@lucide/vue";
+import { ChevronDown, Download, NotebookPen, Pin as PinIcon, X, ZoomIn } from "@lucide/vue";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
@@ -272,7 +278,7 @@ import type { Annotation } from "./AnnotationsPanel.vue";
 import type { DataRow } from "@/utils/columnTypes";
 import type { StructureLayer } from "@/utils/layerStructure";
 import { exportLayerStackPng } from "@/utils/layerStackExport";
-import { exportFieldListPng } from "@/utils/fieldListExport";
+import { exportFieldListPng, renderFieldListPng } from "@/utils/fieldListExport";
 import { exportAnnotationPng, renderAnnotationPng, type AnnotationExportSection } from "@/utils/annotationExport";
 import { buildAnnotationCardData } from "@/utils/annotationCardData";
 import { downloadTextFile } from "@/utils/textExport";
@@ -349,14 +355,14 @@ const axisBadges = computed(() => cardData.value.axisBadges);
 // mixed in among unrelated numeric measurements.
 const structureExtraFields = computed(() => cardData.value.structureExtraFields);
 
-// foldFields deliberately excludes the plotted X/Y axes on screen (see
-// AnnotationsPanel's foldFieldColumns) since those already show as the
-// header badges (axisBadges) right above -- but neither the "Metrics"
-// zoom/export nor the full pin export ever renders that header, so
-// exporting foldFields alone silently drops whichever measurement is
-// currently plotted (e.g. FOM/Resonance Wavelength picked as axes). Put
-// the axis values back in for export/zoom specifically, so every export
-// always has every measurement, matching what's visible somewhere on the card.
+// axisBadges + foldFields -- the plotted X/Y axes plus every other
+// measurement not already shown elsewhere on the card. Used for the
+// Metrics section's count/preview/zoom-dialog on screen AND for its
+// export/PNG, so what a researcher sees before exporting is exactly what
+// the PNG contains -- previously the on-screen Metrics box only showed
+// foldFields (deliberately excluding the axes, already visible as the
+// header badges right above it), while the actual export used this fuller
+// list, so opening "Metrics" showed fewer fields than the PNG it exported.
 const exportMetricsRows = computed(() => cardData.value.metricsRows);
 
 const downloadLayersPng = () =>
@@ -366,7 +372,7 @@ const downloadNoteTxt = () => downloadTextFile(props.note.note, `notes_${props.n
 
 // Collapsed preview line under the metrics trigger (same convention as Layer
 // Structure's raw-text preview) -- a quick glance without opening the dialog.
-const foldFieldsPreview = computed(() => props.foldFields.map((f) => f.value).join(" · "));
+const foldFieldsPreview = computed(() => exportMetricsRows.value.map((f) => f.value).join(" · "));
 
 const buildExportSections = (): AnnotationExportSection[] => [
   { title: t("fomcharts.annotations.mode"), rows: props.leadingFields, text: props.modeDescription ?? undefined },
@@ -388,5 +394,11 @@ const downloadAllPng = () =>
 const getExportDataUrl = (): string | null =>
   renderAnnotationPng({ ref: props.note.ref, title: props.note.title }, originField.value, buildExportSections());
 
-defineExpose({ getExportDataUrl });
+/** Guide-only: renders this card's "Metrics" zoom-dialog PNG without
+ * triggering a download -- same source data as downloadFieldsPng (see
+ * GuideTemplate.vue's export page). */
+const getMetricsExportDataUrl = (): string | null =>
+  renderFieldListPng({ ref: props.note.ref, title: props.note.title }, exportMetricsRows.value);
+
+defineExpose({ getExportDataUrl, getMetricsExportDataUrl });
 </script>

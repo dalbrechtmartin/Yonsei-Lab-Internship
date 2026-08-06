@@ -1,15 +1,12 @@
 /**
  * Renders a pinned point's metric/tag fields (Origin, Material Class,
- * Sensitivity, ...) as a label/value list onto a canvas and downloads it as
- * a PNG -- same approach as layerStackExport's exportLayerStackPng, with a
- * header identifying which paper/mode the values came from so the image is
- * self-contained once it leaves the app.
+ * Sensitivity, ...) as a label/value list onto a canvas -- same approach as
+ * layerStackExport's exportLayerStackPng, with a header identifying which
+ * paper/mode the values came from so the image is self-contained once it
+ * leaves the app. Returns the canvas's data URL, or null if 2D canvas isn't
+ * available.
  */
-export function exportFieldListPng(
-  source: { ref: string; title: string },
-  fields: { key: string; value: string }[],
-  filename?: string,
-): void {
+export function renderFieldListPng(source: { ref: string; title: string }, fields: { key: string; value: string }[]): string | null {
   const width = 440;
   const padX = 20;
   const headerH = 56;
@@ -23,7 +20,7 @@ export function exportFieldListPng(
   canvas.style.width = `${width}px`;
   canvas.style.height = `${height}px`;
   const ctx = canvas.getContext("2d");
-  if (!ctx) return;
+  if (!ctx) return null;
   ctx.scale(scale, scale);
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, width, height);
@@ -64,7 +61,13 @@ export function exportFieldListPng(
     ctx.fillText(value, padX + labelW, y);
   });
 
-  const url = canvas.toDataURL("image/png");
+  return canvas.toDataURL("image/png");
+}
+
+/** Downloads the metric/tag field list as a PNG file -- see renderFieldListPng. */
+export function exportFieldListPng(source: { ref: string; title: string }, fields: { key: string; value: string }[], filename?: string): void {
+  const url = renderFieldListPng(source, fields);
+  if (!url) return;
   const a = document.createElement("a");
   a.href = url;
   a.download = filename ?? `annotation_${source.ref.replace(/[^a-z0-9_-]+/gi, "_")}.png`;
