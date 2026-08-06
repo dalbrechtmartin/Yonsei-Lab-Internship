@@ -518,17 +518,23 @@
           "metrics": "chaque valeur numérique tracée ou enregistrée.",
           "notes": "la note en texte libre associée au point."
         },
-        "note": "Chaque section peut être désactivée avant l'export. Limité à 6 points pour rester lisible.",
+        "note": "Le zoom (bas à droite), un glisser du repère ⇄ en haut de chaque colonne pour l'échanger avec une autre, et un clic sur le titre pour le renommer complètent l'aperçu. « Télécharger l'image de comparaison » exporte le résultat en PNG.",
         "markupTitle": "Annoter la comparaison",
-        "markupBody": "Avant d'exporter, annotez librement l'aperçu : dessin, cadres, flèches, post-it et tampons, chacun dans une couleur au choix.",
+        "markupBody": "Avant d'exporter, annotez librement l'aperçu : dessin, cadres, flèches, soulignements, post-it et tampons, chacun dans une couleur au choix.",
         "markupMarks": {
           "tools": {
             "label": "Barre d'outils",
-            "body": "sélection, main, stylo (avec couleur), surligner une ligne, cadre, flèche, post-it, gomme ; tampons favori/validé/à exclure ; annuler/rétablir."
+            "body": "sélection, main, stylo (avec couleur), surligner une ligne, cadre, flèche, souligner, post-it, gomme ; tampons favori/validé/à exclure ; annuler/rétablir."
           },
           "clear": {
             "label": "Réinitialiser les annotations",
             "body": "supprime tous les traits, formes et post-it. Garde le titre et les sections choisies."
+          }
+        },
+        "marks": {
+          "manage": {
+            "label": "Points comparés",
+            "body": "glissez une puce pour la réordonner, × la retire (jusqu'à 6) ; triez-les et choisissez les sections visibles, ou un repérage du meilleur/pire, via « Réglages d'affichage »."
           }
         }
       },
@@ -779,11 +785,14 @@
       "selectAll": "Sélectionner tout",
       "deselectAll": "Tout désélectionner",
       "compareButton": "Comparer ({count})",
-      "titleLabel": "Titre (optionnel)",
       "titlePlaceholder": "ex. Résonateurs en anneau vs réseaux à mode guidé",
       "titleAuto": "Comparaison : {refs}",
+      "editTitle": "Renommer la comparaison",
       "clearTitle": "Effacer le titre",
       "sectionsLabel": "Afficher",
+      "showAll": "Tout afficher",
+      "clearAll": "Tout effacer",
+      "displaySettings": "Réglages d'affichage",
       "origin": "Origine",
       "cancel": "Annuler",
       "chips": {
@@ -791,8 +800,7 @@
         "addPoint": "Ajouter un point",
         "moveLeft": "Déplacer plus tôt",
         "moveRight": "Déplacer plus tard",
-        "remove": "Retirer {ref} de la comparaison",
-        "reverse": "Inverser l'ordre"
+        "remove": "Retirer {ref} de la comparaison"
       },
       "sort": {
         "selection": "Ordre de sélection",
@@ -820,6 +828,8 @@
         "frameHint": "Glissez sur une valeur pour l'entourer.",
         "arrow": "Flèche",
         "arrowHint": "Glissez pour tracer une flèche vers un détail.",
+        "underline": "Souligner",
+        "underlineHint": "Glissez sous une information pour la souligner.",
         "postit": "Post-it",
         "postitHint": "Cliquez pour poser une note et tapez votre texte. Glissez-la pour la déplacer, double-cliquez pour la modifier à nouveau.",
         "postitPlaceholder": "Note...",

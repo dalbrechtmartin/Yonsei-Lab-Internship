@@ -518,17 +518,23 @@
           "metrics": "每一个绘制或记录的数值。",
           "notes": "附加在该点上的自由文本备注。"
         },
-        "note": "每个部分都可在导出前单独关闭。最多支持 6 个固定点，以保证图片清晰。",
+        "note": "预览右下角的缩放、拖动列上方的 ⇄ 手柄以与另一列交换顺序，以及点击标题即可重命名，都是预览的一部分。「下载对比图片」可将结果导出为 PNG。",
         "markupTitle": "在对比图上标注",
-        "markupBody": "导出前可自由标注预览图：绘图、框选、箭头、便利贴和图章，每种都可以选择颜色。",
+        "markupBody": "导出前可自由标注预览图：绘图、框选、箭头、下划线、便利贴和图章，每种都可以选择颜色。",
         "markupMarks": {
           "tools": {
             "label": "工具栏",
-            "body": "选择、平移、画笔（可选颜色）、行高亮、框选、箭头、便利贴、橡皮擦；收藏/已验证/排除图章；撤销/重做。"
+            "body": "选择、平移、画笔（可选颜色）、行高亮、框选、箭头、下划线、便利贴、橡皮擦；收藏/已验证/排除图章；撤销/重做。"
           },
           "clear": {
             "label": "重置标注",
             "body": "清除所有笔迹、图形和便利贴，标题与已选部分保持不变。"
+          }
+        },
+        "marks": {
+          "manage": {
+            "label": "参与比较的点",
+            "body": "拖动标签调整顺序，× 可移除（最多 6 个）；排序、选择显示部分、按指标高亮最优/最差，都在「显示设置」中完成。"
           }
         }
       },
@@ -779,11 +785,14 @@
       "selectAll": "全选",
       "deselectAll": "取消全选",
       "compareButton": "比较（{count}）",
-      "titleLabel": "标题（可选）",
       "titlePlaceholder": "例如：环形谐振器 vs 光栅传感器",
       "titleAuto": "比较：{refs}",
+      "editTitle": "重命名比较",
       "clearTitle": "清除标题",
       "sectionsLabel": "显示",
+      "showAll": "全部显示",
+      "clearAll": "全部清除",
+      "displaySettings": "显示设置",
       "origin": "来源",
       "cancel": "取消",
       "chips": {
@@ -791,8 +800,7 @@
         "addPoint": "添加点",
         "moveLeft": "前移",
         "moveRight": "后移",
-        "remove": "从比较中移除 {ref}",
-        "reverse": "反转顺序"
+        "remove": "从比较中移除 {ref}"
       },
       "sort": {
         "selection": "选择顺序",
@@ -820,6 +828,8 @@
         "frameHint": "拖动以圈出某个数值。",
         "arrow": "箭头",
         "arrowHint": "拖动以绘制指向细节的箭头。",
+        "underline": "下划线",
+        "underlineHint": "在细节下方拖动以添加下划线。",
         "postit": "便利贴",
         "postitHint": "点击放置便签并输入文字。拖动可移动位置，双击可再次编辑。",
         "postitPlaceholder": "备注...",

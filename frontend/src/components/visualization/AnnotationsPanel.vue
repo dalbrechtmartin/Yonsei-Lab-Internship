@@ -41,11 +41,11 @@
           <Button
             size="xs"
             class="shrink-0 bg-primary text-primary-foreground hover:bg-primary/90"
-            :disabled="selectedIds.size < 2"
+            :disabled="selectedOrder.length < 2"
             @click="showCompareDialog = true"
           >
             <GitCompare class="size-3.5" />
-            {{ t("fomcharts.compare.compareButton", { count: selectedIds.size }) }}
+            {{ t("fomcharts.compare.compareButton", { count: selectedOrder.length }) }}
           </Button>
           <Button variant="link" size="xs" class="h-auto p-0 text-[10.5px]" @click="toggleSelectAll">
             {{ t(allSelected ? "fomcharts.compare.deselectAll" : "fomcharts.compare.selectAll") }}
@@ -64,8 +64,8 @@
             :note="note"
             :expanded="isExpanded(note.id)"
             :description-expanded="isDescriptionExpanded(note.id)"
-            :selected="selectedIds.has(note.id)"
-            :compare-limit-reached="selectedIds.size >= compareMax && !selectedIds.has(note.id)"
+            :selected="selectedOrder.includes(note.id)"
+            :compare-limit-reached="selectedOrder.length >= compareMax && !selectedOrder.includes(note.id)"
             :compare-max="compareMax"
             :x-axis="xAxis"
             :y-axis="yAxis"
@@ -94,7 +94,7 @@
       </div>
     </CollapsibleSection>
 
-    <CompareDialog v-model:open="showCompareDialog" :pins="compareData" />
+    <CompareDialog v-model:open="showCompareDialog" v-model:order="selectedOrder" :all-pins="allCardData" />
   </TooltipProvider>
 </template>
 
@@ -295,21 +295,27 @@ const siblingsFor = (note: Annotation): DataRow[] =>
 // (columns shrink, the exported PNG gets unwieldy) -- capped well below
 // that point rather than left unbounded.
 const compareMax = 6;
-const selectedIds = ref<Set<string>>(new Set());
+// An ORDERED array, not a Set -- order here is click/select order (append on
+// select, splice on deselect), independent of sortedAnnotations' own sort.
+// This is also handed to CompareDialog as a two-way v-model:order, so
+// reordering/adding/removing points *inside* the open dialog updates this
+// exact same array (see CompareDialog.vue) -- which is also what makes the
+// dialog remember its last order if reopened on the same selection, for
+// free, without extra state.
+const selectedOrder = ref<string[]>([]);
 const showCompareDialog = ref(false);
 
 const toggleSelect = (id: string) => {
-  const next = new Set(selectedIds.value);
-  if (next.has(id)) {
-    next.delete(id);
-  } else if (next.size < compareMax) {
-    next.add(id);
+  const idx = selectedOrder.value.indexOf(id);
+  if (idx !== -1) {
+    selectedOrder.value = selectedOrder.value.filter((existing) => existing !== id);
+  } else if (selectedOrder.value.length < compareMax) {
+    selectedOrder.value = [...selectedOrder.value, id];
   }
-  selectedIds.value = next;
 };
 
 const clearSelection = () => {
-  selectedIds.value = new Set();
+  selectedOrder.value = [];
 };
 
 // "Select all" is capped at compareMax same as individual toggles above --
@@ -318,13 +324,13 @@ const clearSelection = () => {
 // "deselect all" action instead of just becoming a no-op.
 const allSelected = computed(() => {
   const selectableCount = Math.min(compareMax, sortedAnnotations.value.length);
-  return selectableCount > 0 && selectedIds.value.size >= selectableCount;
+  return selectableCount > 0 && selectedOrder.value.length >= selectableCount;
 });
 const toggleSelectAll = () => {
   if (allSelected.value) {
     clearSelection();
   } else {
-    selectedIds.value = new Set(sortedAnnotations.value.slice(0, compareMax).map((a) => a.id));
+    selectedOrder.value = sortedAnnotations.value.slice(0, compareMax).map((a) => a.id);
   }
 };
 
@@ -339,32 +345,33 @@ watch(
   () => props.annotations,
   (list, oldList) => {
     const ids = new Set(list.map((a) => a.id));
-    let next = selectedIds.value;
+    let next = selectedOrder.value;
     let changed = false;
-    if ([...next].some((id) => !ids.has(id))) {
-      next = new Set([...next].filter((id) => ids.has(id)));
+    if (next.some((id) => !ids.has(id))) {
+      next = next.filter((id) => ids.has(id));
       changed = true;
     }
     const oldIds = new Set((oldList ?? []).map((a) => a.id));
     const added = list.filter((a) => !oldIds.has(a.id));
-    if (added.length > 0 && next.size < compareMax) {
-      const updated = new Set(next);
+    if (added.length > 0 && next.length < compareMax) {
+      const updated = [...next];
       for (const a of added) {
-        if (updated.size >= compareMax) break;
-        updated.add(a.id);
+        if (updated.length >= compareMax) break;
+        updated.push(a.id);
       }
       next = updated;
       changed = true;
     }
-    if (changed) selectedIds.value = next;
+    if (changed) selectedOrder.value = next;
   },
 );
 
 // Built from the exact same per-note field rules AnnotationCard uses for its
-// own single-pin export (see annotationCardData.ts), shared by both the
-// selection-driven compareData below and the guide's getComparePngDataUrl.
+// own single-pin export (see annotationCardData.ts), shared by both
+// allCardData below and the guide's getComparePngDataUrl.
 const cardDataFor = (note: Annotation): AnnotationCardData =>
   buildAnnotationCardData({
+    id: note.id,
     ref: note.ref,
     title: note.title,
     row: note.row,
@@ -382,11 +389,11 @@ const cardDataFor = (note: Annotation): AnnotationCardData =>
     layerStructureRaw: layerStructureRawFor(note),
   });
 
-// Kept in the sorted list's current order so the compare columns read
-// left-to-right the same way the pins are currently sorted in this panel.
-const compareData = computed<AnnotationCardData[]>(() =>
-  sortedAnnotations.value.filter((note) => selectedIds.value.has(note.id)).map(cardDataFor),
-);
+// Every pin, mapped once -- CompareDialog derives its own working set from
+// this plus selectedOrder (its v-model:order), so it can offer the full
+// "+ Add point" candidate list (every pin not currently in the comparison)
+// without the panel needing to know anything about the dialog's internals.
+const allCardData = computed<AnnotationCardData[]>(() => sortedAnnotations.value.map(cardDataFor));
 
 // Guide-only: renders the same side-by-side comparison CompareDialog draws
 // (mirroring its own AnnotationCardData -> ComparePinData mapping with every

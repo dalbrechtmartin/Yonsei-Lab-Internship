@@ -518,17 +518,23 @@
           "metrics": "every plotted or recorded numeric value.",
           "notes": "the free-text note attached to the pin."
         },
-        "note": "Each section can be turned off before exporting. Capped at 6 pins to stay legible.",
+        "note": "Zoom (bottom right), dragging the ⇄ handle above a column to swap it with another, and clicking the title to rename it round out the preview. \"Download comparison image\" exports the result as a PNG.",
         "markupTitle": "Mark up the comparison",
-        "markupBody": "Before exporting, freely annotate the preview: drawing, frames, arrows, sticky notes and stamps, each in a color of your choice.",
+        "markupBody": "Before exporting, freely annotate the preview: drawing, frames, arrows, underlines, sticky notes and stamps, each in a color of your choice.",
         "markupMarks": {
           "tools": {
             "label": "Toolbar",
-            "body": "selection, pan, pen (with color), highlight a row, frame, arrow, sticky note, eraser; favorite/validated/exclude stamps; undo/redo."
+            "body": "selection, pan, pen (with color), highlight a row, frame, arrow, underline, sticky note, eraser; favorite/validated/exclude stamps; undo/redo."
           },
           "clear": {
             "label": "Reset annotations",
             "body": "removes every stroke, shape and sticky note. Keeps the title and section choices."
+          }
+        },
+        "marks": {
+          "manage": {
+            "label": "Compared points",
+            "body": "drag a chip to reorder it, × removes it (up to 6); sort them and pick which sections show, or highlight the best/worst, via \"Display settings\"."
           }
         }
       },
@@ -779,11 +785,14 @@
       "selectAll": "Select all",
       "deselectAll": "Deselect all",
       "compareButton": "Compare ({count})",
-      "titleLabel": "Title (optional)",
       "titlePlaceholder": "e.g. Ring resonators vs. grating sensors",
       "titleAuto": "Comparison: {refs}",
+      "editTitle": "Rename comparison",
       "clearTitle": "Clear title",
       "sectionsLabel": "Show",
+      "showAll": "Show all",
+      "clearAll": "Clear all",
+      "displaySettings": "Display settings",
       "origin": "Origin",
       "cancel": "Cancel",
       "chips": {
@@ -791,8 +800,7 @@
         "addPoint": "Add point",
         "moveLeft": "Move earlier",
         "moveRight": "Move later",
-        "remove": "Remove {ref} from the comparison",
-        "reverse": "Reverse order"
+        "remove": "Remove {ref} from the comparison"
       },
       "sort": {
         "selection": "Selection order",
@@ -820,6 +828,8 @@
         "frameHint": "Drag over a value to circle it.",
         "arrow": "Arrow",
         "arrowHint": "Drag to draw an arrow pointing at a detail.",
+        "underline": "Underline",
+        "underlineHint": "Drag under a detail to underline it.",
         "postit": "Sticky note",
         "postitHint": "Click to drop a note and type your text. Drag it to move it, double-click to edit it again.",
         "postitPlaceholder": "Note...",

@@ -953,7 +953,45 @@
       <GuideHeader />
       <p class="mb-1.5 text-xs font-semibold tracking-[0.3em] text-secondary uppercase">{{ t("guide.mode1.eyebrow") }}</p>
       <h2 class="mb-2 text-xl font-semibold">{{ t("guide.steps.comparePins.title") }}</h2>
-      <p class="mb-3 text-sm leading-relaxed text-justify text-ink">{{ t("guide.steps.comparePins.body") }}</p>
+      <p class="mb-2 text-sm leading-relaxed text-justify text-ink">{{ t("guide.steps.comparePins.body") }}</p>
+
+      <!-- Chips + sort/display-settings mock -- same real Button/icon
+           components as the live dialog's own top bar, same teleport
+           constraint as the markup toolbar and comparison image below (see
+           their own comments). Reuses R3/R1, the two demo pins already
+           pinned on page 13 and shown in the comparison figure, so the chips
+           here visibly refer to the same points. -->
+      <div ref="comparePinsTopWrap" class="guide-callout-region relative">
+        <div ref="comparePinsChipsRowWrap" class="flex flex-wrap items-center gap-1.5">
+          <span
+            v-for="(pinRef, i) in ['R3', 'R1']"
+            :key="pinRef"
+            class="flex items-center gap-1 rounded-lg border border-primary/35 bg-primary/8 py-1 pr-1.5 pl-1 text-xs font-medium text-ink"
+          >
+            <GripVertical class="size-3 shrink-0 text-muted-foreground/60" />
+            <span class="inline-flex size-4 shrink-0 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">{{ i + 1 }}</span>
+            <span class="font-mono">{{ pinRef }}</span>
+            <X class="size-3 shrink-0 text-muted-foreground" />
+          </span>
+          <Button type="button" variant="outline" size="xs" class="gap-1 border-dashed border-primary/50 text-primary" disabled>
+            <Plus class="size-3" />
+            {{ t("fomcharts.compare.chips.addPoint") }}
+          </Button>
+        </div>
+        <div ref="comparePinsSortRowWrap" class="mt-1 flex items-center justify-end gap-2">
+          <div class="inline-flex h-6 items-center gap-1.5 rounded-md border border-border bg-card px-2 text-[10.5px] text-ink">{{ t("fomcharts.compare.sort.selection") }}</div>
+          <Button type="button" variant="outline" size="xs" class="gap-1.5 text-[10.5px]" disabled>
+            <Settings2 class="size-3" />
+            {{ t("fomcharts.compare.displaySettings") }}
+          </Button>
+        </div>
+        <GuideMarkRing v-for="(m, i) in comparePinsTopMarks" :key="i" :mark="m" :number="i + 1" side="top" />
+      </div>
+      <GuideMarkLegend
+        class="mb-1.5"
+        :compact="true"
+        :items="[{ label: t('guide.steps.comparePins.marks.manage.label'), body: t('guide.steps.comparePins.marks.manage.body') }]"
+      />
 
       <div class="flex items-start gap-6">
         <div class="shrink-0">
@@ -967,7 +1005,7 @@
           <div class="guide-callout-region" style="width: 360px">
             <img v-if="comparePngUrl" :src="comparePngUrl" class="block w-full" :alt="t('fomcharts.compare.title')" />
           </div>
-          <p class="mx-auto mt-2 max-w-90 text-center text-[11px] leading-snug text-secondary">{{ t("guide.steps.comparePins.figureCaption") }}</p>
+          <p class="mx-auto mt-1.5 max-w-90 text-center text-[11px] leading-snug text-secondary">{{ t("guide.steps.comparePins.figureCaption") }}</p>
         </div>
 
         <div class="min-w-0 flex-1 pt-1">
@@ -988,11 +1026,11 @@
            right column above, since the real toolbar now has four groups
            (Konva-based free-form annotations, not just a pen). "Pen" is
            picked as the active tool so its color swatches render. -->
-      <div class="mt-3">
+      <div class="mt-1.5">
         <h3 class="mb-1 text-sm font-semibold text-primary">{{ t("guide.steps.comparePins.markupTitle") }}</h3>
-        <p class="mb-2 text-xs leading-snug text-secondary">{{ t("guide.steps.comparePins.markupBody") }}</p>
-        <div ref="markupBlockWrap" class="relative flex flex-wrap items-end gap-x-4 gap-y-2">
-          <div ref="markupToolsWrap" class="flex flex-wrap items-end gap-x-3 gap-y-2">
+        <p class="mb-1.5 text-xs leading-snug text-secondary">{{ t("guide.steps.comparePins.markupBody") }}</p>
+        <div ref="markupBlockWrap" class="relative flex flex-wrap items-end gap-x-4 gap-y-1.5">
+          <div ref="markupToolsWrap" class="flex flex-wrap items-end gap-x-3 gap-y-1.5">
             <div class="flex flex-col gap-1">
               <span class="pl-0.5 text-[9px] font-bold tracking-wider text-muted-foreground uppercase">{{ t("fomcharts.compare.tools.groupTools") }}</span>
               <div class="inline-flex overflow-hidden rounded-lg border border-secondary/20 bg-card">
@@ -1013,6 +1051,9 @@
                 </Button>
                 <Button type="button" variant="ghost" size="icon-xs" class="rounded-none text-secondary">
                   <ArrowUpRight class="size-3.5" />
+                </Button>
+                <Button type="button" variant="ghost" size="icon-xs" class="rounded-none text-secondary">
+                  <Underline class="size-3.5" />
                 </Button>
                 <Button type="button" variant="ghost" size="icon-xs" class="rounded-none text-secondary">
                   <StickyNote class="size-3.5" />
@@ -1066,7 +1107,7 @@
           <GuideMarkRing v-for="(m, i) in comparePinsMarks" :key="i" :mark="m" :number="i + 1" side="top" />
         </div>
         <GuideMarkLegend
-          class="mt-2"
+          class="mt-1.5"
           :compact="true"
           :items="[
             { label: t('guide.steps.comparePins.markupMarks.tools.label'), body: t('guide.steps.comparePins.markupMarks.tools.body') },
@@ -1075,7 +1116,7 @@
         />
       </div>
 
-      <div class="mt-3 rounded-xl border border-border bg-muted/30 px-4 py-2.5">
+      <div class="mt-2.5 rounded-xl border border-border bg-muted/30 px-4 py-2">
         <p class="text-sm leading-relaxed text-justify text-ink">{{ t("guide.steps.comparePins.note") }}</p>
       </div>
 
@@ -1508,6 +1549,7 @@ import {
   FileText,
   Filter,
   FolderOpen,
+  GripVertical,
   Hand,
   Info,
   LayoutGrid,
@@ -1516,10 +1558,12 @@ import {
   MousePointer2,
   Pen,
   Pin,
+  Plus,
   PlusCircle,
   Redo2,
   RotateCcw,
   Rows3,
+  Settings2,
   SlidersHorizontal,
   Sparkles,
   Star,
@@ -1527,6 +1571,7 @@ import {
   Table2,
   Target,
   Undo2,
+  Underline,
   Upload,
   Users,
   X,
@@ -2104,6 +2149,9 @@ const addPointNode2Wrap = useTemplateRef<HTMLDivElement>("addPointNode2Wrap");
 const addPointNode3Wrap = useTemplateRef<HTMLDivElement>("addPointNode3Wrap");
 const markupBlockWrap = useTemplateRef<HTMLDivElement>("markupBlockWrap");
 const markupToolsWrap = useTemplateRef<HTMLDivElement>("markupToolsWrap");
+const comparePinsTopWrap = useTemplateRef<HTMLDivElement>("comparePinsTopWrap");
+const comparePinsChipsRowWrap = useTemplateRef<HTMLDivElement>("comparePinsChipsRowWrap");
+const comparePinsSortRowWrap = useTemplateRef<HTMLDivElement>("comparePinsSortRowWrap");
 
 const toolbarMarks = ref<GuideMark[]>([]);
 const chartMarks = ref<GuideMark[]>([]);
@@ -2114,6 +2162,7 @@ const dataTableMarks = ref<GuideMark[]>([]);
 const addPoint1Marks = ref<GuideMark[]>([]);
 const addPoint2Marks = ref<GuideMark[]>([]);
 const annotationMarks = ref<GuideMark[]>([]);
+const comparePinsTopMarks = ref<GuideMark[]>([]);
 const comparePinsMarks = ref<GuideMark[]>([]);
 
 // Badges are real DOM (measured the normal way, via FomChart's exposed
@@ -2178,6 +2227,7 @@ async function captureGuideArtifacts() {
     addPoint1Marks,
     addPoint2Marks,
     annotationMarks,
+    comparePinsTopMarks,
     comparePinsMarks,
     readingMarks,
   ]) {
@@ -2406,6 +2456,19 @@ async function captureGuideArtifacts() {
     push(addPoint2Marks, addPointNode1Wrap.value ? markRect(c, addPointNode1Wrap.value, 4) : null);
     push(addPoint2Marks, addPointNode2Wrap.value ? markRect(c, addPointNode2Wrap.value, 4) : null);
     push(addPoint2Marks, addPointNode3Wrap.value ? markRect(c, addPointNode3Wrap.value, 4) : null);
+  }
+
+  // Page 14: Compare pinned points -- the chip row (reorder/add/remove) and
+  // the sort + display-settings row sit above the comparison figure, same
+  // hand-assembled-mock constraint as the markup toolbar below (the real
+  // CompareDialog's content teleports outside the `.guide-page` tree
+  // pdfExport.ts captures). One ring spans both rows (not one each) -- this
+  // fixed-height A4 page has no slack for a second ring's own top-badge
+  // offset, and the two rows are one coherent "manage & organize the
+  // comparison" concept anyway.
+  if (comparePinsTopWrap.value) {
+    const c = comparePinsTopWrap.value;
+    push(comparePinsTopMarks, markUnion(c, [comparePinsChipsRowWrap.value, comparePinsSortRowWrap.value], 4));
   }
 
   // Page 14: Compare pinned points -- the hand-assembled markup toolbar

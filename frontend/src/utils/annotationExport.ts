@@ -199,7 +199,12 @@ export function layoutAndMaybeDraw(
 ): number {
   const contentW = width - PAD_X * 2;
   const labelW = Math.round(contentW * 0.38);
-  const valueW = contentW - labelW - 10;
+  // Subtracts BOX_PAD on both sides -- the box is only contentW wide and
+  // rows start at x + BOX_PAD, so sizing the value column off contentW
+  // alone let a long value (e.g. Base Materials) overflow the box's right
+  // edge by exactly BOX_PAD (see compareExport.ts's planComparePins for the
+  // same fix on the multi-pin compare export).
+  const valueW = contentW - BOX_PAD * 2 - labelW - 10;
   const x = originX + PAD_X;
   let y = y0;
 

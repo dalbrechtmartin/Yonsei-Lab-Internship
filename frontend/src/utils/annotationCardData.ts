@@ -7,6 +7,10 @@ export interface FieldRow {
 }
 
 export interface AnnotationCardData {
+  /** Only set when the caller needs to map back to the source Annotation
+   * (see AnnotationsPanel's cardDataFor, feeding CompareDialog's add/remove
+   * point list) -- AnnotationCard's own single-pin export has no use for it. */
+  id?: string;
   ref: string;
   title: string;
   origin: FieldRow | null;
@@ -41,6 +45,7 @@ const rowField = (row: DataRow, col: string | null): FieldRow | null => {
  * between the two exports.
  */
 export function buildAnnotationCardData(input: {
+  id?: string;
   ref: string;
   title: string;
   row: DataRow;
@@ -68,6 +73,7 @@ export function buildAnnotationCardData(input: {
   );
 
   return {
+    id: input.id,
     ref: input.ref,
     title: input.title,
     origin,
