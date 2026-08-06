@@ -507,9 +507,9 @@
            wrapper instead, sized identically, letting badges float outside
            the inner box without either covering real content or being
            clipped themselves. -->
-      <div ref="readingWrap" class="relative mx-auto" style="width: 480px">
-        <div class="guide-callout-region" style="width: 480px; height: 392px; overflow: hidden">
-          <div style="width: 686px; transform: scale(0.7); transform-origin: top left">
+      <div ref="readingWrap" class="relative mx-auto" style="width: 560px">
+        <div class="guide-callout-region" style="width: 560px; height: 392px; overflow: hidden">
+          <div style="width: 800px; transform: scale(0.7); transform-origin: top left">
             <FomChart
               ref="readingChartRef"
               :chart-data="sampleRows"
@@ -531,6 +531,44 @@
               :point-size="pointSize"
             />
           </div>
+        </div>
+        <!-- A "peephole" patch, not a full re-render: the point-size legend
+             line ("Taille : Sensitivity (nm/RIU) (40-230)") is the one bit
+             of this canvas that gets silently clipped once scaled down this
+             far by the transform above -- confirmed real (echarts' own
+             getOption()/getDataURL() always had the complete, correct text;
+             only the live, transformed canvas paint dropped characters,
+             with no ellipsis and no console warning) and confirmed not a
+             `zoom` fix either (same clipping persisted under zoom, which
+             avoids transform's usual scaling-artifact class of bug but not
+             this one). Everything else on this canvas (badges, group
+             legend, median line, the flagged point) renders correctly even
+             scaled, so this only patches the one broken row: a small,
+             clipped window (sized to readingSizeLegendRect, the same rect
+             the ring for it already uses) showing just that slice of a full
+             getPngDataUrl() snapshot, offset so the slice lines up exactly
+             over the broken text underneath. A plain `<img>`, unlike a
+             scaled canvas, has no such clipping failure mode. -->
+        <div
+          v-if="readingChartImgUrl && readingSizeLegendRect && readingChartFullRect"
+          class="absolute overflow-hidden"
+          :style="{
+            top: `${readingSizeLegendRect.top}px`,
+            left: `${readingSizeLegendRect.left}px`,
+            width: `${readingSizeLegendRect.width}px`,
+            height: `${readingSizeLegendRect.height}px`,
+          }"
+        >
+          <img
+            :src="readingChartImgUrl"
+            class="absolute max-w-none"
+            :style="{
+              top: `${readingChartFullRect.top - readingSizeLegendRect.top}px`,
+              left: `${readingChartFullRect.left - readingSizeLegendRect.left}px`,
+              width: `${readingChartFullRect.width}px`,
+              height: `${readingChartFullRect.height}px`,
+            }"
+          />
         </div>
         <GuideMarkRing v-for="(m, i) in readingMarks" :key="i" :mark="m" :number="i + 1" />
       </div>
@@ -2128,6 +2166,13 @@ const dataTableWrap = useTemplateRef<HTMLDivElement>("dataTableWrap");
 const annotationsWrap = useTemplateRef<HTMLDivElement>("annotationsWrap");
 const readingWrap = useTemplateRef<HTMLDivElement>("readingWrap");
 const readingChartRef = useTemplateRef<InstanceType<typeof FomChart>>("readingChartRef");
+// See the point-size-legend "peephole" patch's own template comment for why
+// these exist -- readingChartFullRect is the whole (correctly rendered)
+// canvas snapshot's own rect, readingSizeLegendRect is just the broken row's,
+// both in readingWrap's coordinate space like every other mark here.
+const readingChartImgUrl = ref<string | null>(null);
+const readingChartFullRect = ref<GuideMark | null>(null);
+const readingSizeLegendRect = ref<GuideMark | null>(null);
 const annotationsPanelRef = useTemplateRef<InstanceType<typeof AnnotationsPanel>>("annotationsPanelRef");
 
 // Page 11 (Essentials/Metrics) and page 12 (Structure) group each real field
@@ -2405,6 +2450,11 @@ async function captureGuideArtifacts() {
     push(readingMarks, chartDom && legendRect ? markCanvasRect(wrap, chartDom, legendRect) : null);
     const sizeLegendRect = chart.getSizeLegendRect();
     push(readingMarks, chartDom && sizeLegendRect ? markCanvasRect(wrap, chartDom, sizeLegendRect) : null);
+    // See the point-size-legend "peephole" patch's template comment: a plain
+    // PNG snapshot laid over just that one broken row, not the whole canvas.
+    readingChartImgUrl.value = chart.getPngDataUrl();
+    readingChartFullRect.value = chartDom ? markRect(wrap, chartDom, 0) : null;
+    readingSizeLegendRect.value = chartDom && sizeLegendRect ? markCanvasRect(wrap, chartDom, sizeLegendRect, 4) : null;
     const medianRect = chart.getMedianLineRect();
     push(readingMarks, chartDom && medianRect ? markCanvasRect(wrap, chartDom, medianRect) : null);
     const flaggedRect = chart.getFlaggedPointRect();

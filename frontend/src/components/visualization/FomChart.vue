@@ -1202,9 +1202,17 @@ const seriesList = computed(() => {
   // row in the chart's own legend (see sizeLegendNames/chartOption's third
   // legend row), the same way Trend line / Pareto frontier do, instead of
   // living only in a floating HTML badge disconnected from the chart itself.
+  // name is the full "Taille : {column} ({min}-{max})" text (see
+  // sizeLegendFullText), not a short placeholder later swapped in via a
+  // legend `formatter` -- echarts sizes a "plain"-type legend item's own
+  // box from its DATA name, before any formatter ever runs, so a formatter
+  // that rewrites a short name into a much longer string just gets that
+  // longer string clipped to the short name's box. Matches this series'
+  // name to what the legend row (and legendTooltipFormatter's lookup)
+  // actually display.
   if (pointSizeLegend.value) {
     series.push({
-      name: t("fomcharts.controls.pointSize"),
+      name: sizeLegendFullText.value,
       type: "scatter",
       data: [],
       silent: true,
@@ -1279,7 +1287,16 @@ const overlayLegendNames = computed(() => {
 // needs a square, circle-friendly icon box (itemWidth === itemHeight) --
 // Trend/Pareto's elongated line-swatch box (14x8) would squash a circle icon
 // into an oval.
-const sizeLegendNames = computed(() => (pointSizeLegend.value ? [t("fomcharts.controls.pointSize")] : []));
+// The full "Taille : {column} ({min}-{max})" text, computed once and used
+// directly as BOTH the legend's data name and the point-size helper
+// series' own name below -- see that series' comment for why a `formatter`
+// alone isn't enough here.
+const sizeLegendFullText = computed(() =>
+  pointSizeLegend.value
+    ? t("fomcharts.pointSizeLegend", { column: pointSizeLegend.value.column, min: pointSizeLegend.value.min, max: pointSizeLegend.value.max })
+    : t("fomcharts.controls.pointSize"),
+);
+const sizeLegendNames = computed(() => (pointSizeLegend.value ? [sizeLegendFullText.value] : []));
 
 // Hover explanations for the overlay/size legend rows -- "what it shows and
 // how it's calculated" for Trend/Pareto/point-size, since a bare "Ligne de
@@ -1296,7 +1313,7 @@ const legendTooltipFormatter = (params: any): string => {
   if (name === t("fomcharts.controls.pareto")) {
     return t("fomcharts.paretoExplain");
   }
-  if (name === t("fomcharts.controls.pointSize") && pointSizeLegend.value) {
+  if (name === sizeLegendFullText.value && pointSizeLegend.value) {
     return t("fomcharts.pointSizeLegendExplain", { column: pointSizeLegend.value.column });
   }
   return name;
@@ -1656,7 +1673,13 @@ const getLegendRect = (): PixelRect | null => {
 
 /** Guide-only: the point-size legend row's live top position -- the third
  * (`legend[2]`) of chartOption's three stacked legend rows, see
- * sizeLegendNames/showSizeLegend. Same reasoning as getLegendRect above. */
+ * sizeLegendNames/showSizeLegend. Same reasoning as getLegendRect above,
+ * EXCEPT for width: getLegendRect's fixed 150px guess is fine for its own
+ * row (short, locale-invariant group names), but this row's text is the
+ * full "Taille : {column} ({min}-{max})" sentence (see sizeLegendFullText)
+ * -- long enough, in some locales, to run past a 150px guess -- so this
+ * estimates from the actual string length instead (same charWidth guess
+ * estimateLegendWrapRows uses for the group legend's own wrap estimate). */
 const getSizeLegendRect = (): PixelRect | null => {
   if (!props.showLegend) return null;
   const inst = chartRef.value;
@@ -1665,7 +1688,10 @@ const getSizeLegendRect = (): PixelRect | null => {
   if (!legendOpt || legendOpt.show === false) return null;
   const width = inst.getWidth();
   const top = typeof legendOpt.top === "number" ? legendOpt.top : 4;
-  return { left: width / 2 - 75, top: top - 4, width: 150, height: 18 };
+  const iconAndGap = 10 + 5;
+  const textWidth = sizeLegendFullText.value.length * 6.3;
+  const boxWidth = iconAndGap + textWidth + 8;
+  return { left: width / 2 - boxWidth / 2, top: top - 4, width: boxWidth, height: 18 };
 };
 
 /** Guide-only: a flagged ("Review status: Edit", dashed-outline) point's
@@ -1780,15 +1806,6 @@ const chartOption = computed(() => {
     name === t("fomcharts.controls.trendLine") && trendFit.value
       ? `${name} (${t(`fomcharts.trendType.${trendFit.value.type}`)}, R² ${formatStat(trendFit.value.r2)})`
       : name;
-  const sizeLegendFormatter = (name: string): string =>
-    pointSizeLegend.value
-      ? t("fomcharts.pointSizeLegend", {
-          column: pointSizeLegend.value.column,
-          min: pointSizeLegend.value.min,
-          max: pointSizeLegend.value.max,
-        })
-      : name;
-
   return {
   // Changing an axis, groupBy, or the trend-line toggle usually reshapes the
   // series array enough that echarts can't match old vs new series/data and
@@ -1844,7 +1861,6 @@ const chartOption = computed(() => {
       textStyle: { color: legendColor, fontSize: 11 },
       itemWidth: 10,
       itemHeight: 10,
-      formatter: sizeLegendFormatter,
       tooltip: { show: true, formatter: legendTooltipFormatter },
     },
   ],
