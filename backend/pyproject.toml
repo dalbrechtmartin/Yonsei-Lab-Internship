@@ -1,0 +1,11 @@
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = [
+    "E501", # line length: `ruff format` already wraps real code; remaining long lines are
+    # unwrappable strings (prompts, schema descriptions) or comments, not a readability issue.
+    "B008", # FastAPI's `File(...)`/`Depends(...)` in defaults is the framework's own idiom.
+]
