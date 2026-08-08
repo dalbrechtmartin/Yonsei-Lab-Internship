@@ -6,7 +6,9 @@ import { reactiveOmit } from "@vueuse/core";
 import { CheckboxIndicator, CheckboxRoot, useForwardPropsEmits } from "reka-ui";
 import { cn } from "@/lib/utils";
 
-const props = defineProps<CheckboxRootProps & { class?: HTMLAttributes["class"] }>();
+const props = defineProps<
+  CheckboxRootProps & { class?: HTMLAttributes["class"] }
+>();
 const emits = defineEmits<CheckboxRootEmits>();
 
 const delegatedProps = reactiveOmit(props, "class");
@@ -24,7 +26,10 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
       )
     "
   >
-    <CheckboxIndicator data-slot="checkbox-indicator" class="flex items-center justify-center text-current">
+    <CheckboxIndicator
+      data-slot="checkbox-indicator"
+      class="flex items-center justify-center text-current"
+    >
       <Check class="size-3.5" />
     </CheckboxIndicator>
   </CheckboxRoot>

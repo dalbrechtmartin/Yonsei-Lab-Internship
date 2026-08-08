@@ -12,7 +12,9 @@
               <SelectValue class="min-w-0 truncate" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem :value="NONE_VALUE">{{ t("fomcharts.controls.none") }}</SelectItem>
+              <SelectItem :value="NONE_VALUE">{{
+                t("fomcharts.controls.none")
+              }}</SelectItem>
               <SelectItem v-for="col in groupByOptions" :key="col" :value="col">
                 {{ col }}
               </SelectItem>
@@ -24,7 +26,10 @@
              Class/Base Materials) -- that's the only case where a single row
              can land in more than one card/group at once, so it's the only
              case a "merge" choice actually changes anything on the chart. -->
-        <div v-if="isCompositeGroupBy" class="flex items-center justify-between gap-2 text-xs">
+        <div
+          v-if="isCompositeGroupBy"
+          class="flex items-center justify-between gap-2 text-xs"
+        >
           <span class="flex items-center gap-1 text-ink">
             <InfoTooltip :text="t('fomcharts.tooltips.mergeMultiCategory')" />
             {{ t("fomcharts.controls.mergeMultiCategory") }}
@@ -34,121 +39,182 @@
 
         <div class="h-px w-full bg-secondary/15" />
 
-        <div class="flex min-w-0 flex-1 flex-col gap-1 rounded-[10px] border border-secondary/15 bg-secondary/5 p-3">
-        <!-- Only worth the extra chrome once there are enough groups that
+        <div
+          class="flex min-w-0 flex-1 flex-col gap-1 rounded-[10px] border border-secondary/15 bg-secondary/5 p-3"
+        >
+          <!-- Only worth the extra chrome once there are enough groups that
              scanning/scrolling the full list gets tedious -- with a handful
              of groups, the plain list below is already the fastest way to
              scan them. -->
-        <label v-if="groups.length > VISIBLE_GROUP_LIMIT" class="relative mb-1 block">
-          <Search class="pointer-events-none absolute top-1/2 left-2 size-3 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            v-model="searchQuery"
-            type="text"
-            :placeholder="t('fomcharts.stats.searchPlaceholder')"
-            class="h-7 bg-card pr-6.5 pl-6.5 text-[11.5px]"
-          />
-          <button
-            v-if="searchQuery"
-            type="button"
-            class="absolute top-1/2 right-1.5 flex size-4 -translate-y-1/2 items-center justify-center rounded text-muted-foreground hover:bg-secondary/10 hover:text-ink"
-            :aria-label="t('fomcharts.pointsTable.clearSearch')"
-            @click="searchQuery = ''"
+          <label
+            v-if="groups.length > VISIBLE_GROUP_LIMIT"
+            class="relative mb-1 block"
           >
-            <X class="size-3" />
-          </button>
-        </label>
-        <p v-if="groups.length > 0 && filteredGroups.length === 0" class="px-1 py-2 text-center text-[11px] text-muted-foreground">
-          {{ t("fomcharts.stats.noMatch") }}
-        </p>
-        <!-- Capped + internally scrollable, same system as DataPointsTable's
+            <Search
+              class="pointer-events-none absolute top-1/2 left-2 size-3 -translate-y-1/2 text-muted-foreground"
+            />
+            <Input
+              v-model="searchQuery"
+              type="text"
+              :placeholder="t('fomcharts.stats.searchPlaceholder')"
+              class="h-7 bg-card pr-6.5 pl-6.5 text-[11.5px]"
+            />
+            <button
+              v-if="searchQuery"
+              type="button"
+              class="absolute top-1/2 right-1.5 flex size-4 -translate-y-1/2 items-center justify-center rounded text-muted-foreground hover:bg-secondary/10 hover:text-ink"
+              :aria-label="t('fomcharts.pointsTable.clearSearch')"
+              @click="searchQuery = ''"
+            >
+              <X class="size-3" />
+            </button>
+          </label>
+          <p
+            v-if="groups.length > 0 && filteredGroups.length === 0"
+            class="px-1 py-2 text-center text-[11px] text-muted-foreground"
+          >
+            {{ t("fomcharts.stats.noMatch") }}
+          </p>
+          <!-- Capped + internally scrollable, same system as DataPointsTable's
              own group list (see its max-h-88 wrapper) -- otherwise "Show
              more" on a high-cardinality group-by (e.g. Base Materials) could
              render dozens of cards and grow this whole panel, and the
              Espace d'analyse card around it, well past the chart's height. -->
-        <div class="flex max-h-88 flex-col gap-1 overflow-x-hidden overflow-y-auto">
-        <!-- Every group renders as a compact one-line row by default -- the full
+          <div
+            class="flex max-h-88 flex-col gap-1 overflow-x-hidden overflow-y-auto"
+          >
+            <!-- Every group renders as a compact one-line row by default -- the full
              tile grid (or the low-N note) only shows once expanded via the
              chevron, so the panel stays scannable even with many groups. -->
-        <div
-          v-for="group in visibleGroups"
-          :key="group.label"
-          class="group flex flex-col gap-1 rounded-lg border-b border-secondary/10 px-2 pt-2 pb-2 last:border-0"
-          :class="[
-            groupBy && group.label === highlightGroup ? 'bg-primary/10' : '',
-            highlightGroup && group.label !== highlightGroup ? 'opacity-55' : '',
-          ]"
-        >
-          <div class="flex items-center justify-between gap-2">
-            <button
-              type="button"
-              :disabled="!groupBy"
-              class="flex min-w-0 flex-1 items-center gap-1.5 text-left text-xs font-semibold text-ink disabled:cursor-default"
-              :class="groupBy ? 'cursor-pointer' : ''"
-              @click="groupBy && $emit('toggle-highlight', group.label)"
+            <div
+              v-for="group in visibleGroups"
+              :key="group.label"
+              class="group flex flex-col gap-1 rounded-lg border-b border-secondary/10 px-2 pt-2 pb-2 last:border-0"
+              :class="[
+                groupBy && group.label === highlightGroup
+                  ? 'bg-primary/10'
+                  : '',
+                highlightGroup && group.label !== highlightGroup
+                  ? 'opacity-55'
+                  : '',
+              ]"
             >
-              <span class="inline-block size-2.5 shrink-0 rounded-full" :style="{ background: group.color }" />
-              <span class="truncate">{{ group.label }}</span>
-              <InfoTooltip
-                v-if="groupBy"
-                :text="group.label === highlightGroup ? t('fomcharts.stats.isolateActive') : t('fomcharts.stats.isolate')"
-                :icon="Target"
-                :icon-class="[
-                  'shrink-0 transition hover:text-secondary',
-                  group.label === highlightGroup ? 'text-primary' : 'text-muted-foreground opacity-0 group-hover:opacity-100',
-                ]"
-              />
-            </button>
-            <div class="flex shrink-0 items-center gap-1.5">
-              <span class="font-mono text-[11px] text-muted-foreground">{{ group.tiles[0].label }}={{ group.tiles[0].value }}</span>
-              <button
-                type="button"
-                class="text-muted-foreground transition hover:text-secondary"
-                :aria-label="isExpanded(group.label) ? t('fomcharts.stats.hideDetails') : t('fomcharts.stats.showDetails')"
-                @click="toggleExpanded(group.label)"
+              <div class="flex items-center justify-between gap-2">
+                <button
+                  type="button"
+                  :disabled="!groupBy"
+                  class="flex min-w-0 flex-1 items-center gap-1.5 text-left text-xs font-semibold text-ink disabled:cursor-default"
+                  :class="groupBy ? 'cursor-pointer' : ''"
+                  @click="groupBy && $emit('toggle-highlight', group.label)"
+                >
+                  <span
+                    class="inline-block size-2.5 shrink-0 rounded-full"
+                    :style="{ background: group.color }"
+                  />
+                  <span class="truncate">{{ group.label }}</span>
+                  <InfoTooltip
+                    v-if="groupBy"
+                    :text="
+                      group.label === highlightGroup
+                        ? t('fomcharts.stats.isolateActive')
+                        : t('fomcharts.stats.isolate')
+                    "
+                    :icon="Target"
+                    :icon-class="[
+                      'shrink-0 transition hover:text-secondary',
+                      group.label === highlightGroup
+                        ? 'text-primary'
+                        : 'text-muted-foreground opacity-0 group-hover:opacity-100',
+                    ]"
+                  />
+                </button>
+                <div class="flex shrink-0 items-center gap-1.5">
+                  <span class="font-mono text-[11px] text-muted-foreground"
+                    >{{ group.tiles[0].label }}={{ group.tiles[0].value }}</span
+                  >
+                  <button
+                    type="button"
+                    class="text-muted-foreground transition hover:text-secondary"
+                    :aria-label="
+                      isExpanded(group.label)
+                        ? t('fomcharts.stats.hideDetails')
+                        : t('fomcharts.stats.showDetails')
+                    "
+                    @click="toggleExpanded(group.label)"
+                  >
+                    <ChevronDown
+                      class="size-3.5 transition-transform duration-200"
+                      :class="
+                        isExpanded(group.label) ? 'rotate-0' : '-rotate-90'
+                      "
+                    />
+                  </button>
+                </div>
+              </div>
+              <div
+                class="grid transition-[grid-template-rows] duration-250 ease-out"
+                :style="{
+                  gridTemplateRows: isExpanded(group.label) ? '1fr' : '0fr',
+                }"
               >
-                <ChevronDown
-                  class="size-3.5 transition-transform duration-200"
-                  :class="isExpanded(group.label) ? 'rotate-0' : '-rotate-90'"
-                />
-              </button>
-            </div>
-          </div>
-          <div
-            class="grid transition-[grid-template-rows] duration-250 ease-out"
-            :style="{ gridTemplateRows: isExpanded(group.label) ? '1fr' : '0fr' }"
-          >
-            <div class="min-h-0 overflow-hidden">
-              <div class="pt-1 pl-4">
-                <div v-if="group.tiles.length > 1" class="grid grid-cols-2 gap-1.5">
-                  <div v-for="tile in group.tiles" :key="tile.key" class="rounded-md bg-white/60 px-2 py-1.5">
-                    <div class="flex items-center gap-1 text-[9.5px] tracking-wide text-muted-foreground uppercase">
-                      <InfoTooltip :text="tile.tooltip" />
-                      {{ tile.label }}
+                <div class="min-h-0 overflow-hidden">
+                  <div class="pt-1 pl-4">
+                    <div
+                      v-if="group.tiles.length > 1"
+                      class="grid grid-cols-2 gap-1.5"
+                    >
+                      <div
+                        v-for="tile in group.tiles"
+                        :key="tile.key"
+                        class="rounded-md bg-white/60 px-2 py-1.5"
+                      >
+                        <div
+                          class="flex items-center gap-1 text-[9.5px] tracking-wide text-muted-foreground uppercase"
+                        >
+                          <InfoTooltip :text="tile.tooltip" />
+                          {{ tile.label }}
+                        </div>
+                        <div class="font-mono text-[13px] text-ink">
+                          {{ tile.value }}
+                        </div>
+                      </div>
                     </div>
-                    <div class="font-mono text-[13px] text-ink">{{ tile.value }}</div>
+                    <p
+                      v-else
+                      class="text-[10.5px] italic text-muted-foreground"
+                    >
+                      {{ t("fomcharts.stats.lowN") }}
+                    </p>
                   </div>
                 </div>
-                <p v-else class="text-[10.5px] italic text-muted-foreground">
-                  {{ t("fomcharts.stats.lowN") }}
-                </p>
               </div>
             </div>
-          </div>
-        </div>
-        <!-- Collapsed groups stay reachable without scrolling the whole list
+            <!-- Collapsed groups stay reachable without scrolling the whole list
              -- hidden only while the search box is empty (a search should
              never hide a match the researcher was specifically looking for,
              see visibleGroups/hiddenGroupsCount). -->
-        <button
-          v-if="hiddenGroupsCount > 0 || (showAllGroups && groups.length > VISIBLE_GROUP_LIMIT && !searchQuery.trim())"
-          type="button"
-          class="mt-1 flex items-center justify-center gap-1 rounded-md px-2 py-1.5 text-[11px] font-medium text-secondary transition hover:bg-secondary/10 hover:text-ink"
-          @click="showAllGroups = !showAllGroups"
-        >
-          <ChevronDown class="size-3 transition-transform duration-200" :class="showAllGroups ? 'rotate-180' : ''" />
-          {{ showAllGroups ? t("fomcharts.stats.showLess") : t("fomcharts.stats.showMore", { count: hiddenGroupsCount }) }}
-        </button>
-        </div>
+            <button
+              v-if="
+                hiddenGroupsCount > 0 ||
+                (showAllGroups &&
+                  groups.length > VISIBLE_GROUP_LIMIT &&
+                  !searchQuery.trim())
+              "
+              type="button"
+              class="mt-1 flex items-center justify-center gap-1 rounded-md px-2 py-1.5 text-[11px] font-medium text-secondary transition hover:bg-secondary/10 hover:text-ink"
+              @click="showAllGroups = !showAllGroups"
+            >
+              <ChevronDown
+                class="size-3 transition-transform duration-200"
+                :class="showAllGroups ? 'rotate-180' : ''"
+              />
+              {{
+                showAllGroups
+                  ? t("fomcharts.stats.showLess")
+                  : t("fomcharts.stats.showMore", { count: hiddenGroupsCount })
+              }}
+            </button>
+          </div>
         </div>
       </div>
     </CollapsibleSection>
@@ -165,7 +231,13 @@ import { keptTokens, type DataRow } from "@/utils/columnTypes";
 import InfoTooltip from "@/components/shared/InfoTooltip.vue";
 import CollapsibleSection from "@/components/shared/CollapsibleSection.vue";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 
@@ -212,7 +284,12 @@ const props = withDefaults(
     // still carries it.
     groupBySelectedTokens?: string[] | null;
   }>(),
-  { compositeColumns: () => [], groupColorMap: () => ({}), groupBySelectedTokens: null, yAxisNumeric: true },
+  {
+    compositeColumns: () => [],
+    groupColorMap: () => ({}),
+    groupBySelectedTokens: null,
+    yAxisNumeric: true,
+  },
 );
 defineEmits<{
   "toggle-highlight": [group: string];
@@ -226,7 +303,10 @@ const groupBy = defineModel<string | null>("groupBy", { default: null });
 // rather than in GraphControls' generic Display section since it's only
 // ever relevant right next to the "Group / Color by" choice that decides
 // whether it does anything at all.
-const mergeMultiCategoryPoints = defineModel<boolean>("mergeMultiCategoryPoints", { default: false });
+const mergeMultiCategoryPoints = defineModel<boolean>(
+  "mergeMultiCategoryPoints",
+  { default: false },
+);
 
 // The shadcn/Reka Select has no native concept of a null value (unlike a
 // plain <option :value="null">, which Vue's v-model specifically supports
@@ -247,12 +327,16 @@ const groupBySelectValue = computed<string>({
 // VisualizationView) is already capped to low-cardinality columns so the
 // palette never has to repeat colors; excluding the current X-axis choice
 // on top of that stops the redundant, chart-cluttering combination too.
-const groupByOptions = computed(() => props.groupByColumns.filter((col) => col !== props.xAxis));
+const groupByOptions = computed(() =>
+  props.groupByColumns.filter((col) => col !== props.xAxis),
+);
 
 // Whether the current selection is itself one of the tokenized composite
 // columns -- gates the merge/split switch above, and reused below (as
 // isCompositeGroup) by the groups computed for its own tokenizing logic.
-const isCompositeGroupBy = computed(() => !!groupBy.value && props.compositeColumns.includes(groupBy.value));
+const isCompositeGroupBy = computed(
+  () => !!groupBy.value && props.compositeColumns.includes(groupBy.value),
+);
 
 // If the X-axis changes onto the current group-by column, or the group-by
 // column stops qualifying (e.g. a Domain/Origin filter change pushes its
@@ -304,19 +388,37 @@ const groups = computed(() => {
   // category axis, so a categorical Y shows n alone, same as a numeric Y
   // with too few points for MIN_STATS_N to bother with real statistics.
   const tilesFor = (rows: DataRow[]) => {
-    const nTile = { key: "n", label: t("fomcharts.stats.n"), tooltip: t("fomcharts.stats.tooltips.n"), value: String(rows.length) };
-    if (!props.yAxisNumeric || rows.length < MIN_STATS_N || !yAxis) return [nTile];
-    const stats = computeStats(rows.map((row) => Number(row[yAxis])).filter((v) => !isNaN(v)));
+    const nTile = {
+      key: "n",
+      label: t("fomcharts.stats.n"),
+      tooltip: t("fomcharts.stats.tooltips.n"),
+      value: String(rows.length),
+    };
+    if (!props.yAxisNumeric || rows.length < MIN_STATS_N || !yAxis)
+      return [nTile];
+    const stats = computeStats(
+      rows.map((row) => Number(row[yAxis])).filter((v) => !isNaN(v)),
+    );
     return [
       nTile,
-      { key: "mean", label: t("fomcharts.stats.mean"), tooltip: t("fomcharts.stats.tooltips.mean"), value: withUnit(formatStat(stats.mean)) },
+      {
+        key: "mean",
+        label: t("fomcharts.stats.mean"),
+        tooltip: t("fomcharts.stats.tooltips.mean"),
+        value: withUnit(formatStat(stats.mean)),
+      },
       {
         key: "median",
         label: t("fomcharts.stats.median"),
         tooltip: t("fomcharts.stats.tooltips.median"),
         value: withUnit(formatStat(stats.median)),
       },
-      { key: "std", label: t("fomcharts.stats.std"), tooltip: t("fomcharts.stats.tooltips.std"), value: withUnit(formatStat(stats.std)) },
+      {
+        key: "std",
+        label: t("fomcharts.stats.std"),
+        tooltip: t("fomcharts.stats.tooltips.std"),
+        value: withUnit(formatStat(stats.std)),
+      },
     ];
   };
 
@@ -341,7 +443,10 @@ const groups = computed(() => {
   // color actually shown in practice.
   const rank = (entries: { label: string; rows: DataRow[] }[]) =>
     [...entries]
-      .sort((a, b) => b.rows.length - a.rows.length || a.label.localeCompare(b.label))
+      .sort(
+        (a, b) =>
+          b.rows.length - a.rows.length || a.label.localeCompare(b.label),
+      )
       .map(({ label, rows }, idx) => ({
         label,
         color: props.groupColorMap[label] ?? palette[idx % palette.length],
@@ -353,18 +458,31 @@ const groups = computed(() => {
     // composite-filter mode never re-appears as its own card here just
     // because a surviving row still carries it -- see FomChart's identical
     // compositeGroupTokens and VisualizationView's groupBySelectedTokens.
-    const rowTokens = (row: DataRow) => keptTokens(row[groupByCol], props.groupBySelectedTokens);
+    const rowTokens = (row: DataRow) =>
+      keptTokens(row[groupByCol], props.groupBySelectedTokens);
     const labels = Array.from(new Set(props.rows.flatMap(rowTokens)));
-    return rank(labels.map((label) => ({ label, rows: props.rows.filter((row) => rowTokens(row).includes(label)) })));
+    return rank(
+      labels.map((label) => ({
+        label,
+        rows: props.rows.filter((row) => rowTokens(row).includes(label)),
+      })),
+    );
   }
 
   const labelFor = (row: DataRow) => {
     const v = row[groupByCol];
-    return v === null || v === undefined || v === "" ? t("fomcharts.unknownGroup") : String(v);
+    return v === null || v === undefined || v === ""
+      ? t("fomcharts.unknownGroup")
+      : String(v);
   };
   const labels = Array.from(new Set(props.rows.map(labelFor)));
 
-  return rank(labels.map((label) => ({ label, rows: props.rows.filter((row) => labelFor(row) === label) })));
+  return rank(
+    labels.map((label) => ({
+      label,
+      rows: props.rows.filter((row) => labelFor(row) === label),
+    })),
+  );
 });
 
 // Search + collapse-beyond-N only earn their place once there are enough
@@ -389,14 +507,20 @@ const filteredGroups = computed(() => {
 // searching in the first place. The collapse only ever applies to the
 // unfiltered, full list.
 const visibleGroups = computed(() => {
-  if (searchQuery.value.trim() || showAllGroups.value || filteredGroups.value.length <= VISIBLE_GROUP_LIMIT) {
+  if (
+    searchQuery.value.trim() ||
+    showAllGroups.value ||
+    filteredGroups.value.length <= VISIBLE_GROUP_LIMIT
+  ) {
     return filteredGroups.value;
   }
   return filteredGroups.value.slice(0, VISIBLE_GROUP_LIMIT);
 });
 
 const hiddenGroupsCount = computed(() =>
-  searchQuery.value.trim() ? 0 : Math.max(0, filteredGroups.value.length - visibleGroups.value.length),
+  searchQuery.value.trim()
+    ? 0
+    : Math.max(0, filteredGroups.value.length - visibleGroups.value.length),
 );
 
 // A stale search string surviving a groupBy switch could otherwise silently

@@ -1,10 +1,17 @@
 <template>
   <div class="flex flex-col gap-1.5">
     <div class="flex items-center justify-between gap-2">
-      <Label :for="`add-point-${field.column}`" class="flex items-center gap-1 text-[11px] text-muted-foreground">
+      <Label
+        :for="`add-point-${field.column}`"
+        class="flex items-center gap-1 text-[11px] text-muted-foreground"
+      >
         {{ label }}
         <span v-if="field.required" class="text-rose-500">*</span>
-        <InfoTooltip v-if="hint" :text="hint" icon-class="text-muted-foreground/70 hover:text-secondary" />
+        <InfoTooltip
+          v-if="hint"
+          :text="hint"
+          icon-class="text-muted-foreground/70 hover:text-secondary"
+        />
       </Label>
     </div>
 
@@ -18,7 +25,9 @@
       class="flex items-center gap-2 rounded-md border border-secondary/20 bg-secondary/5 px-2.5 py-1.5 text-sm"
     >
       <span class="font-medium tabular-nums">{{ modelValue }}</span>
-      <span class="text-[10px] text-muted-foreground">{{ t("fomcharts.addPoint.autoComputedBadge") }}</span>
+      <span class="text-[10px] text-muted-foreground">{{
+        t("fomcharts.addPoint.autoComputedBadge")
+      }}</span>
       <button
         type="button"
         class="ml-auto shrink-0 text-[10.5px] font-medium text-primary hover:underline"
@@ -43,7 +52,11 @@
         :required="field.required"
         :placeholder="placeholder"
         class="h-8 pr-7 text-sm"
-        :class="hideSpinner ? '[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none' : ''"
+        :class="
+          hideSpinner
+            ? '[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none'
+            : ''
+        "
         @update:model-value="(v) => (modelValue = String(v))"
       />
       <button
@@ -58,11 +71,17 @@
     </span>
 
     <Select v-else-if="field.kind === 'select'" v-model="modelValue">
-      <SelectTrigger :id="`add-point-${field.column}`" size="sm" class="w-full min-w-0 bg-card">
+      <SelectTrigger
+        :id="`add-point-${field.column}`"
+        size="sm"
+        class="w-full min-w-0 bg-card"
+      >
         <SelectValue class="min-w-0 truncate" />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem v-for="opt in field.options" :key="opt" :value="opt">{{ opt }}</SelectItem>
+        <SelectItem v-for="opt in field.options" :key="opt" :value="opt">{{
+          opt
+        }}</SelectItem>
       </SelectContent>
     </Select>
 
@@ -95,7 +114,9 @@
     >
       {{ t("fomcharts.addPoint.useComputedQFactor", { value: computedValue }) }}
     </button>
-    <span v-if="maxLength" class="self-end text-[10px] text-muted-foreground">{{ modelValue.length }}/{{ maxLength }}</span>
+    <span v-if="maxLength" class="self-end text-[10px] text-muted-foreground"
+      >{{ modelValue.length }}/{{ maxLength }}</span
+    >
   </div>
 </template>
 
@@ -105,7 +126,13 @@ import { useI18n } from "vue-i18n";
 import { X } from "@lucide/vue";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import InfoTooltip from "@/components/shared/InfoTooltip.vue";
 import {
   findResonanceWavelengthColumn,
@@ -172,8 +199,10 @@ const clear = () => {
 // description elsewhere in the form), which isn't obvious from the label
 // alone.
 const hint = computed(() => {
-  if (findQFactorColumn([props.field.column])) return t("fomcharts.addPoint.qFactorHint");
-  if (findModeIdColumn([props.field.column])) return t("fomcharts.addPoint.modeIdHint");
+  if (findQFactorColumn([props.field.column]))
+    return t("fomcharts.addPoint.qFactorHint");
+  if (findModeIdColumn([props.field.column]))
+    return t("fomcharts.addPoint.modeIdHint");
   return null;
 });
 
@@ -183,21 +212,30 @@ const hint = computed(() => {
 // where incrementing one unit at a time by clicking a tiny arrow is not a
 // realistic way to reach the actual value -- hidden in favor of typing
 // (still fully decimal-capable via step="any").
-const hideSpinner = computed(() => props.field.kind === "numeric" && !findModeIdColumn([props.field.column]));
+const hideSpinner = computed(
+  () =>
+    props.field.kind === "numeric" && !findModeIdColumn([props.field.column]),
+);
 
 // Character cap for Mode Description only -- mirrors the extraction
 // prompt's own "maximum 7 words" guidance for this same column (see
 // backend/prompt.txt) so a manual point can't drift into a free-form
 // paragraph here.
-const maxLength = computed(() => (findModeDescriptionColumn([props.field.column]) ? 120 : undefined));
+const maxLength = computed(() =>
+  findModeDescriptionColumn([props.field.column]) ? 120 : undefined,
+);
 
 // Q-factor: once computedValue is available, the field renders as a locked,
 // computed display instead of a free input unless the researcher explicitly
 // asked for manual control (see AddPointDialog's own sync logic, which also
 // flips manualOverride on automatically the moment it detects the field
 // already holds a value it didn't just write there itself).
-const hasComputed = computed(() => props.computedValue !== undefined && props.computedValue !== null);
-const showComputedDisplay = computed(() => hasComputed.value && !props.manualOverride);
+const hasComputed = computed(
+  () => props.computedValue !== undefined && props.computedValue !== null,
+);
+const showComputedDisplay = computed(
+  () => hasComputed.value && !props.manualOverride,
+);
 
 // A short example value per known quantity -- every field here is always in
 // its canonical unit now (nm / nm/RIU / dimensionless), see the standalone
@@ -209,13 +247,20 @@ const showComputedDisplay = computed(() => hasComputed.value && !props.manualOve
 // placeholder rather than a guessed one.
 const placeholder = computed(() => {
   const col = [props.field.column];
-  if (findResonanceWavelengthColumn(col)) return t("fomcharts.addPoint.fieldPlaceholders.resonanceWavelength");
-  if (findFomValueColumn(col)) return t("fomcharts.addPoint.fieldPlaceholders.fom");
-  if (findSensitivityColumn(col)) return t("fomcharts.addPoint.fieldPlaceholders.sensitivity");
-  if (findFwhmColumn(col)) return t("fomcharts.addPoint.fieldPlaceholders.fwhm");
-  if (findQFactorColumn(col)) return t("fomcharts.addPoint.fieldPlaceholders.qFactor");
-  if (findModeIdColumn(col)) return t("fomcharts.addPoint.fieldPlaceholders.modeId");
-  if (findModeDescriptionColumn(col)) return t("fomcharts.addPoint.fieldPlaceholders.modeDescription");
+  if (findResonanceWavelengthColumn(col))
+    return t("fomcharts.addPoint.fieldPlaceholders.resonanceWavelength");
+  if (findFomValueColumn(col))
+    return t("fomcharts.addPoint.fieldPlaceholders.fom");
+  if (findSensitivityColumn(col))
+    return t("fomcharts.addPoint.fieldPlaceholders.sensitivity");
+  if (findFwhmColumn(col))
+    return t("fomcharts.addPoint.fieldPlaceholders.fwhm");
+  if (findQFactorColumn(col))
+    return t("fomcharts.addPoint.fieldPlaceholders.qFactor");
+  if (findModeIdColumn(col))
+    return t("fomcharts.addPoint.fieldPlaceholders.modeId");
+  if (findModeDescriptionColumn(col))
+    return t("fomcharts.addPoint.fieldPlaceholders.modeDescription");
   return undefined;
 });
 </script>

@@ -18,15 +18,30 @@
         >
           <span
             class="shrink-0 text-[10px] font-bold"
-            :class="activeField === field.key ? 'text-primary' : 'text-muted-foreground'"
-          >{{ field.badge }}</span>
-          <span v-if="field.value" class="min-w-0 flex-1 truncate text-[11.5px] font-semibold text-ink">
+            :class="
+              activeField === field.key
+                ? 'text-primary'
+                : 'text-muted-foreground'
+            "
+            >{{ field.badge }}</span
+          >
+          <span
+            v-if="field.value"
+            class="min-w-0 flex-1 truncate text-[11.5px] font-semibold text-ink"
+          >
             {{ splitColumnUnit(field.value).name }}
-            <span v-if="splitColumnUnit(field.value).unit" class="font-mono text-[9.5px] font-normal text-secondary">
+            <span
+              v-if="splitColumnUnit(field.value).unit"
+              class="font-mono text-[9.5px] font-normal text-secondary"
+            >
               ({{ splitColumnUnit(field.value).unit }})
             </span>
           </span>
-          <span v-else class="min-w-0 flex-1 truncate text-[11.5px] text-muted-foreground">{{ t("fomcharts.controls.none") }}</span>
+          <span
+            v-else
+            class="min-w-0 flex-1 truncate text-[11.5px] text-muted-foreground"
+            >{{ t("fomcharts.controls.none") }}</span
+          >
           <ChevronDown
             class="size-3 shrink-0 text-muted-foreground transition-transform duration-150"
             :class="activeField === field.key ? 'rotate-180' : ''"
@@ -34,13 +49,19 @@
         </button>
       </div>
 
-      <div class="flex w-7 shrink-0 flex-col items-center justify-center gap-1.5">
+      <div
+        class="flex w-7 shrink-0 flex-col items-center justify-center gap-1.5"
+      >
         <Tooltip>
           <TooltipTrigger as-child>
             <button
               type="button"
               class="flex size-6 items-center justify-center rounded-md border transition-colors"
-              :class="linked ? 'border-primary text-primary bg-primary/8' : 'border-secondary/25 bg-card text-muted-foreground hover:border-primary/30 hover:text-secondary'"
+              :class="
+                linked
+                  ? 'border-primary text-primary bg-primary/8'
+                  : 'border-secondary/25 bg-card text-muted-foreground hover:border-primary/30 hover:text-secondary'
+              "
               :aria-label="t('fomcharts.controls.axisLinked')"
               :aria-pressed="linked"
               @click="linked = !linked"
@@ -49,7 +70,13 @@
             </button>
           </TooltipTrigger>
           <TooltipContent side="right">
-            <p>{{ linked ? t("fomcharts.controls.axisLinkedHint") : t("fomcharts.controls.axisUnlinkedHint") }}</p>
+            <p>
+              {{
+                linked
+                  ? t("fomcharts.controls.axisLinkedHint")
+                  : t("fomcharts.controls.axisUnlinkedHint")
+              }}
+            </p>
           </TooltipContent>
         </Tooltip>
 
@@ -71,20 +98,32 @@
       </div>
     </div>
 
-    <div class="grid transition-[grid-template-rows] duration-250 ease-out" :style="{ gridTemplateRows: activeField ? '1fr' : '0fr' }">
+    <div
+      class="grid transition-[grid-template-rows] duration-250 ease-out"
+      :style="{ gridTemplateRows: activeField ? '1fr' : '0fr' }"
+    >
       <div class="min-h-0 overflow-hidden">
         <div class="px-2 pb-2">
-          <div class="flex w-full overflow-hidden rounded-lg border border-secondary/20 bg-card">
+          <div
+            class="flex w-full overflow-hidden rounded-lg border border-secondary/20 bg-card"
+          >
             <Button
               v-if="numericColumns.length > 0"
               type="button"
               variant="ghost"
               size="xs"
               class="min-w-0 flex-1 rounded-none px-1 text-[10.5px] hover:bg-primary/10"
-              :class="typeTab === 'numeric' ? 'bg-primary font-semibold text-primary-foreground hover:bg-primary hover:text-primary-foreground' : 'text-secondary'"
+              :class="
+                typeTab === 'numeric'
+                  ? 'bg-primary font-semibold text-primary-foreground hover:bg-primary hover:text-primary-foreground'
+                  : 'text-secondary'
+              "
               @click="typeTab = 'numeric'"
             >
-              <span class="min-w-0 flex-1 truncate">{{ t("fomcharts.controls.axisGroupNumeric") }} · {{ numericColumns.length }}</span>
+              <span class="min-w-0 flex-1 truncate"
+                >{{ t("fomcharts.controls.axisGroupNumeric") }} ·
+                {{ numericColumns.length }}</span
+              >
             </Button>
             <Button
               v-if="categoricalColumns.length > 0"
@@ -92,14 +131,23 @@
               variant="ghost"
               size="xs"
               class="min-w-0 flex-1 rounded-none px-1 text-[10.5px] hover:bg-primary/10"
-              :class="typeTab === 'categorical' ? 'bg-primary font-semibold text-primary-foreground hover:bg-primary hover:text-primary-foreground' : 'text-secondary'"
+              :class="
+                typeTab === 'categorical'
+                  ? 'bg-primary font-semibold text-primary-foreground hover:bg-primary hover:text-primary-foreground'
+                  : 'text-secondary'
+              "
               @click="typeTab = 'categorical'"
             >
-              <span class="min-w-0 flex-1 truncate">{{ t("fomcharts.controls.axisGroupCategorical") }} · {{ categoricalColumns.length }}</span>
+              <span class="min-w-0 flex-1 truncate"
+                >{{ t("fomcharts.controls.axisGroupCategorical") }} ·
+                {{ categoricalColumns.length }}</span
+              >
             </Button>
           </div>
 
-          <div class="mt-1.5 flex max-h-44 flex-col gap-0.5 overflow-x-hidden overflow-y-auto rounded-lg border border-secondary/20 bg-card p-1">
+          <div
+            class="mt-1.5 flex max-h-44 flex-col gap-0.5 overflow-x-hidden overflow-y-auto rounded-lg border border-secondary/20 bg-card p-1"
+          >
             <button
               v-for="col in visibleColumns"
               :key="col"
@@ -112,10 +160,20 @@
               "
               @click="selectColumn(col)"
             >
-              <span class="truncate text-[12px] leading-tight" :class="col === activeValue ? 'font-semibold text-primary' : 'text-ink'">
+              <span
+                class="truncate text-[12px] leading-tight"
+                :class="
+                  col === activeValue
+                    ? 'font-semibold text-primary'
+                    : 'text-ink'
+                "
+              >
                 {{ splitColumnUnit(col).name }}
               </span>
-              <span v-if="splitColumnUnit(col).unit" class="truncate font-mono text-[10px] leading-tight text-secondary">
+              <span
+                v-if="splitColumnUnit(col).unit"
+                class="truncate font-mono text-[10px] leading-tight text-secondary"
+              >
                 {{ splitColumnUnit(col).unit }}
               </span>
             </button>
@@ -130,7 +188,11 @@
 import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { ArrowUpDown, ChevronDown, Link2, Unlink2 } from "@lucide/vue";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { splitColumnUnit } from "@/utils/columnTypes";
 
@@ -153,8 +215,18 @@ const linked = defineModel<boolean>("linked", { default: true });
 // sidebar space with its column list, only while actively being edited).
 const activeField = ref<"x" | "y" | null>(null);
 const fields = computed(() => [
-  { key: "y" as const, badge: "Y", label: t("fomcharts.controls.yAxis"), value: yAxis.value },
-  { key: "x" as const, badge: "X", label: t("fomcharts.controls.xAxis"), value: xAxis.value },
+  {
+    key: "y" as const,
+    badge: "Y",
+    label: t("fomcharts.controls.yAxis"),
+    value: yAxis.value,
+  },
+  {
+    key: "x" as const,
+    badge: "X",
+    label: t("fomcharts.controls.xAxis"),
+    value: xAxis.value,
+  },
 ]);
 const activeValue = computed(() => {
   if (activeField.value === "x") return xAxis.value;
@@ -174,10 +246,14 @@ const toggleField = (field: "x" | "y") => {
 const typeTab = ref<"numeric" | "categorical">("numeric");
 watch(activeField, () => {
   if (activeField.value === null) return;
-  typeTab.value = props.categoricalColumns.includes(activeValue.value ?? "") ? "categorical" : "numeric";
+  typeTab.value = props.categoricalColumns.includes(activeValue.value ?? "")
+    ? "categorical"
+    : "numeric";
 });
 
-const visibleColumns = computed(() => (typeTab.value === "numeric" ? props.numericColumns : props.categoricalColumns));
+const visibleColumns = computed(() =>
+  typeTab.value === "numeric" ? props.numericColumns : props.categoricalColumns,
+);
 
 // Picking a column does NOT fold the row back up -- unlike a native Select,
 // staying open lets the researcher compare a few columns in a row without

@@ -1,8 +1,13 @@
 <template>
   <TooltipProvider :delay-duration="200">
     <aside class="flex w-full flex-col gap-3.5 lg:w-56 lg:shrink-0">
-      <CollapsibleSection v-model:open="chartSectionOpen" :title="t('fomcharts.sections.chart')">
-        <div class="mt-2.5 flex flex-col gap-2.5 rounded-[10px] border border-secondary/15 bg-secondary/5 p-3">
+      <CollapsibleSection
+        v-model:open="chartSectionOpen"
+        :title="t('fomcharts.sections.chart')"
+      >
+        <div
+          class="mt-2.5 flex flex-col gap-2.5 rounded-[10px] border border-secondary/15 bg-secondary/5 p-3"
+        >
           <label class="flex flex-col gap-1 text-xs text-secondary">
             {{ t("fomcharts.controls.title") }}
             <span class="relative">
@@ -32,27 +37,42 @@
             :numeric-columns="numericColumns"
             :categorical-columns="categoricalColumns"
           />
-
         </div>
       </CollapsibleSection>
 
       <div class="h-px bg-secondary/10" />
 
-      <CollapsibleSection v-model:open="displaySectionOpen" :title="t('fomcharts.sections.display')">
-        <div class="mt-2.5 flex flex-col gap-3 rounded-[10px] border border-secondary/15 bg-secondary/5 p-3">
+      <CollapsibleSection
+        v-model:open="displaySectionOpen"
+        :title="t('fomcharts.sections.display')"
+      >
+        <div
+          class="mt-2.5 flex flex-col gap-3 rounded-[10px] border border-secondary/15 bg-secondary/5 p-3"
+        >
           <div class="flex items-center justify-between">
-            <span class="flex items-center gap-1 text-xs" :class="scaleDisabled ? 'text-muted-foreground' : 'text-secondary'">
+            <span
+              class="flex items-center gap-1 text-xs"
+              :class="
+                scaleDisabled ? 'text-muted-foreground' : 'text-secondary'
+              "
+            >
               <InfoTooltip :text="t('fomcharts.tooltips.scale')" />
               {{ t("fomcharts.scale.label") }}
             </span>
-            <div class="inline-flex overflow-hidden rounded-lg border border-secondary/20 bg-card">
+            <div
+              class="inline-flex overflow-hidden rounded-lg border border-secondary/20 bg-card"
+            >
               <Button
                 type="button"
                 variant="ghost"
                 size="xs"
                 :disabled="scaleDisabled"
                 class="rounded-none text-[11.5px] hover:bg-primary/10"
-                :class="scale === 'log' ? 'bg-primary font-semibold text-primary-foreground hover:bg-primary hover:text-primary-foreground' : 'text-secondary'"
+                :class="
+                  scale === 'log'
+                    ? 'bg-primary font-semibold text-primary-foreground hover:bg-primary hover:text-primary-foreground'
+                    : 'text-secondary'
+                "
                 @click="scale = 'log'"
               >
                 {{ t("fomcharts.scale.log") }}
@@ -63,7 +83,11 @@
                 size="xs"
                 :disabled="scaleDisabled"
                 class="rounded-none text-[11.5px] hover:bg-primary/10"
-                :class="scale === 'value' ? 'bg-primary font-semibold text-primary-foreground hover:bg-primary hover:text-primary-foreground' : 'text-secondary'"
+                :class="
+                  scale === 'value'
+                    ? 'bg-primary font-semibold text-primary-foreground hover:bg-primary hover:text-primary-foreground'
+                    : 'text-secondary'
+                "
                 @click="scale = 'value'"
               >
                 {{ t("fomcharts.scale.linear") }}
@@ -74,32 +98,53 @@
           <div class="h-px bg-secondary/10" />
 
           <div class="flex items-center justify-between">
-            <span class="flex items-center gap-1 text-xs" :class="trendDisabled ? 'text-muted-foreground' : 'text-ink'">
+            <span
+              class="flex items-center gap-1 text-xs"
+              :class="trendDisabled ? 'text-muted-foreground' : 'text-ink'"
+            >
               <InfoTooltip :text="t('fomcharts.tooltips.trendLine')" />
               {{ t("fomcharts.controls.trendLine") }}
             </span>
             <Switch v-model="showTrend" :disabled="trendDisabled" />
           </div>
 
-          <label v-if="showTrend && !trendDisabled" class="flex flex-col gap-1 pl-1 text-xs text-secondary">
+          <label
+            v-if="showTrend && !trendDisabled"
+            class="flex flex-col gap-1 pl-1 text-xs text-secondary"
+          >
             {{ t("fomcharts.controls.trendType") }}
             <Select v-model="trendType">
               <SelectTrigger size="sm" class="w-full min-w-0 bg-card">
                 <SelectValue class="min-w-0 truncate" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="auto">{{ t("fomcharts.trendType.auto") }}</SelectItem>
-                <SelectItem value="linear">{{ t("fomcharts.trendType.linear") }}</SelectItem>
-                <SelectItem value="exponential">{{ t("fomcharts.trendType.exponential") }}</SelectItem>
-                <SelectItem value="logarithmic">{{ t("fomcharts.trendType.logarithmic") }}</SelectItem>
-                <SelectItem value="power">{{ t("fomcharts.trendType.power") }}</SelectItem>
-                <SelectItem value="polynomial">{{ t("fomcharts.trendType.polynomial") }}</SelectItem>
+                <SelectItem value="auto">{{
+                  t("fomcharts.trendType.auto")
+                }}</SelectItem>
+                <SelectItem value="linear">{{
+                  t("fomcharts.trendType.linear")
+                }}</SelectItem>
+                <SelectItem value="exponential">{{
+                  t("fomcharts.trendType.exponential")
+                }}</SelectItem>
+                <SelectItem value="logarithmic">{{
+                  t("fomcharts.trendType.logarithmic")
+                }}</SelectItem>
+                <SelectItem value="power">{{
+                  t("fomcharts.trendType.power")
+                }}</SelectItem>
+                <SelectItem value="polynomial">{{
+                  t("fomcharts.trendType.polynomial")
+                }}</SelectItem>
               </SelectContent>
             </Select>
           </label>
 
           <div class="flex items-center justify-between">
-            <span class="flex items-center gap-1 text-xs" :class="paretoDisabled ? 'text-muted-foreground' : 'text-ink'">
+            <span
+              class="flex items-center gap-1 text-xs"
+              :class="paretoDisabled ? 'text-muted-foreground' : 'text-ink'"
+            >
               <InfoTooltip :text="t('fomcharts.tooltips.pareto')" />
               {{ t("fomcharts.controls.pareto") }}
             </span>
@@ -118,7 +163,10 @@
           <div class="h-px bg-secondary/10" />
 
           <div class="flex items-center justify-between">
-            <span class="flex items-center gap-1 text-xs" :class="legendDisabled ? 'text-muted-foreground' : 'text-ink'">
+            <span
+              class="flex items-center gap-1 text-xs"
+              :class="legendDisabled ? 'text-muted-foreground' : 'text-ink'"
+            >
               <InfoTooltip :text="t('fomcharts.tooltips.legend')" />
               {{ t("fomcharts.legend.toggle") }}
             </span>
@@ -126,7 +174,10 @@
           </div>
 
           <div class="flex items-center justify-between">
-            <span class="flex items-center gap-1 text-xs" :class="medianDisabled ? 'text-muted-foreground' : 'text-ink'">
+            <span
+              class="flex items-center gap-1 text-xs"
+              :class="medianDisabled ? 'text-muted-foreground' : 'text-ink'"
+            >
               <InfoTooltip :text="t('fomcharts.tooltips.median')" />
               {{ t("fomcharts.medianLine.toggle") }}
             </span>
@@ -137,50 +188,94 @@
 
           <div class="flex flex-col gap-2">
             <div class="flex items-center justify-between">
-              <span class="flex items-center gap-1 text-xs" :class="pointSizeMode === 'byValue' ? 'text-ink' : 'text-secondary'">
+              <span
+                class="flex items-center gap-1 text-xs"
+                :class="
+                  pointSizeMode === 'byValue' ? 'text-ink' : 'text-secondary'
+                "
+              >
                 <InfoTooltip :text="t('fomcharts.tooltips.pointSizeMode')" />
                 {{ t("fomcharts.controls.pointSizeByValue") }}
               </span>
-              <Switch :model-value="pointSizeMode === 'byValue'" @update:model-value="togglePointSizeMode" />
+              <Switch
+                :model-value="pointSizeMode === 'byValue'"
+                @update:model-value="togglePointSizeMode"
+              />
             </div>
 
-            <label v-if="pointSizeMode === 'byValue' && numericColumns.length > 0" class="flex flex-col gap-1 pl-1 text-xs text-secondary">
+            <label
+              v-if="pointSizeMode === 'byValue' && numericColumns.length > 0"
+              class="flex flex-col gap-1 pl-1 text-xs text-secondary"
+            >
               {{ t("fomcharts.controls.pointSizeBy") }}
               <Select v-model="pointSizeBy">
                 <SelectTrigger size="sm" class="w-full min-w-0 bg-card">
                   <SelectValue class="min-w-0 truncate" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem v-for="col in numericColumns" :key="col" :value="col">{{ formatUnitSuperscripts(col) }}</SelectItem>
+                  <SelectItem
+                    v-for="col in numericColumns"
+                    :key="col"
+                    :value="col"
+                    >{{ formatUnitSuperscripts(col) }}</SelectItem
+                  >
                 </SelectContent>
               </Select>
             </label>
 
             <div class="flex flex-col gap-1.5">
-              <span class="flex items-center justify-between text-xs text-secondary">
+              <span
+                class="flex items-center justify-between text-xs text-secondary"
+              >
                 <span class="flex items-center gap-1">
                   <InfoTooltip :text="t('fomcharts.tooltips.pointSize')" />
                   {{ t("fomcharts.controls.pointSize") }}
                 </span>
-                <span class="font-mono text-[10.5px] text-muted-foreground">{{ pointSize }}px</span>
+                <span class="font-mono text-[10.5px] text-muted-foreground"
+                  >{{ pointSize }}px</span
+                >
               </span>
-              <Slider :model-value="[pointSize]" :min="POINT_SIZE_MIN" :max="POINT_SIZE_MAX" :step="1" @update:model-value="setPointSize" />
+              <Slider
+                :model-value="[pointSize]"
+                :min="POINT_SIZE_MIN"
+                :max="POINT_SIZE_MAX"
+                :step="1"
+                @update:model-value="setPointSize"
+              />
             </div>
           </div>
-
         </div>
       </CollapsibleSection>
 
-      <template v-if="domainColumn || originColumn || materialClassColumn || baseMaterialsColumn || needsReviewColumn">
+      <template
+        v-if="
+          domainColumn ||
+          originColumn ||
+          materialClassColumn ||
+          baseMaterialsColumn ||
+          needsReviewColumn
+        "
+      >
         <div class="h-px bg-secondary/10" />
 
-        <CollapsibleSection v-model:open="filtersSectionOpen" :title="t('fomcharts.sections.filters')">
-          <div class="mt-2.5 flex flex-col gap-3 rounded-[10px] border border-secondary/15 bg-secondary/5 p-3">
+        <CollapsibleSection
+          v-model:open="filtersSectionOpen"
+          :title="t('fomcharts.sections.filters')"
+        >
+          <div
+            class="mt-2.5 flex flex-col gap-3 rounded-[10px] border border-secondary/15 bg-secondary/5 p-3"
+          >
             <template v-if="needsReviewColumn && needsReviewCount > 0">
               <div class="flex items-center justify-between gap-2">
                 <span class="flex items-center gap-1 text-xs text-ink">
-                  <InfoTooltip :text="t('fomcharts.tooltips.excludeNeedsReview')" />
-                  {{ t("fomcharts.filters.excludeNeedsReview", { count: needsReviewCount }) }}
+                  <InfoTooltip
+                    :text="t('fomcharts.tooltips.excludeNeedsReview')"
+                  />
+                  {{
+                    t("fomcharts.filters.excludeNeedsReview", {
+                      count: needsReviewCount,
+                    })
+                  }}
                 </span>
                 <Switch v-model="excludeNeedsReview" />
               </div>
@@ -236,17 +331,25 @@
               <div class="h-px bg-secondary/10" />
 
               <div class="flex flex-col gap-1.5">
-                <span class="flex items-center gap-1 text-xs font-semibold text-secondary">
+                <span
+                  class="flex items-center gap-1 text-xs font-semibold text-secondary"
+                >
                   <InfoTooltip :text="t('fomcharts.tooltips.exclusionMode')" />
                   {{ t("fomcharts.filters.exclusionMode.label") }}
                 </span>
-                <div class="inline-flex w-full overflow-hidden rounded-lg border border-secondary/20 bg-card">
+                <div
+                  class="inline-flex w-full overflow-hidden rounded-lg border border-secondary/20 bg-card"
+                >
                   <Button
                     type="button"
                     variant="ghost"
                     size="xs"
                     class="flex-1 rounded-none text-[11.5px] hover:bg-primary/10"
-                    :class="compositeFilterMode === 'strict' ? 'bg-primary font-semibold text-primary-foreground hover:bg-primary hover:text-primary-foreground' : 'text-secondary'"
+                    :class="
+                      compositeFilterMode === 'strict'
+                        ? 'bg-primary font-semibold text-primary-foreground hover:bg-primary hover:text-primary-foreground'
+                        : 'text-secondary'
+                    "
                     @click="compositeFilterMode = 'strict'"
                   >
                     {{ t("fomcharts.filters.exclusionMode.strict") }}
@@ -256,7 +359,11 @@
                     variant="ghost"
                     size="xs"
                     class="flex-1 rounded-none text-[11.5px] hover:bg-primary/10"
-                    :class="compositeFilterMode === 'lenient' ? 'bg-primary font-semibold text-primary-foreground hover:bg-primary hover:text-primary-foreground' : 'text-secondary'"
+                    :class="
+                      compositeFilterMode === 'lenient'
+                        ? 'bg-primary font-semibold text-primary-foreground hover:bg-primary hover:text-primary-foreground'
+                        : 'text-secondary'
+                    "
                     @click="compositeFilterMode = 'lenient'"
                   >
                     {{ t("fomcharts.filters.exclusionMode.lenient") }}
@@ -271,7 +378,10 @@
                  still checked once the category is narrowed down. Each
                  removable chip's × reuses the same toggle as its checkbox
                  in the popover above. -->
-            <div v-if="activeFilterChips.length > 0" class="flex flex-wrap gap-1.5 border-t border-dashed border-secondary/20 pt-2.5">
+            <div
+              v-if="activeFilterChips.length > 0"
+              class="flex flex-wrap gap-1.5 border-t border-dashed border-secondary/20 pt-2.5"
+            >
               <span
                 v-for="chip in activeFilterChips"
                 :key="chip.key"
@@ -287,7 +397,9 @@
                   v-if="chip.onRemove"
                   type="button"
                   class="flex size-4 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-secondary/10"
-                  :aria-label="t('fomcharts.filters.remove', { label: chip.label })"
+                  :aria-label="
+                    t('fomcharts.filters.remove', { label: chip.label })
+                  "
                   @click="chip.onRemove"
                 >
                   <X class="size-2.5" />
@@ -305,7 +417,13 @@
 import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { Info, X } from "@lucide/vue";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -316,7 +434,10 @@ import InfoTooltip from "@/components/shared/InfoTooltip.vue";
 import CollapsibleSection from "@/components/shared/CollapsibleSection.vue";
 import FilterDropdown from "@/components/visualization/FilterDropdown.vue";
 import AxisSelector from "@/components/visualization/AxisSelector.vue";
-import { formatUnitSuperscripts, findFomValueColumn } from "@/utils/columnTypes";
+import {
+  formatUnitSuperscripts,
+  findFomValueColumn,
+} from "@/utils/columnTypes";
 import type { TrendType } from "@/utils/stats";
 
 const POINT_SIZE_MIN = 6;
@@ -385,10 +506,12 @@ const axisLinked = defineModel<boolean>("axisLinked", { default: true });
 // the two axes always land on two different columns. Gated on axisLinked
 // so AxisSelector's "independent" mode can deliberately allow the overlap.
 watch(xAxis, (newX, oldX) => {
-  if (axisLinked.value && newX !== null && newX === yAxis.value) yAxis.value = oldX ?? null;
+  if (axisLinked.value && newX !== null && newX === yAxis.value)
+    yAxis.value = oldX ?? null;
 });
 watch(yAxis, (newY, oldY) => {
-  if (axisLinked.value && newY !== null && newY === xAxis.value) xAxis.value = oldY ?? null;
+  if (axisLinked.value && newY !== null && newY === xAxis.value)
+    xAxis.value = oldY ?? null;
 });
 const scale = defineModel<"log" | "value">("scale", { default: "log" });
 const chartTitle = defineModel<string>("chartTitle", { default: "" });
@@ -404,24 +527,38 @@ const clearTitle = () => {
 const showLegend = defineModel<boolean>("showLegend", { default: true });
 const showMedian = defineModel<boolean>("showMedian", { default: false });
 const showTrend = defineModel<boolean>("showTrend", { default: false });
-const trendType = defineModel<TrendType | "auto">("trendType", { default: "auto" });
+const trendType = defineModel<TrendType | "auto">("trendType", {
+  default: "auto",
+});
 const selectedDomains = defineModel<string[]>("selectedDomains", {
   default: () => [],
 });
 const selectedOrigins = defineModel<string[]>("selectedOrigins", {
   default: () => [],
 });
-const selectedMaterialClasses = defineModel<string[]>("selectedMaterialClasses", {
-  default: () => [],
-});
+const selectedMaterialClasses = defineModel<string[]>(
+  "selectedMaterialClasses",
+  {
+    default: () => [],
+  },
+);
 const selectedBaseMaterials = defineModel<string[]>("selectedBaseMaterials", {
   default: () => [],
 });
-const compositeFilterMode = defineModel<"strict" | "lenient">("compositeFilterMode", { default: "lenient" });
+const compositeFilterMode = defineModel<"strict" | "lenient">(
+  "compositeFilterMode",
+  { default: "lenient" },
+);
 const showPareto = defineModel<boolean>("showPareto", { default: false });
-const excludeNeedsReview = defineModel<boolean>("excludeNeedsReview", { default: false });
-const pointSizeMode = defineModel<"constant" | "byValue">("pointSizeMode", { default: "constant" });
-const pointSizeBy = defineModel<string | null>("pointSizeBy", { default: null });
+const excludeNeedsReview = defineModel<boolean>("excludeNeedsReview", {
+  default: false,
+});
+const pointSizeMode = defineModel<"constant" | "byValue">("pointSizeMode", {
+  default: "constant",
+});
+const pointSizeBy = defineModel<string | null>("pointSizeBy", {
+  default: null,
+});
 const pointSize = defineModel<number>("pointSize", { default: 16 });
 // Best-guess measure for "Taille selon une mesure" the moment it's switched
 // on: the axis actually being plotted is the most relevant quantity to size
@@ -430,13 +567,20 @@ const pointSize = defineModel<number>("pointSize", { default: 16 });
 // pointSizeBy isn't already a valid choice, so re-toggling off/on preserves
 // a researcher's own pick.
 const guessPointSizeBy = (): string | null => {
-  if (yAxis.value && props.numericColumns.includes(yAxis.value)) return yAxis.value;
-  if (xAxis.value && props.numericColumns.includes(xAxis.value)) return xAxis.value;
-  return findFomValueColumn(props.numericColumns) ?? props.numericColumns[0] ?? null;
+  if (yAxis.value && props.numericColumns.includes(yAxis.value))
+    return yAxis.value;
+  if (xAxis.value && props.numericColumns.includes(xAxis.value))
+    return xAxis.value;
+  return (
+    findFomValueColumn(props.numericColumns) ?? props.numericColumns[0] ?? null
+  );
 };
 const togglePointSizeMode = (byValue: boolean) => {
   pointSizeMode.value = byValue ? "byValue" : "constant";
-  if (byValue && (!pointSizeBy.value || !props.numericColumns.includes(pointSizeBy.value))) {
+  if (
+    byValue &&
+    (!pointSizeBy.value || !props.numericColumns.includes(pointSizeBy.value))
+  ) {
     pointSizeBy.value = guessPointSizeBy();
   }
 };
@@ -486,7 +630,11 @@ const categoryChips = (
   if (selected.length === allValues.length) {
     return [{ key: `${keyPrefix}:all`, label: allLabel }];
   }
-  return selected.map((val) => ({ key: `${keyPrefix}:${val}`, label: val, onRemove: () => toggle(val) }));
+  return selected.map((val) => ({
+    key: `${keyPrefix}:${val}`,
+    label: val,
+    onRemove: () => toggle(val),
+  }));
 };
 const activeFilterChips = computed<FilterChipEntry[]>(() => [
   ...categoryChips(
@@ -533,7 +681,11 @@ function sectionModel(key: Exclude<SectionKey, null>) {
   return computed({
     get: () => activeSection.value === key,
     set: (v: boolean) => {
-      activeSection.value = v ? key : activeSection.value === key ? null : activeSection.value;
+      activeSection.value = v
+        ? key
+        : activeSection.value === key
+          ? null
+          : activeSection.value;
     },
   });
 }
@@ -546,13 +698,19 @@ const filtersSectionOpen = sectionModel("filters");
 // template) rather than listing them as one flat, unsorted list; only
 // Origin and the composite columns are excluded from either group, since
 // those are for filtering/grouping, not plotting.
-const xAxisIsNumeric = computed(() => props.numericColumns.includes(xAxis.value ?? ""));
-const yAxisIsNumeric = computed(() => props.numericColumns.includes(yAxis.value ?? ""));
+const xAxisIsNumeric = computed(() =>
+  props.numericColumns.includes(xAxis.value ?? ""),
+);
+const yAxisIsNumeric = computed(() =>
+  props.numericColumns.includes(yAxis.value ?? ""),
+);
 
 // A trend line/Pareto frontier need both axes to be an actual coordinate,
 // not a category label -- fitting a line against, say, Material Class would
 // draw a meaningless curve through unrelated buckets.
-const trendDisabled = computed(() => !xAxisIsNumeric.value || !yAxisIsNumeric.value);
+const trendDisabled = computed(
+  () => !xAxisIsNumeric.value || !yAxisIsNumeric.value,
+);
 
 // Switching either axis away from a numeric column makes any active trend
 // line meaningless -- turn it off rather than leave a stale checked-but-
@@ -585,8 +743,12 @@ watch(medianDisabled, (disabled) => {
 // same short "Y / X" wording chartTitle itself gets auto-filled with, so
 // the hint stays accurate even while blank.
 const titlePlaceholder = computed(() => {
-  if (!yAxis.value || !xAxis.value) return t("fomcharts.controls.titlePlaceholder");
-  return t("fomcharts.controls.titlePlaceholderExample", { y: yAxis.value, x: xAxis.value });
+  if (!yAxis.value || !xAxis.value)
+    return t("fomcharts.controls.titlePlaceholder");
+  return t("fomcharts.controls.titlePlaceholderExample", {
+    y: yAxis.value,
+    x: xAxis.value,
+  });
 });
 
 // Same reasoning as trend/Pareto above -- once nothing would actually show

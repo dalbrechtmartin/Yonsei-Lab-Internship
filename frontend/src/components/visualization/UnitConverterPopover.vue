@@ -15,8 +15,12 @@
          renders behind the dialog panel: technically open, but invisible. -->
     <PopoverContent align="start" side="top" class="z-60 w-72 p-3">
       <div class="flex flex-col gap-2.5">
-        <p class="text-[11px] font-bold text-ink">{{ t("fomcharts.addPoint.converter.title") }}</p>
-        <p class="text-[10.5px] text-muted-foreground">{{ t("fomcharts.addPoint.converter.hint") }}</p>
+        <p class="text-[11px] font-bold text-ink">
+          {{ t("fomcharts.addPoint.converter.title") }}
+        </p>
+        <p class="text-[10.5px] text-muted-foreground">
+          {{ t("fomcharts.addPoint.converter.hint") }}
+        </p>
 
         <div class="flex items-center gap-1.5">
           <Input
@@ -32,15 +36,30 @@
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem v-for="u in UNITS" :key="u.key" :value="u.key">{{ u.label }}</SelectItem>
+              <SelectItem v-for="u in UNITS" :key="u.key" :value="u.key">{{
+                u.label
+              }}</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        <div v-if="result !== null" class="flex items-center gap-2 rounded-md border border-secondary/20 bg-secondary/5 px-2.5 py-1.5">
-          <span class="flex-1 truncate text-sm font-medium tabular-nums">{{ result }} {{ activeUnit.targetLabel }}</span>
-          <button type="button" class="shrink-0 text-[10.5px] font-medium text-primary hover:underline" @click="copyResult">
-            {{ copied ? t("fomcharts.addPoint.converter.copied") : t("fomcharts.addPoint.converter.copy") }}
+        <div
+          v-if="result !== null"
+          class="flex items-center gap-2 rounded-md border border-secondary/20 bg-secondary/5 px-2.5 py-1.5"
+        >
+          <span class="flex-1 truncate text-sm font-medium tabular-nums"
+            >{{ result }} {{ activeUnit.targetLabel }}</span
+          >
+          <button
+            type="button"
+            class="shrink-0 text-[10.5px] font-medium text-primary hover:underline"
+            @click="copyResult"
+          >
+            {{
+              copied
+                ? t("fomcharts.addPoint.converter.copied")
+                : t("fomcharts.addPoint.converter.copy")
+            }}
           </button>
         </div>
       </div>
@@ -53,8 +72,18 @@ import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { Calculator } from "@lucide/vue";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 /**
  * Standalone scratch converter, opened from the Add Point dialog's footer --
@@ -72,7 +101,12 @@ const open = defineModel<boolean>("open", { default: false });
 const UNITS = [
   { key: "um", label: "µm → nm", factor: 1000, targetLabel: "nm" },
   { key: "pm", label: "pm → nm", factor: 0.001, targetLabel: "nm" },
-  { key: "um_riu", label: "µm/RIU → nm/RIU", factor: 1000, targetLabel: "nm/RIU" },
+  {
+    key: "um_riu",
+    label: "µm/RIU → nm/RIU",
+    factor: 1000,
+    targetLabel: "nm/RIU",
+  },
 ] as const;
 
 // Bound via :model-value/@update:model-value rather than a plain v-model --
@@ -82,7 +116,9 @@ const UNITS = [
 // a string, and rawValue.value.trim() below throws.
 const rawValue = ref("");
 const unitKey = ref<(typeof UNITS)[number]["key"]>("um");
-const activeUnit = computed(() => UNITS.find((u) => u.key === unitKey.value) ?? UNITS[0]);
+const activeUnit = computed(
+  () => UNITS.find((u) => u.key === unitKey.value) ?? UNITS[0],
+);
 
 const result = computed<string | null>(() => {
   if (rawValue.value.trim() === "") return null;

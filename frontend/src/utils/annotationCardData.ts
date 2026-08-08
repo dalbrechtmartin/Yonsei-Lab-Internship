@@ -27,7 +27,8 @@ export interface AnnotationCardData {
   note: string;
 }
 
-const displayValue = (v: unknown): string => (v === null || v === undefined || v === "" ? "—" : String(v));
+const displayValue = (v: unknown): string =>
+  v === null || v === undefined || v === "" ? "—" : String(v);
 
 const rowField = (row: DataRow, col: string | null): FieldRow | null => {
   if (!col) return null;
@@ -66,11 +67,15 @@ export function buildAnnotationCardData(input: {
 
   const axisBadges = [{ axis: input.xAxis }, { axis: input.yAxis }]
     .filter(({ axis }) => axis && axis !== input.layerStructureColumnName)
-    .map(({ axis }) => ({ key: formatUnitSuperscripts(axis as string), value: displayValue(input.row[axis as string]) }));
+    .map(({ axis }) => ({
+      key: formatUnitSuperscripts(axis as string),
+      value: displayValue(input.row[axis as string]),
+    }));
 
-  const structureExtraFields = [rowField(input.row, input.materialClassColumnName), rowField(input.row, input.baseMaterialsColumnName)].filter(
-    (f): f is FieldRow => f !== null,
-  );
+  const structureExtraFields = [
+    rowField(input.row, input.materialClassColumnName),
+    rowField(input.row, input.baseMaterialsColumnName),
+  ].filter((f): f is FieldRow => f !== null);
 
   return {
     id: input.id,

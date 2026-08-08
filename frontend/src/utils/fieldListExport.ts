@@ -6,7 +6,10 @@
  * leaves the app. Returns the canvas's data URL, or null if 2D canvas isn't
  * available.
  */
-export function renderFieldListPng(source: { ref: string; title: string }, fields: { key: string; value: string }[]): string | null {
+export function renderFieldListPng(
+  source: { ref: string; title: string },
+  fields: { key: string; value: string }[],
+): string | null {
   const width = 440;
   const padX = 20;
   const headerH = 56;
@@ -54,7 +57,10 @@ export function renderFieldListPng(source: { ref: string; title: string }, field
     ctx.font = '600 12px "IBM Plex Mono", monospace';
     ctx.fillStyle = "#1c2541";
     let value = f.value;
-    while (ctx.measureText(value).width > width - padX - (padX + labelW) && value.length > 1) {
+    while (
+      ctx.measureText(value).width > width - padX - (padX + labelW) &&
+      value.length > 1
+    ) {
       value = value.slice(0, -1);
     }
     if (value !== f.value) value = value.replace(/.{3}$/, "...");
@@ -65,12 +71,17 @@ export function renderFieldListPng(source: { ref: string; title: string }, field
 }
 
 /** Downloads the metric/tag field list as a PNG file -- see renderFieldListPng. */
-export function exportFieldListPng(source: { ref: string; title: string }, fields: { key: string; value: string }[], filename?: string): void {
+export function exportFieldListPng(
+  source: { ref: string; title: string },
+  fields: { key: string; value: string }[],
+  filename?: string,
+): void {
   const url = renderFieldListPng(source, fields);
   if (!url) return;
   const a = document.createElement("a");
   a.href = url;
-  a.download = filename ?? `annotation_${source.ref.replace(/[^a-z0-9_-]+/gi, "_")}.png`;
+  a.download =
+    filename ?? `annotation_${source.ref.replace(/[^a-z0-9_-]+/gi, "_")}.png`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

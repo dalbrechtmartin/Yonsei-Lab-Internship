@@ -1,4 +1,8 @@
-import { layerLabel, materialColor, type StructureLayer } from "./layerStructure";
+import {
+  layerLabel,
+  materialColor,
+  type StructureLayer,
+} from "./layerStructure";
 
 /**
  * Renders a pinned point's Layer Structure as a labeled stack diagram onto a
@@ -20,16 +24,22 @@ export function exportLayerStackPng(
   const padX = 20;
   const headerH = 56;
   const extraRowH2 = 22;
-  const extraH = extraFields.length * extraRowH2 + (extraFields.length > 0 ? 8 : 0);
+  const extraH =
+    extraFields.length * extraRowH2 + (extraFields.length > 0 ? 8 : 0);
   const minRowH = 34;
   const extraRowH = 46;
 
-  const known = layers.map((l) => l.thicknessNm).filter((v): v is number => v !== null);
+  const known = layers
+    .map((l) => l.thicknessNm)
+    .filter((v): v is number => v !== null);
   const min = known.length ? Math.min(...known) : 0;
   const max = known.length ? Math.max(...known) : 0;
   const heightFor = (l: StructureLayer): number => {
-    if (l.thicknessNm === null || known.length === 0 || max === min) return minRowH;
-    return Math.round(minRowH + ((l.thicknessNm - min) / (max - min)) * extraRowH);
+    if (l.thicknessNm === null || known.length === 0 || max === min)
+      return minRowH;
+    return Math.round(
+      minRowH + ((l.thicknessNm - min) / (max - min)) * extraRowH,
+    );
   };
   const rowHeights = layers.map(heightFor);
   const stackH = rowHeights.reduce((a, b) => a + b, 0);
@@ -78,7 +88,10 @@ export function exportLayerStackPng(
       ctx.font = '600 12px "IBM Plex Mono", monospace';
       ctx.fillStyle = "#1c2541";
       let value = f.value;
-      while (ctx.measureText(value).width > width - padX - (padX + labelW) && value.length > 1) {
+      while (
+        ctx.measureText(value).width > width - padX - (padX + labelW) &&
+        value.length > 1
+      ) {
         value = value.slice(0, -1);
       }
       if (value !== f.value) value = value.replace(/.{3}$/, "...");
@@ -107,7 +120,9 @@ export function exportLayerStackPng(
   const url = canvas.toDataURL("image/png");
   const a = document.createElement("a");
   a.href = url;
-  a.download = filename ?? `layer_structure_${source.ref.replace(/[^a-z0-9_-]+/gi, "_")}.png`;
+  a.download =
+    filename ??
+    `layer_structure_${source.ref.replace(/[^a-z0-9_-]+/gi, "_")}.png`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

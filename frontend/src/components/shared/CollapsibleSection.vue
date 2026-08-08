@@ -5,7 +5,9 @@
       class="flex w-full items-center justify-between py-0.5 text-left select-none"
       @click="open = !open"
     >
-      <span class="text-[11px] font-bold tracking-[0.08em] text-secondary uppercase">
+      <span
+        class="text-[11px] font-bold tracking-[0.08em] text-secondary uppercase"
+      >
         <slot name="title">{{ title }}</slot>
       </span>
       <span class="flex items-center gap-2">
@@ -17,7 +19,10 @@
       </span>
     </button>
 
-    <div class="grid transition-[grid-template-rows] duration-250 ease-out" :style="{ gridTemplateRows: open ? '1fr' : '0fr' }">
+    <div
+      class="grid transition-[grid-template-rows] duration-250 ease-out"
+      :style="{ gridTemplateRows: open ? '1fr' : '0fr' }"
+    >
       <div class="min-h-0 overflow-hidden">
         <slot />
       </div>

@@ -10,11 +10,19 @@
           v-for="(layer, index) in renderLayers"
           :key="index"
           class="flex items-center gap-1.5 px-1.5 leading-none"
-          :style="{ background: layer.frontBg, minHeight: layer.heightPx + 'px', boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.45), inset 0 -3px 4px rgba(0,0,0,0.18)' }"
+          :style="{
+            background: layer.frontBg,
+            minHeight: layer.heightPx + 'px',
+            boxShadow:
+              'inset 0 2px 0 rgba(255,255,255,0.45), inset 0 -3px 4px rgba(0,0,0,0.18)',
+          }"
         >
           <span
             class="min-w-0 flex-1 truncate font-mono text-[10px]"
-            style="color: rgba(0, 0, 0, 0.72); text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3)"
+            style="
+              color: rgba(0, 0, 0, 0.72);
+              text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
+            "
           >
             {{ layerLabel(layer) }}
           </span>
@@ -29,7 +37,14 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { darkenColor, isMetal, layerLabel, lightenColor, materialColor, type StructureLayer } from "@/utils/layerStructure";
+import {
+  darkenColor,
+  isMetal,
+  layerLabel,
+  lightenColor,
+  materialColor,
+  type StructureLayer,
+} from "@/utils/layerStructure";
 
 const props = defineProps<{
   layers: StructureLayer[];
@@ -42,7 +57,9 @@ const MAX_EXTRA = 20;
 // layer, so a wildly disproportionate sheet (e.g. 5nm next to 180nm) still reads as a
 // stack rather than uniform bars, without any one segment dominating the popover.
 const heightFor = (layer: StructureLayer): number => {
-  const known = props.layers.map((l) => l.thicknessNm).filter((v): v is number => v !== null);
+  const known = props.layers
+    .map((l) => l.thicknessNm)
+    .filter((v): v is number => v !== null);
   if (layer.thicknessNm === null || known.length === 0) return MIN_HEIGHT;
   const min = Math.min(...known);
   const max = Math.max(...known);
@@ -75,7 +92,11 @@ const renderLayers = computed(() =>
   }),
 );
 
-const topCapColor = computed(() => (renderLayers.value.length ? lightenColor(renderLayers.value[0].color, 20) : "#ccc"));
+const topCapColor = computed(() =>
+  renderLayers.value.length
+    ? lightenColor(renderLayers.value[0].color, 20)
+    : "#ccc",
+);
 
 // The stack's right edge, rendered as one continuous skewed strip (rather than a
 // separate side face per layer) so the darkened bands line up seamlessly into a

@@ -1,16 +1,23 @@
 <template>
   <div class="flex flex-col gap-1.5">
     <Input v-model="query" :placeholder="placeholder" class="h-8 text-sm" />
-    <div class="flex max-h-32.5 flex-col overflow-x-hidden overflow-y-auto rounded-md border border-input">
+    <div
+      class="flex max-h-32.5 flex-col overflow-x-hidden overflow-y-auto rounded-md border border-input"
+    >
       <label
         v-for="opt in filteredOptions"
         :key="opt"
         class="flex cursor-pointer items-center gap-2 border-b border-border px-2 py-1.5 text-xs last:border-b-0 hover:bg-secondary/8"
       >
-        <Checkbox :model-value="modelValue.includes(opt)" @update:model-value="() => toggle(opt)" />
+        <Checkbox
+          :model-value="modelValue.includes(opt)"
+          @update:model-value="() => toggle(opt)"
+        />
         <span class="min-w-0 flex-1 truncate text-ink">
           {{ opt }}
-          <span v-if="optionHints?.[opt]" class="text-muted-foreground">({{ optionHints[opt] }})</span>
+          <span v-if="optionHints?.[opt]" class="text-muted-foreground"
+            >({{ optionHints[opt] }})</span
+          >
         </span>
       </label>
       <button
@@ -20,9 +27,14 @@
         @click="createFromQuery"
       >
         <Plus class="size-3.5 shrink-0" />
-        <span class="min-w-0 flex-1 truncate">{{ t("fomcharts.addPoint.addNew") }} "{{ query.trim() }}"</span>
+        <span class="min-w-0 flex-1 truncate"
+          >{{ t("fomcharts.addPoint.addNew") }} "{{ query.trim() }}"</span
+        >
       </button>
-      <p v-if="filteredOptions.length === 0 && !showCreateOption" class="px-2 py-1.5 text-xs text-muted-foreground">
+      <p
+        v-if="filteredOptions.length === 0 && !showCreateOption"
+        class="px-2 py-1.5 text-xs text-muted-foreground"
+      >
         {{ t("fomcharts.addPoint.noMatches") }}
       </p>
     </div>
@@ -61,7 +73,9 @@ const modelValue = defineModel<string[]>({ default: () => [] });
 
 const query = ref("");
 
-const allOptions = computed(() => Array.from(new Set([...props.options, ...modelValue.value])).sort());
+const allOptions = computed(() =>
+  Array.from(new Set([...props.options, ...modelValue.value])).sort(),
+);
 
 const filteredOptions = computed(() => {
   const q = query.value.trim().toLowerCase();
@@ -79,7 +93,9 @@ const showCreateOption = computed(() => {
 });
 
 const toggle = (opt: string) => {
-  modelValue.value = modelValue.value.includes(opt) ? modelValue.value.filter((v) => v !== opt) : [...modelValue.value, opt];
+  modelValue.value = modelValue.value.includes(opt)
+    ? modelValue.value.filter((v) => v !== opt)
+    : [...modelValue.value, opt];
 };
 
 const createFromQuery = () => {

@@ -6,10 +6,16 @@
         class="flex w-full min-w-0 items-center justify-between gap-1.5 rounded-md border border-input bg-card px-2.5 py-1.5 text-left text-sm shadow-xs transition-colors hover:border-primary/40"
         :class="open ? 'border-primary' : ''"
       >
-        <span class="min-w-0 flex-1 truncate" :class="modelValue ? 'text-ink' : 'text-muted-foreground'">
+        <span
+          class="min-w-0 flex-1 truncate"
+          :class="modelValue ? 'text-ink' : 'text-muted-foreground'"
+        >
           {{ modelValue || placeholder }}
         </span>
-        <ChevronDown class="size-3.5 shrink-0 text-muted-foreground transition-transform duration-150" :class="open ? 'rotate-180' : ''" />
+        <ChevronDown
+          class="size-3.5 shrink-0 text-muted-foreground transition-transform duration-150"
+          :class="open ? 'rotate-180' : ''"
+        />
       </button>
     </PopoverTrigger>
     <PopoverContent align="start" class="z-50 w-72 p-0">
@@ -29,12 +35,19 @@
           :key="opt"
           type="button"
           class="flex w-full items-center rounded px-2 py-1.5 text-left text-sm hover:bg-secondary/10"
-          :class="opt === modelValue ? 'bg-primary/10 font-medium text-primary' : 'text-ink'"
+          :class="
+            opt === modelValue
+              ? 'bg-primary/10 font-medium text-primary'
+              : 'text-ink'
+          "
           @click="select(opt)"
         >
           <span class="min-w-0 flex-1 truncate">{{ opt }}</span>
         </button>
-        <p v-if="filteredOptions.length === 0 && !showCreateOption" class="px-2 py-1.5 text-xs text-muted-foreground">
+        <p
+          v-if="filteredOptions.length === 0 && !showCreateOption"
+          class="px-2 py-1.5 text-xs text-muted-foreground"
+        >
           {{ emptyLabel }}
         </p>
         <button
@@ -44,7 +57,9 @@
           @click="commitQuery"
         >
           <Plus class="size-3.5 shrink-0" />
-          <span class="min-w-0 flex-1 truncate">{{ createLabel }} "{{ query.trim() }}"</span>
+          <span class="min-w-0 flex-1 truncate"
+            >{{ createLabel }} "{{ query.trim() }}"</span
+          >
         </button>
       </div>
     </PopoverContent>
@@ -54,7 +69,11 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from "vue";
 import { ChevronDown, Plus } from "@lucide/vue";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 
 /**
@@ -121,7 +140,9 @@ const select = (value: string) => {
 const commitQuery = () => {
   const q = query.value.trim();
   if (!q) return;
-  const existing = props.options.find((opt) => opt.toLowerCase() === q.toLowerCase());
+  const existing = props.options.find(
+    (opt) => opt.toLowerCase() === q.toLowerCase(),
+  );
   if (!existing && !props.allowCreate) return;
   select(existing ?? q);
 };

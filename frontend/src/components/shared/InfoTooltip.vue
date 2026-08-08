@@ -20,10 +20,18 @@
 <script setup lang="ts">
 import { Info } from "@lucide/vue";
 import type { Component } from "vue";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 withDefaults(
-  defineProps<{ text: string; iconClass?: string | string[]; icon?: Component }>(),
+  defineProps<{
+    text: string;
+    iconClass?: string | string[];
+    icon?: Component;
+  }>(),
   { iconClass: "text-muted-foreground hover:text-secondary", icon: () => Info },
 );
 </script>

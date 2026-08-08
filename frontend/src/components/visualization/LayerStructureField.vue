@@ -1,21 +1,33 @@
 <template>
   <div class="flex flex-col gap-2">
-    <p v-if="materialOptions.length === 0 && modelValue.length === 0" class="text-xs text-muted-foreground">
+    <p
+      v-if="materialOptions.length === 0 && modelValue.length === 0"
+      class="text-xs text-muted-foreground"
+    >
       {{ t("fomcharts.addPoint.noBaseMaterialsYet") }}
     </p>
     <div v-else class="flex flex-col gap-3 sm:flex-row">
       <div class="flex min-w-0 flex-1 flex-col gap-2">
         <!-- Reminder for any Base Material not yet given a layer row -- the
              whole point is that nothing picked earlier gets forgotten here. -->
-        <p v-if="unplacedMaterials.length" class="text-[10.5px] font-medium text-amber-700">
-          {{ t("fomcharts.addPoint.materialsRemaining", { materials: unplacedMaterials.join(", ") }) }}
+        <p
+          v-if="unplacedMaterials.length"
+          class="text-[10.5px] font-medium text-amber-700"
+        >
+          {{
+            t("fomcharts.addPoint.materialsRemaining", {
+              materials: unplacedMaterials.join(", "),
+            })
+          }}
         </p>
 
         <!-- "+ Add layer" is the container's own last row (not a separate
              button below it) -- it scrolls with the list instead of getting
              pushed further down the form as more layers are added, and
              reads as "one more row" rather than a disconnected element. -->
-        <div class="flex max-h-40 flex-col overflow-x-hidden overflow-y-auto rounded-md border border-input">
+        <div
+          class="flex max-h-40 flex-col overflow-x-hidden overflow-y-auto rounded-md border border-input"
+        >
           <TransitionGroup tag="div" name="layer-row" class="flex flex-col">
             <div
               v-for="(layer, index) in modelValue"
@@ -27,46 +39,79 @@
               @dragover="onDragOver(index, $event)"
               @dragleave="dragOverIndex = null"
               @drop="onDrop(index, $event)"
-              @dragend="dragIndex = null; dragOverIndex = null"
+              @dragend="
+                dragIndex = null;
+                dragOverIndex = null;
+              "
             >
-              <GripVertical class="size-3.5 shrink-0 cursor-grab text-muted-foreground/60 active:cursor-grabbing" />
+              <GripVertical
+                class="size-3.5 shrink-0 cursor-grab text-muted-foreground/60 active:cursor-grabbing"
+              />
               <div class="min-w-0 flex-1">
                 <Combobox
                   :model-value="layer.material"
                   :options="materialOptions"
                   :allow-create="false"
-                  :placeholder="t('fomcharts.addPoint.layerMaterialPlaceholder')"
+                  :placeholder="
+                    t('fomcharts.addPoint.layerMaterialPlaceholder')
+                  "
                   :create-label="t('fomcharts.addPoint.addNew')"
                   :empty-label="t('fomcharts.addPoint.noMatches')"
-                  @update:model-value="(v) => updateLayer(index, { material: v })"
+                  @update:model-value="
+                    (v) => updateLayer(index, { material: v })
+                  "
                 />
               </div>
               <Input
                 type="number"
                 step="any"
                 min="0"
-                :model-value="layer.thicknessNm === null ? '' : String(layer.thicknessNm)"
+                :model-value="
+                  layer.thicknessNm === null ? '' : String(layer.thicknessNm)
+                "
                 :placeholder="t('fomcharts.addPoint.layerThicknessPlaceholder')"
                 class="h-8 w-20 shrink-0 text-sm [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                @update:model-value="(v) => updateLayer(index, { thicknessNm: v === '' ? null : Number(v) })"
+                @update:model-value="
+                  (v) =>
+                    updateLayer(index, {
+                      thicknessNm: v === '' ? null : Number(v),
+                    })
+                "
               />
-              <span class="w-5 shrink-0 text-[10.5px] text-muted-foreground">nm</span>
-              <span class="shrink-0 text-[10.5px] text-muted-foreground">×</span>
+              <span class="w-5 shrink-0 text-[10.5px] text-muted-foreground"
+                >nm</span
+              >
+              <span class="shrink-0 text-[10.5px] text-muted-foreground"
+                >×</span
+              >
               <Input
                 type="number"
                 step="1"
                 min="1"
-                :model-value="layer.repeatCount === undefined ? '' : String(layer.repeatCount)"
+                :model-value="
+                  layer.repeatCount === undefined
+                    ? ''
+                    : String(layer.repeatCount)
+                "
                 placeholder="1"
-                :aria-label="t('fomcharts.addPoint.layerRepeatLabel', { n: index + 1 })"
+                :aria-label="
+                  t('fomcharts.addPoint.layerRepeatLabel', { n: index + 1 })
+                "
                 :title="t('fomcharts.addPoint.layerRepeatHint')"
                 class="h-8 w-12 shrink-0 text-sm [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                @update:model-value="(v) => updateLayer(index, { repeatCount: v === '' ? undefined : Number(v) })"
+                @update:model-value="
+                  (v) =>
+                    updateLayer(index, {
+                      repeatCount: v === '' ? undefined : Number(v),
+                    })
+                "
               />
               <button
                 type="button"
                 class="shrink-0 rounded p-1 text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500"
-                :aria-label="t('fomcharts.addPoint.removeLayer', { n: index + 1 })"
+                :aria-label="
+                  t('fomcharts.addPoint.removeLayer', { n: index + 1 })
+                "
                 @click="removeLayer(index)"
               >
                 <X class="size-3.5" />
@@ -84,14 +129,19 @@
             {{ t("fomcharts.addPoint.addLayer") }}
           </button>
         </div>
-        <p v-if="materialOptions.length === 0" class="text-[10.5px] text-muted-foreground">
+        <p
+          v-if="materialOptions.length === 0"
+          class="text-[10.5px] text-muted-foreground"
+        >
           {{ t("fomcharts.addPoint.noBaseMaterialsYet") }}
         </p>
       </div>
 
       <div v-if="modelValue.length" class="w-28 shrink-0">
         <LayerStack :layers="modelValue" />
-        <p class="mt-1 text-center text-[9.5px] text-muted-foreground">{{ t("fomcharts.addPoint.layerPreview") }}</p>
+        <p class="mt-1 text-center text-[9.5px] text-muted-foreground">
+          {{ t("fomcharts.addPoint.layerPreview") }}
+        </p>
       </div>
     </div>
   </div>
@@ -133,7 +183,11 @@ const { t } = useI18n();
 // row -- the reminder above the list exists precisely so this never
 // silently stays non-empty.
 const unplacedMaterials = computed(() => {
-  const placed = new Set(modelValue.value.filter((l) => l.material.trim() !== "").map((l) => l.material));
+  const placed = new Set(
+    modelValue.value
+      .filter((l) => l.material.trim() !== "")
+      .map((l) => l.material),
+  );
   return props.materialOptions.filter((m) => !placed.has(m));
 });
 
@@ -178,7 +232,10 @@ const updateLayer = (index: number, patch: Partial<StructureLayer>) => {
 };
 
 const addLayer = () => {
-  commit([...modelValue.value, { material: "", thicknessNm: null }], [...layerKeys.value, nextKey++]);
+  commit(
+    [...modelValue.value, { material: "", thicknessNm: null }],
+    [...layerKeys.value, nextKey++],
+  );
 };
 
 const removeLayer = (index: number) => {

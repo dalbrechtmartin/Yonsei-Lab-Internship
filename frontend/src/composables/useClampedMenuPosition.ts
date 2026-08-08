@@ -23,7 +23,11 @@ const VIEWPORT_MARGIN = 8;
  * coordinates, but the browser renders them relative to the wrong box.
  */
 export function useClampedMenuPosition() {
-  const menuStyle = ref<{ left: string; top: string; visibility: "hidden" | "visible" }>({
+  const menuStyle = ref<{
+    left: string;
+    top: string;
+    visibility: "hidden" | "visible";
+  }>({
     left: "0px",
     top: "0px",
     visibility: "hidden",
@@ -38,15 +42,29 @@ export function useClampedMenuPosition() {
   // that mounts the menu, so a caller passing `menuRef.value` (a snapshot
   // taken before Vue has actually mounted it) would hand this function a
   // stale null that a later nextTick can't un-capture.
-  const show = async (menuElRef: Ref<HTMLElement | null>, x: number, y: number) => {
+  const show = async (
+    menuElRef: Ref<HTMLElement | null>,
+    x: number,
+    y: number,
+  ) => {
     menuStyle.value = { left: `${x}px`, top: `${y}px`, visibility: "hidden" };
     await nextTick();
     const menuEl = menuElRef.value;
     if (!menuEl) return;
     const { width, height } = menuEl.getBoundingClientRect();
-    const left = Math.min(Math.max(x, VIEWPORT_MARGIN), Math.max(VIEWPORT_MARGIN, window.innerWidth - width - VIEWPORT_MARGIN));
-    const top = Math.min(Math.max(y, VIEWPORT_MARGIN), Math.max(VIEWPORT_MARGIN, window.innerHeight - height - VIEWPORT_MARGIN));
-    menuStyle.value = { left: `${left}px`, top: `${top}px`, visibility: "visible" };
+    const left = Math.min(
+      Math.max(x, VIEWPORT_MARGIN),
+      Math.max(VIEWPORT_MARGIN, window.innerWidth - width - VIEWPORT_MARGIN),
+    );
+    const top = Math.min(
+      Math.max(y, VIEWPORT_MARGIN),
+      Math.max(VIEWPORT_MARGIN, window.innerHeight - height - VIEWPORT_MARGIN),
+    );
+    menuStyle.value = {
+      left: `${left}px`,
+      top: `${top}px`,
+      visibility: "visible",
+    };
   };
 
   return { menuStyle, show };

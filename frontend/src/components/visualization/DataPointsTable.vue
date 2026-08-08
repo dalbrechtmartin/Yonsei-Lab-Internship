@@ -7,10 +7,14 @@
         </span>
       </template>
       <template #header-suffix>
-        <span class="font-mono text-[11px] font-normal text-muted-foreground">{{ rows.length + hiddenRows.length }}</span>
+        <span class="font-mono text-[11px] font-normal text-muted-foreground">{{
+          rows.length + hiddenRows.length
+        }}</span>
       </template>
 
-      <div class="mt-2.5 rounded-[10px] border border-secondary/15 bg-secondary/5 p-3">
+      <div
+        class="mt-2.5 rounded-[10px] border border-secondary/15 bg-secondary/5 p-3"
+      >
         <!-- Filter chips (Tout/Visibles/Masqués) replace the old separate
              "hidden rows" disclosure at the bottom -- one filterable list
              instead of two, and the counts double as an at-a-glance summary
@@ -21,13 +25,20 @@
              the edge. Search shares the second line with sort/add instead of
              getting a third line of its own: the input just shrinks (flex-1
              + min-w-0) to make room for the two icon buttons pinned after it. -->
-        <div v-if="hasAnyRows" class="mb-1.5 flex flex-wrap items-center gap-1.5">
+        <div
+          v-if="hasAnyRows"
+          class="mb-1.5 flex flex-wrap items-center gap-1.5"
+        >
           <button
             v-for="f in filterOptions"
             :key="f.key"
             type="button"
             class="shrink-0 rounded-full px-2.5 py-1 text-[10.5px] font-semibold transition"
-            :class="activeFilter === f.key ? 'bg-primary text-primary-foreground' : 'border border-secondary/25 text-secondary hover:bg-secondary/5'"
+            :class="
+              activeFilter === f.key
+                ? 'bg-primary text-primary-foreground'
+                : 'border border-secondary/25 text-secondary hover:bg-secondary/5'
+            "
             @click="activeFilter = f.key"
           >
             {{ f.label }} {{ f.count }}
@@ -37,17 +48,24 @@
         <!-- Only worth a toggle once there's actually a manually added point
              on the chart to include/exclude -- see VisualizationView's
              includeCustomInStats, shared with FomChart's own overlays. -->
-        <div v-if="hasManualRows" class="mb-1.5 flex items-center justify-between gap-2 rounded-md border border-secondary/15 bg-card px-2.5 py-1.5">
+        <div
+          v-if="hasManualRows"
+          class="mb-1.5 flex items-center justify-between gap-2 rounded-md border border-secondary/15 bg-card px-2.5 py-1.5"
+        >
           <span class="flex min-w-0 items-center gap-1 text-[10.5px] text-ink">
             <InfoTooltip :text="t('fomcharts.addPoint.includeInStatsHint')" />
-            <span class="truncate">{{ t("fomcharts.addPoint.includeInStats") }}</span>
+            <span class="truncate">{{
+              t("fomcharts.addPoint.includeInStats")
+            }}</span>
           </span>
           <Switch v-model="includeCustomInStats" class="shrink-0" />
         </div>
 
         <div class="mb-2 flex items-center gap-1.5">
           <label v-if="hasAnyRows" class="relative min-w-0 flex-1">
-            <Search class="pointer-events-none absolute top-1/2 left-2 size-3 -translate-y-1/2 text-muted-foreground" />
+            <Search
+              class="pointer-events-none absolute top-1/2 left-2 size-3 -translate-y-1/2 text-muted-foreground"
+            />
             <Input
               v-model="searchQuery"
               type="text"
@@ -81,7 +99,11 @@
               <DropdownMenuItem
                 v-for="opt in sortOptions"
                 :key="opt.value"
-                :class="sort === opt.value ? 'bg-primary/8 font-semibold text-primary' : ''"
+                :class="
+                  sort === opt.value
+                    ? 'bg-primary/8 font-semibold text-primary'
+                    : ''
+                "
                 @select="sort = opt.value"
               >
                 {{ opt.label }}
@@ -101,7 +123,9 @@
                 <Plus class="size-3.5" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>{{ t("fomcharts.addPoint.toolbarButton") }}</TooltipContent>
+            <TooltipContent>{{
+              t("fomcharts.addPoint.toolbarButton")
+            }}</TooltipContent>
           </Tooltip>
         </div>
 
@@ -113,27 +137,50 @@
              behind a group collapse or the Masqués filter (see groups /
              pinnedRowsFiltered below). Group order otherwise follows
              whichever row would sort first under the active sort mode. -->
-        <div v-if="groups.length > 0" class="flex max-h-88 flex-col gap-1 overflow-x-hidden overflow-y-auto">
+        <div
+          v-if="groups.length > 0"
+          class="flex max-h-88 flex-col gap-1 overflow-x-hidden overflow-y-auto"
+        >
           <div v-for="group in groups" :key="group.key">
             <button
               type="button"
               class="flex w-full items-center gap-1.5 rounded-md px-1.5 py-1 text-left select-none"
-              :class="group.pinned ? 'bg-amber-50/70 hover:bg-amber-50' : 'hover:bg-card'"
+              :class="
+                group.pinned
+                  ? 'bg-amber-50/70 hover:bg-amber-50'
+                  : 'hover:bg-card'
+              "
               @click="toggleGroup(group.key)"
               @contextmenu.prevent="openGroupMenu($event, group)"
             >
               <ChevronDown
                 class="size-3 shrink-0 transition-transform duration-200"
-                :class="[isGroupCollapsed(group.key) ? '-rotate-90' : 'rotate-0', group.pinned ? 'text-amber-700' : 'text-secondary']"
+                :class="[
+                  isGroupCollapsed(group.key) ? '-rotate-90' : 'rotate-0',
+                  group.pinned ? 'text-amber-700' : 'text-secondary',
+                ]"
               />
-              <Pin v-if="group.pinned" class="size-2.5 shrink-0 fill-amber-600 text-amber-600" />
-              <span class="min-w-0 flex-1 truncate text-[11.5px] font-semibold" :class="group.pinned ? 'text-amber-800' : 'text-ink'">
+              <Pin
+                v-if="group.pinned"
+                class="size-2.5 shrink-0 fill-amber-600 text-amber-600"
+              />
+              <span
+                class="min-w-0 flex-1 truncate text-[11.5px] font-semibold"
+                :class="group.pinned ? 'text-amber-800' : 'text-ink'"
+              >
                 {{ group.label }}
               </span>
-              <InfoTooltip v-if="group.pinned" :text="t('fomcharts.pointsTable.pinnedHint')" />
+              <InfoTooltip
+                v-if="group.pinned"
+                :text="t('fomcharts.pointsTable.pinnedHint')"
+              />
               <span
                 class="shrink-0 rounded-full px-1.5 py-0.5 text-[9.5px] font-semibold"
-                :class="group.pinned ? 'bg-amber-600 text-white' : 'bg-secondary/12 text-secondary'"
+                :class="
+                  group.pinned
+                    ? 'bg-amber-600 text-white'
+                    : 'bg-secondary/12 text-secondary'
+                "
               >
                 {{ group.count }}
               </span>
@@ -141,7 +188,9 @@
 
             <div
               class="grid transition-[grid-template-rows] duration-200 ease-out"
-              :style="{ gridTemplateRows: isGroupCollapsed(group.key) ? '0fr' : '1fr' }"
+              :style="{
+                gridTemplateRows: isGroupCollapsed(group.key) ? '0fr' : '1fr',
+              }"
             >
               <div class="min-h-0 overflow-hidden">
                 <div
@@ -156,18 +205,33 @@
                 >
                   <span
                     class="inline-flex size-2.5 shrink-0 items-center justify-center"
-                    :class="isManualRow(row) ? 'rotate-45 border-2 border-amber-500 bg-transparent' : 'rounded-full'"
-                    :style="isManualRow(row) ? undefined : { background: dotColor(row) }"
+                    :class="
+                      isManualRow(row)
+                        ? 'rotate-45 border-2 border-amber-500 bg-transparent'
+                        : 'rounded-full'
+                    "
+                    :style="
+                      isManualRow(row)
+                        ? undefined
+                        : { background: dotColor(row) }
+                    "
                   />
 
                   <span
                     class="min-w-0 flex-1 truncate"
-                    :class="isHidden(row) ? 'text-muted-foreground line-through' : 'text-ink'"
+                    :class="
+                      isHidden(row)
+                        ? 'text-muted-foreground line-through'
+                        : 'text-ink'
+                    "
                     :title="cellText(row, 'title')"
                   >
                     {{ displayTitle(row) }}
                   </span>
-                  <span v-if="isEditedRow(row)" class="shrink-0 rounded bg-secondary/15 px-1 py-0.5 text-[9px] font-semibold tracking-wide text-secondary uppercase">
+                  <span
+                    v-if="isEditedRow(row)"
+                    class="shrink-0 rounded bg-secondary/15 px-1 py-0.5 text-[9px] font-semibold tracking-wide text-secondary uppercase"
+                  >
                     {{ t("fomcharts.pointsTable.editedBadge") }}
                   </span>
 
@@ -186,7 +250,11 @@
                         type="button"
                         class="flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground transition hover:bg-secondary/10 hover:text-ink disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
                         :disabled="isPinned(row)"
-                        :aria-label="isHidden(row) ? t('fomcharts.pointsTable.unhide') : t('fomcharts.pointsTable.hide')"
+                        :aria-label="
+                          isHidden(row)
+                            ? t('fomcharts.pointsTable.unhide')
+                            : t('fomcharts.pointsTable.hide')
+                        "
                         @click.stop="toggleHide(row)"
                       >
                         <EyeOff v-if="isHidden(row)" class="size-3.5" />
@@ -194,7 +262,13 @@
                       </button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      {{ isPinned(row) ? t("fomcharts.pointsTable.pinGuardHint") : isHidden(row) ? t("fomcharts.pointsTable.unhide") : t("fomcharts.pointsTable.hide") }}
+                      {{
+                        isPinned(row)
+                          ? t("fomcharts.pointsTable.pinGuardHint")
+                          : isHidden(row)
+                            ? t("fomcharts.pointsTable.unhide")
+                            : t("fomcharts.pointsTable.hide")
+                      }}
                     </TooltipContent>
                   </Tooltip>
 
@@ -210,30 +284,65 @@
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" class="min-w-36">
-                      <DropdownMenuItem class="px-2 py-1 text-[11px]" @select="$emit('edit', row)">
+                      <DropdownMenuItem
+                        class="px-2 py-1 text-[11px]"
+                        @select="$emit('edit', row)"
+                      >
                         <Pencil class="mr-1.5 size-3" />
                         {{ t("fomcharts.pointsTable.edit") }}
                       </DropdownMenuItem>
-                      <DropdownMenuItem v-if="isEditedRow(row)" class="px-2 py-1 text-[11px]" @select="$emit('reset-point', row)">
+                      <DropdownMenuItem
+                        v-if="isEditedRow(row)"
+                        class="px-2 py-1 text-[11px]"
+                        @select="$emit('reset-point', row)"
+                      >
                         <RotateCcw class="mr-1.5 size-3" />
                         {{ t("fomcharts.pointsTable.resetPoint") }}
                       </DropdownMenuItem>
-                      <DropdownMenuItem class="px-2 py-1 text-[11px]" :class="isPinned(row) ? 'bg-amber-50 text-amber-700' : ''" @select="togglePin(row)">
-                        <Pin class="mr-1.5 size-3" :class="isPinned(row) ? 'fill-amber-600 text-amber-600' : ''" />
-                        {{ isPinned(row) ? t("fomcharts.pointsTable.unpin") : t("fomcharts.pointsTable.pin") }}
+                      <DropdownMenuItem
+                        class="px-2 py-1 text-[11px]"
+                        :class="
+                          isPinned(row) ? 'bg-amber-50 text-amber-700' : ''
+                        "
+                        @select="togglePin(row)"
+                      >
+                        <Pin
+                          class="mr-1.5 size-3"
+                          :class="
+                            isPinned(row) ? 'fill-amber-600 text-amber-600' : ''
+                          "
+                        />
+                        {{
+                          isPinned(row)
+                            ? t("fomcharts.pointsTable.unpin")
+                            : t("fomcharts.pointsTable.pin")
+                        }}
                       </DropdownMenuItem>
 
                       <div class="my-0.5 h-px bg-secondary/10" />
 
-                      <div v-if="isPinned(row)" class="mb-0.5 flex items-start gap-1 rounded bg-amber-50 px-2 py-1.5 text-[10px] text-amber-800">
+                      <div
+                        v-if="isPinned(row)"
+                        class="mb-0.5 flex items-start gap-1 rounded bg-amber-50 px-2 py-1.5 text-[10px] text-amber-800"
+                      >
                         <TriangleAlert class="mt-0.5 size-3 shrink-0" />
-                        <span>{{ t("fomcharts.pointsTable.pinGuardHint") }}</span>
+                        <span>{{
+                          t("fomcharts.pointsTable.pinGuardHint")
+                        }}</span>
                       </div>
 
-                      <DropdownMenuItem class="px-2 py-1 text-[11px]" :disabled="isPinned(row)" @select="toggleHide(row)">
+                      <DropdownMenuItem
+                        class="px-2 py-1 text-[11px]"
+                        :disabled="isPinned(row)"
+                        @select="toggleHide(row)"
+                      >
                         <EyeOff v-if="!isHidden(row)" class="mr-1.5 size-3" />
                         <Eye v-else class="mr-1.5 size-3" />
-                        {{ isHidden(row) ? t("fomcharts.pointsTable.unhide") : t("fomcharts.pointsTable.hide") }}
+                        {{
+                          isHidden(row)
+                            ? t("fomcharts.pointsTable.unhide")
+                            : t("fomcharts.pointsTable.hide")
+                        }}
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         :disabled="isPinned(row)"
@@ -250,7 +359,10 @@
             </div>
           </div>
         </div>
-        <p v-else-if="emptyState" class="text-xs leading-relaxed text-muted-foreground">
+        <p
+          v-else-if="emptyState"
+          class="text-xs leading-relaxed text-muted-foreground"
+        >
           {{ t(`fomcharts.pointsTable.${emptyState}`) }}
         </p>
       </div>
@@ -274,7 +386,12 @@
         @click="menuTarget = null"
         @contextmenu.prevent="menuTarget = null"
       />
-      <div v-if="menuTarget" ref="menuRef" class="fixed z-50 min-w-36 rounded-md border border-secondary/15 bg-popover p-1 shadow-lg" :style="menuStyle">
+      <div
+        v-if="menuTarget"
+        ref="menuRef"
+        class="fixed z-50 min-w-36 rounded-md border border-secondary/15 bg-popover p-1 shadow-lg"
+        :style="menuStyle"
+      >
         <button
           type="button"
           class="flex w-full items-center gap-1.5 rounded px-2 py-1 text-left text-[11px] text-ink hover:bg-secondary/10"
@@ -295,16 +412,32 @@
         <button
           type="button"
           class="flex w-full items-center gap-1.5 rounded px-2 py-1 text-left text-[11px] hover:bg-secondary/10"
-          :class="isPinned(menuTarget.row) ? 'bg-amber-50 text-amber-700' : 'text-ink'"
+          :class="
+            isPinned(menuTarget.row) ? 'bg-amber-50 text-amber-700' : 'text-ink'
+          "
           @click="runMenuAction(togglePin)"
         >
-          <Pin class="size-3" :class="isPinned(menuTarget.row) ? 'fill-amber-600 text-amber-600' : 'text-muted-foreground'" />
-          {{ isPinned(menuTarget.row) ? t("fomcharts.pointsTable.unpin") : t("fomcharts.pointsTable.pin") }}
+          <Pin
+            class="size-3"
+            :class="
+              isPinned(menuTarget.row)
+                ? 'fill-amber-600 text-amber-600'
+                : 'text-muted-foreground'
+            "
+          />
+          {{
+            isPinned(menuTarget.row)
+              ? t("fomcharts.pointsTable.unpin")
+              : t("fomcharts.pointsTable.pin")
+          }}
         </button>
 
         <div class="my-0.5 h-px bg-secondary/10" />
 
-        <div v-if="isPinned(menuTarget.row)" class="mb-0.5 flex items-start gap-1 rounded bg-amber-50 px-2 py-1.5 text-[10px] text-amber-800">
+        <div
+          v-if="isPinned(menuTarget.row)"
+          class="mb-0.5 flex items-start gap-1 rounded bg-amber-50 px-2 py-1.5 text-[10px] text-amber-800"
+        >
           <TriangleAlert class="mt-0.5 size-3 shrink-0" />
           <span>{{ t("fomcharts.pointsTable.pinGuardHint") }}</span>
         </div>
@@ -315,9 +448,16 @@
           :disabled="isPinned(menuTarget.row)"
           @click="runMenuAction(toggleHide)"
         >
-          <EyeOff v-if="!isHidden(menuTarget.row)" class="size-3 text-muted-foreground" />
+          <EyeOff
+            v-if="!isHidden(menuTarget.row)"
+            class="size-3 text-muted-foreground"
+          />
           <Eye v-else class="size-3 text-muted-foreground" />
-          {{ isHidden(menuTarget.row) ? t("fomcharts.pointsTable.unhide") : t("fomcharts.pointsTable.hide") }}
+          {{
+            isHidden(menuTarget.row)
+              ? t("fomcharts.pointsTable.unhide")
+              : t("fomcharts.pointsTable.hide")
+          }}
         </button>
         <button
           type="button"
@@ -346,7 +486,12 @@
         @click="groupMenuTarget = null"
         @contextmenu.prevent="groupMenuTarget = null"
       />
-      <div v-if="groupMenuTarget" ref="groupMenuRef" class="fixed z-50 min-w-44 rounded-md border border-secondary/15 bg-popover p-1 shadow-lg" :style="groupMenuStyle">
+      <div
+        v-if="groupMenuTarget"
+        ref="groupMenuRef"
+        class="fixed z-50 min-w-44 rounded-md border border-secondary/15 bg-popover p-1 shadow-lg"
+        :style="groupMenuStyle"
+      >
         <button
           v-if="!groupMenuTarget.group.pinned"
           type="button"
@@ -392,17 +537,46 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
-import { Trash2, EyeOff, Eye, Pencil, RotateCcw, Plus, Search, ChevronDown, X, ArrowUpDown, Ellipsis, Pin, TriangleAlert } from "@lucide/vue";
+import {
+  Trash2,
+  EyeOff,
+  Eye,
+  Pencil,
+  RotateCcw,
+  Plus,
+  Search,
+  ChevronDown,
+  X,
+  ArrowUpDown,
+  Ellipsis,
+  Pin,
+  TriangleAlert,
+} from "@lucide/vue";
 import { useI18n } from "vue-i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  TooltipProvider,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 import InfoTooltip from "@/components/shared/InfoTooltip.vue";
 import CollapsibleSection from "@/components/shared/CollapsibleSection.vue";
 import { useClampedMenuPosition } from "@/composables/useClampedMenuPosition";
-import { isManualRow, isEditedRow, findShortTitleColumn, type DataRow } from "@/utils/columnTypes";
+import {
+  isManualRow,
+  isEditedRow,
+  findShortTitleColumn,
+  type DataRow,
+} from "@/utils/columnTypes";
 
 const { t } = useI18n();
 
@@ -465,10 +639,14 @@ const emit = defineEmits<{
 }>();
 
 const open = defineModel<boolean>("open", { default: false });
-const includeCustomInStats = defineModel<boolean>("includeCustomInStats", { default: true });
+const includeCustomInStats = defineModel<boolean>("includeCustomInStats", {
+  default: true,
+});
 
 const hasManualRows = computed(() => props.rows.some(isManualRow));
-const hasAnyRows = computed(() => props.rows.length + props.hiddenRows.length > 0);
+const hasAnyRows = computed(
+  () => props.rows.length + props.hiddenRows.length > 0,
+);
 
 const searchQuery = ref("");
 
@@ -494,9 +672,21 @@ const sortOptions = computed<{ value: SortMode; label: string }[]>(() => [
 type FilterMode = "all" | "visible" | "hidden";
 const activeFilter = ref<FilterMode>("all");
 const filterOptions = computed(() => [
-  { key: "all" as const, label: t("fomcharts.pointsTable.filters.all"), count: props.rows.length + props.hiddenRows.length },
-  { key: "visible" as const, label: t("fomcharts.pointsTable.filters.visible"), count: props.rows.length },
-  { key: "hidden" as const, label: t("fomcharts.pointsTable.filters.hidden"), count: props.hiddenRows.length },
+  {
+    key: "all" as const,
+    label: t("fomcharts.pointsTable.filters.all"),
+    count: props.rows.length + props.hiddenRows.length,
+  },
+  {
+    key: "visible" as const,
+    label: t("fomcharts.pointsTable.filters.visible"),
+    count: props.rows.length,
+  },
+  {
+    key: "hidden" as const,
+    label: t("fomcharts.pointsTable.filters.hidden"),
+    count: props.hiddenRows.length,
+  },
 ]);
 
 const shortTitleColumn = computed(() => findShortTitleColumn(props.columns));
@@ -508,7 +698,12 @@ const shortTitleColumn = computed(() => findShortTitleColumn(props.columns));
 // capitalizes them ("Ref", "Title") while other call sites in this file
 // pass real, arbitrarily-cased column names straight through.
 const cellText = (row: DataRow, column: string): string => {
-  const v = column === "title" ? (row.title ?? row.Title) : column === "ref" ? (row.ref ?? row.Ref) : row[column];
+  const v =
+    column === "title"
+      ? (row.title ?? row.Title)
+      : column === "ref"
+        ? (row.ref ?? row.Ref)
+        : row[column];
   return v === null || v === undefined || v === "" ? "" : String(v);
 };
 
@@ -518,7 +713,9 @@ const cellText = (row: DataRow, column: string): string => {
 // sidebar's width without every row wrapping to two lines. Also used as a
 // group's label (the first row's title stands in for its whole reference).
 const displayTitle = (row: DataRow): string => {
-  const short = shortTitleColumn.value ? cellText(row, shortTitleColumn.value) : "";
+  const short = shortTitleColumn.value
+    ? cellText(row, shortTitleColumn.value)
+    : "";
   return short || cellText(row, "title") || t("fomcharts.pointsTable.untitled");
 };
 
@@ -551,7 +748,8 @@ const togglePin = (row: DataRow) => {
 // straight off a single click the way hide/pin do.
 const confirmDelete = (row: DataRow) => {
   if (isPinned(row)) return;
-  if (window.confirm(t("fomcharts.pointsTable.deleteConfirm"))) emit("remove", row);
+  if (window.confirm(t("fomcharts.pointsTable.deleteConfirm")))
+    emit("remove", row);
 };
 
 // Right-click on a row opens a menu at the cursor with the same actions as
@@ -585,9 +783,12 @@ onBeforeUnmount(() => window.removeEventListener("keydown", closeMenuOnEscape));
 // own menu (openRowMenu above), just keyed by group instead of row so its
 // actions can act on every row in group.rows at once (see the template's
 // groupMenuTarget block).
-const groupMenuTarget = ref<{ x: number; y: number; group: RowGroup } | null>(null);
+const groupMenuTarget = ref<{ x: number; y: number; group: RowGroup } | null>(
+  null,
+);
 const groupMenuRef = ref<HTMLElement | null>(null);
-const { menuStyle: groupMenuStyle, show: showGroupMenu } = useClampedMenuPosition();
+const { menuStyle: groupMenuStyle, show: showGroupMenu } =
+  useClampedMenuPosition();
 const openGroupMenu = (event: MouseEvent, group: RowGroup) => {
   groupMenuTarget.value = { x: event.clientX, y: event.clientY, group };
   showGroupMenu(groupMenuRef, event.clientX, event.clientY);
@@ -607,7 +808,8 @@ const runGroupMenuAction = (action: (rows: DataRow[]) => void) => {
 const matchesSearch = (row: DataRow): boolean => {
   const q = searchQuery.value.trim().toLowerCase();
   if (!q) return true;
-  const haystack = `${cellText(row, "title")} ${shortTitleColumn.value ? cellText(row, shortTitleColumn.value) : ""} ${cellText(row, "ref")}`.toLowerCase();
+  const haystack =
+    `${cellText(row, "title")} ${shortTitleColumn.value ? cellText(row, shortTitleColumn.value) : ""} ${cellText(row, "ref")}`.toLowerCase();
   return haystack.includes(q);
 };
 
@@ -631,7 +833,11 @@ const sortRows = (list: DataRow[]): DataRow[] => {
   const arr = [...list];
   switch (sort.value) {
     case "ref":
-      return arr.sort((a, b) => cellText(a, "ref").localeCompare(cellText(b, "ref"), undefined, { numeric: true }));
+      return arr.sort((a, b) =>
+        cellText(a, "ref").localeCompare(cellText(b, "ref"), undefined, {
+          numeric: true,
+        }),
+      );
     case "title":
       return arr.sort((a, b) => displayTitle(a).localeCompare(displayTitle(b)));
     case "value-desc":
@@ -656,7 +862,9 @@ const searchedRows = computed(() => allRows.value.filter(matchesSearch));
 // chip -- pinning a row also clears its hidden state (see pinRows in
 // VisualizationView), so a pinned row is never masked and never needs the
 // Masqués filter to be reachable in the first place.
-const pinnedRowsFiltered = computed(() => sortRows(searchedRows.value.filter((row) => isPinned(row))));
+const pinnedRowsFiltered = computed(() =>
+  sortRows(searchedRows.value.filter((row) => isPinned(row))),
+);
 
 const unpinnedRowsFiltered = computed(() => {
   const base = searchedRows.value.filter((row) => !isPinned(row));
@@ -732,7 +940,8 @@ const groups = computed<RowGroup[]>(() => {
 // keeping whichever one happened to be first before.
 const firstGroupKey = computed(() => groups.value[0]?.key ?? null);
 const collapseOverrides = ref<Map<string, boolean>>(new Map());
-const isGroupCollapsed = (key: string): boolean => collapseOverrides.value.get(key) ?? key !== firstGroupKey.value;
+const isGroupCollapsed = (key: string): boolean =>
+  collapseOverrides.value.get(key) ?? key !== firstGroupKey.value;
 const toggleGroup = (key: string) => {
   const next = new Map(collapseOverrides.value);
   next.set(key, !isGroupCollapsed(key));
@@ -742,7 +951,8 @@ const toggleGroup = (key: string) => {
 const emptyState = computed<"empty" | "noHidden" | "noResults" | null>(() => {
   if (!hasAnyRows.value) return "empty";
   if (groups.value.length > 0) return null;
-  if (activeFilter.value === "hidden" && !searchQuery.value.trim()) return "noHidden";
+  if (activeFilter.value === "hidden" && !searchQuery.value.trim())
+    return "noHidden";
   return "noResults";
 });
 

@@ -1,5 +1,4 @@
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
 @import "tailwindcss";
 @plugin "tailwindcss-animate";
@@ -7,7 +6,9 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: "Inter Variable", "Noto Sans KR", "Noto Sans SC", ui-sans-serif, system-ui, sans-serif;
+  --font-sans:
+    "Inter Variable", "Noto Sans KR", "Noto Sans SC", ui-sans-serif, system-ui,
+    sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
   --font-heading: var(--font-sans);
   --color-background: var(--background);
@@ -172,8 +173,16 @@
     font-family: var(--font-sans);
     color: var(--foreground);
     background:
-      radial-gradient(circle at top left, rgba(91, 192, 190, 0.16), transparent 34%),
-      radial-gradient(circle at top right, rgba(0, 114, 178, 0.12), transparent 28%),
+      radial-gradient(
+        circle at top left,
+        rgba(91, 192, 190, 0.16),
+        transparent 34%
+      ),
+      radial-gradient(
+        circle at top right,
+        rgba(0, 114, 178, 0.12),
+        transparent 28%
+      ),
       linear-gradient(180deg, #f7fafc 0%, var(--background) 40%, #e9eef4 100%);
   }
 
@@ -190,4 +199,3 @@
     @apply bg-background text-foreground;
   }
 }
-

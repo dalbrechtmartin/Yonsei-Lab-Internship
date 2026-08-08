@@ -26,7 +26,11 @@ export interface GuidePdfMeta {
  * (see the `data-outline-title` attribute on each `.guide-page`), so a
  * low-vision reader can at least navigate it via their PDF viewer's outline
  * panel and zoom the page images without hunting through unlabeled pages. */
-export async function exportGuideToPdf(root: HTMLElement, filename: string, meta: GuidePdfMeta): Promise<void> {
+export async function exportGuideToPdf(
+  root: HTMLElement,
+  filename: string,
+  meta: GuidePdfMeta,
+): Promise<void> {
   const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
     import("html2canvas-pro"),
     import("jspdf"),
@@ -48,7 +52,11 @@ export async function exportGuideToPdf(root: HTMLElement, filename: string, meta
   await document.fonts.ready;
 
   const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
-  pdf.setProperties({ title: meta.title, subject: meta.title, creator: "λLens" });
+  pdf.setProperties({
+    title: meta.title,
+    subject: meta.title,
+    creator: "λLens",
+  });
   pdf.setLanguage(meta.language as Parameters<typeof pdf.setLanguage>[0]);
 
   // Link annotations are added in the SAME pass as each page's image, right
@@ -59,13 +67,18 @@ export async function exportGuideToPdf(root: HTMLElement, filename: string, meta
   // capture and measurement together removes that assumption entirely.
   for (let i = 0; i < pages.length; i++) {
     const pageEl = pages[i];
-    const canvas = await html2canvas(pageEl, { scale: 2, backgroundColor: "#ffffff", useCORS: true });
+    const canvas = await html2canvas(pageEl, {
+      scale: 2,
+      backgroundColor: "#ffffff",
+      useCORS: true,
+    });
     const imgData = canvas.toDataURL("image/jpeg", 0.95);
     if (i > 0) pdf.addPage();
     pdf.addImage(imgData, "JPEG", 0, 0, A4_WIDTH_MM, A4_HEIGHT_MM);
 
     const outlineTitle = pageEl.dataset.outlineTitle;
-    if (outlineTitle) pdf.outline.add(null, outlineTitle, { pageNumber: i + 1 });
+    if (outlineTitle)
+      pdf.outline.add(null, outlineTitle, { pageNumber: i + 1 });
 
     // Clickable table-of-contents rows (elements tagged with
     // `data-toc-target="<page number>"`) become real PDF link annotations,
@@ -75,7 +88,9 @@ export async function exportGuideToPdf(root: HTMLElement, filename: string, meta
     // than baked in, so the PDF always points at wherever this build is
     // actually hosted.
     const tocLinks = pageEl.querySelectorAll<HTMLElement>("[data-toc-target]");
-    const externalLinks = pageEl.querySelectorAll<HTMLElement>("[data-external-link]");
+    const externalLinks = pageEl.querySelectorAll<HTMLElement>(
+      "[data-external-link]",
+    );
     if (tocLinks.length === 0 && externalLinks.length === 0) continue;
 
     const pageRect = pageEl.getBoundingClientRect();
@@ -93,7 +108,10 @@ export async function exportGuideToPdf(root: HTMLElement, filename: string, meta
     // than the tight text bounds, so a click near the visible link still
     // lands inside it.
     const LINK_PAD_MM = 1.5;
-    const addLink = (el: HTMLElement, target: { pageNumber: number } | { url: string }) => {
+    const addLink = (
+      el: HTMLElement,
+      target: { pageNumber: number } | { url: string },
+    ) => {
       const r = el.getBoundingClientRect();
       pdf.link(
         (r.left - pageRect.left) * mmPerPxX - LINK_PAD_MM,
@@ -111,14 +129,19 @@ export async function exportGuideToPdf(root: HTMLElement, filename: string, meta
       // downstream constant would otherwise silently mislink the TOC to the
       // wrong page (or one that doesn't exist) instead of failing loudly.
       if (!targetPage || targetPage < 1 || targetPage > pages.length) {
-        console.warn(`Guide PDF: ignoring data-toc-target="${linkEl.dataset.tocTarget}" -- out of range for a ${pages.length}-page document.`);
+        console.warn(
+          `Guide PDF: ignoring data-toc-target="${linkEl.dataset.tocTarget}" -- out of range for a ${pages.length}-page document.`,
+        );
         return;
       }
       addLink(linkEl, { pageNumber: targetPage });
     });
     externalLinks.forEach((linkEl) => {
       const path = linkEl.dataset.externalLink;
-      if (path) addLink(linkEl, { url: new URL(path, window.location.origin).toString() });
+      if (path)
+        addLink(linkEl, {
+          url: new URL(path, window.location.origin).toString(),
+        });
     });
   }
 
