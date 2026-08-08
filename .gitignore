@@ -28,6 +28,7 @@ frontend/dist-ssr/
 frontend/**/*.local
 frontend/**/*.tsbuildinfo
 frontend/vite.config.d.ts
+frontend/vite.config.js
 frontend/.vscode/*
 !frontend/.vscode/extensions.json
 logs
