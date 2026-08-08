@@ -110,3 +110,7 @@ docker compose up --build
 The backend needs `GEMINI_API_KEY` set in the environment (see
 `backend/.env.example`). Ports can be overridden with `BACKEND_HOST_PORT`
 and `FRONTEND_HOST_PORT`.
+
+## License
+
+[MIT](LICENSE)
