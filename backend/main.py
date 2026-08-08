@@ -1,17 +1,20 @@
 import io
+import logging
 from contextlib import asynccontextmanager
 from typing import Any, cast
 
 import polars as pl
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException
-from fastapi.responses import StreamingResponse
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 import jobs
 import llm
 import state
 from schema import COLUMN_ORDER, VIZ_COLUMN_ORDER, normalize_viz_result
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
 
 @asynccontextmanager
@@ -98,11 +101,11 @@ async def convert_excel(body: ConvertExcelRequest):
         raise HTTPException(status_code=400, detail="No data to convert.")
     try:
         converted = llm.convert_table_to_viz_schema(body.columns, body.data)
-    except llm.ModelChainExhaustedError:
+    except llm.ModelChainExhaustedError as e:
         raise HTTPException(
             status_code=422,
             detail="Could not convert this file to the expected format.",
-        )
+        ) from e
     records = [normalize_viz_result(r) for r in converted]
     return {"columns": VIZ_COLUMN_ORDER + ["Spectral Range"], "data": records}
 
@@ -127,7 +130,7 @@ async def extract_data_from_pdfs(
     job = state.create_job(model, available_models, filenames)
 
     job_files = state.list_job_files(job["id"])
-    for job_file, upload in zip(job_files, pdf_files):
+    for job_file, upload in zip(job_files, pdf_files, strict=True):
         content = await upload.read()
         with open(job_file["pdf_path"], "wb") as f:
             f.write(content)
@@ -174,7 +177,6 @@ async def download_job_result(job_id: str):
     return _build_xlsx_response(job)
 
 
-
 @app.get("/jobs/{job_id}/files/{file_id}/records")
 async def get_file_records(job_id: str, file_id: str):
     """Returns one file's reconciled records with their positional index,
@@ -217,8 +219,8 @@ async def update_record_review_status(
         )
     try:
         record = state.set_record_review_status(job_id, file_id, record_index, body.status)
-    except (KeyError, IndexError):
-        raise HTTPException(status_code=404, detail="File or record not found.")
+    except (KeyError, IndexError) as e:
+        raise HTTPException(status_code=404, detail="File or record not found.") from e
     return {"record": record}
 
 
