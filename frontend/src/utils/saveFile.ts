@@ -1,4 +1,7 @@
-const PICKER_TYPES: Record<"xlsx" | "csv", { description: string; mime: string }> = {
+const PICKER_TYPES: Record<
+  "xlsx" | "csv",
+  { description: string; mime: string }
+> = {
   xlsx: {
     description: "Excel Workbook",
     mime: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -16,7 +19,13 @@ export async function saveBlobWithPicker(
   suggestedName: string,
   ext: "xlsx" | "csv" = "xlsx",
 ): Promise<void> {
-  const showSaveFilePicker = (window as unknown as { showSaveFilePicker?: (options: unknown) => Promise<FileSystemFileHandleLike> }).showSaveFilePicker;
+  const showSaveFilePicker = (
+    window as unknown as {
+      showSaveFilePicker?: (
+        options: unknown,
+      ) => Promise<FileSystemFileHandleLike>;
+    }
+  ).showSaveFilePicker;
   const { description, mime } = PICKER_TYPES[ext];
 
   if (typeof showSaveFilePicker === "function") {
@@ -44,6 +53,18 @@ export async function saveBlobWithPicker(
   link.download = suggestedName;
   link.click();
   URL.revokeObjectURL(url);
+}
+
+/** Downloads a data: URL (a canvas/chart PNG export, typically) under
+ * `filename` -- a temporary same-origin `<a download>` click, since data:
+ * URLs need neither `URL.createObjectURL` nor a revoke. */
+export function downloadDataUrl(url: string, filename: string): void {
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 
 interface FileSystemFileHandleLike {

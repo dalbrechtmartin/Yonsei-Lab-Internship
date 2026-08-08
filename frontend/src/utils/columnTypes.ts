@@ -36,7 +36,9 @@ const METADATA_COLUMN_PATTERN =
 const GENERIC_ID_PATTERN = /(?<!mode\s)\bid\b/i;
 
 export function isMetadataColumn(column: string): boolean {
-  return METADATA_COLUMN_PATTERN.test(column) || GENERIC_ID_PATTERN.test(column);
+  return (
+    METADATA_COLUMN_PATTERN.test(column) || GENERIC_ID_PATTERN.test(column)
+  );
 }
 
 /**
@@ -70,7 +72,10 @@ export function filterExportColumns(columns: string[]): string[] {
  * Metadata columns (see isMetadataColumn) are excluded from both buckets
  * so they never appear as an axis/group-by candidate.
  */
-export function detectColumnTypes(rows: DataRow[], columns: string[]): ColumnTypes {
+export function detectColumnTypes(
+  rows: DataRow[],
+  columns: string[],
+): ColumnTypes {
   const numeric: string[] = [];
   const categorical: string[] = [];
 
@@ -157,7 +162,8 @@ export function guessDefaultXAxis(
     const structureLike = categoricalColumns.filter((c) =>
       /material|structure|layer|층|class/i.test(c),
     );
-    const candidates = structureLike.length > 0 ? structureLike : categoricalColumns;
+    const candidates =
+      structureLike.length > 0 ? structureLike : categoricalColumns;
 
     let best = candidates[0];
     let bestCount = -1;
@@ -182,7 +188,9 @@ export function guessDefaultXAxis(
  * into several colors with no obvious cause) — grouping is now always an
  * explicit, opt-in choice from the "Group / Color by" dropdown.
  */
-export function guessDefaultColorGroup(_categoricalColumns: string[]): string | null {
+export function guessDefaultColorGroup(
+  _categoricalColumns: string[],
+): string | null {
   return null;
 }
 
@@ -254,7 +262,9 @@ export function findFomValueColumn(columns: string[]): string | null {
   return columns.find((c) => /\bfom\b/i.test(c)) ?? null;
 }
 
-export function findResonanceWavelengthColumn(columns: string[]): string | null {
+export function findResonanceWavelengthColumn(
+  columns: string[],
+): string | null {
   return columns.find((c) => /resonance\s*wavelength/i.test(c)) ?? null;
 }
 
@@ -310,7 +320,10 @@ export function findReviewStatusColumn(columns: string[]): string | null {
  * outline marker and VisualizationView's "hide points needing review"
  * filter, so both agree on exactly the same rows.
  */
-export function isNeedsReviewRow(row: DataRow, reviewStatusColumn: string | null): boolean {
+export function isNeedsReviewRow(
+  row: DataRow,
+  reviewStatusColumn: string | null,
+): boolean {
   if (!reviewStatusColumn) return false;
   const v = row[reviewStatusColumn];
   return typeof v === "string" && /^edit$/i.test(v.trim());
@@ -345,7 +358,8 @@ export const POINT_SHAPE_FLAG = "__shape";
 /** A row with no explicit choice keeps today's convention: manual points default to a diamond, everything else to a circle. */
 export function pointShape(row: DataRow): PointShape {
   const explicit = row[POINT_SHAPE_FLAG];
-  if (explicit === "circle" || explicit === "diamond" || explicit === "star") return explicit;
+  if (explicit === "circle" || explicit === "diamond" || explicit === "star")
+    return explicit;
   return isManualRow(row) ? "diamond" : "circle";
 }
 
@@ -459,7 +473,10 @@ export function tokenizeValue(value: unknown): string[] {
  * Material Class must offer "Dielectric" and "Metal" separately even when
  * every row that has "Metal" stores it combined as "Dielectric;Metal".
  */
-export function tokenizedDistinctValues(rows: DataRow[], column: string): string[] {
+export function tokenizedDistinctValues(
+  rows: DataRow[],
+  column: string,
+): string[] {
   const values = new Set<string>();
   for (const row of rows) {
     for (const token of tokenizeValue(row[column])) values.add(token);
@@ -475,9 +492,14 @@ export function tokenizedDistinctValues(rows: DataRow[], column: string): string
  * row survived the lenient composite-filter mode via one of its other
  * tokens (see VisualizationView's compositeFilterMode).
  */
-export function keptTokens(value: unknown, selected: string[] | null): string[] {
+export function keptTokens(
+  value: unknown,
+  selected: string[] | null,
+): string[] {
   const tokens = tokenizeValue(value);
-  return selected === null ? tokens : tokens.filter((t) => selected.includes(t));
+  return selected === null
+    ? tokens
+    : tokens.filter((t) => selected.includes(t));
 }
 
 /**
@@ -593,7 +615,8 @@ export function buildManualPointFields(
     // the Add Point dialog still gives it a proper number input.
     if (column === modeIdCol) return "numeric";
     if (numericColumns.includes(column)) return "numeric";
-    if (column === materialClassCol || column === baseMaterialsCol) return "tags";
+    if (column === materialClassCol || column === baseMaterialsCol)
+      return "tags";
     if (column === layerStructureCol) return "layers";
     if (column === domainCol || column === originCol) return "select";
     return "text";
@@ -602,21 +625,32 @@ export function buildManualPointFields(
   const fields: ManualPointField[] = [];
   const seen = new Set<string>();
 
-  const addField = (column: string | null, opts: { labelKey?: string; required?: boolean } = {}) => {
+  const addField = (
+    column: string | null,
+    opts: { labelKey?: string; required?: boolean } = {},
+  ) => {
     if (!column || seen.has(column)) return;
     seen.add(column);
     const kind = resolveKind(column);
-    const field: ManualPointField = { column, kind, labelKey: opts.labelKey, required: opts.required ?? false };
+    const field: ManualPointField = {
+      column,
+      kind,
+      labelKey: opts.labelKey,
+      required: opts.required ?? false,
+    };
     if (kind === "select") field.options = distinctValues(rows, column);
     if (kind === "tags") field.options = tokenizedDistinctValues(rows, column);
-    if (kind === "layers") field.options = layerMaterialSuggestions(rows, column, baseMaterialsCol);
+    if (kind === "layers")
+      field.options = layerMaterialSuggestions(rows, column, baseMaterialsCol);
     fields.push(field);
   };
 
   addField(yAxis, { required: true });
   addField(xAxis, { required: true });
 
-  addField(findResonanceWavelengthColumn(columns), { labelKey: "resonanceWavelength" });
+  addField(findResonanceWavelengthColumn(columns), {
+    labelKey: "resonanceWavelength",
+  });
   addField(findFomValueColumn(columns), { labelKey: "fom" });
   addField(findSensitivityColumn(columns), { labelKey: "sensitivity" });
   addField(findFwhmColumn(columns), { labelKey: "fwhm" });
@@ -648,15 +682,21 @@ export function buildManualPointFields(
  * Structure stack name the same substances and a material worth suggesting
  * from one is just as worth suggesting from the other.
  */
-export function layerMaterialSuggestions(rows: DataRow[], layerStructureColumn: string | null, baseMaterialsColumn: string | null): string[] {
+export function layerMaterialSuggestions(
+  rows: DataRow[],
+  layerStructureColumn: string | null,
+  baseMaterialsColumn: string | null,
+): string[] {
   const materials = new Set<string>();
   if (layerStructureColumn) {
     for (const row of rows) {
-      for (const layer of parseLayerStructure(row[layerStructureColumn])) materials.add(layer.material);
+      for (const layer of parseLayerStructure(row[layerStructureColumn]))
+        materials.add(layer.material);
     }
   }
   if (baseMaterialsColumn) {
-    for (const token of tokenizedDistinctValues(rows, baseMaterialsColumn)) materials.add(token);
+    for (const token of tokenizedDistinctValues(rows, baseMaterialsColumn))
+      materials.add(token);
   }
   return Array.from(materials).sort();
 }
@@ -673,7 +713,11 @@ export function layerMaterialSuggestions(rows: DataRow[], layerStructureColumn: 
  * this dataset actually pairs with it, instead of every material in the
  * whole file regardless of class.
  */
-export function materialsByClass(rows: DataRow[], materialClassColumn: string | null, baseMaterialsColumn: string | null): Record<string, string[]> {
+export function materialsByClass(
+  rows: DataRow[],
+  materialClassColumn: string | null,
+  baseMaterialsColumn: string | null,
+): Record<string, string[]> {
   const map: Record<string, Set<string>> = {};
   if (!materialClassColumn || !baseMaterialsColumn) return {};
   for (const row of rows) {
@@ -686,7 +730,8 @@ export function materialsByClass(rows: DataRow[], materialClassColumn: string | 
     }
   }
   const out: Record<string, string[]> = {};
-  for (const [cls, set] of Object.entries(map)) out[cls] = Array.from(set).sort();
+  for (const [cls, set] of Object.entries(map))
+    out[cls] = Array.from(set).sort();
   return out;
 }
 
@@ -755,8 +800,31 @@ export function formatUnitSuperscripts(text: string): string {
  * with no trailing "(...)" -- e.g. "Q-factor" -- get a null unit rather than
  * an empty string, so callers can skip rendering a second line entirely.
  */
-export function splitColumnUnit(column: string): { name: string; unit: string | null } {
+export function splitColumnUnit(column: string): {
+  name: string;
+  unit: string | null;
+} {
   const match = column.match(/^(.*?)\s*\(([^()]+)\)\s*$/);
   if (!match) return { name: column, unit: null };
   return { name: match[1], unit: formatUnitSuperscripts(match[2]) };
 }
+
+/**
+ * Content-based identity for a row: a stable string key for Set/Map
+ * membership (hidden rows, added points...) that survives filtering and
+ * mapping never cloning rows, but that a round-trip through ECharts'
+ * click params -- which does *not* preserve object identity -- would break
+ * if callers relied on reference equality instead.
+ */
+export const rowKey = (row: DataRow): string => JSON.stringify(row);
+
+/**
+ * Two rows are the same point either when they're the exact same object, or
+ * when every given column matches -- covers genuinely duplicate rows in the
+ * source data (e.g. the same paper/mode listed twice) as well as the same
+ * row reaching two different components through separate prop hand-offs
+ * (which, unlike a plain in-memory filter, isn't guaranteed to preserve
+ * object identity).
+ */
+export const rowsEqual = (a: DataRow, b: DataRow, columns: string[]): boolean =>
+  a === b || columns.every((col) => a[col] === b[col]);
