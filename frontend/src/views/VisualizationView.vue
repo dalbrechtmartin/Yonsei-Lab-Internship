@@ -1,15 +1,25 @@
 <template>
-  <ToolActionsBar :tool-name="t('nav.visualization')" :show-import="false" :show-export="false" />
+  <ToolActionsBar
+    :tool-name="t('nav.visualization')"
+    :show-import="false"
+    :show-export="false"
+  />
 
-  <main class="animate-in fade-in flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto px-3 pb-4 duration-300 sm:px-4 lg:px-5">
-    <div class="mx-auto flex max-w-2xl flex-col items-center gap-3 py-16 text-center lg:hidden">
+  <main
+    class="animate-in fade-in flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto px-3 pb-4 duration-300 sm:px-4 lg:px-5"
+  >
+    <div
+      class="mx-auto flex max-w-2xl flex-col items-center gap-3 py-16 text-center lg:hidden"
+    >
       <MonitorSmartphone class="size-10 text-secondary" />
       <p class="text-sm leading-6 text-secondary">
         {{ t("view.visualization.mobileBlocked") }}
       </p>
     </div>
 
-    <div class="mx-auto hidden w-full max-w-[104rem] flex-col gap-4 lg:flex lg:min-h-0 lg:flex-1 2xl:max-w-[150rem]">
+    <div
+      class="mx-auto hidden w-full max-w-[104rem] flex-col gap-4 lg:flex lg:min-h-0 lg:flex-1 2xl:max-w-[150rem]"
+    >
       <!-- Persistent regardless of which view is showing -- see
            openImportDialog, which clicks this directly instead of tearing
            down the loaded workspace to get back to FileDropzone's own
@@ -56,7 +66,12 @@
           </p>
         </div>
 
-        <FileDropzone ref="dropzoneRef" compact class="mt-4" @files-selected="handleUpload" />
+        <FileDropzone
+          ref="dropzoneRef"
+          compact
+          class="mt-4"
+          @files-selected="handleUpload"
+        />
       </Card>
 
       <StatusToast
@@ -78,10 +93,19 @@
              (overflow-y-auto above) rather than silently clipping the chart's
              bottom half. Keeping this pinned while that happens is what
              stops the toolbar row from scrolling out of reach along with it. -->
-        <div class="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-secondary/10 bg-card/95 px-5 py-3.5 backdrop-blur-xl">
-          <span class="text-sm font-semibold text-ink">{{ t("fomcharts.workspace.title") }}</span>
+        <div
+          class="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-secondary/10 bg-card/95 px-5 py-3.5 backdrop-blur-xl"
+        >
+          <span class="text-sm font-semibold text-ink">{{
+            t("fomcharts.workspace.title")
+          }}</span>
           <div class="flex items-center gap-2">
-            <Button variant="outline" size="xs" class="border-secondary/20 bg-background/80 text-ink hover:bg-primary/8 hover:border-primary/30" @click="openImportDialog">
+            <Button
+              variant="outline"
+              size="xs"
+              class="border-secondary/20 bg-background/80 text-ink hover:bg-primary/8 hover:border-primary/30"
+              @click="openImportDialog"
+            >
               <Upload />
               {{ t("actions.import") }}
             </Button>
@@ -100,62 +124,77 @@
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuItem @select="handleExportCsv">{{ t("fomcharts.export.csv") }}</DropdownMenuItem>
-                <DropdownMenuItem @select="handleExportXlsx">{{ t("fomcharts.export.xlsx") }}</DropdownMenuItem>
-                <DropdownMenuItem @select="handleExportPng">{{ t("fomcharts.export.png") }}</DropdownMenuItem>
+                <DropdownMenuItem @select="handleExportCsv">{{
+                  t("fomcharts.export.csv")
+                }}</DropdownMenuItem>
+                <DropdownMenuItem @select="handleExportXlsx">{{
+                  t("fomcharts.export.xlsx")
+                }}</DropdownMenuItem>
+                <DropdownMenuItem @select="handleExportPng">{{
+                  t("fomcharts.export.png")
+                }}</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
             <div class="h-5 w-px bg-secondary/15" />
 
-            <Button variant="outline" size="xs" class="border-secondary/20 bg-background/80 text-ink hover:bg-primary/8 hover:border-primary/30" @click="resetWorkspace">
+            <Button
+              variant="outline"
+              size="xs"
+              class="border-secondary/20 bg-background/80 text-ink hover:bg-primary/8 hover:border-primary/30"
+              @click="resetWorkspace"
+            >
               <RotateCcw />
               {{ t("fomcharts.workspace.reset") }}
             </Button>
           </div>
         </div>
 
-        <div class="flex min-h-0 flex-1 flex-col gap-4 p-4 lg:flex-row lg:gap-5 lg:p-5">
-          <div class="w-full lg:h-full lg:w-56 lg:shrink-0 lg:overflow-x-hidden lg:overflow-y-auto">
-          <GraphControls
-            v-model:y-axis="selectedYAxis"
-            v-model:x-axis="selectedXAxis"
-            v-model:axis-linked="axisLinked"
-            v-model:scale="yAxisScale"
-            v-model:chart-title="chartTitle"
-            v-model:title-is-auto="chartTitleIsAuto"
-            v-model:show-legend="showLegend"
-            v-model:show-median="showMedian"
-            v-model:show-trend="showTrend"
-            v-model:trend-type="trendType"
-            v-model:selected-domains="selectedDomains"
-            v-model:selected-origins="selectedOrigins"
-            v-model:selected-material-classes="selectedMaterialClasses"
-            v-model:selected-base-materials="selectedBaseMaterials"
-            v-model:composite-filter-mode="compositeFilterMode"
-            v-model:show-pareto="showPareto"
-            v-model:exclude-needs-review="excludeNeedsReview"
-            v-model:point-size-mode="pointSizeMode"
-            v-model:point-size-by="pointSizeBy"
-            v-model:point-size="pointSize"
-            :legend-disabled="!hasLegendContent"
-            :numeric-columns="numericColumns"
-            :categorical-columns="xAxisCategoricalColumns"
-            :domain-column="domainColumn"
-            :domain-values="domainValues"
-            :domain-counts="domainCounts"
-            :origin-column="originColumn"
-            :origin-values="originValues"
-            :origin-counts="originCounts"
-            :material-class-column="materialClassColumn"
-            :material-class-values="materialClassValues"
-            :material-class-counts="materialClassCounts"
-            :base-materials-column="baseMaterialsColumn"
-            :base-materials-values="baseMaterialsValues"
-            :base-materials-counts="baseMaterialsCounts"
-            :needs-review-column="reviewStatusColumn"
-            :needs-review-count="needsReviewCount"
-          />
+        <div
+          class="flex min-h-0 flex-1 flex-col gap-4 p-4 lg:flex-row lg:gap-5 lg:p-5"
+        >
+          <div
+            class="w-full lg:h-full lg:w-56 lg:shrink-0 lg:overflow-x-hidden lg:overflow-y-auto"
+          >
+            <GraphControls
+              v-model:y-axis="selectedYAxis"
+              v-model:x-axis="selectedXAxis"
+              v-model:axis-linked="axisLinked"
+              v-model:scale="yAxisScale"
+              v-model:chart-title="chartTitle"
+              v-model:title-is-auto="chartTitleIsAuto"
+              v-model:show-legend="showLegend"
+              v-model:show-median="showMedian"
+              v-model:show-trend="showTrend"
+              v-model:trend-type="trendType"
+              v-model:selected-domains="selectedDomains"
+              v-model:selected-origins="selectedOrigins"
+              v-model:selected-material-classes="selectedMaterialClasses"
+              v-model:selected-base-materials="selectedBaseMaterials"
+              v-model:composite-filter-mode="compositeFilterMode"
+              v-model:show-pareto="showPareto"
+              v-model:exclude-needs-review="excludeNeedsReview"
+              v-model:point-size-mode="pointSizeMode"
+              v-model:point-size-by="pointSizeBy"
+              v-model:point-size="pointSize"
+              :legend-disabled="!hasLegendContent"
+              :numeric-columns="numericColumns"
+              :categorical-columns="xAxisCategoricalColumns"
+              :domain-column="domainColumn"
+              :domain-values="domainValues"
+              :domain-counts="domainCounts"
+              :origin-column="originColumn"
+              :origin-values="originValues"
+              :origin-counts="originCounts"
+              :material-class-column="materialClassColumn"
+              :material-class-values="materialClassValues"
+              :material-class-counts="materialClassCounts"
+              :base-materials-column="baseMaterialsColumn"
+              :base-materials-values="baseMaterialsValues"
+              :base-materials-counts="baseMaterialsCounts"
+              :needs-review-column="reviewStatusColumn"
+              :needs-review-count="needsReviewCount"
+            />
           </div>
 
           <div class="flex min-h-0 min-w-0 flex-1 flex-col">
@@ -199,7 +238,9 @@
             />
           </div>
 
-          <aside class="flex w-full flex-col gap-4 lg:h-full lg:w-70 lg:shrink-0 lg:overflow-x-hidden lg:overflow-y-auto">
+          <aside
+            class="flex w-full flex-col gap-4 lg:h-full lg:w-70 lg:shrink-0 lg:overflow-x-hidden lg:overflow-y-auto"
+          >
             <StatsSummaryPanel
               v-model:open="statsPanelOpen"
               v-model:group-by="groupBy"
@@ -263,54 +304,60 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
-import { ChevronDown, Download, MonitorSmartphone, RotateCcw, Upload } from "@lucide/vue";
+import {
+  ChevronDown,
+  Download,
+  MonitorSmartphone,
+  RotateCcw,
+  Upload,
+} from "@lucide/vue";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import ToolActionsBar from "@/components/layout/ToolActionsBar.vue";
 import FileDropzone from "@/components/shared/FileDropzone.vue";
 import StatusToast from "@/components/shared/StatusToast.vue";
 import GraphControls from "@/components/visualization/GraphControls.vue";
 import FomChart from "@/components/visualization/FomChart.vue";
 import StatsSummaryPanel from "@/components/visualization/StatsSummaryPanel.vue";
-import AnnotationsPanel, { type Annotation } from "@/components/visualization/AnnotationsPanel.vue";
+import AnnotationsPanel, {
+  type Annotation,
+} from "@/components/visualization/AnnotationsPanel.vue";
 import AddPointDialog from "@/components/visualization/AddPointDialog.vue";
 import DataPointsTable from "@/components/visualization/DataPointsTable.vue";
 import { apiService, MultipleSheetsError } from "@/services/api";
 import { exportRowsAsExcel } from "@/utils/excelExport";
 import { exportRowsAsCsv } from "@/utils/csvExport";
 import { useTransientStatus } from "@/composables/useTransientStatus";
+import { useAccordionPanel } from "@/composables/useAccordionPanel";
+import { useFomColumnMeta } from "@/composables/useFomColumnMeta";
 import { filterPlottable, type TrendType } from "@/utils/stats";
-import { assignGroupColors } from "@/utils/palette";
 import {
-  detectColumnTypes,
   guessDefaultYAxis,
   guessDefaultXAxis,
   guessDefaultColorGroup,
   groupableColumns,
   filterExportColumns,
-  findDomainColumn,
-  findOriginColumn,
-  findMaterialClassColumn,
-  findBaseMaterialsColumn,
-  findModeIdColumn,
   findEvidenceColumn,
   findNotesColumn,
-  findReviewStatusColumn,
   isNeedsReviewRow,
   isManualRow,
   MANUAL_ROW_FLAG,
   buildManualPointFields,
   formatUnitSuperscripts,
-  distinctValues,
-  tokenizedDistinctValues,
   tokenizeValue,
   needsAiConversion,
   pointShape,
   applyRowEdit,
   revertToOriginal,
-  materialsByClass,
   POINT_SHAPE_FLAG,
+  rowKey,
+  rowsEqual,
   type DataRow,
   type PointShape,
 } from "@/utils/columnTypes";
@@ -440,8 +487,8 @@ const hoveredRow = ref<DataRow | null>(null);
 // cleared by unhiding a row individually, "Réinitialiser", or a fresh upload
 // (see handleUpload).
 const hiddenRows = ref<DataRow[]>([]);
-const rowKey = (row: DataRow): string => JSON.stringify(row);
-const isRowHidden = (row: DataRow): boolean => hiddenRows.value.some((r) => rowKey(r) === rowKey(row));
+const isRowHidden = (row: DataRow): boolean =>
+  hiddenRows.value.some((r) => rowKey(r) === rowKey(row));
 const hideDataRow = (row: DataRow) => {
   if (isRowHidden(row)) return;
   hiddenRows.value = [...hiddenRows.value, row];
@@ -469,7 +516,9 @@ const hideDataRows = (rows: DataRow[]) => {
 // chartData and has no normal point to style. Hovering a *visible* row
 // instead already has one via hoveredRow/isHoveredRow, so this stays null
 // then rather than drawing a duplicate on top of it.
-const previewRow = computed(() => (hoveredRow.value && isRowHidden(hoveredRow.value) ? hoveredRow.value : null));
+const previewRow = computed(() =>
+  hoveredRow.value && isRowHidden(hoveredRow.value) ? hoveredRow.value : null,
+);
 // Permanent -- the only way a manually added point actually disappears for
 // good (as opposed to hideDataRow, which now applies uniformly to manual and
 // literature rows alike and is always reversible from the hidden-rows list).
@@ -496,34 +545,39 @@ const removeDataRow = (row: DataRow) => {
 
 // Right-side panels behave as an accordion -- only one of Stats Summary /
 // Data points / Annotations stays open at a time, so the sidebar never grows
-// tall enough to force the whole workspace into a long scroll. A single
-// source of truth (rightPanelOpen) drives all three panels' v-model:open.
-type RightPanel = "stats" | "points" | "annotations" | null;
-const rightPanelOpen = ref<RightPanel>("stats");
-const statsPanelOpen = computed({
-  get: () => rightPanelOpen.value === "stats",
-  set: (v: boolean) => {
-    rightPanelOpen.value = v ? "stats" : rightPanelOpen.value === "stats" ? null : rightPanelOpen.value;
-  },
-});
-const pointsPanelOpen = computed({
-  get: () => rightPanelOpen.value === "points",
-  set: (v: boolean) => {
-    rightPanelOpen.value = v ? "points" : rightPanelOpen.value === "points" ? null : rightPanelOpen.value;
-  },
-});
-const annotationsPanelOpen = computed({
-  get: () => rightPanelOpen.value === "annotations",
-  set: (v: boolean) => {
-    rightPanelOpen.value = v ? "annotations" : rightPanelOpen.value === "annotations" ? null : rightPanelOpen.value;
-  },
-});
+// tall enough to force the whole workspace into a long scroll. See
+// composables/useAccordionPanel.ts.
+const { panel: rightPanel } = useAccordionPanel<"stats" | "points" | "annotations">("stats");
+const statsPanelOpen = rightPanel("stats");
+const pointsPanelOpen = rightPanel("points");
+const annotationsPanelOpen = rightPanel("annotations");
 
-const columnTypes = computed(() =>
-  detectColumnTypes(fomData.value, fomColumns.value),
-);
-const numericColumns = computed(() => columnTypes.value.numeric);
-const categoricalColumns = computed(() => columnTypes.value.categorical);
+// Column detection, per-value counts, and the group -> color map -- see
+// composables/useFomColumnMeta.ts.
+const {
+  numericColumns,
+  categoricalColumns,
+  domainColumn,
+  originColumn,
+  materialClassColumn,
+  baseMaterialsColumn,
+  materialsByClassMap,
+  modeIdColumn,
+  reviewStatusColumn,
+  needsReviewCount,
+  compositeColumns,
+  xAxisCategoricalColumns,
+  domainValues,
+  originValues,
+  materialClassValues,
+  baseMaterialsValues,
+  domainCounts,
+  originCounts,
+  materialClassCounts,
+  baseMaterialsCounts,
+  groupColorMap,
+} = useFomColumnMeta({ fomData, fomColumns, customPoints, groupBy, t });
+
 // Drives both the X-axis type on the chart (category vs. numeric value
 // axis) and whether the "Trend line" control is enabled -- a regression
 // line only means something against a numeric X, not a category label.
@@ -531,46 +585,30 @@ const categoricalColumns = computed(() => columnTypes.value.categorical);
 // yAxisNumeric mirrors the same check for it, gating the Scale toggle,
 // median line, and trend/Pareto (both of which need numeric X *and* Y) the
 // same way GraphControls disables them.
-const xAxisNumeric = computed(() => numericColumns.value.includes(selectedXAxis.value ?? ""));
-const yAxisNumeric = computed(() => numericColumns.value.includes(selectedYAxis.value ?? ""));
+const xAxisNumeric = computed(() =>
+  numericColumns.value.includes(selectedXAxis.value ?? ""),
+);
+const yAxisNumeric = computed(() =>
+  numericColumns.value.includes(selectedYAxis.value ?? ""),
+);
 
 // Mirrors FomChart's own legendData gating (group-by colors, or a trend/
 // Pareto overlay with both axes numeric) -- with none of these active the
 // legend would render empty, so "Show legend" gets disabled rather than
 // leaving a switch a researcher can flip with no visible effect.
 const hasLegendContent = computed(() => {
-  const overlayReady = xAxisNumeric.value && yAxisNumeric.value && !!selectedXAxis.value && !!selectedYAxis.value;
-  return !!groupBy.value || (showTrend.value && overlayReady) || (showPareto.value && overlayReady);
+  const overlayReady =
+    xAxisNumeric.value &&
+    yAxisNumeric.value &&
+    !!selectedXAxis.value &&
+    !!selectedYAxis.value;
+  return (
+    !!groupBy.value ||
+    (showTrend.value && overlayReady) ||
+    (showPareto.value && overlayReady)
+  );
 });
 
-// Domain (wavelength/frequency/unclear) and Origin (EXP/SIM) columns power
-// the Phase 1 "Domain control" / "Origin control" filters — they only show
-// up in richer harmonized exports, so these stay null for the plain
-// gold-standard file and the filter UI simply doesn't render.
-const domainColumn = computed(() => findDomainColumn(fomColumns.value));
-const originColumn = computed(() => findOriginColumn(fomColumns.value));
-const materialClassColumn = computed(() => findMaterialClassColumn(fomColumns.value));
-const baseMaterialsColumn = computed(() => findBaseMaterialsColumn(fomColumns.value));
-// Which Base Materials this dataset actually pairs with each Material Class
-// (see columnTypes.ts) -- feeds the Add Point dialog's cascading Material
-// Class -> Base Materials suggestion, computed off the full dataset since
-// the pairing itself is a property of the loaded file, not of whichever
-// point is currently being added/edited.
-const materialsByClassMap = computed(() => materialsByClass(fomData.value, materialClassColumn.value, baseMaterialsColumn.value));
-const modeIdColumn = computed(() => findModeIdColumn(fomColumns.value));
-const reviewStatusColumn = computed(() => findReviewStatusColumn(fomColumns.value));
-// Counted off the full unfiltered dataset, same convention as domainCounts/
-// originCounts below -- always "how many rows have this flag", not "how
-// many are still visible".
-const needsReviewCount = computed(() =>
-  reviewStatusColumn.value ? fomData.value.filter((row) => isNeedsReviewRow(row, reviewStatusColumn.value)).length : 0,
-);
-// Composite (semicolon/comma-separated) columns -- both get the same
-// tokenized filter/group-by/color treatment (see utils/columnTypes.ts and
-// FomChart's isGroupingByCompositeColumn).
-const compositeColumns = computed(() =>
-  [materialClassColumn.value, baseMaterialsColumn.value].filter((c): c is string => c !== null),
-);
 // The filter chip selection that actually governs groupBy's tokens, or null
 // when groupBy isn't composite. Passed down to FomChart/StatsSummaryPanel so
 // their per-token grouping only ever considers tokens the user still has
@@ -578,95 +616,21 @@ const compositeColumns = computed(() =>
 // composite-filter mode above would still tokenize into every one of its
 // raw values, silently re-adding a group the user just excluded.
 const groupBySelectedTokens = computed<string[] | null>(() => {
-  if (groupBy.value === materialClassColumn.value) return selectedMaterialClasses.value;
-  if (groupBy.value === baseMaterialsColumn.value) return selectedBaseMaterials.value;
+  if (groupBy.value === materialClassColumn.value)
+    return selectedMaterialClasses.value;
+  if (groupBy.value === baseMaterialsColumn.value)
+    return selectedBaseMaterials.value;
   return null;
-});
-// Origin and the composite columns already have their own dedicated filter
-// UI and are meant for grouping/coloring, not for X-axis position -- a
-// composite cell's raw, un-tokenized string ("Dielectric;Metal") would just
-// clutter the X axis with combinations no one picked individually, and
-// Origin's two values (EXP/SIM) make a mostly-empty, uninformative axis.
-// categoricalColumns itself stays untouched since groupableColumns (below)
-// still needs the full list.
-const xAxisCategoricalColumns = computed(() =>
-  categoricalColumns.value.filter(
-    (col) => col !== originColumn.value && !compositeColumns.value.includes(col),
-  ),
-);
-const domainValues = computed(() =>
-  domainColumn.value ? distinctValues(fomData.value, domainColumn.value) : [],
-);
-const originValues = computed(() =>
-  originColumn.value ? distinctValues(fomData.value, originColumn.value) : [],
-);
-const materialClassValues = computed(() =>
-  materialClassColumn.value ? tokenizedDistinctValues(fomData.value, materialClassColumn.value) : [],
-);
-const baseMaterialsValues = computed(() =>
-  baseMaterialsColumn.value ? tokenizedDistinctValues(fomData.value, baseMaterialsColumn.value) : [],
-);
-
-// How many rows each filter chip actually covers, e.g. "Au (3)" -- counted
-// off the full unfiltered dataset (not filteredData) so a chip's count
-// doesn't shrink as soon as its own filter group excludes other values;
-// it always answers "how many points have this value in the data", not
-// "how many are currently visible". Composite columns (Material Class,
-// Base Materials) count a row toward every token it lists, same as
-// tokenizedDistinctValues does for the chip list itself.
-const countBy = (column: string | null, rows: DataRow[]): Record<string, number> => {
-  if (!column) return {};
-  const counts: Record<string, number> = {};
-  for (const row of rows) {
-    const v = row[column];
-    if (v === null || v === undefined || v === "") continue;
-    const key = String(v);
-    counts[key] = (counts[key] ?? 0) + 1;
-  }
-  return counts;
-};
-const countTokensBy = (column: string | null, rows: DataRow[]): Record<string, number> => {
-  if (!column) return {};
-  const counts: Record<string, number> = {};
-  for (const row of rows) {
-    for (const tok of tokenizeValue(row[column])) counts[tok] = (counts[tok] ?? 0) + 1;
-  }
-  return counts;
-};
-const domainCounts = computed(() => countBy(domainColumn.value, fomData.value));
-const originCounts = computed(() => countBy(originColumn.value, fomData.value));
-const materialClassCounts = computed(() => countTokensBy(materialClassColumn.value, fomData.value));
-const baseMaterialsCounts = computed(() => countTokensBy(baseMaterialsColumn.value, fomData.value));
-
-// A fixed color per group label, assigned once from the full unfiltered
-// dataset -- so "Dielectric" stays orange whether or not a Domain/Origin/
-// Material Class filter currently hides some of its rows. Computed here
-// (not inside FomChart/StatsSummaryPanel) so both consume the exact same
-// map and can never disagree with each other. See utils/palette.ts.
-const groupColorMap = computed<Record<string, string>>(() => {
-  const col = groupBy.value;
-  if (!col) return {};
-  // Folds in customPoints too -- a manually added row can carry a brand-new
-  // category value the uploaded file never had (e.g. a Material Class the
-  // literature doesn't use yet), and without this it would fall back to a
-  // palette slot already claimed by an existing group instead of a stable
-  // color of its own.
-  const sourceRows = [...fomData.value, ...customPoints.value];
-  const rawLabels = compositeColumns.value.includes(col)
-    ? tokenizedDistinctValues(sourceRows, col)
-    : distinctValues(sourceRows, col);
-  const hasBlank = sourceRows.some((row) => {
-    const v = row[col];
-    return v === null || v === undefined || v === "";
-  });
-  const labels = hasBlank ? [...rawLabels, t("fomcharts.unknownGroup")] : rawLabels;
-  return assignGroupColors(labels);
 });
 
 const filteredData = computed(() => {
   return fomData.value.filter((row) => {
     if (isRowHidden(row)) return false;
-    if (excludeNeedsReview.value && isNeedsReviewRow(row, reviewStatusColumn.value)) return false;
+    if (
+      excludeNeedsReview.value &&
+      isNeedsReviewRow(row, reviewStatusColumn.value)
+    )
+      return false;
     if (domainColumn.value) {
       const v = row[domainColumn.value];
       const isSet = v !== null && v !== undefined && v !== "";
@@ -716,8 +680,14 @@ const filteredData = computed(() => {
 // this paper" keeps working even while only pinned points are on screen.
 const allPlottableData = computed(() => {
   const combined = [...filteredData.value, ...customPoints.value];
-  const yFiltered = filterPlottable(combined, selectedYAxis.value, yAxisNumeric.value);
-  return xAxisNumeric.value ? filterPlottable(yFiltered, selectedXAxis.value) : yFiltered;
+  const yFiltered = filterPlottable(
+    combined,
+    selectedYAxis.value,
+    yAxisNumeric.value,
+  );
+  return xAxisNumeric.value
+    ? filterPlottable(yFiltered, selectedXAxis.value)
+    : yFiltered;
 });
 
 // Rows actually reaching the chart -- narrowed to just the pinned
@@ -744,15 +714,23 @@ const allPlottableData = computed(() => {
 // the click round-trip.
 const chartDisplayData = computed(() =>
   showOnlyAnnotated.value
-    ? [...fomData.value, ...customPoints.value].filter((row) => annotations.value.some((a) => rowsEqual(a.row, row)))
+    ? [...fomData.value, ...customPoints.value].filter((row) =>
+        annotations.value.some((a) => sameRow(a.row, row)),
+      )
     : [...filteredData.value, ...customPoints.value],
 );
 
 // Stats panel reads off the same narrowed set as the chart, so its N/mean/
 // median/σ never describe more points than are actually visible.
 const plottableData = computed(() => {
-  const yFiltered = filterPlottable(chartDisplayData.value, selectedYAxis.value, yAxisNumeric.value);
-  return xAxisNumeric.value ? filterPlottable(yFiltered, selectedXAxis.value) : yFiltered;
+  const yFiltered = filterPlottable(
+    chartDisplayData.value,
+    selectedYAxis.value,
+    yAxisNumeric.value,
+  );
+  return xAxisNumeric.value
+    ? filterPlottable(yFiltered, selectedXAxis.value)
+    : yFiltered;
 });
 
 // Active Benchmarking: "Inclure mes points ajoutés dans les statistiques"
@@ -761,7 +739,9 @@ const plottableData = computed(() => {
 // includeCustomInStats prop) to the median/trend/Pareto overlays, so the
 // side panel and the chart never disagree about which points count.
 const statsRows = computed(() =>
-  includeCustomInStats.value ? plottableData.value : plottableData.value.filter((row) => !isManualRow(row)),
+  includeCustomInStats.value
+    ? plottableData.value
+    : plottableData.value.filter((row) => !isManualRow(row)),
 );
 
 // Curated fixed-field form for "Add data" (see utils/columnTypes.ts) --
@@ -769,7 +749,13 @@ const statsRows = computed(() =>
 // currently selected axes, so a saved point is guaranteed plottable on the
 // chart the researcher is looking at right now.
 const manualPointFields = computed(() =>
-  buildManualPointFields(fomColumns.value, fomData.value, selectedXAxis.value, selectedYAxis.value, numericColumns.value),
+  buildManualPointFields(
+    fomColumns.value,
+    fomData.value,
+    selectedXAxis.value,
+    selectedYAxis.value,
+    numericColumns.value,
+  ),
 );
 
 // Only offer low-cardinality columns for "Group / Color by" — computed off
@@ -780,10 +766,16 @@ const manualPointFields = computed(() =>
 // isn't tokenized like Material Class/Base Materials are (see
 // groupColorMap and FomChart's isGroupingByCompositeColumn).
 const groupByExemptColumns = computed(() =>
-  [...compositeColumns.value, modeIdColumn.value].filter((c): c is string => c !== null),
+  [...compositeColumns.value, modeIdColumn.value].filter(
+    (c): c is string => c !== null,
+  ),
 );
 const groupByColumns = computed(() =>
-  groupableColumns(filteredData.value, categoricalColumns.value, groupByExemptColumns.value),
+  groupableColumns(
+    filteredData.value,
+    categoricalColumns.value,
+    groupByExemptColumns.value,
+  ),
 );
 
 // Isolating a single group by clicking its card in StatsSummaryPanel only
@@ -820,7 +812,8 @@ watch([selectedYAxis, selectedXAxis], () => {
 });
 
 const isCompositeGroupBy = (col: string | null): boolean =>
-  !!col && (col === materialClassColumn.value || col === baseMaterialsColumn.value);
+  !!col &&
+  (col === materialClassColumn.value || col === baseMaterialsColumn.value);
 // "Fusionner les points multi-catégories" (StatsSummaryPanel) only ever
 // shows once groupBy is a composite column -- default it on right as that
 // happens instead of leaving it off and easy to miss the first time. Fires
@@ -849,9 +842,16 @@ watch(
 // Rather than leave a silently blank chart with the toggle still checked,
 // switch it back off and explain why.
 watch(plottableData, (rows) => {
-  if (showOnlyAnnotated.value && rows.length === 0 && annotations.value.length > 0) {
+  if (
+    showOnlyAnnotated.value &&
+    rows.length === 0 &&
+    annotations.value.length > 0
+  ) {
     showOnlyAnnotated.value = false;
-    setTransientStatus("status.noMatchingPins", "border-amber-500/20 bg-amber-500/12 text-amber-950");
+    setTransientStatus(
+      "status.noMatchingPins",
+      "border-amber-500/20 bg-amber-500/12 text-amber-950",
+    );
   }
 });
 
@@ -860,7 +860,11 @@ watch(plottableData, (rows) => {
  * (first load) and resetWorkspace (same dataset, fresh config). */
 const applyDefaults = () => {
   selectedYAxis.value = guessDefaultYAxis(numericColumns.value);
-  selectedXAxis.value = guessDefaultXAxis(fomData.value, xAxisCategoricalColumns.value, numericColumns.value);
+  selectedXAxis.value = guessDefaultXAxis(
+    fomData.value,
+    xAxisCategoricalColumns.value,
+    numericColumns.value,
+  );
   axisLinked.value = true;
   // Domain defaults to wavelength-only records, matching Phase 1's
   // "include wavelength-domain FOM records only" requirement — frequency
@@ -869,8 +873,11 @@ const applyDefaults = () => {
   // every available value checked.
   // Set before the groupBy default below, since groupByColumns is
   // computed off the domain/origin-filtered data.
-  const wavelengthOnly = domainValues.value.filter((v) => /wavelength/i.test(v));
-  selectedDomains.value = wavelengthOnly.length > 0 ? wavelengthOnly : domainValues.value;
+  const wavelengthOnly = domainValues.value.filter((v) =>
+    /wavelength/i.test(v),
+  );
+  selectedDomains.value =
+    wavelengthOnly.length > 0 ? wavelengthOnly : domainValues.value;
   selectedOrigins.value = originValues.value;
   selectedMaterialClasses.value = materialClassValues.value;
   selectedBaseMaterials.value = baseMaterialsValues.value;
@@ -880,9 +887,10 @@ const applyDefaults = () => {
   // default -- EXP vs. SIM is the first split a researcher checks for any
   // FOM comparison. Falls back to guessDefaultColorGroup's "none" when the
   // sheet has no Origin column or it doesn't qualify as groupable.
-  groupBy.value = originColumn.value && groupByColumns.value.includes(originColumn.value)
-    ? originColumn.value
-    : guessDefaultColorGroup(groupByColumns.value);
+  groupBy.value =
+    originColumn.value && groupByColumns.value.includes(originColumn.value)
+      ? originColumn.value
+      : guessDefaultColorGroup(groupByColumns.value);
   // Computed straight from the just-set default groupBy (rather than left
   // for the watch above to catch) -- Origin wins that default almost always,
   // so this is normally false; only true on the rarer sheets where
@@ -917,7 +925,9 @@ const handleUpload = async ([file]: File[]) => {
     ({ columns, data } = await apiService.uploadExcel(file));
   } catch (error) {
     setTransientStatus(
-      error instanceof MultipleSheetsError ? "status.multipleSheets" : "status.error",
+      error instanceof MultipleSheetsError
+        ? "status.multipleSheets"
+        : "status.error",
       "border-rose-500/20 bg-rose-500/12 text-rose-950",
     );
     return;
@@ -938,7 +948,7 @@ const handleUpload = async ([file]: File[]) => {
     try {
       ({ columns, data } = await apiService.convertExcel(columns, data));
       converted = true;
-    } catch (error) {
+    } catch {
       setTransientStatus(
         "status.conversionFailed",
         "border-rose-500/20 bg-rose-500/12 text-rose-950",
@@ -1020,7 +1030,9 @@ const resetWorkspace = () => {
 const MANUAL_SOURCE_EXPORT_COLUMN = "Source";
 const exportColumns = computed(() => {
   const base = filterExportColumns(fomColumns.value);
-  return plottableData.value.some(isManualRow) ? [...base, MANUAL_SOURCE_EXPORT_COLUMN] : base;
+  return plottableData.value.some(isManualRow)
+    ? [...base, MANUAL_SOURCE_EXPORT_COLUMN]
+    : base;
 });
 const exportRows = computed(() => {
   if (!plottableData.value.some(isManualRow)) return plottableData.value;
@@ -1036,7 +1048,11 @@ const handleExportCsv = () => {
   exportRowsAsCsv(exportColumns.value, exportRows.value, "fom_data_export.csv");
 };
 const handleExportXlsx = () => {
-  exportRowsAsExcel(exportColumns.value, exportRows.value, "fom_data_export.xlsx");
+  exportRowsAsExcel(
+    exportColumns.value,
+    exportRows.value,
+    "fom_data_export.xlsx",
+  );
 };
 
 // Active Benchmarking: builds a manual row from the dialog's raw string
@@ -1049,7 +1065,12 @@ const handleExportXlsx = () => {
 // whichever key the loaded file's own Notes column uses if it has one (so it
 // merges into the exact same column literature rows use), else the literal
 // "Notes" key, matched by buildAnnotation's own fallback below.
-const handleAddPointSubmit = (values: Record<string, string>, label: string, notes: string, shape: PointShape) => {
+const handleAddPointSubmit = (
+  values: Record<string, string>,
+  label: string,
+  notes: string,
+  shape: PointShape,
+) => {
   const row: DataRow = { [MANUAL_ROW_FLAG]: true, [POINT_SHAPE_FLAG]: shape };
   for (const field of manualPointFields.value) {
     const raw = values[field.column];
@@ -1081,17 +1102,23 @@ const handleExportPng = () => {
 // pin/hidden-row entry pointing at the same point automatically -- both rely
 // on rowsEqual, which checks reference equality first.
 const findLiveRow = (row: DataRow): DataRow | null =>
-  fomData.value.find((r) => rowsEqual(r, row)) ?? customPoints.value.find((r) => rowsEqual(r, row)) ?? null;
+  fomData.value.find((r) => sameRow(r, row)) ??
+  customPoints.value.find((r) => sameRow(r, row)) ??
+  null;
 
 const editPointDialogOpen = ref(false);
 const editingRow = ref<DataRow | null>(null);
-const editingInitialLabel = computed(() => String(editingRow.value?.title ?? editingRow.value?.Title ?? ""));
+const editingInitialLabel = computed(() =>
+  String(editingRow.value?.title ?? editingRow.value?.Title ?? ""),
+);
 const editingInitialNotes = computed(() => {
   if (!editingRow.value) return "";
   const notesCol = findNotesColumn(fomColumns.value);
   return String(editingRow.value[notesCol ?? "Notes"] ?? "");
 });
-const editingInitialShape = computed<PointShape>(() => (editingRow.value ? pointShape(editingRow.value) : "diamond"));
+const editingInitialShape = computed<PointShape>(() =>
+  editingRow.value ? pointShape(editingRow.value) : "diamond",
+);
 
 const openEditDialog = (row: DataRow) => {
   editingRow.value = findLiveRow(row) ?? row;
@@ -1104,12 +1131,22 @@ const openEditDialog = (row: DataRow) => {
 // already checks for) rather than being skipped -- skipping would leave
 // the old value in place, since Object.assign never removes a key that
 // simply isn't present in the patch.
-const handleEditPointSubmit = (values: Record<string, string>, label: string, notes: string, shape: PointShape) => {
+const handleEditPointSubmit = (
+  values: Record<string, string>,
+  label: string,
+  notes: string,
+  shape: PointShape,
+) => {
   if (!editingRow.value) return;
   const patch: DataRow = {};
   for (const field of manualPointFields.value) {
     const raw = values[field.column];
-    patch[field.column] = raw === undefined || raw === "" ? null : field.kind === "numeric" ? Number(raw) : raw;
+    patch[field.column] =
+      raw === undefined || raw === ""
+        ? null
+        : field.kind === "numeric"
+          ? Number(raw)
+          : raw;
   }
   patch[findNotesColumn(fomColumns.value) ?? "Notes"] = notes.trim() || null;
   patch.Title = label;
@@ -1157,12 +1194,10 @@ const buildAnnotation = (row: DataRow): Annotation => {
 // column value matches (two genuinely duplicate rows in the source data,
 // e.g. the same paper/mode listed twice) -- without the second check, two
 // such rows look pinned twice for "the same point" even though they're
-// technically distinct row objects.
-const rowsEqual = (a: DataRow, b: DataRow): boolean => {
-  if (a === b) return true;
-  return fomColumns.value.every((col) => a[col] === b[col]);
-};
-const isAlreadyPinned = (row: DataRow) => annotations.value.some((a) => rowsEqual(a.row, row));
+// technically distinct row objects. See utils/columnTypes.ts's rowsEqual.
+const sameRow = (a: DataRow, b: DataRow): boolean => rowsEqual(a, b, fomColumns.value);
+const isAlreadyPinned = (row: DataRow) =>
+  annotations.value.some((a) => sameRow(a.row, row));
 
 // FomChart's pinnedRows prop -- keeps a pinned point's on-chart ref label
 // visible even outside hover/isolation (see its withItemStyle).
@@ -1198,14 +1233,21 @@ const handlePointClick = (point: {
 // pinning is now visible directly in that panel too (its own "Épinglés"
 // group), so switching the sidebar away from under the researcher there
 // would only lose their place for no benefit.
-const pinRows = (rows: DataRow[], { openPanel = true }: { openPanel?: boolean } = {}) => {
+const pinRows = (
+  rows: DataRow[],
+  { openPanel = true }: { openPanel?: boolean } = {},
+) => {
   const newAnnotations: Annotation[] = [];
   for (const row of rows) {
     // Also guard within this same batch -- siblingsFor can otherwise offer
     // several source rows that are themselves content-duplicates of each
     // other, which would pin the same-looking point more than once in a
     // single click.
-    if (isAlreadyPinned(row) || newAnnotations.some((a) => rowsEqual(a.row, row))) continue;
+    if (
+      isAlreadyPinned(row) ||
+      newAnnotations.some((a) => sameRow(a.row, row))
+    )
+      continue;
     newAnnotations.push(buildAnnotation(row));
   }
   if (newAnnotations.length === 0) return;
@@ -1218,7 +1260,9 @@ const pinRows = (rows: DataRow[], { openPanel = true }: { openPanel?: boolean } 
   // rows out of that filtered list, and its own eye toggle is disabled while
   // pinned -- a hidden row with no way left to unhide it.
   const newlyPinnedKeys = new Set(newAnnotations.map((a) => rowKey(a.row)));
-  hiddenRows.value = hiddenRows.value.filter((r) => !newlyPinnedKeys.has(rowKey(r)));
+  hiddenRows.value = hiddenRows.value.filter(
+    (r) => !newlyPinnedKeys.has(rowKey(r)),
+  );
   if (openPanel) annotationsPanelOpen.value = true;
 };
 
@@ -1242,13 +1286,15 @@ const removeAnnotation = (id: string) => {
 // removeAnnotation, just keyed by row (what that panel has) instead of
 // annotation id (which it deliberately doesn't need to know about).
 const unpinRow = (row: DataRow) => {
-  annotations.value = annotations.value.filter((a) => !rowsEqual(a.row, row));
+  annotations.value = annotations.value.filter((a) => !sameRow(a.row, row));
 };
 
 // DataPointsTable's group context menu "Désépingler" -- same removal as
 // unpinRow, applied to every row of the (already all-pinned) group at once.
 const unpinRows = (rows: DataRow[]) => {
-  annotations.value = annotations.value.filter((a) => !rows.some((row) => rowsEqual(a.row, row)));
+  annotations.value = annotations.value.filter(
+    (a) => !rows.some((row) => sameRow(a.row, row)),
+  );
 };
 
 const clearAnnotations = () => {
@@ -1256,6 +1302,8 @@ const clearAnnotations = () => {
 };
 
 const updateAnnotationNote = (id: string, note: string) => {
-  annotations.value = annotations.value.map((a) => (a.id === id ? { ...a, note } : a));
+  annotations.value = annotations.value.map((a) =>
+    a.id === id ? { ...a, note } : a,
+  );
 };
 </script>
