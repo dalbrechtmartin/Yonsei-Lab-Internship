@@ -20,9 +20,9 @@ COPY --from=builder /root/.local /home/appuser/.local
 COPY backend .
 
 RUN pip uninstall -y pip setuptools wheel 2>/dev/null; \
-    rm -rf /usr/local/lib/python3.11/site-packages/pip* \
-    /usr/local/lib/python3.11/site-packages/setuptools* \
-    /usr/local/lib/python3.11/site-packages/wheel* \
+    rm -rf /usr/local/lib/python3.*/site-packages/pip* \
+    /usr/local/lib/python3.*/site-packages/setuptools* \
+    /usr/local/lib/python3.*/site-packages/wheel* \
     /usr/local/bin/pip*
 
 RUN chown -R appuser:appuser /app /home/appuser/.local
