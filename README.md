@@ -113,4 +113,4 @@ and `FRONTEND_HOST_PORT`.
 
 ## License
 
-[MIT](LICENSE)
+[BSD-3-Clause](LICENSE)
