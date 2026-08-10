@@ -86,6 +86,7 @@
     "success": "提取完成，Excel 文件已保存。",
     "partialSuccess": "部分文件已跳过，导出文件仅包含处理成功的文件。",
     "error": "提取 PDF 时出现问题。",
+    "noData": "未能从这些 PDF 中提取到任何数据。",
     "quotaExceeded": "已达到 Gemini 免费配额上限。请稍后重试或减少文件数量。",
     "ready": {
       "heading": "导出已准备就绪",
@@ -121,7 +122,8 @@
         "processing": "处理中",
         "almostDone": "即将完成",
         "done": "已完成",
-        "failed": "失败"
+        "failed": "失败",
+        "outOfDomain": "不相关"
       },
       "heading": "正在提取论文数据…",
       "overall": "已处理 {done} / {total} 个文件",

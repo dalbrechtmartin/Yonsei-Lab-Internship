@@ -201,6 +201,20 @@ const resetJob = () => {
 const markReady = (status: JobStatusResponse) => {
   stopPolling();
   isBusy.value = false;
+
+  // Mirrors the backend's own check (see download_job_result): a job can
+  // reach "done" with zero records across every file (e.g. no data table
+  // found in any paper). GET .../download then 400s, so bail out here
+  // instead of showing a Save button that's guaranteed to fail.
+  if (!status.files.some((f) => f.recordCount > 0)) {
+    resetJob();
+    setTransientStatus(
+      "extraction.noData",
+      "border-rose-500/20 bg-rose-500/12 text-rose-950",
+    );
+    return;
+  }
+
   readyToSave.value = {
     jobId: status.jobId,
     partial: status.files.some((f) => f.status === "failed"),

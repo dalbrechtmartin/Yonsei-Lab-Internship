@@ -86,6 +86,7 @@
     "success": "Extraction terminée. Le fichier Excel a été enregistré.",
     "partialSuccess": "Certains fichiers ont été ignorés. L'export ne contient que ceux qui ont réussi.",
     "error": "Une erreur est survenue lors de l'extraction des PDF.",
+    "noData": "Aucune donnée n'a pu être extraite de ces PDF.",
     "quotaExceeded": "Le quota gratuit de Gemini est déjà atteint. Réessayez plus tard ou avec moins de fichiers.",
     "ready": {
       "heading": "Votre export est prêt",
@@ -121,7 +122,8 @@
         "processing": "En cours",
         "almostDone": "Bientôt terminé",
         "done": "Terminé",
-        "failed": "Échoué"
+        "failed": "Échoué",
+        "outOfDomain": "Hors sujet"
       },
       "heading": "Extraction en cours…",
       "overall": "{done} / {total} fichiers traités",

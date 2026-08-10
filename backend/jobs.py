@@ -66,6 +66,20 @@ async def _process_one_file(job_id: str, job_file: dict, any_call_made: bool) ->
         pdf_bytes = f.read()
     text = await asyncio.to_thread(llm.extract_text_from_pdf, pdf_bytes)
 
+    # Early-exit triage: rejects a paper with no optical-resonance FOM
+    # metric at all (wrong field entirely) before spending the 3-call
+    # consensus budget below on it. See llm.check_domain_relevance for
+    # why this is safe to run unconditionally (fails open, cheap model).
+    if any_call_made:
+        await _sleep_for(llm.DOMAIN_CHECK_MODEL)
+    in_domain = await asyncio.to_thread(
+        llm.check_domain_relevance, text, filename, job_id, file_id
+    )
+    any_call_made = True
+    if not in_domain:
+        state.update_job_file_status(job_id, file_id, "failed", error_reason="out_of_domain")
+        return True, any_call_made
+
     if any_call_made:
         await _sleep_for(available_models[0] if available_models else None)
     try:

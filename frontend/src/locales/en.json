@@ -86,6 +86,7 @@
     "success": "Extraction done. Your Excel file has been saved.",
     "partialSuccess": "Some files were skipped. The export only includes the ones that succeeded.",
     "error": "Something went wrong extracting those PDFs.",
+    "noData": "No data could be extracted from those PDFs.",
     "quotaExceeded": "Gemini's free-tier quota is already reached. Try again later or with fewer files.",
     "ready": {
       "heading": "Your export is ready",
@@ -121,7 +122,8 @@
         "processing": "Processing",
         "almostDone": "Almost done",
         "done": "Done",
-        "failed": "Failed"
+        "failed": "Failed",
+        "outOfDomain": "Off-topic"
       },
       "heading": "Extracting your papers…",
       "overall": "{done} / {total} files processed",

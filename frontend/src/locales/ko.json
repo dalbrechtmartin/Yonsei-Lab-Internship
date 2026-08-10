@@ -86,6 +86,7 @@
     "success": "추출 완료. 엑셀 파일이 저장되었습니다.",
     "partialSuccess": "일부 파일은 건너뛰었습니다. 성공한 파일만 내보내기에 포함됩니다.",
     "error": "PDF 추출 중 문제가 발생했습니다.",
+    "noData": "이 PDF들에서 데이터를 추출하지 못했습니다.",
     "quotaExceeded": "Gemini 무료 할당량에 도달했습니다. 나중에 다시 시도하거나 파일 수를 줄여주세요.",
     "ready": {
       "heading": "내보내기 준비 완료",
@@ -121,7 +122,8 @@
         "processing": "처리 중",
         "almostDone": "거의 완료",
         "done": "완료",
-        "failed": "실패"
+        "failed": "실패",
+        "outOfDomain": "주제 아님"
       },
       "heading": "논문을 추출하는 중…",
       "overall": "{done} / {total} 파일 처리됨",

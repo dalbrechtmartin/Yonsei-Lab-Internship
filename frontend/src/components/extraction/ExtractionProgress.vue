@@ -114,7 +114,7 @@
           }}</span>
           <span
             class="inline-flex shrink-0 items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium"
-            :class="pillClass(file.status)"
+            :class="pillClass(file)"
           >
             <span
               v-if="file.status === 'processing'"
@@ -139,11 +139,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
-import type {
-  JobFileStatus,
-  JobFileStatusValue,
-  JobStatusResponse,
-} from "@/services/api";
+import type { JobFileStatus, JobStatusResponse } from "@/services/api";
 
 const { t } = useI18n();
 
@@ -233,11 +229,17 @@ const fileLabelKey = (file: JobFileStatus) => {
   // A 'pending' file that already failed once this job is being held for
   // an automatic retry, not just waiting for its turn -- worth saying so.
   if (file.status === "pending" && file.errorReason) return "retrying";
+  // Rejected by the pre-extraction domain check (see jobs.py) -- not a
+  // technical failure, so it gets its own label instead of "Failed".
+  if (file.status === "failed" && file.errorReason === "out_of_domain")
+    return "outOfDomain";
   return file.status;
 };
 
-const pillClass = (status: JobFileStatusValue) => {
-  switch (status) {
+const pillClass = (file: JobFileStatus) => {
+  if (file.status === "failed" && file.errorReason === "out_of_domain")
+    return "bg-amber-500/10 text-amber-700";
+  switch (file.status) {
     case "done":
       return "bg-emerald-500/10 text-emerald-700";
     case "failed":

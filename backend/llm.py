@@ -343,6 +343,56 @@ def _call_model_with_429_retry(model: str, final_prompt: str, filename: str) -> 
     raise AssertionError("unreachable")  # loop always returns or raises
 
 
+DOMAIN_CHECK_MODEL = "gemini-3.5-flash-lite"
+
+_DOMAIN_CHECK_SCHEMA = types.Schema(
+    type=types.Type.OBJECT,
+    properties={"in_domain": types.Schema(type=types.Type.BOOLEAN)},
+    required=["in_domain"],
+)
+
+DOMAIN_CHECK_PROMPT = """Role: You are a fast triage filter placed before a detailed nanophotonics extraction pipeline.
+
+TASK: Decide whether the paper below reports ANY optical-resonance figure-of-merit data for a photonic/plasmonic/optical structure -- specifically at least one of: a resonance wavelength or frequency, a Q-factor, a Figure of Merit (FOM), a refractive-index sensitivity, or a resonance FWHM/linewidth. Wavelength-domain or frequency-domain, experimental or simulated -- all count; the detailed pipeline downstream handles that distinction, you only decide whether ANY such metric is present at all.
+
+Answer "in_domain": true if the paper reports at least one such metric for at least one mode/peak/configuration, even a single one. Answer false only if the paper is about something else entirely (a different kind of device or physics, a review with no reported metric, an unrelated field) and contains none of these metrics anywhere.
+
+Respond STRICTLY as JSON: {"in_domain": true or false}. No other text."""
+
+
+def check_domain_relevance(paper_text: str, filename: str, job_id: str, file_id: str) -> bool:
+    """Cheap single-call gate run before the expensive 3-run consensus
+    extraction (see jobs.py's _process_one_file) -- rejects papers with no
+    optical-resonance FOM metric anywhere (wrong field entirely, e.g. an
+    OLED or solar-cell paper) without burning that whole budget on them.
+
+    Always uses the cheapest/highest-RPD model (flash-lite, 500/day vs
+    20/day for the others -- see MODEL_RPD_LIMITS) regardless of the job's
+    own model choice, so this check never competes with the real
+    extraction for the tight default-chain quota. Fails OPEN (returns
+    True, i.e. "let the real extraction decide") on any error -- a flaky
+    triage call must never be the reason a legitimate paper gets skipped.
+    """
+    prompt = DOMAIN_CHECK_PROMPT + f"\n\n--- PAPER TEXT ({filename}) ---\n{paper_text}"
+    try:
+        response = client.models.generate_content(
+            model=DOMAIN_CHECK_MODEL,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                temperature=0,
+                response_mime_type="application/json",
+                response_schema=_DOMAIN_CHECK_SCHEMA,
+            ),
+        )
+        in_domain = bool(json.loads((response.text or "").strip()).get("in_domain", True))
+        state.log_usage(DOMAIN_CHECK_MODEL, job_id, file_id, "ok")
+        return in_domain
+    except Exception as e:
+        logger.warning("Domain check failed for %s, letting the full extraction decide: %s", filename, e)
+        state.log_usage(DOMAIN_CHECK_MODEL, job_id, file_id, "error")
+        return True
+
+
 def analyze_paper_with_llm(paper_text: str, filename: str, models: list[str]) -> list[dict] | None:
     final_prompt = PROMPT_TEMPLATE.replace("{filename}", filename)
     final_prompt += f"\n\n--- PAPER TEXT ---\n{paper_text}"
