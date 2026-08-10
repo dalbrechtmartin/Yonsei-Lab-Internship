@@ -6,6 +6,8 @@
       <img
         :src="yonseiCampus"
         alt=""
+        width="1600"
+        height="991"
         class="absolute inset-0 h-full w-full object-cover object-[center_32%] opacity-[0.26]"
       />
       <div
@@ -107,9 +109,9 @@
           >
             {{ t("view.home.tools.visualization.eyebrow") }}
           </p>
-          <h3 class="mt-2.5 text-[20px] font-semibold text-ink">
+          <h2 class="mt-2.5 text-[20px] font-semibold text-ink">
             {{ t("view.home.tools.visualization.title") }}
-          </h3>
+          </h2>
           <p class="mt-2.5 text-[13px] leading-[1.6] text-secondary">
             {{ t("view.home.tools.visualization.body") }}
           </p>
@@ -132,8 +134,12 @@
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
-                <DropdownMenuItem @select="downloadSampleDataset('csv')">{{ t("fomcharts.export.csv") }}</DropdownMenuItem>
-                <DropdownMenuItem @select="downloadSampleDataset('xlsx')">{{ t("fomcharts.export.xlsx") }}</DropdownMenuItem>
+                <DropdownMenuItem @select="downloadSampleDataset('csv')">{{
+                  t("fomcharts.export.csv")
+                }}</DropdownMenuItem>
+                <DropdownMenuItem @select="downloadSampleDataset('xlsx')">{{
+                  t("fomcharts.export.xlsx")
+                }}</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -148,9 +154,9 @@
           >
             {{ t("view.home.tools.extraction.eyebrowUnlocked") }}
           </p>
-          <h3 class="mt-2.5 text-[20px] font-semibold text-ink">
+          <h2 class="mt-2.5 text-[20px] font-semibold text-ink">
             {{ t("view.home.tools.extraction.title") }}
-          </h3>
+          </h2>
           <p class="mt-2.5 text-[13px] leading-[1.6] text-secondary">
             {{ t("view.home.tools.extraction.body") }}
           </p>
@@ -172,16 +178,27 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { defineAsyncComponent, ref } from "vue";
 import { ChevronDown, Download } from "@lucide/vue";
 import { RouterLink } from "vue-router";
 import { useI18n } from "vue-i18n";
-import GuideTemplate from "@/components/guide/GuideTemplate.vue";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+
+// GuideTemplate pulls in the whole visualization component tree (echarts,
+// konva...) just to render the off-screen PDF guide, so it's loaded as its
+// own chunk instead of shipping with every visit to the home page.
+const GuideTemplate = defineAsyncComponent(
+  () => import("@/components/guide/GuideTemplate.vue"),
+);
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { exportGuideToPdf } from "@/utils/pdfExport";
 import yonseiSymbol from "@/assets/yonsei-logo.svg";
 import yonseiOptica from "@/assets/yonsei-optica.svg";
-import yonseiCampus from "@/assets/yonsei-university.jpg";
+import yonseiCampus from "@/assets/yonsei-university.webp";
 
 const { t, locale } = useI18n();
 
@@ -201,7 +218,10 @@ async function downloadGuide() {
     await exportGuideToPdf(
       guideTemplateRef.value.rootEl,
       `${t("guide.filenameBase")}_${t("app.title")}_${locale.value.toUpperCase()}.pdf`,
-      { title: `${t("app.title")} — ${t("guide.meta.subtitle")}`, language: locale.value },
+      {
+        title: `${t("app.title")} — ${t("guide.meta.subtitle")}`,
+        language: locale.value,
+      },
     );
   } finally {
     generatingGuide.value = false;

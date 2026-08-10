@@ -1,23 +1,24 @@
-import { createRouter, createWebHistory, type RouteRecordRaw } from "vue-router";
-import HomeView from "../views/HomeView.vue";
-import VisualizationView from "../views/VisualizationView.vue";
-import ExtractionView from "../views/ExtractionView.vue";
+import {
+  createRouter,
+  createWebHistory,
+  type RouteRecordRaw,
+} from "vue-router";
 
 const routes: RouteRecordRaw[] = [
   {
     path: "/",
     name: "home",
-    component: HomeView,
+    component: () => import("../views/HomeView.vue"),
   },
   {
     path: "/visualization",
     name: "visualization",
-    component: VisualizationView,
+    component: () => import("../views/VisualizationView.vue"),
   },
   {
     path: "/extraction",
     name: "extraction",
-    component: ExtractionView,
+    component: () => import("../views/ExtractionView.vue"),
   },
 ];
 
