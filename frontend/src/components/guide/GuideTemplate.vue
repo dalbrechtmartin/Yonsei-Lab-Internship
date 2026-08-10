@@ -157,7 +157,7 @@
           {{ t("guide.intro.contextBody") }}
         </p>
 
-        <!-- Yonsei, MPBEL, SPIE and Optica all reuse real, rights-cleared
+        <!-- Yonsei, BPEL, SPIE and Optica all reuse real, rights-cleared
              local marks (Optica's own standalone SVG here, not the
              yonsei-optica.svg lockup built for sitting next to Yonsei's mark
              on the cover). -->
@@ -174,8 +174,8 @@
           </div>
           <div class="h-8 w-px bg-border" />
           <div class="flex flex-col items-center gap-1.5">
-            <img :src="mpbelLogo" alt="MPBEL" class="h-7 w-auto" />
-            <span class="text-[11px] text-secondary">MPBEL<sup>2</sup></span>
+            <img :src="bpelLogo" alt="BPEL" class="h-7 w-auto" />
+            <span class="text-[11px] text-secondary">BPEL<sup>2</sup></span>
           </div>
           <div class="h-8 w-px bg-border" />
           <div class="flex flex-col items-center gap-1.5">
@@ -205,11 +205,11 @@
             >
           </p>
           <p>
-            <sup>2</sup> {{ t("guide.intro.mpbel") }}
+            <sup>2</sup> {{ t("guide.intro.bpel") }}
             <span
               class="text-primary underline"
-              data-external-link="http://mpbel.yonsei.ac.kr/eng/index.php"
-              >mpbel.yonsei.ac.kr</span
+              data-external-link="https://monet.yonsei.ac.kr/"
+              >monet.yonsei.ac.kr</span
             >
           </p>
           <p>
@@ -2764,7 +2764,7 @@ import yonseiOptica from "@/assets/yonsei-optica.svg";
 // Standalone marks for the intro's logo strip (page 2) -- real, rights-cleared
 // SVGs, not the yonsei-optica.svg lockup built for pairing next to Yonsei's
 // own mark elsewhere.
-import mpbelLogo from "@/assets/mpbel.svg";
+import bpelLogo from "@/assets/bpel.svg";
 import spieLogo from "@/assets/P-SPIE.svg";
 import opticaLogo from "@/assets/optica.svg";
 import {

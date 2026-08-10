@@ -163,14 +163,14 @@
       "title": "为什么选择 λLens？",
       "abstractBody": "λLens 加快了集成光子传感器的文献综述速度。手动比对十几篇论文，意味着为同样的 FOM 数值（波长、灵敏度、Q 因子、FWHM）反复整理表格、复制粘贴，还容易抄错数据。λLens 将 PDF 提取与可视化都自动化：从一个论文文件夹到一张可导出的图表，只需几分钟，而不是几天。",
       "guideBody": "本指南介绍今天就可直接使用的模式一（Excel 转图表可视化）。模式二（PDF 提取）将在稳定后加入。",
-      "contextBody": "λLens 开发于延世大学 MPBEL，与下方介绍的国际光学与光子学社区紧密相连。",
+      "contextBody": "λLens 开发于延世大学 BPEL，与下方介绍的国际光学与光子学社区紧密相连。",
       "diagram": {
         "folder": "论文文件夹",
         "extraction": "引导式提取",
         "chart": "图表与导出"
       },
       "yonsei": "创立于 1885 年，韩国历史最悠久、声誉最高的研究型大学之一，位于首尔。",
-      "mpbel": "延世大学医学物理与生物医学工程实验室（延世癌症中心），由 Jin Sung Kim 教授领导。从事医学图像重建、AI 驱动的放射肿瘤学及粒子治疗研究。",
+      "bpel": "延世大学生物光子学工程实验室（BPEL），由 Donghyun Kim 教授领导。利用等离激元纳米结构与结构光开展超分辨显微成像与生物传感研究。",
       "spie": "光学与光子学领域的国际学会，创立于 1955 年。拥有 25,000 多名会员，提供会议与出版物。",
       "optica": "1916 年以美国光学学会（OSA）之名创立，是全球领先的光科学学会。"
     },
@@ -634,8 +634,8 @@
     },
     "about": {
       "eyebrow": "关于作者",
-      "body": "本指南由软件工程实习生（CNAM Grand Est 学徒）Danaé Albrecht-Martin 于 2026 年 7 月 6 日至 9 月 6 日在延世大学 MPBEL 设计并开发。她的工作涵盖 λLens 的方方面面：应用架构、PDF 提取流程，以及交互式可视化界面。",
-      "supervision": "指导教师：Donghyun Kim 教授（延世大学电气电子工程学院，SPIE/Optica 会士，IEEE 高级会员，OSK 会长），以及 Inseop（MPBEL）。",
+      "body": "本指南由软件工程实习生（CNAM Grand Est 学徒）Danaé Albrecht-Martin 于 2026 年 7 月 6 日至 9 月 6 日在延世大学 BPEL 设计并开发。她的工作涵盖 λLens 的方方面面：应用架构、PDF 提取流程，以及交互式可视化界面。",
+      "supervision": "指导教师：Donghyun Kim 教授（延世大学电气电子工程学院，SPIE/Optica 会士，IEEE 高级会员，OSK 会长），以及 Inseop（BPEL）。",
       "signoff": "— Danaé Albrecht-Martin，2026 年 9 月"
     }
   },
