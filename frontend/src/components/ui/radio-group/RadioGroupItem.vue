@@ -6,7 +6,9 @@ import { reactiveOmit } from "@vueuse/core";
 import { RadioGroupIndicator, RadioGroupItem, useForwardProps } from "reka-ui";
 import { cn } from "@/lib/utils";
 
-const props = defineProps<RadioGroupItemProps & { class?: HTMLAttributes["class"] }>();
+const props = defineProps<
+  RadioGroupItemProps & { class?: HTMLAttributes["class"] }
+>();
 
 const delegatedProps = reactiveOmit(props, "class");
 const forwardedProps = useForwardProps(delegatedProps);
@@ -23,8 +25,13 @@ const forwardedProps = useForwardProps(delegatedProps);
       )
     "
   >
-    <RadioGroupIndicator data-slot="radio-group-indicator" class="relative flex items-center justify-center">
-      <Circle class="absolute top-1/2 left-1/2 size-2 -translate-x-1/2 -translate-y-1/2 fill-primary text-primary" />
+    <RadioGroupIndicator
+      data-slot="radio-group-indicator"
+      class="relative flex items-center justify-center"
+    >
+      <Circle
+        class="absolute top-1/2 left-1/2 size-2 -translate-x-1/2 -translate-y-1/2 fill-primary text-primary"
+      />
     </RadioGroupIndicator>
   </RadioGroupItem>
 </template>

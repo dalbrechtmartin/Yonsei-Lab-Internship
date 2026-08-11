@@ -20,9 +20,8 @@ import json
 import os
 import uuid
 from collections import Counter
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Optional
 
 DATA_DIR = Path(__file__).resolve().parent / "data"
 JOBS_DIR = DATA_DIR / "jobs"
@@ -33,7 +32,7 @@ JOBS: dict[str, dict] = {}
 
 
 def _now() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 def _job_dir(job_id: str) -> Path:
@@ -132,11 +131,11 @@ def create_job(model_choice: str, available_models: list[str], filenames: list[s
     return job
 
 
-def get_job(job_id: str) -> Optional[dict]:
+def get_job(job_id: str) -> dict | None:
     return JOBS.get(job_id)
 
 
-def list_job_files(job_id: str, status: Optional[str] = None) -> list[dict]:
+def list_job_files(job_id: str, status: str | None = None) -> list[dict]:
     job = JOBS[job_id]
     files = sorted(job["files"].values(), key=lambda f: f["order_index"])
     if status is not None:
@@ -148,8 +147,8 @@ def update_job_file_status(
     job_id: str,
     file_id: str,
     status: str,
-    error_reason: Optional[str] = None,
-    model_used: Optional[str] = None,
+    error_reason: str | None = None,
+    model_used: str | None = None,
 ) -> None:
     file_state = JOBS[job_id]["files"][file_id]
     file_state["status"] = status
@@ -169,9 +168,9 @@ def add_job_file_run(
     job_id: str,
     file_id: str,
     run_index: int,
-    model: Optional[str],
+    model: str | None,
     outcome: str,
-    records: Optional[list[dict]],
+    records: list[dict] | None,
 ) -> None:
     JOBS[job_id]["files"][file_id]["runs"].append(
         {"run_index": run_index, "model": model, "outcome": outcome, "records": records}
@@ -191,9 +190,7 @@ def get_job_records(job_id: str) -> list[dict]:
     return records
 
 
-def set_record_review_status(
-    job_id: str, file_id: str, record_index: int, status: str
-) -> dict:
+def set_record_review_status(job_id: str, file_id: str, record_index: int, status: str) -> dict:
     """A human reviewer overriding one record's "Review status" after
     checking an AI-flagged "Edit" row -- the only path allowed to write
     "Approve (Manual)" (the model itself never does, see prompt.txt).
@@ -210,7 +207,7 @@ def set_available_models(job_id: str, available_models: list[str]) -> None:
     _persist_job(job_id)
 
 
-def set_job_status(job_id: str, status: str, error_message: Optional[str] = None) -> None:
+def set_job_status(job_id: str, status: str, error_message: str | None = None) -> None:
     job = JOBS[job_id]
     job["status"] = status
     if error_message is not None:
@@ -218,7 +215,7 @@ def set_job_status(job_id: str, status: str, error_message: Optional[str] = None
     _persist_job(job_id)
 
 
-def set_job_notice(job_id: str, notice: Optional[dict]) -> None:
+def set_job_notice(job_id: str, notice: dict | None) -> None:
     """A transient, user-facing explanation of what the job is doing
     right now when it isn't just steadily processing -- e.g. waiting out
     a quota cooldown before its next automatic retry pass. `None` clears
@@ -227,9 +224,7 @@ def set_job_notice(job_id: str, notice: Optional[dict]) -> None:
     _persist_job(job_id)
 
 
-def log_usage(
-    model: Optional[str], job_id: Optional[str], job_file_id: Optional[str], outcome: str
-) -> None:
+def log_usage(model: str | None, job_id: str | None, job_file_id: str | None, outcome: str) -> None:
     if not model:
         return
     DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -245,7 +240,7 @@ def log_usage(
 
 
 def _read_usage_counters() -> tuple[Counter, Counter]:
-    today = datetime.now(timezone.utc).date().isoformat()
+    today = datetime.now(UTC).date().isoformat()
     calls_today: Counter = Counter()
     calls_total: Counter = Counter()
     if USAGE_LOG_PATH.exists():
@@ -287,14 +282,14 @@ def mark_model_exhausted_today(model: str) -> None:
     project's volume (see module docstring: no DB, single process)."""
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     data = _read_quota_exhausted()
-    data[model] = datetime.now(timezone.utc).date().isoformat()
+    data[model] = datetime.now(UTC).date().isoformat()
     tmp = QUOTA_EXHAUSTED_PATH.with_suffix(".json.tmp")
     tmp.write_text(json.dumps(data), encoding="utf-8")
     os.replace(tmp, QUOTA_EXHAUSTED_PATH)
 
 
 def is_model_exhausted_today(model: str) -> bool:
-    today = datetime.now(timezone.utc).date().isoformat()
+    today = datetime.now(UTC).date().isoformat()
     return _read_quota_exhausted().get(model) == today
 
 
@@ -309,7 +304,7 @@ def calls_today_for_model(model: str) -> int:
 
 def get_usage_summary() -> dict:
     calls_today, calls_total = _read_usage_counters()
-    today = datetime.now(timezone.utc).date().isoformat()
+    today = datetime.now(UTC).date().isoformat()
     models = sorted(set(calls_total) | set(calls_today))
     return {
         "date": today,

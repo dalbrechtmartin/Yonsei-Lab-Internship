@@ -1,9 +1,13 @@
 <template>
   <TooltipProvider :delay-duration="200">
     <Dialog v-model:open="open">
-      <DialogContent class="flex h-[90vh] w-[90vw] max-w-none flex-col overflow-hidden p-5">
+      <DialogContent
+        class="flex h-[90vh] w-[90vw] max-w-none flex-col overflow-hidden p-5"
+      >
         <DialogTitle>{{ t("fomcharts.compare.title") }}</DialogTitle>
-        <DialogDescription>{{ t("fomcharts.compare.description") }}</DialogDescription>
+        <DialogDescription>{{
+          t("fomcharts.compare.description")
+        }}</DialogDescription>
 
         <div class="mt-1 flex min-h-0 flex-1 flex-col gap-3">
           <!-- Reorderable chips -- one per compared point, in the order the
@@ -17,7 +21,10 @@
                disappear entirely once every pinned point was already in the
                comparison, which read as a missing feature rather than "you
                have nothing more to add". -->
-          <div v-if="orderedPins.length > 0 || props.allPins.length > 0" class="flex shrink-0 flex-col gap-1.5">
+          <div
+            v-if="orderedPins.length > 0 || props.allPins.length > 0"
+            class="flex shrink-0 flex-col gap-1.5"
+          >
             <!-- Chips wrap freely on their own row -- sort/settings live on a
                  SECOND row below (see next), always right-aligned there
                  instead of sharing this line: with up to 6 chips, letting
@@ -41,7 +48,9 @@
                   dragOverIndex = null;
                 "
               >
-                <GripVertical class="size-3 shrink-0 cursor-grab text-muted-foreground/60 active:cursor-grabbing" />
+                <GripVertical
+                  class="size-3 shrink-0 cursor-grab text-muted-foreground/60 active:cursor-grabbing"
+                />
                 <Button
                   type="button"
                   variant="ghost"
@@ -53,7 +62,9 @@
                 >
                   <ChevronLeft class="size-3" />
                 </Button>
-                <span class="inline-flex size-4 shrink-0 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">
+                <span
+                  class="inline-flex size-4 shrink-0 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground"
+                >
                   {{ idx + 1 }}
                 </span>
                 <span class="max-w-24 truncate font-mono">{{ pin.ref }}</span>
@@ -73,7 +84,9 @@
                   variant="ghost"
                   size="icon-xs"
                   class="size-4 rounded text-muted-foreground hover:bg-secondary/15"
-                  :aria-label="t('fomcharts.compare.chips.remove', { ref: pin.ref })"
+                  :aria-label="
+                    t('fomcharts.compare.chips.remove', { ref: pin.ref })
+                  "
                   @click="removeChip(pin.id)"
                 >
                   <X class="size-3" />
@@ -87,7 +100,10 @@
                     variant="outline"
                     size="sm"
                     class="gap-1 border-dashed border-primary/50 text-primary hover:bg-primary/5 hover:text-primary"
-                    :disabled="availableToAdd.length === 0 || orderedPins.length >= COMPARE_MAX"
+                    :disabled="
+                      availableToAdd.length === 0 ||
+                      orderedPins.length >= COMPARE_MAX
+                    "
                   >
                     <Plus class="size-3" />
                     {{ t("fomcharts.compare.chips.addPoint") }}
@@ -99,8 +115,15 @@
                      nesting a Popover inside AddPointDialog: without it, the
                      menu renders behind the dialog's own z-40 overlay,
                      technically open but unclickable. -->
-                <DropdownMenuContent align="start" class="z-60 max-h-64 min-w-32 overflow-y-auto">
-                  <DropdownMenuItem v-for="pin in availableToAdd" :key="pin.id" @select="addPoint(pin.id)">
+                <DropdownMenuContent
+                  align="start"
+                  class="z-60 max-h-64 min-w-32 overflow-y-auto"
+                >
+                  <DropdownMenuItem
+                    v-for="pin in availableToAdd"
+                    :key="pin.id"
+                    @select="addPoint(pin.id)"
+                  >
                     <span class="font-mono text-xs">{{ pin.ref }}</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -110,15 +133,38 @@
             <!-- Own row, always right-aligned -- see the comment above the
                  chips row for why this doesn't share a line with them. -->
             <div class="flex items-center justify-end gap-2">
-              <Select :model-value="sortMode" @update:model-value="(v) => applySort(v as SortMode)">
+              <Select
+                :model-value="sortMode"
+                @update:model-value="(v) => applySort(v as SortMode)"
+              >
                 <SelectTrigger size="sm" class="w-auto bg-card text-[10.5px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="selection">{{ t("fomcharts.compare.sort.selection") }}</SelectItem>
-                  <SelectItem value="ref">{{ t("fomcharts.compare.sort.ref") }}</SelectItem>
-                  <SelectItem v-if="bestWorstKeys.length > 0" value="metric-asc">{{ t("fomcharts.compare.sort.metricAsc", { metric: bestWorstKeys[0] }) }}</SelectItem>
-                  <SelectItem v-if="bestWorstKeys.length > 0" value="metric-desc">{{ t("fomcharts.compare.sort.metricDesc", { metric: bestWorstKeys[0] }) }}</SelectItem>
+                  <SelectItem value="selection">{{
+                    t("fomcharts.compare.sort.selection")
+                  }}</SelectItem>
+                  <SelectItem value="ref">{{
+                    t("fomcharts.compare.sort.ref")
+                  }}</SelectItem>
+                  <SelectItem
+                    v-if="bestWorstKeys.length > 0"
+                    value="metric-asc"
+                    >{{
+                      t("fomcharts.compare.sort.metricAsc", {
+                        metric: bestWorstKeys[0],
+                      })
+                    }}</SelectItem
+                  >
+                  <SelectItem
+                    v-if="bestWorstKeys.length > 0"
+                    value="metric-desc"
+                    >{{
+                      t("fomcharts.compare.sort.metricDesc", {
+                        metric: bestWorstKeys[0],
+                      })
+                    }}</SelectItem
+                  >
                 </SelectContent>
               </Select>
 
@@ -131,7 +177,12 @@
                    dialog. -->
               <Popover>
                 <PopoverTrigger as-child>
-                  <Button type="button" variant="outline" size="sm" class="gap-1.5 text-[11px]">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    class="gap-1.5 text-[11px]"
+                  >
                     <Settings2 class="size-3.5" />
                     {{ t("fomcharts.compare.displaySettings") }}
                   </Button>
@@ -142,8 +193,24 @@
                 <PopoverContent align="end" class="z-60 w-80 p-3.5">
                   <div class="flex flex-col gap-2">
                     <div class="flex items-center justify-between">
-                      <span class="text-[10.5px] font-bold tracking-wide text-muted-foreground uppercase">{{ t("fomcharts.compare.sectionsLabel") }}</span>
-                      <Button type="button" variant="link" size="xs" class="h-auto p-0 text-[10.5px]" @click="toggleAllSections">{{ t(allSectionsShown ? "fomcharts.compare.clearAll" : "fomcharts.compare.showAll") }}</Button>
+                      <span
+                        class="text-[10.5px] font-bold tracking-wide text-muted-foreground uppercase"
+                        >{{ t("fomcharts.compare.sectionsLabel") }}</span
+                      >
+                      <Button
+                        type="button"
+                        variant="link"
+                        size="xs"
+                        class="h-auto p-0 text-[10.5px]"
+                        @click="toggleAllSections"
+                        >{{
+                          t(
+                            allSectionsShown
+                              ? "fomcharts.compare.clearAll"
+                              : "fomcharts.compare.showAll",
+                          )
+                        }}</Button
+                      >
                     </div>
                     <div class="flex flex-wrap items-center gap-1.5">
                       <Button
@@ -173,7 +240,10 @@
                   <template v-if="candidateMetrics.length > 0">
                     <div class="my-3 h-px bg-secondary/15" />
                     <div class="flex flex-col gap-2">
-                      <span class="text-[10.5px] font-bold tracking-wide text-muted-foreground uppercase">{{ t("fomcharts.compare.bestWorst.label") }}</span>
+                      <span
+                        class="text-[10.5px] font-bold tracking-wide text-muted-foreground uppercase"
+                        >{{ t("fomcharts.compare.bestWorst.label") }}</span
+                      >
                       <div class="flex flex-wrap items-center gap-1.5">
                         <Button
                           v-for="key in candidateMetrics"
@@ -197,11 +267,13 @@
                 </PopoverContent>
               </Popover>
             </div>
-            <p class="text-[10.5px] text-muted-foreground italic">{{ t("fomcharts.compare.chips.hint") }}</p>
+            <p class="text-[10.5px] text-muted-foreground italic">
+              {{ t("fomcharts.compare.chips.hint") }}
+            </p>
           </div>
 
           <div ref="previewAreaEl" class="relative min-h-0 flex-1">
-              <!-- Invisible probe -- same children/sizes as the vertical
+            <!-- Invisible probe -- same children/sizes as the vertical
                    rail's ALWAYS-present groups (tools/stamps/history; bare
                    divs, not real Button/Tooltip components, so it costs
                    nothing to keep mounted), used purely to measure how tall a
@@ -220,16 +292,29 @@
                    vertical rail scroll internally for just that overflow
                    (max-h-[calc(100%-1.5rem)] overflow-y-auto below) rather
                    than reorienting the whole toolbar over it. -->
-              <div v-if="plan" ref="railProbeEl" class="invisible absolute top-0 left-0 flex flex-col items-center gap-1 p-1.5" aria-hidden="true">
-                <div v-for="entry in TOOL_RAIL_TOOLS" :key="entry.tool" class="size-8" />
-                <div class="my-0.5 h-px w-8" />
-                <div v-for="entry in STAMP_RAIL_KINDS" :key="entry.kind" class="size-8" />
-                <div class="my-0.5 h-px w-8" />
-                <div class="size-8" />
-                <div class="size-8" />
-              </div>
+            <div
+              v-if="plan"
+              ref="railProbeEl"
+              class="invisible absolute top-0 left-0 flex flex-col items-center gap-1 p-1.5"
+              aria-hidden="true"
+            >
+              <div
+                v-for="entry in TOOL_RAIL_TOOLS"
+                :key="entry.tool"
+                class="size-8"
+              />
+              <div class="my-0.5 h-px w-8" />
+              <div
+                v-for="entry in STAMP_RAIL_KINDS"
+                :key="entry.kind"
+                class="size-8"
+              />
+              <div class="my-0.5 h-px w-8" />
+              <div class="size-8" />
+              <div class="size-8" />
+            </div>
 
-              <!-- Floating tool rail -- vertical, anchored top-left over the
+            <!-- Floating tool rail -- vertical, anchored top-left over the
                  canvas by default (mirroring the floating zoom cluster's own
                  corner-pinned pattern below), and never part of the PNG
                  export (handleDownload redraws purely from `annotations`).
@@ -252,19 +337,37 @@
             <div
               v-if="plan"
               class="absolute z-10 flex items-center gap-1 rounded-lg border border-secondary/20 bg-card/95 p-1.5 shadow-md backdrop-blur"
-              :class="railHorizontal ? 'bottom-3 left-3 flex-row' : 'top-3 left-3 max-h-[calc(100%-1.5rem)] flex-col overflow-y-auto'"
+              :class="
+                railHorizontal
+                  ? 'bottom-3 left-3 flex-row'
+                  : 'top-3 left-3 max-h-[calc(100%-1.5rem)] flex-col overflow-y-auto'
+              "
             >
               <Tooltip v-for="entry in TOOL_RAIL_TOOLS" :key="entry.tool">
                 <TooltipTrigger as-child>
-                  <Button type="button" variant="ghost" size="icon-sm" :class="toolBtnClass(entry.tool)" :aria-label="t(entry.label)" @click="setTool(entry.tool)">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    :class="toolBtnClass(entry.tool)"
+                    :aria-label="t(entry.label)"
+                    @click="setTool(entry.tool)"
+                  >
                     <component :is="entry.icon" class="size-3.5" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent :side="railHorizontal ? 'top' : 'right'">{{ t(entry.label) }}</TooltipContent>
+                <TooltipContent :side="railHorizontal ? 'top' : 'right'">{{
+                  t(entry.label)
+                }}</TooltipContent>
               </Tooltip>
 
               <template v-if="showColorPicker">
-                <div class="shrink-0 bg-secondary/15" :class="railHorizontal ? 'mx-0.5 h-6 w-px' : 'my-0.5 h-px w-8'" />
+                <div
+                  class="shrink-0 bg-secondary/15"
+                  :class="
+                    railHorizontal ? 'mx-0.5 h-6 w-px' : 'my-0.5 h-px w-8'
+                  "
+                />
                 <Button
                   v-for="c in ANNOTATION_COLORS"
                   :key="c"
@@ -272,39 +375,76 @@
                   variant="ghost"
                   size="icon-xs"
                   class="size-5 shrink-0 rounded-full border-2 p-0"
-                  :class="activeColor === c ? 'border-ink' : 'border-transparent'"
+                  :class="
+                    activeColor === c ? 'border-ink' : 'border-transparent'
+                  "
                   :style="{ background: c }"
                   :aria-label="t('fomcharts.compare.tools.penColor')"
                   @click="activeColor = c"
                 />
               </template>
 
-              <div class="shrink-0 bg-secondary/15" :class="railHorizontal ? 'mx-0.5 h-6 w-px' : 'my-0.5 h-px w-8'" />
+              <div
+                class="shrink-0 bg-secondary/15"
+                :class="railHorizontal ? 'mx-0.5 h-6 w-px' : 'my-0.5 h-px w-8'"
+              />
               <Tooltip v-for="entry in STAMP_RAIL_KINDS" :key="entry.kind">
                 <TooltipTrigger as-child>
-                  <Button type="button" variant="ghost" size="icon-sm" :class="stampBtnClass(entry.kind)" :aria-label="t(entry.label)" @click="setStampTool(entry.kind)">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    :class="stampBtnClass(entry.kind)"
+                    :aria-label="t(entry.label)"
+                    @click="setStampTool(entry.kind)"
+                  >
                     <component :is="entry.icon" class="size-3.5" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent :side="railHorizontal ? 'top' : 'right'">{{ t(entry.label) }}</TooltipContent>
+                <TooltipContent :side="railHorizontal ? 'top' : 'right'">{{
+                  t(entry.label)
+                }}</TooltipContent>
               </Tooltip>
 
-              <div class="shrink-0 bg-secondary/15" :class="railHorizontal ? 'mx-0.5 h-6 w-px' : 'my-0.5 h-px w-8'" />
+              <div
+                class="shrink-0 bg-secondary/15"
+                :class="railHorizontal ? 'mx-0.5 h-6 w-px' : 'my-0.5 h-px w-8'"
+              />
               <Tooltip>
                 <TooltipTrigger as-child>
-                  <Button type="button" variant="ghost" size="icon-sm" class="text-secondary" :disabled="!canUndo" :aria-label="t('fomcharts.compare.tools.undo')" @click="undo">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    class="text-secondary"
+                    :disabled="!canUndo"
+                    :aria-label="t('fomcharts.compare.tools.undo')"
+                    @click="undo"
+                  >
                     <Undo2 class="size-3.5" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent :side="railHorizontal ? 'top' : 'right'">{{ t("fomcharts.compare.tools.undo") }}</TooltipContent>
+                <TooltipContent :side="railHorizontal ? 'top' : 'right'">{{
+                  t("fomcharts.compare.tools.undo")
+                }}</TooltipContent>
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger as-child>
-                  <Button type="button" variant="ghost" size="icon-sm" class="text-secondary" :disabled="!canRedo" :aria-label="t('fomcharts.compare.tools.redo')" @click="redo">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    class="text-secondary"
+                    :disabled="!canRedo"
+                    :aria-label="t('fomcharts.compare.tools.redo')"
+                    @click="redo"
+                  >
                     <Redo2 class="size-3.5" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent :side="railHorizontal ? 'top' : 'right'">{{ t("fomcharts.compare.tools.redo") }}</TooltipContent>
+                <TooltipContent :side="railHorizontal ? 'top' : 'right'">{{
+                  t("fomcharts.compare.tools.redo")
+                }}</TooltipContent>
               </Tooltip>
             </div>
 
@@ -338,9 +478,31 @@
                    bug where it clips the start of overflowing content;
                    auto-margins just collapse to 0 and fall back to normal,
                    fully-scrollable left-aligned flow instead). -->
-              <div v-if="plan" class="relative mx-auto" :style="{ width: `${plan.width * zoom}px`, height: `${plan.height * zoom}px` }">
-                <div class="absolute top-0 left-0" :style="{ width: `${plan.width}px`, height: `${plan.height}px`, transform: `scale(${zoom})`, transformOrigin: 'top left' }">
-                  <canvas ref="contentCanvasEl" class="absolute top-0 left-0 block" :style="{ width: `${plan.width}px`, height: `${plan.height}px` }" />
+              <div
+                v-if="plan"
+                class="relative mx-auto"
+                :style="{
+                  width: `${plan.width * zoom}px`,
+                  height: `${plan.height * zoom}px`,
+                }"
+              >
+                <div
+                  class="absolute top-0 left-0"
+                  :style="{
+                    width: `${plan.width}px`,
+                    height: `${plan.height}px`,
+                    transform: `scale(${zoom})`,
+                    transformOrigin: 'top left',
+                  }"
+                >
+                  <canvas
+                    ref="contentCanvasEl"
+                    class="absolute top-0 left-0 block"
+                    :style="{
+                      width: `${plan.width}px`,
+                      height: `${plan.height}px`,
+                    }"
+                  />
 
                   <!-- Konva stage -- replaces the old hand-rolled ink canvas.
                        Every annotation is a real Konva node (draggable, its
@@ -380,7 +542,13 @@
                       </v-group>
 
                       <template v-for="a in annotations" :key="a.id">
-                        <v-line v-if="a.type === 'pen'" :config="penConfig(a)" @click="selectAnnotation(a.id)" @dragstart="onAnnotationDragStart" @dragend="onPenDragEnd(a, $event)" />
+                        <v-line
+                          v-if="a.type === 'pen'"
+                          :config="penConfig(a)"
+                          @click="selectAnnotation(a.id)"
+                          @dragstart="onAnnotationDragStart"
+                          @dragend="onPenDragEnd(a, $event)"
+                        />
                         <v-ellipse
                           v-else-if="a.type === 'frame'"
                           :config="frameConfig(a)"
@@ -389,8 +557,20 @@
                           @dragend="onFrameDragEnd(a, $event)"
                           @transformend="onFrameTransformEnd(a, $event)"
                         />
-                        <v-arrow v-else-if="a.type === 'arrow'" :config="arrowConfig(a)" @click="selectAnnotation(a.id)" @dragstart="onAnnotationDragStart" @dragend="onArrowDragEnd(a, $event)" />
-                        <v-line v-else-if="a.type === 'underline'" :config="underlineConfig(a)" @click="selectAnnotation(a.id)" @dragstart="onAnnotationDragStart" @dragend="onUnderlineDragEnd(a, $event)" />
+                        <v-arrow
+                          v-else-if="a.type === 'arrow'"
+                          :config="arrowConfig(a)"
+                          @click="selectAnnotation(a.id)"
+                          @dragstart="onAnnotationDragStart"
+                          @dragend="onArrowDragEnd(a, $event)"
+                        />
+                        <v-line
+                          v-else-if="a.type === 'underline'"
+                          :config="underlineConfig(a)"
+                          @click="selectAnnotation(a.id)"
+                          @dragstart="onAnnotationDragStart"
+                          @dragend="onUnderlineDragEnd(a, $event)"
+                        />
                         <v-group
                           v-else-if="a.type === 'postit'"
                           :config="postitGroupConfig(a)"
@@ -424,11 +604,25 @@
                           @dragend="onMovableDragEnd(a, $event)"
                         >
                           <v-circle :config="stampCircleConfig(a)" />
-                          <v-star v-if="a.kind === 'favorite'" :config="STAMP_GLYPH_STAR" :listening="false" />
-                          <v-line v-else-if="a.kind === 'validated'" :config="STAMP_GLYPH_CHECK" :listening="false" />
+                          <v-star
+                            v-if="a.kind === 'favorite'"
+                            :config="STAMP_GLYPH_STAR"
+                            :listening="false"
+                          />
+                          <v-line
+                            v-else-if="a.kind === 'validated'"
+                            :config="STAMP_GLYPH_CHECK"
+                            :listening="false"
+                          />
                           <template v-else>
-                            <v-line :config="STAMP_GLYPH_CROSS_1" :listening="false" />
-                            <v-line :config="STAMP_GLYPH_CROSS_2" :listening="false" />
+                            <v-line
+                              :config="STAMP_GLYPH_CROSS_1"
+                              :listening="false"
+                            />
+                            <v-line
+                              :config="STAMP_GLYPH_CROSS_2"
+                              :listening="false"
+                            />
                           </template>
                         </v-group>
                       </template>
@@ -438,29 +632,102 @@
                            instead of only moving the whole arrow at once. -->
                       <template v-if="selectedArrowEndpoints">
                         <v-circle
-                          :config="arrowEndpointConfig(selectedArrowEndpoints.x1, selectedArrowEndpoints.y1)"
+                          :config="
+                            arrowEndpointConfig(
+                              selectedArrowEndpoints.x1,
+                              selectedArrowEndpoints.y1,
+                            )
+                          "
                           @dragstart="onAnnotationDragStart"
-                          @dragmove="onArrowEndpointDragMove('start', selectedArrowEndpoints.ann, $event)"
-                          @dragend="onArrowEndpointDragEnd('start', selectedArrowEndpoints.ann)"
+                          @dragmove="
+                            onArrowEndpointDragMove(
+                              'start',
+                              selectedArrowEndpoints.ann,
+                              $event,
+                            )
+                          "
+                          @dragend="
+                            onArrowEndpointDragEnd(
+                              'start',
+                              selectedArrowEndpoints.ann,
+                            )
+                          "
                         />
                         <v-circle
-                          :config="arrowEndpointConfig(selectedArrowEndpoints.x2, selectedArrowEndpoints.y2)"
+                          :config="
+                            arrowEndpointConfig(
+                              selectedArrowEndpoints.x2,
+                              selectedArrowEndpoints.y2,
+                            )
+                          "
                           @dragstart="onAnnotationDragStart"
-                          @dragmove="onArrowEndpointDragMove('end', selectedArrowEndpoints.ann, $event)"
-                          @dragend="onArrowEndpointDragEnd('end', selectedArrowEndpoints.ann)"
+                          @dragmove="
+                            onArrowEndpointDragMove(
+                              'end',
+                              selectedArrowEndpoints.ann,
+                              $event,
+                            )
+                          "
+                          @dragend="
+                            onArrowEndpointDragEnd(
+                              'end',
+                              selectedArrowEndpoints.ann,
+                            )
+                          "
                         />
                       </template>
 
-                      <v-circle v-if="activePenPoints && activePenPoints.length === 1" :config="activePenDotConfig" :listening="false" />
-                      <v-line v-else-if="activePenPoints && activePenPoints.length > 1" :config="activePenPreviewConfig" :listening="false" />
-                      <v-ellipse v-if="previewFrameConfig" :config="previewFrameConfig" :listening="false" />
-                      <v-line v-if="previewArrowConfig" :config="previewArrowConfig" :listening="false" />
-                      <v-line v-if="previewUnderlineConfig" :config="previewUnderlineConfig" :listening="false" />
-                      <v-rect v-if="hoverBandConfig" :config="hoverBandConfig" :listening="false" />
-                      <v-rect v-if="postitPreviewConfig" :config="postitPreviewConfig" :listening="false" />
-                      <v-circle v-if="eraserCursorConfig" :config="eraserCursorConfig" :listening="false" />
-                      <v-rect v-if="selectionOutlineConfig" :config="selectionOutlineConfig" :listening="false" />
-                      <v-transformer ref="transformerRef" :config="transformerConfig" />
+                      <v-circle
+                        v-if="activePenPoints && activePenPoints.length === 1"
+                        :config="activePenDotConfig"
+                        :listening="false"
+                      />
+                      <v-line
+                        v-else-if="
+                          activePenPoints && activePenPoints.length > 1
+                        "
+                        :config="activePenPreviewConfig"
+                        :listening="false"
+                      />
+                      <v-ellipse
+                        v-if="previewFrameConfig"
+                        :config="previewFrameConfig"
+                        :listening="false"
+                      />
+                      <v-line
+                        v-if="previewArrowConfig"
+                        :config="previewArrowConfig"
+                        :listening="false"
+                      />
+                      <v-line
+                        v-if="previewUnderlineConfig"
+                        :config="previewUnderlineConfig"
+                        :listening="false"
+                      />
+                      <v-rect
+                        v-if="hoverBandConfig"
+                        :config="hoverBandConfig"
+                        :listening="false"
+                      />
+                      <v-rect
+                        v-if="postitPreviewConfig"
+                        :config="postitPreviewConfig"
+                        :listening="false"
+                      />
+                      <v-circle
+                        v-if="eraserCursorConfig"
+                        :config="eraserCursorConfig"
+                        :listening="false"
+                      />
+                      <v-rect
+                        v-if="selectionOutlineConfig"
+                        :config="selectionOutlineConfig"
+                        :listening="false"
+                      />
+                      <v-transformer
+                        ref="transformerRef"
+                        :config="transformerConfig"
+                      />
                     </v-layer>
                   </v-stage>
 
@@ -468,10 +735,23 @@
                     v-if="editingPostit"
                     ref="postitInputEl"
                     v-model="editingPostit.text"
-                    :placeholder="t('fomcharts.compare.tools.postitPlaceholder')"
+                    :placeholder="
+                      t('fomcharts.compare.tools.postitPlaceholder')
+                    "
                     class="absolute z-10 min-h-0 resize-none rounded-[3px] border-2 border-primary p-1.5 text-[11px] shadow-lg ring-2 ring-primary/30 outline-none"
-                    :class="pickTextColor(editingPostit.color) === '#ffffff' ? 'placeholder:text-white/70' : 'placeholder:text-ink/55'"
-                    :style="{ left: `${editingPostitPos?.x ?? 0}px`, top: `${editingPostitPos?.y ?? 0}px`, width: `${editingPostit.width}px`, height: `${editingPostitHeight}px`, background: editingPostit.color, color: pickTextColor(editingPostit.color) }"
+                    :class="
+                      pickTextColor(editingPostit.color) === '#ffffff'
+                        ? 'placeholder:text-white/70'
+                        : 'placeholder:text-ink/55'
+                    "
+                    :style="{
+                      left: `${editingPostitPos?.x ?? 0}px`,
+                      top: `${editingPostitPos?.y ?? 0}px`,
+                      width: `${editingPostit.width}px`,
+                      height: `${editingPostitHeight}px`,
+                      background: editingPostit.color,
+                      color: pickTextColor(editingPostit.color),
+                    }"
                     @blur="commitPostit"
                     @keydown.enter.exact.prevent="commitPostit"
                     @keydown.esc="cancelPostit"
@@ -492,9 +772,16 @@
                       variant="secondary"
                       size="icon-xs"
                       class="absolute z-20 size-5 rounded-full border border-secondary/30 bg-card p-0 shadow"
-                      :style="{ left: `${selectedControls.x - 24}px`, top: `${selectedControls.y - 8}px` }"
+                      :style="{
+                        left: `${selectedControls.x - 24}px`,
+                        top: `${selectedControls.y - 8}px`,
+                      }"
                       :aria-label="t('fomcharts.compare.tools.editPostit')"
-                      @click="startEditPostit(selectedControls.annotation as PostitAnnotation)"
+                      @click="
+                        startEditPostit(
+                          selectedControls.annotation as PostitAnnotation,
+                        )
+                      "
                     >
                       <Pencil class="size-2.5" />
                     </Button>
@@ -503,8 +790,13 @@
                       variant="secondary"
                       size="icon-xs"
                       class="absolute z-20 size-5 rounded-full border border-secondary/30 bg-card p-0 text-red-600 shadow"
-                      :style="{ left: `${selectedControls.x - (selectedControls.annotation.type === 'postit' ? -2 : 8)}px`, top: `${selectedControls.y - 8}px` }"
-                      :aria-label="t('fomcharts.compare.tools.removeAnnotation')"
+                      :style="{
+                        left: `${selectedControls.x - (selectedControls.annotation.type === 'postit' ? -2 : 8)}px`,
+                        top: `${selectedControls.y - 8}px`,
+                      }"
+                      :aria-label="
+                        t('fomcharts.compare.tools.removeAnnotation')
+                      "
                       @click="removeSelectedAnnotation"
                     >
                       <X class="size-3" />
@@ -512,38 +804,75 @@
                   </template>
                 </div>
               </div>
-              <p v-else class="p-6 text-center text-xs text-muted-foreground">{{ t("fomcharts.compare.empty") }}</p>
+              <p v-else class="p-6 text-center text-xs text-muted-foreground">
+                {{ t("fomcharts.compare.empty") }}
+              </p>
             </div>
 
             <!-- Floating zoom cluster -- placed as a sibling of the scroll
                  container (not inside it) so it stays pinned to the corner
                  of the visible preview area regardless of scroll position. -->
-            <div v-if="plan" class="absolute right-3 bottom-3 flex items-center gap-0.5 rounded-lg border border-secondary/25 bg-card/95 p-1 shadow-md backdrop-blur">
+            <div
+              v-if="plan"
+              class="absolute right-3 bottom-3 flex items-center gap-0.5 rounded-lg border border-secondary/25 bg-card/95 p-1 shadow-md backdrop-blur"
+            >
               <Tooltip>
                 <TooltipTrigger as-child>
-                  <Button type="button" variant="ghost" size="icon-xs" :disabled="zoom <= MIN_ZOOM" :aria-label="t('fomcharts.compare.tools.zoomOut')" @click="zoomOut">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-xs"
+                    :disabled="zoom <= MIN_ZOOM"
+                    :aria-label="t('fomcharts.compare.tools.zoomOut')"
+                    @click="zoomOut"
+                  >
                     <ZoomOut class="size-3.5" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>{{ t("fomcharts.compare.tools.zoomOut") }}</TooltipContent>
+                <TooltipContent>{{
+                  t("fomcharts.compare.tools.zoomOut")
+                }}</TooltipContent>
               </Tooltip>
-              <span class="w-9 text-center font-mono text-[10.5px] text-secondary tabular-nums">{{ zoomPercent }}%</span>
+              <span
+                class="w-9 text-center font-mono text-[10.5px] text-secondary tabular-nums"
+                >{{ zoomPercent }}%</span
+              >
               <Tooltip>
                 <TooltipTrigger as-child>
-                  <Button type="button" variant="ghost" size="icon-xs" :disabled="zoom >= MAX_ZOOM" :aria-label="t('fomcharts.compare.tools.zoomIn')" @click="zoomIn">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-xs"
+                    :disabled="zoom >= MAX_ZOOM"
+                    :aria-label="t('fomcharts.compare.tools.zoomIn')"
+                    @click="zoomIn"
+                  >
                     <ZoomIn class="size-3.5" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>{{ t("fomcharts.compare.tools.zoomIn") }}</TooltipContent>
+                <TooltipContent>{{
+                  t("fomcharts.compare.tools.zoomIn")
+                }}</TooltipContent>
               </Tooltip>
               <div class="mx-0.5 h-5 w-px bg-secondary/20" />
               <Tooltip>
                 <TooltipTrigger as-child>
-                  <Button type="button" variant="ghost" size="icon-xs" :class="userAdjustedZoom ? 'text-primary' : 'text-secondary'" :aria-label="t('fomcharts.compare.tools.fitToScreen')" @click="resetZoomToFit">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-xs"
+                    :class="
+                      userAdjustedZoom ? 'text-primary' : 'text-secondary'
+                    "
+                    :aria-label="t('fomcharts.compare.tools.fitToScreen')"
+                    @click="resetZoomToFit"
+                  >
                     <Maximize2 class="size-3.5" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>{{ t("fomcharts.compare.tools.fitToScreen") }}</TooltipContent>
+                <TooltipContent>{{
+                  t("fomcharts.compare.tools.fitToScreen")
+                }}</TooltipContent>
               </Tooltip>
             </div>
           </div>
@@ -552,7 +881,9 @@
                is currently armed (e.g. the pan reminder) -- lives here
                instead of a fixed "drag to pan" note so it stays useful no
                matter which tool from the floating rail above is active. -->
-          <p class="shrink-0 text-[10.5px] text-muted-foreground italic">{{ toolHint }}</p>
+          <p class="shrink-0 text-[10.5px] text-muted-foreground italic">
+            {{ toolHint }}
+          </p>
 
           <!-- Comparison title -- pre-filled (see autoTitle) and click-to-
                rename in place, replacing the old always-visible text field
@@ -593,15 +924,35 @@
                 @click="startEditTitleInline"
               >
                 <Pencil class="size-3 shrink-0 opacity-60" />
-                <span class="max-w-64 truncate text-xs">{{ titleText || autoTitle }}</span>
+                <span class="max-w-64 truncate text-xs">{{
+                  titleText || autoTitle
+                }}</span>
               </Button>
-              <Button type="button" variant="link" size="xs" class="h-auto shrink-0 p-0 text-[10.5px]" :disabled="!hasMarkup" @click="resetAnnotations">
+              <Button
+                type="button"
+                variant="link"
+                size="xs"
+                class="h-auto shrink-0 p-0 text-[10.5px]"
+                :disabled="!hasMarkup"
+                @click="resetAnnotations"
+              >
                 {{ t("fomcharts.compare.tools.reset") }}
               </Button>
             </div>
             <div class="flex gap-2">
-              <Button type="button" variant="ghost" size="sm" @click="open = false">{{ t("fomcharts.compare.cancel") }}</Button>
-              <Button size="sm" :disabled="!plan" class="bg-primary text-primary-foreground hover:bg-primary/90" @click="handleDownload">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                @click="open = false"
+                >{{ t("fomcharts.compare.cancel") }}</Button
+              >
+              <Button
+                size="sm"
+                :disabled="!plan"
+                class="bg-primary text-primary-foreground hover:bg-primary/90"
+                @click="handleDownload"
+              >
                 <Download class="size-3.5" />
                 {{ t("fomcharts.compare.downloadPng") }}
               </Button>
@@ -614,7 +965,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, watch, onUnmounted, type Component } from "vue";
+import {
+  computed,
+  nextTick,
+  ref,
+  watch,
+  onUnmounted,
+  type Component,
+} from "vue";
 import { useI18n } from "vue-i18n";
 import type { KonvaEventObject } from "konva/lib/Node";
 import type Konva from "konva";
@@ -652,34 +1010,57 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  TooltipProvider,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 import type { AnnotationCardData } from "@/utils/annotationCardData";
-import { ensureCanvasFontsLoaded, type AnnotationExportSection } from "@/utils/annotationExport";
+import {
+  ensureCanvasFontsLoaded,
+  type AnnotationExportSection,
+} from "@/utils/annotationExport";
 import {
   ANNOTATION_COLORS,
   COL_GAP,
   COL_WIDTH,
   PEN_WIDTH,
-  POSTIT_LINE_H,
   POSTIT_MIN_H,
   POSTIT_W,
   STAMP_COLORS,
-  STAMP_R,
-  TITLE_H,
   candidateBestWorstKeys,
   drawCompareAnnotations,
   drawComparePins,
   metricDirection,
-  parseMetricNumber,
   pickTextColor,
   planComparePins,
   postitHeight,
   resolveAnchor,
-  stampCenter,
   type ArrowAnnotation,
   type CompareAnnotation,
   type ComparePinData,
@@ -692,6 +1073,19 @@ import {
   type StampKind,
   type UnderlineAnnotation,
 } from "@/utils/compareExport";
+import { downloadDataUrl } from "@/utils/saveFile";
+import { useCompareZoomPan, MIN_ZOOM, MAX_ZOOM } from "@/composables/useCompareZoomPan";
+import { useCompareHistory } from "@/composables/useCompareHistory";
+import {
+  useCompareKonvaConfigs,
+  COLUMN_SWAP_SIZE,
+  STAMP_GLYPH_STAR,
+  STAMP_GLYPH_CHECK,
+  STAMP_GLYPH_CROSS_1,
+  STAMP_GLYPH_CROSS_2,
+} from "@/composables/useCompareKonvaConfigs";
+import { useCompareChips, type SortMode } from "@/composables/useCompareChips";
+import { useCompareTitle } from "@/composables/useCompareTitle";
 
 const { t } = useI18n();
 
@@ -717,7 +1111,10 @@ const orderedPins = computed<(AnnotationCardData & { id: string })[]>(() =>
     .filter((p): p is AnnotationCardData & { id: string } => !!p && !!p.id),
 );
 const availableToAdd = computed<(AnnotationCardData & { id: string })[]>(() =>
-  props.allPins.filter((p): p is AnnotationCardData & { id: string } => !!p.id && !order.value.includes(p.id)),
+  props.allPins.filter(
+    (p): p is AnnotationCardData & { id: string } =>
+      !!p.id && !order.value.includes(p.id),
+  ),
 );
 
 const showOrigin = ref(true);
@@ -730,16 +1127,48 @@ const showMetrics = ref(true);
 const showNotes = ref(false);
 
 const sectionToggles = computed(() => [
-  { key: "origin", icon: Tag, label: t("fomcharts.compare.origin"), model: showOrigin },
-  { key: "mode", icon: Waves, label: t("fomcharts.annotations.mode"), model: showMode },
-  { key: "structure", icon: Layers, label: t("fomcharts.annotations.layerStructure"), model: showStructure },
-  { key: "metrics", icon: Gauge, label: t("fomcharts.annotations.metrics"), model: showMetrics },
-  { key: "notes", icon: FileText, label: t("fomcharts.annotations.notes"), model: showNotes },
+  {
+    key: "origin",
+    icon: Tag,
+    label: t("fomcharts.compare.origin"),
+    model: showOrigin,
+  },
+  {
+    key: "mode",
+    icon: Waves,
+    label: t("fomcharts.annotations.mode"),
+    model: showMode,
+  },
+  {
+    key: "structure",
+    icon: Layers,
+    label: t("fomcharts.annotations.layerStructure"),
+    model: showStructure,
+  },
+  {
+    key: "metrics",
+    icon: Gauge,
+    label: t("fomcharts.annotations.metrics"),
+    model: showMetrics,
+  },
+  {
+    key: "notes",
+    icon: FileText,
+    label: t("fomcharts.annotations.notes"),
+    model: showNotes,
+  },
 ]);
 // A single toggle link rather than a one-way "show all" -- once every
 // section is already shown, offer to clear them all back off instead of
 // leaving the link sitting there with nothing left to do.
-const allSectionsShown = computed(() => showOrigin.value && showMode.value && showStructure.value && showMetrics.value && showNotes.value);
+const allSectionsShown = computed(
+  () =>
+    showOrigin.value &&
+    showMode.value &&
+    showStructure.value &&
+    showMetrics.value &&
+    showNotes.value,
+);
 function toggleAllSections() {
   const next = !allSectionsShown.value;
   showOrigin.value = next;
@@ -755,22 +1184,43 @@ const comparePins = computed<ComparePinData[]>(() =>
   orderedPins.value.map((d) => {
     const sections: AnnotationExportSection[] = [];
     if (showMode.value && (d.modeRows.length > 0 || d.modeDescription)) {
-      sections.push({ title: t("fomcharts.annotations.mode"), rows: d.modeRows, text: d.modeDescription ?? undefined });
+      sections.push({
+        title: t("fomcharts.annotations.mode"),
+        rows: d.modeRows,
+        text: d.modeDescription ?? undefined,
+      });
     }
-    if (showStructure.value && (d.structureExtraFields.length > 0 || d.layers.length > 0)) {
-      sections.push({ title: t("fomcharts.annotations.layerStructure"), rows: d.structureExtraFields, layers: d.layers });
+    if (
+      showStructure.value &&
+      (d.structureExtraFields.length > 0 || d.layers.length > 0)
+    ) {
+      sections.push({
+        title: t("fomcharts.annotations.layerStructure"),
+        rows: d.structureExtraFields,
+        layers: d.layers,
+      });
     }
     if (showMetrics.value && d.metricsRows.length > 0) {
-      sections.push({ title: t("fomcharts.annotations.metrics"), rows: d.metricsRows });
+      sections.push({
+        title: t("fomcharts.annotations.metrics"),
+        rows: d.metricsRows,
+      });
     }
     if (showNotes.value && d.note) {
       sections.push({ title: t("fomcharts.annotations.notes"), text: d.note });
     }
-    return { ref: d.ref, title: d.title, origin: showOrigin.value ? d.origin : null, sections };
+    return {
+      ref: d.ref,
+      title: d.title,
+      origin: showOrigin.value ? d.origin : null,
+      sections,
+    };
   }),
 );
 
-const hasContent = computed(() => comparePins.value.some((p) => p.origin || p.sections.length > 0));
+const hasContent = computed(() =>
+  comparePins.value.some((p) => p.origin || p.sections.length > 0),
+);
 const hasTitleText = computed(() => titleText.value.trim().length > 0);
 
 // See ensureCanvasFontsLoaded -- forces exactly one re-measure once the
@@ -783,7 +1233,9 @@ ensureCanvasFontsLoaded().then(() => {
 
 const plan = computed<ComparePlan | null>(() => {
   void fontsReadyTick.value;
-  return hasContent.value ? planComparePins(comparePins.value, hasTitleText.value) : null;
+  return hasContent.value
+    ? planComparePins(comparePins.value, hasTitleText.value)
+    : null;
 });
 
 // Metrics this app actually knows how to call "better/worse" (Sensitivity,
@@ -792,24 +1244,33 @@ const plan = computed<ComparePlan | null>(() => {
 // once (toggle pills, not a single-value Select) -- each only ever drives
 // its OWN row's coloring (see compareExport's computeBestWorst), so picking
 // e.g. both Q-factor and FOM never conflicts.
-const candidateMetrics = computed(() => candidateBestWorstKeys(comparePins.value));
+const candidateMetrics = computed(() =>
+  candidateBestWorstKeys(comparePins.value),
+);
 const bestWorstKeys = ref<string[]>([]);
 watch(candidateMetrics, (list) => {
   bestWorstKeys.value = bestWorstKeys.value.filter((k) => list.includes(k));
 });
 function toggleBestWorstKey(key: string) {
-  bestWorstKeys.value = bestWorstKeys.value.includes(key) ? bestWorstKeys.value.filter((k) => k !== key) : [...bestWorstKeys.value, key];
+  bestWorstKeys.value = bestWorstKeys.value.includes(key)
+    ? bestWorstKeys.value.filter((k) => k !== key)
+    : [...bestWorstKeys.value, key];
 }
-const bestWorstList = computed(() => bestWorstKeys.value.map((key) => ({ key, direction: metricDirection(key) })));
-const badgeLabels = computed(() => ({ measured: t("fomcharts.compare.badges.measured"), simulated: t("fomcharts.compare.badges.simulated") }));
+const bestWorstList = computed(() =>
+  bestWorstKeys.value.map((key) => ({ key, direction: metricDirection(key) })),
+);
+const badgeLabels = computed(() => ({
+  measured: t("fomcharts.compare.badges.measured"),
+  simulated: t("fomcharts.compare.badges.simulated"),
+}));
 
 const contentCanvasEl = ref<HTMLCanvasElement | null>(null);
 const previewWrapperEl = ref<HTMLElement | null>(null);
-// previewAreaEl/railProbeEl/railHorizontal -- see updateRailOrientation
-// below, and the template comment above the floating tool rail.
+// previewAreaEl/railProbeEl/railHorizontal -- see useCompareZoomPan's
+// updateRailOrientation, and the template comment above the floating tool
+// rail.
 const previewAreaEl = ref<HTMLElement | null>(null);
 const railProbeEl = ref<HTMLElement | null>(null);
-const railHorizontal = ref(false);
 const CANVAS_SCALE = 2;
 
 // A throwaway 2D context used purely for text measurement (postit wrap
@@ -829,7 +1290,15 @@ function renderContent() {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
   ctx.setTransform(CANVAS_SCALE, 0, 0, CANVAS_SCALE, 0, 0);
-  drawComparePins(ctx, comparePins.value, p, titleText.value || null, highlightedKeys.value, bestWorstList.value, badgeLabels.value);
+  drawComparePins(
+    ctx,
+    comparePins.value,
+    p,
+    titleText.value || null,
+    highlightedKeys.value,
+    bestWorstList.value,
+    badgeLabels.value,
+  );
 }
 
 // -- Zoom: auto-fits to the preview wrapper's WIDTH (capped at 100%) whenever
@@ -843,104 +1312,6 @@ function renderContent() {
 // right and text far smaller than it needed to be. Manual control via the
 // floating +/-/reset cluster, Ctrl+wheel, and the Pan tool/Space-drag for
 // when a zoomed-in or many-column comparison needs to scroll around.
-const MIN_ZOOM = 0.25;
-const MAX_ZOOM = 2;
-const ZOOM_STEP = 0.1;
-const zoom = ref(1);
-const userAdjustedZoom = ref(false);
-const zoomPercent = computed(() => Math.round(zoom.value * 100));
-
-function computeFitZoom(): number {
-  const wrapper = previewWrapperEl.value;
-  const p = plan.value;
-  if (!wrapper || !p) return 1;
-  const availableW = wrapper.clientWidth - 20;
-  if (availableW <= 0) return 1;
-  return Math.min(1, availableW / p.width);
-}
-function autoFit() {
-  if (userAdjustedZoom.value) return;
-  zoom.value = Math.max(MIN_ZOOM, computeFitZoom());
-}
-function clampZoom(z: number): number {
-  return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, Math.round(z * 100) / 100));
-}
-function zoomIn() {
-  userAdjustedZoom.value = true;
-  zoom.value = clampZoom(zoom.value + ZOOM_STEP);
-}
-function zoomOut() {
-  userAdjustedZoom.value = true;
-  zoom.value = clampZoom(zoom.value - ZOOM_STEP);
-}
-function resetZoomToFit() {
-  userAdjustedZoom.value = false;
-  autoFit();
-}
-function onWheel(e: WheelEvent) {
-  if (!e.ctrlKey) return;
-  e.preventDefault();
-  userAdjustedZoom.value = true;
-  zoom.value = clampZoom(zoom.value * (e.deltaY < 0 ? 1.08 : 1 / 1.08));
-}
-function onWindowResize() {
-  autoFit();
-  updateRailOrientation();
-}
-
-// Compares the probe's natural (always-vertical, MINIMUM-footprint) height
-// against the preview area's real available height to decide whether the
-// visible rail should be vertical or horizontal -- see the template comments
-// on both. Driven by a ResizeObserver (set up/torn down in the `open` watcher
-// below) rather than only the window resize event, since the preview area's
-// own height can also change for reasons that aren't a window resize (e.g.
-// the chips row wrapping onto an extra line as points are pinned).
-function updateRailOrientation() {
-  const probe = railProbeEl.value;
-  const area = previewAreaEl.value;
-  if (!probe || !area) return;
-  // 16px: the rail's own top-3 offset (12px) plus a few px of breathing room
-  // at the bottom edge -- NOT doubled. The rail only needs room for its own
-  // top offset plus its natural height to avoid spilling past the area's
-  // bottom; padding this out further just made the switch trigger early
-  // (measured: a 530px-tall rail was flagged as not fitting a 553px-tall
-  // area).
-  const available = area.clientHeight - 16;
-  railHorizontal.value = probe.scrollHeight > available;
-}
-let railResizeObserver: ResizeObserver | null = null;
-
-// -- Pan tool + Space-hold-to-pan: drags the scroll container directly
-// rather than Konva's own stage position, since the preview is already a
-// plain scrollable div (see previewWrapperEl) -- reusing that scroll instead
-// of introducing a second, competing pan mechanism inside Konva keeps zoom
-// (a CSS transform on an ancestor) and pan (native scrollLeft/scrollTop) from
-// ever fighting each other.
-const isSpacePanning = ref(false);
-const isPanningNow = ref(false);
-let panDrag: { startX: number; startY: number; scrollLeft: number; scrollTop: number } | null = null;
-
-function onWrapperPointerDown(e: PointerEvent) {
-  if (activeTool.value !== "pan" && !isSpacePanning.value) return;
-  const wrapper = previewWrapperEl.value;
-  if (!wrapper) return;
-  e.preventDefault();
-  isPanningNow.value = true;
-  panDrag = { startX: e.clientX, startY: e.clientY, scrollLeft: wrapper.scrollLeft, scrollTop: wrapper.scrollTop };
-  wrapper.setPointerCapture(e.pointerId);
-}
-function onWrapperPointerMove(e: PointerEvent) {
-  if (!panDrag) return;
-  const wrapper = previewWrapperEl.value;
-  if (!wrapper) return;
-  wrapper.scrollLeft = panDrag.scrollLeft - (e.clientX - panDrag.startX);
-  wrapper.scrollTop = panDrag.scrollTop - (e.clientY - panDrag.startY);
-}
-function onWrapperPointerUp() {
-  panDrag = null;
-  isPanningNow.value = false;
-}
-
 // -- Annotations: a flat, typed, undoable list. Every type is now a real
 // Konva node (see the stage/layer in the template) -- draggable with its own
 // native hit-testing/click/dblclick, instead of pixels we redrew and
@@ -948,7 +1319,17 @@ function onWrapperPointerUp() {
 // has no natural anchor -- see compareExport.ts), everything else anchors to
 // a pin ref + percentage position within that pin's column so it survives
 // reordering.
-type Tool = "pointer" | "pan" | "pen" | "eraser" | "highlight" | "frame" | "arrow" | "postit" | "stamp" | "underline";
+type Tool =
+  | "pointer"
+  | "pan"
+  | "pen"
+  | "eraser"
+  | "highlight"
+  | "frame"
+  | "arrow"
+  | "postit"
+  | "stamp"
+  | "underline";
 // Pan starts active (not Pointer) -- with the preview now panned by hand
 // instead of scrolled (see previewWrapperEl's overflow-hidden below), the
 // Hand tool is the default way to move around a comparison the moment it
@@ -961,72 +1342,95 @@ const activeStampKind = ref<StampKind>("favorite");
 // Tooltip+Button per entry instead of repeating the same markup by hand for
 // every tool/stamp.
 const TOOL_RAIL_TOOLS: { tool: Tool; icon: Component; label: string }[] = [
-  { tool: "pointer", icon: MousePointer2, label: "fomcharts.compare.tools.pointer" },
+  {
+    tool: "pointer",
+    icon: MousePointer2,
+    label: "fomcharts.compare.tools.pointer",
+  },
   { tool: "pan", icon: Hand, label: "fomcharts.compare.tools.pan" },
   { tool: "pen", icon: Pen, label: "fomcharts.compare.tools.pen" },
-  { tool: "highlight", icon: Rows3, label: "fomcharts.compare.tools.highlightRow" },
+  {
+    tool: "highlight",
+    icon: Rows3,
+    label: "fomcharts.compare.tools.highlightRow",
+  },
   { tool: "frame", icon: Ellipse, label: "fomcharts.compare.tools.frame" },
   { tool: "arrow", icon: ArrowUpRight, label: "fomcharts.compare.tools.arrow" },
-  { tool: "underline", icon: Underline, label: "fomcharts.compare.tools.underline" },
+  {
+    tool: "underline",
+    icon: Underline,
+    label: "fomcharts.compare.tools.underline",
+  },
   { tool: "postit", icon: StickyNote, label: "fomcharts.compare.tools.postit" },
   { tool: "eraser", icon: Eraser, label: "fomcharts.compare.tools.eraser" },
 ];
-const STAMP_RAIL_KINDS: { kind: StampKind; icon: Component; label: string }[] = [
-  { kind: "favorite", icon: Star, label: "fomcharts.compare.stamps.favorite" },
-  { kind: "validated", icon: CheckCircle2, label: "fomcharts.compare.stamps.validated" },
-  { kind: "exclude", icon: X, label: "fomcharts.compare.stamps.exclude" },
-];
+const STAMP_RAIL_KINDS: { kind: StampKind; icon: Component; label: string }[] =
+  [
+    {
+      kind: "favorite",
+      icon: Star,
+      label: "fomcharts.compare.stamps.favorite",
+    },
+    {
+      kind: "validated",
+      icon: CheckCircle2,
+      label: "fomcharts.compare.stamps.validated",
+    },
+    { kind: "exclude", icon: X, label: "fomcharts.compare.stamps.exclude" },
+  ];
 const annotations = ref<CompareAnnotation[]>([]);
 // bandKey -> hex color, one entry per highlighted row -- each highlight
 // carries its own color (matching the pen/frame/arrow/postit color picker)
 // instead of every highlight always being the same fixed amber.
 const highlightedKeys = ref<Map<string, string>>(new Map());
 const selectedAnnotationId = ref<string | null>(null);
-const selectedBounds = ref<{ x: number; y: number; width: number; height: number } | null>(null);
-const hasMarkup = computed(() => annotations.value.length > 0 || highlightedKeys.value.size > 0);
+const selectedBounds = ref<{
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+} | null>(null);
+const hasMarkup = computed(
+  () => annotations.value.length > 0 || highlightedKeys.value.size > 0,
+);
 let annotationSeq = 0;
 const nextAnnotationId = () => `ann-${annotationSeq++}`;
 
-// Undo/redo -- plain (non-reactive) snapshot stacks of the whole annotation
-// state, pushed before every mutating action. Simple and always correct
-// (no command objects to keep in sync) since the object count here is
-// always small.
-type HistorySnapshot = { annotations: CompareAnnotation[]; highlightedKeys: [string, string][] };
-let undoStack: HistorySnapshot[] = [];
-let redoStack: HistorySnapshot[] = [];
-const HISTORY_LIMIT = 50;
-const canUndo = ref(false);
-const canRedo = ref(false);
-function snapshot(): HistorySnapshot {
-  return { annotations: JSON.parse(JSON.stringify(annotations.value)), highlightedKeys: [...highlightedKeys.value] };
-}
-function pushHistory() {
-  undoStack.push(snapshot());
-  if (undoStack.length > HISTORY_LIMIT) undoStack.shift();
-  redoStack = [];
-  canUndo.value = true;
-  canRedo.value = false;
-}
-function restore(snap: HistorySnapshot) {
-  annotations.value = snap.annotations;
-  highlightedKeys.value = new Map(snap.highlightedKeys);
-  selectedAnnotationId.value = null;
-  selectedBounds.value = null;
-}
-function undo() {
-  if (undoStack.length === 0) return;
-  redoStack.push(snapshot());
-  restore(undoStack.pop()!);
-  canUndo.value = undoStack.length > 0;
-  canRedo.value = true;
-}
-function redo() {
-  if (redoStack.length === 0) return;
-  undoStack.push(snapshot());
-  restore(redoStack.pop()!);
-  canRedo.value = redoStack.length > 0;
-  canUndo.value = true;
-}
+// -- Zoom/pan + tool-rail orientation -- see composables/useCompareZoomPan.ts.
+const {
+  zoom,
+  zoomPercent,
+  userAdjustedZoom,
+  railHorizontal,
+  isSpacePanning,
+  isPanningNow,
+  zoomIn,
+  zoomOut,
+  resetZoomToFit,
+  onWheel,
+  onWrapperPointerDown,
+  onWrapperPointerMove,
+  onWrapperPointerUp,
+  autoFit,
+  init: initZoomPan,
+  dispose: disposeZoomPan,
+} = useCompareZoomPan({
+  plan,
+  isPanActive: () => activeTool.value === "pan",
+  previewWrapperEl,
+  previewAreaEl,
+  railProbeEl,
+});
+
+// -- Undo/redo -- see composables/useCompareHistory.ts.
+const {
+  canUndo,
+  canRedo,
+  pushHistory,
+  undo,
+  redo,
+  reset: resetHistory,
+} = useCompareHistory({ annotations, highlightedKeys, selectedAnnotationId, selectedBounds });
 
 function resetAnnotations() {
   if (!hasMarkup.value) return;
@@ -1040,7 +1444,9 @@ function resetAnnotations() {
 function removeSelectedAnnotation() {
   if (!selectedAnnotationId.value) return;
   pushHistory();
-  annotations.value = annotations.value.filter((a) => a.id !== selectedAnnotationId.value);
+  annotations.value = annotations.value.filter(
+    (a) => a.id !== selectedAnnotationId.value,
+  );
   selectedAnnotationId.value = null;
   selectedBounds.value = null;
 }
@@ -1057,18 +1463,36 @@ function setStampTool(kind: StampKind) {
   selectedBounds.value = null;
 }
 const toolBtnClass = (tool: Tool) =>
-  activeTool.value === tool ? "bg-primary font-semibold text-primary-foreground hover:bg-primary hover:text-primary-foreground" : "text-secondary";
+  activeTool.value === tool
+    ? "bg-primary font-semibold text-primary-foreground hover:bg-primary hover:text-primary-foreground"
+    : "text-secondary";
 const stampBtnClass = (kind: StampKind) =>
   activeTool.value === "stamp" && activeStampKind.value === kind
     ? "bg-primary font-semibold text-primary-foreground hover:bg-primary hover:text-primary-foreground"
     : "text-secondary";
-const showColorPicker = computed(() => (["pen", "frame", "arrow", "postit", "highlight", "underline"] as Tool[]).includes(activeTool.value));
+const showColorPicker = computed(() =>
+  (
+    ["pen", "frame", "arrow", "postit", "highlight", "underline"] as Tool[]
+  ).includes(activeTool.value),
+);
 
 const overlayCursorClass = computed(() => {
-  if (activeTool.value === "pan" || isSpacePanning.value) return isPanningNow.value ? "cursor-grabbing" : "cursor-grab";
-  if (activeTool.value === "pen" || activeTool.value === "frame" || activeTool.value === "arrow" || activeTool.value === "underline") return "cursor-crosshair";
+  if (activeTool.value === "pan" || isSpacePanning.value)
+    return isPanningNow.value ? "cursor-grabbing" : "cursor-grab";
+  if (
+    activeTool.value === "pen" ||
+    activeTool.value === "frame" ||
+    activeTool.value === "arrow" ||
+    activeTool.value === "underline"
+  )
+    return "cursor-crosshair";
   if (activeTool.value === "eraser") return "cursor-cell";
-  if (activeTool.value === "highlight" || activeTool.value === "postit" || activeTool.value === "stamp") return "cursor-pointer";
+  if (
+    activeTool.value === "highlight" ||
+    activeTool.value === "postit" ||
+    activeTool.value === "stamp"
+  )
+    return "cursor-pointer";
   return "cursor-default";
 });
 
@@ -1099,56 +1523,6 @@ const toolHint = computed(() => {
   }
 });
 
-function bandAt(y: number): CompareRowBand | null {
-  const p = plan.value;
-  if (!p) return null;
-  return p.rowBands.find((b) => y >= b.y - 3 && y <= b.y + b.height + 3) ?? null;
-}
-
-// Same idea as bandAt, but never comes back empty-handed (as long as SOME
-// row exists) -- it snaps to the closest band instead of requiring an exact
-// hit, so a click on a section's title bar or in the small gap between two
-// boxes still gets a stable row to anchor to. This is what lets frame/arrow/
-// postit/stamp stay glued to their row instead of drifting when some OTHER
-// section is toggled on/off (see resolveAnchor's bandKey and the
-// CompareAnnotation type comments in compareExport.ts).
-function nearestBand(y: number): CompareRowBand | null {
-  const p = plan.value;
-  if (!p || p.rowBands.length === 0) return null;
-  const containing = bandAt(y);
-  if (containing) return containing;
-  let best = p.rowBands[0];
-  let bestDist = Infinity;
-  for (const b of p.rowBands) {
-    const dist = y < b.y ? b.y - y : y > b.y + b.height ? y - (b.y + b.height) : 0;
-    if (dist < bestDist) {
-      bestDist = dist;
-      best = b;
-    }
-  }
-  return best;
-}
-
-function pinRefAt(x: number): string | null {
-  if (comparePins.value.length === 0) return null;
-  const idx = Math.max(0, Math.min(comparePins.value.length - 1, Math.floor(x / (COL_WIDTH + COL_GAP))));
-  return comparePins.value[idx]?.ref ?? null;
-}
-function pinIndexAt(x: number): number {
-  return Math.max(0, Math.min(comparePins.value.length - 1, Math.floor(x / (COL_WIDTH + COL_GAP))));
-}
-/** Percentage position for a NEW annotation, expressed relative to the
- * nearest row band (not the whole column -- see nearestBand above). */
-function toBandPct(pinRef: string, pt: { x: number; y: number }): { xPct: number; yPct: number; bandKey: string | null } | null {
-  const idx = comparePins.value.findIndex((p) => p.ref === pinRef);
-  if (idx === -1 || !plan.value) return null;
-  const colX = idx * (COL_WIDTH + COL_GAP);
-  const xPct = (pt.x - colX) / COL_WIDTH;
-  const band = nearestBand(pt.y);
-  if (band) return { xPct, yPct: (pt.y - band.y) / band.height, bandKey: band.key };
-  return { xPct, yPct: pt.y / plan.value.height, bandKey: null };
-}
-
 // ---------------------------------------------------------------------------
 // Konva node configs -- one builder per annotation type, each reading the
 // same pinRef+percentage anchor compareExport.ts's own draw functions use
@@ -1156,7 +1530,7 @@ function toBandPct(pinRef: string, pt: { x: number; y: number }): { xPct: number
 // disagree with the static PNG export below (which still draws with plain
 // canvas 2D via drawCompareAnnotations). Draggable only under the Pointer
 // tool (and never while Space-panning) so a drag gesture never fights
-// whatever tool is actually active.
+// whatever tool is actually active. See composables/useCompareKonvaConfigs.ts.
 // ---------------------------------------------------------------------------
 
 interface KonvaComponentRef {
@@ -1165,7 +1539,9 @@ interface KonvaComponentRef {
 }
 const stageRef = ref<KonvaComponentRef | null>(null);
 
-const isDraggableNow = computed(() => activeTool.value === "pointer" && !isSpacePanning.value);
+const isDraggableNow = computed(
+  () => activeTool.value === "pointer" && !isSpacePanning.value,
+);
 
 const stageConfig = computed(() => ({
   width: plan.value?.width ?? 0,
@@ -1173,159 +1549,43 @@ const stageConfig = computed(() => ({
   listening: activeTool.value !== "pan" && !isSpacePanning.value,
 }));
 
-function penConfig(a: PenAnnotation) {
-  return {
-    id: a.id,
-    points: a.points.flatMap((p) => [p.x, p.y]),
-    stroke: a.color,
-    strokeWidth: PEN_WIDTH,
-    opacity: 0.55,
-    lineCap: "round",
-    lineJoin: "round",
-    hitStrokeWidth: PEN_WIDTH + 8,
-    draggable: isDraggableNow.value,
-    x: 0,
-    y: 0,
-  };
-}
-// Every config builder below always returns the SAME set of keys, whether
-// or not its anchor actually resolves -- toggling `visible`/`listening`
-// instead of ever swapping to a bare `{ visible: false }` shape. Reason:
-// vue-konva tracks its own "last applied config" snapshot via a plain
-// Object.assign MERGE (see node_modules/vue-konva/dist/vue-konva-core.mjs),
-// which never clears keys that later disappear from that snapshot. So a
-// config that OMITS x/y/draggable one render (e.g. while a section is
-// toggled off) and brings them back the next finds vue-konva comparing the
-// new x/y against its still-stale, never-cleared memory of the OLD x/y --
-// sees "no change" since the numbers happen to match -- and never re-applies
-// them to the real Konva node, which WAS cleared to 0 in between. The node
-// then stays stuck at (0,0) forever, looking like the annotation "jumped to
-// the corner". Keeping every key present in every render sidesteps that
-// upstream footgun entirely. (Confirmed by direct Konva node inspection --
-// see the column-swap handle below, which hit this exact bug.)
-function frameConfig(a: FrameAnnotation) {
-  const anchor = plan.value ? resolveAnchor(comparePins.value, plan.value, a.pinRef, a.bandKey) : null;
-  const w = anchor ? a.wPct * anchor.w : 0;
-  const h = anchor ? a.hPct * anchor.h : 0;
-  return {
-    id: a.id,
-    visible: !!anchor,
-    listening: !!anchor,
-    x: anchor ? anchor.x + a.xPct * anchor.w + w / 2 : 0,
-    y: anchor ? anchor.y + a.yPct * anchor.h + h / 2 : 0,
-    radiusX: Math.max(4, Math.abs(w) / 2),
-    radiusY: Math.max(4, Math.abs(h) / 2),
-    stroke: a.color,
-    strokeWidth: 2.5,
-    hitStrokeWidth: 10,
-    draggable: !!anchor && isDraggableNow.value,
-  };
-}
-function arrowConfig(a: ArrowAnnotation) {
-  const anchor = plan.value ? resolveAnchor(comparePins.value, plan.value, a.pinRef, a.bandKey) : null;
-  return {
-    id: a.id,
-    visible: !!anchor,
-    listening: !!anchor,
-    points: anchor
-      ? [anchor.x + a.x1Pct * anchor.w, anchor.y + a.y1Pct * anchor.h, anchor.x + a.x2Pct * anchor.w, anchor.y + a.y2Pct * anchor.h]
-      : [0, 0, 0, 0],
-    stroke: a.color,
-    fill: a.color,
-    strokeWidth: 2.5,
-    pointerLength: 10,
-    pointerWidth: 10,
-    hitStrokeWidth: 14,
-    draggable: !!anchor && isDraggableNow.value,
-    x: 0,
-    y: 0,
-  };
-}
-function underlineConfig(a: UnderlineAnnotation) {
-  const anchor = plan.value ? resolveAnchor(comparePins.value, plan.value, a.pinRef, a.bandKey) : null;
-  const y = anchor ? anchor.y + a.yPct * anchor.h : 0;
-  return {
-    id: a.id,
-    visible: !!anchor,
-    listening: !!anchor,
-    points: anchor ? [anchor.x + a.x1Pct * anchor.w, y, anchor.x + a.x2Pct * anchor.w, y] : [0, 0, 0, 0],
-    stroke: a.color,
-    strokeWidth: 3,
-    lineCap: "round",
-    hitStrokeWidth: 12,
-    draggable: !!anchor && isDraggableNow.value,
-    x: 0,
-    y: 0,
-  };
-}
-function postitGroupConfig(a: PostitAnnotation) {
-  const anchor = plan.value ? resolveAnchor(comparePins.value, plan.value, a.pinRef, a.bandKey) : null;
-  return {
-    id: a.id,
-    visible: !!anchor,
-    listening: !!anchor,
-    x: anchor ? anchor.x + a.xPct * anchor.w : 0,
-    y: anchor ? anchor.y + a.yPct * anchor.h : 0,
-    draggable: !!anchor && isDraggableNow.value,
-  };
-}
-// a.height is a MINIMUM, not a fixed box -- the note always grows to fit its
-// wrapped text even if that's taller than whatever height was last dragged
-// (e.g. after typing more, or narrowing the width back down).
-function postitRenderedHeight(a: PostitAnnotation): number {
-  return Math.max(a.height, postitHeight(measureCtx, a.text, a.width));
-}
-function postitRectConfig(a: PostitAnnotation) {
-  return { width: a.width, height: postitRenderedHeight(a), fill: a.color, stroke: "rgba(28,37,65,0.35)", strokeWidth: 1, cornerRadius: 3 };
-}
-function postitTextConfig(a: PostitAnnotation) {
-  return {
-    text: a.text,
-    x: 8,
-    y: 6,
-    width: a.width - 16,
-    fontSize: 11,
-    fontFamily: "Inter, sans-serif",
-    fill: pickTextColor(a.color),
-    lineHeight: POSTIT_LINE_H / 11,
-    wrap: "word",
-    listening: false,
-  };
-}
-// Resize handle -- bottom-right corner of the note, drag freely to change
-// BOTH its width and height. Height can never go below what the wrapped
-// text actually needs at the current width (see postitRenderedHeight) --
-// dragging it shorter than that just stops shrinking, it never clips text.
-// Only meaningful under the Pointer tool, same as every other drag
-// interaction.
-const POSTIT_MIN_WIDTH = 80;
-const POSTIT_MAX_WIDTH = 320;
-const POSTIT_MAX_HEIGHT = 400;
-function postitResizeHandleConfig(a: PostitAnnotation) {
-  // Konva's dragBoundFunc works in ABSOLUTE (stage) coordinates, not the
-  // node's own local/parent-relative ones -- easy to miss since node.x()/
-  // y() elsewhere in this file are always local. Getting this wrong here
-  // sent the handle's Y to wherever `height` landed in ABSOLUTE stage space
-  // (i.e. usually off-canvas) instead of relative to the note's own corner.
-  const anchor = plan.value ? resolveAnchor(comparePins.value, plan.value, a.pinRef, a.bandKey) : null;
-  const groupX = anchor ? anchor.x + a.xPct * anchor.w : 0;
-  const groupY = anchor ? anchor.y + a.yPct * anchor.h : 0;
-  return {
-    x: a.width,
-    y: postitRenderedHeight(a),
-    radius: 5,
-    fill: "#ffffff",
-    stroke: "#0072b2",
-    strokeWidth: 2,
-    draggable: isDraggableNow.value,
-    dragBoundFunc(pos: { x: number; y: number }) {
-      const w = Math.max(POSTIT_MIN_WIDTH, Math.min(POSTIT_MAX_WIDTH, pos.x - groupX));
-      const minH = postitHeight(measureCtx, a.text, w);
-      const h = Math.max(minH, Math.min(POSTIT_MAX_HEIGHT, pos.y - groupY));
-      return { x: groupX + w, y: groupY + h };
-    },
-  };
-}
+// Column-swap hover/drag state -- owned here (not the composable) since
+// onColumnSwapDragStart/End below mutate it; the composable only reads it
+// to style the handle.
+const hoveredColumnIndex = ref<number | null>(null);
+const draggingColumnIndex = ref<number | null>(null);
+
+const {
+  bandAt,
+  nearestBand,
+  pinRefAt,
+  pinIndexAt,
+  toBandPct,
+  penConfig,
+  frameConfig,
+  arrowConfig,
+  underlineConfig,
+  postitGroupConfig,
+  postitRectConfig,
+  postitTextConfig,
+  postitResizeHandleConfig,
+  stampGroupConfig,
+  stampCircleConfig,
+  columnHeaderY,
+  columnSwapGroupConfig,
+  columnSwapBgConfig,
+  columnSwapGlyphConfig,
+  columnIndexForX,
+} = useCompareKonvaConfigs({
+  plan,
+  comparePins,
+  isDraggableNow,
+  activeTool,
+  hoveredColumnIndex,
+  draggingColumnIndex,
+  measureCtx,
+});
+
 // Konva bubbles dragstart/dragmove/dragend up the node tree by default, and
 // this handle is a CHILD of the postit's own draggable group -- without
 // cancelBubble, finishing a resize drag here also fired the GROUP's own
@@ -1341,40 +1601,23 @@ function onPostitResizeDragStart(e: KonvaEventObject<DragEvent>) {
   onAnnotationDragStart();
   e.cancelBubble = true;
 }
-function onPostitResizeDragMove(a: PostitAnnotation, e: KonvaEventObject<DragEvent>) {
+function onPostitResizeDragMove(
+  a: PostitAnnotation,
+  e: KonvaEventObject<DragEvent>,
+) {
   e.cancelBubble = true;
   // dragBoundFunc already clamped both axes -- reading the node's own
   // (now-local) x/y back just mirrors whatever it settled on.
   const w = e.target.x();
   const h = e.target.y();
-  annotations.value = annotations.value.map((x) => (x.id === a.id && x.type === "postit" ? { ...x, width: w, height: h } : x));
+  annotations.value = annotations.value.map((x) =>
+    x.id === a.id && x.type === "postit" ? { ...x, width: w, height: h } : x,
+  );
 }
 function onPostitResizeDragEnd(e: KonvaEventObject<DragEvent>) {
   e.cancelBubble = true;
   refreshSelectedBounds();
 }
-function stampGroupConfig(a: StampAnnotation) {
-  const center = plan.value ? stampCenter(comparePins.value, plan.value, a) : null;
-  return {
-    id: a.id,
-    visible: !!center,
-    listening: !!center,
-    x: center?.x ?? 0,
-    y: center?.y ?? 0,
-    draggable: !!center && isDraggableNow.value,
-  };
-}
-function stampCircleConfig(a: StampAnnotation) {
-  return { radius: STAMP_R, fill: STAMP_COLORS[a.kind], stroke: "#1c2541", strokeWidth: 1.5 };
-}
-// Hand-drawn glyphs (star/check/cross), local to their stamp group's origin
-// -- same relative offsets compareExport.ts's own drawStampShape uses,
-// translated from cx/cy-relative canvas calls to group-local Konva shapes.
-const STAMP_GLYPH_STAR = { numPoints: 5, innerRadius: 2.5, outerRadius: 5.5, fill: "#ffffff" };
-const STAMP_GLYPH_CHECK = { points: [-5, 0, -1.5, 4, 5.5, -4.5], stroke: "#ffffff", strokeWidth: 2, lineCap: "round", lineJoin: "round" };
-const STAMP_GLYPH_CROSS_1 = { points: [-4.5, -4.5, 4.5, 4.5], stroke: "#ffffff", strokeWidth: 2, lineCap: "round" };
-const STAMP_GLYPH_CROSS_2 = { points: [4.5, -4.5, -4.5, 4.5], stroke: "#ffffff", strokeWidth: 2, lineCap: "round" };
-
 // -- Column swap directly on the canvas: a small handle at the top-right of
 // each column's header, draggable left/right only (dragBoundFunc locks the
 // Y axis -- a column never moves vertically). Dropping it over another
@@ -1382,59 +1625,21 @@ const STAMP_GLYPH_CROSS_2 = { points: [4.5, -4.5, -4.5, 4.5], stroke: "#ffffff",
 // list's own move/drag controls already own -- this is just a second,
 // closer-to-the-content entry point into the same reorder, not a separate
 // mechanism. Only shown under the Pointer tool, same as selection/drag.
-const hoveredColumnIndex = ref<number | null>(null);
-const draggingColumnIndex = ref<number | null>(null);
-const COLUMN_SWAP_SIZE = 20;
-function columnHeaderY(): number {
-  return (plan.value?.hasTitle ? TITLE_H : 0) + 4;
-}
-function columnSwapGroupConfig(index: number) {
-  // Always the same key set (see the big comment above frameConfig) --
-  // toggling visible/listening/draggable rather than ever swapping to a
-  // bare `{ visible: false }` shape, which is what previously left this
-  // handle stuck at (0,0) ("top-left") the moment any OTHER tool was used
-  // and then abandoned, even after switching back to the Pointer tool.
-  const active = activeTool.value === "pointer";
-  const colX = index * (COL_WIDTH + COL_GAP);
-  const y = columnHeaderY();
-  return {
-    x: colX + COL_WIDTH - COLUMN_SWAP_SIZE - 4,
-    y,
-    visible: active,
-    listening: active,
-    draggable: active,
-    dragBoundFunc: (pos: { x: number; y: number }) => ({ x: pos.x, y }),
-  };
-}
-function columnSwapBgConfig(index: number) {
-  const active = hoveredColumnIndex.value === index || draggingColumnIndex.value === index;
-  return { width: COLUMN_SWAP_SIZE, height: COLUMN_SWAP_SIZE, cornerRadius: 5, fill: active ? "#0072b2" : "rgba(58,80,107,0.15)" };
-}
-function columnSwapGlyphConfig(index: number) {
-  const active = hoveredColumnIndex.value === index || draggingColumnIndex.value === index;
-  return { text: "⇄", width: COLUMN_SWAP_SIZE, height: COLUMN_SWAP_SIZE, align: "center", verticalAlign: "middle", fontSize: 12, fill: active ? "#ffffff" : "#3a506b", listening: false };
-}
-function columnIndexForX(x: number, count: number): number {
-  let best = 0;
-  let bestDist = Infinity;
-  for (let i = 0; i < count; i++) {
-    const dist = Math.abs(x - (i * (COL_WIDTH + COL_GAP) + COL_WIDTH / 2));
-    if (dist < bestDist) {
-      bestDist = dist;
-      best = i;
-    }
-  }
-  return best;
-}
 function onColumnSwapDragStart(index: number) {
   draggingColumnIndex.value = index;
 }
-function onColumnSwapDragEnd(fromIndex: number, e: KonvaEventObject<DragEvent>) {
+function onColumnSwapDragEnd(
+  fromIndex: number,
+  e: KonvaEventObject<DragEvent>,
+) {
   draggingColumnIndex.value = null;
   const node = e.target;
   const droppedCenterX = node.x() + COLUMN_SWAP_SIZE / 2;
   const targetIndex = columnIndexForX(droppedCenterX, order.value.length);
-  node.position({ x: fromIndex * (COL_WIDTH + COL_GAP) + COL_WIDTH - COLUMN_SWAP_SIZE - 4, y: columnHeaderY() });
+  node.position({
+    x: fromIndex * (COL_WIDTH + COL_GAP) + COL_WIDTH - COLUMN_SWAP_SIZE - 4,
+    y: columnHeaderY(),
+  });
   if (targetIndex !== fromIndex) {
     const next = [...order.value];
     [next[fromIndex], next[targetIndex]] = [next[targetIndex], next[fromIndex]];
@@ -1461,7 +1666,10 @@ const transformerConfig = {
   anchorFill: "#ffffff",
   anchorSize: 8,
   anchorCornerRadius: 4,
-  boundBoxFunc: (oldBox: { width: number; height: number }, newBox: { width: number; height: number }) => (newBox.width < 20 || newBox.height < 20 ? oldBox : newBox),
+  boundBoxFunc: (
+    oldBox: { width: number; height: number },
+    newBox: { width: number; height: number },
+  ) => (newBox.width < 20 || newBox.height < 20 ? oldBox : newBox),
 };
 function onFrameTransformEnd(a: FrameAnnotation, e: KonvaEventObject<Event>) {
   const p = plan.value;
@@ -1488,7 +1696,14 @@ function onFrameTransformEnd(a: FrameAnnotation, e: KonvaEventObject<Event>) {
   pushHistory();
   annotations.value = annotations.value.map((x) =>
     x.id === a.id && x.type === "frame"
-      ? { ...x, bandKey: band?.key ?? null, xPct: (cx - w / 2 - colX) / COL_WIDTH, yPct: (cy - h / 2 - bandY) / bandH, wPct: w / COL_WIDTH, hPct: h / bandH }
+      ? {
+          ...x,
+          bandKey: band?.key ?? null,
+          xPct: (cx - w / 2 - colX) / COL_WIDTH,
+          yPct: (cy - h / 2 - bandY) / bandH,
+          wPct: w / COL_WIDTH,
+          hPct: h / bandH,
+        }
       : x,
   );
   refreshSelectedBounds();
@@ -1515,7 +1730,9 @@ function onPenDragEnd(a: PenAnnotation, e: KonvaEventObject<DragEvent>) {
   // just re-based to (0,0) so future drags start from a clean offset again.
   node.position({ x: 0, y: 0 });
   node.points(newPoints.flatMap((p) => [p.x, p.y]));
-  annotations.value = annotations.value.map((x) => (x.id === a.id && x.type === "pen" ? { ...x, points: newPoints } : x));
+  annotations.value = annotations.value.map((x) =>
+    x.id === a.id && x.type === "pen" ? { ...x, points: newPoints } : x,
+  );
   refreshSelectedBounds();
 }
 // Dragging can move an annotation onto a DIFFERENT row -- each drag-end
@@ -1538,7 +1755,13 @@ function onFrameDragEnd(a: FrameAnnotation, e: KonvaEventObject<DragEvent>) {
   const w = a.wPct * COL_WIDTH;
   annotations.value = annotations.value.map((x) =>
     x.id === a.id && x.type === "frame"
-      ? { ...x, bandKey: band?.key ?? null, xPct: (cx - w / 2 - colX) / COL_WIDTH, yPct: (cy - oldPixelH / 2 - bandY) / bandH, hPct: oldPixelH / bandH }
+      ? {
+          ...x,
+          bandKey: band?.key ?? null,
+          xPct: (cx - w / 2 - colX) / COL_WIDTH,
+          yPct: (cy - oldPixelH / 2 - bandY) / bandH,
+          hPct: oldPixelH / bandH,
+        }
       : x,
   );
   refreshSelectedBounds();
@@ -1547,7 +1770,19 @@ function onFrameDragEnd(a: FrameAnnotation, e: KonvaEventObject<DragEvent>) {
 // both end up needing "here are the two endpoints in absolute pixels, figure
 // out the row band and percentages from scratch" so an arrow re-glues to
 // whatever row it's now next to either way.
-function rebandArrow(pinRef: string, x1: number, y1: number, x2: number, y2: number): { bandKey: string | null; x1Pct: number; y1Pct: number; x2Pct: number; y2Pct: number } | null {
+function rebandArrow(
+  pinRef: string,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+): {
+  bandKey: string | null;
+  x1Pct: number;
+  y1Pct: number;
+  x2Pct: number;
+  y2Pct: number;
+} | null {
   const p = plan.value;
   const idx = comparePins.value.findIndex((x) => x.ref === pinRef);
   if (!p || idx === -1) return null;
@@ -1555,11 +1790,19 @@ function rebandArrow(pinRef: string, x1: number, y1: number, x2: number, y2: num
   const band = nearestBand((y1 + y2) / 2);
   const bandY = band ? band.y : 0;
   const bandH = band ? band.height : p.height;
-  return { bandKey: band?.key ?? null, x1Pct: (x1 - colX) / COL_WIDTH, y1Pct: (y1 - bandY) / bandH, x2Pct: (x2 - colX) / COL_WIDTH, y2Pct: (y2 - bandY) / bandH };
+  return {
+    bandKey: band?.key ?? null,
+    x1Pct: (x1 - colX) / COL_WIDTH,
+    y1Pct: (y1 - bandY) / bandH,
+    x2Pct: (x2 - colX) / COL_WIDTH,
+    y2Pct: (y2 - bandY) / bandH,
+  };
 }
 function onArrowDragEnd(a: ArrowAnnotation, e: KonvaEventObject<DragEvent>) {
   const p = plan.value;
-  const oldAnchor = p ? resolveAnchor(comparePins.value, p, a.pinRef, a.bandKey) : null;
+  const oldAnchor = p
+    ? resolveAnchor(comparePins.value, p, a.pinRef, a.bandKey)
+    : null;
   if (!oldAnchor) return;
   const node = e.target as unknown as Konva.Arrow;
   const dx = node.x();
@@ -1572,16 +1815,23 @@ function onArrowDragEnd(a: ArrowAnnotation, e: KonvaEventObject<DragEvent>) {
   node.points([x1, y1, x2, y2]);
   const rebanded = rebandArrow(a.pinRef, x1, y1, x2, y2);
   if (!rebanded) return;
-  annotations.value = annotations.value.map((x) => (x.id === a.id && x.type === "arrow" ? { ...x, ...rebanded } : x));
+  annotations.value = annotations.value.map((x) =>
+    x.id === a.id && x.type === "arrow" ? { ...x, ...rebanded } : x,
+  );
   refreshSelectedBounds();
 }
 // Dragging moves the whole underline as one rigid horizontal segment --
 // reuses rebandArrow with y1=y2 (still keeps it perfectly horizontal, since
 // both endpoints get the same dy) rather than duplicating the same
 // re-banding math a third time.
-function onUnderlineDragEnd(a: UnderlineAnnotation, e: KonvaEventObject<DragEvent>) {
+function onUnderlineDragEnd(
+  a: UnderlineAnnotation,
+  e: KonvaEventObject<DragEvent>,
+) {
   const p = plan.value;
-  const oldAnchor = p ? resolveAnchor(comparePins.value, p, a.pinRef, a.bandKey) : null;
+  const oldAnchor = p
+    ? resolveAnchor(comparePins.value, p, a.pinRef, a.bandKey)
+    : null;
   if (!oldAnchor) return;
   const node = e.target as unknown as Konva.Line;
   const dx = node.x();
@@ -1594,7 +1844,15 @@ function onUnderlineDragEnd(a: UnderlineAnnotation, e: KonvaEventObject<DragEven
   const rebanded = rebandArrow(a.pinRef, x1, y, x2, y);
   if (!rebanded) return;
   annotations.value = annotations.value.map((x) =>
-    x.id === a.id && x.type === "underline" ? { ...x, bandKey: rebanded.bandKey, x1Pct: rebanded.x1Pct, x2Pct: rebanded.x2Pct, yPct: rebanded.y1Pct } : x,
+    x.id === a.id && x.type === "underline"
+      ? {
+          ...x,
+          bandKey: rebanded.bandKey,
+          x1Pct: rebanded.x1Pct,
+          x2Pct: rebanded.x2Pct,
+          yPct: rebanded.y1Pct,
+        }
+      : x,
   );
   refreshSelectedBounds();
 }
@@ -1604,9 +1862,16 @@ function onUnderlineDragEnd(a: UnderlineAnnotation, e: KonvaEventObject<DragEven
 // to move the whole arrow as one rigid unit.
 const selectedArrowEndpoints = computed(() => {
   if (!selectedAnnotationId.value || !plan.value) return null;
-  const ann = annotations.value.find((a) => a.id === selectedAnnotationId.value);
+  const ann = annotations.value.find(
+    (a) => a.id === selectedAnnotationId.value,
+  );
   if (!ann || ann.type !== "arrow") return null;
-  const anchor = resolveAnchor(comparePins.value, plan.value, ann.pinRef, ann.bandKey);
+  const anchor = resolveAnchor(
+    comparePins.value,
+    plan.value,
+    ann.pinRef,
+    ann.bandKey,
+  );
   if (!anchor) return null;
   return {
     ann,
@@ -1617,9 +1882,21 @@ const selectedArrowEndpoints = computed(() => {
   };
 });
 function arrowEndpointConfig(x: number, y: number) {
-  return { x, y, radius: 6, fill: "#ffffff", stroke: "#0072b2", strokeWidth: 2, draggable: isDraggableNow.value };
+  return {
+    x,
+    y,
+    radius: 6,
+    fill: "#ffffff",
+    stroke: "#0072b2",
+    strokeWidth: 2,
+    draggable: isDraggableNow.value,
+  };
 }
-function onArrowEndpointDragMove(which: "start" | "end", ann: ArrowAnnotation, e: KonvaEventObject<DragEvent>) {
+function onArrowEndpointDragMove(
+  which: "start" | "end",
+  ann: ArrowAnnotation,
+  e: KonvaEventObject<DragEvent>,
+) {
   const node = e.target;
   annotations.value = annotations.value.map((x) => {
     if (x.id !== ann.id || x.type !== "arrow") return x;
@@ -1627,25 +1904,48 @@ function onArrowEndpointDragMove(which: "start" | "end", ann: ArrowAnnotation, e
     // band) purely so the line visibly follows the handle while dragging;
     // onArrowEndpointDragEnd below re-derives them properly against
     // whichever band the endpoint actually lands on.
-    const anchor = plan.value ? resolveAnchor(comparePins.value, plan.value, x.pinRef, x.bandKey) : null;
+    const anchor = plan.value
+      ? resolveAnchor(comparePins.value, plan.value, x.pinRef, x.bandKey)
+      : null;
     if (!anchor) return x;
     const xPct = (node.x() - anchor.x) / anchor.w;
     const yPct = (node.y() - anchor.y) / anchor.h;
-    return which === "start" ? { ...x, x1Pct: xPct, y1Pct: yPct } : { ...x, x2Pct: xPct, y2Pct: yPct };
+    return which === "start"
+      ? { ...x, x1Pct: xPct, y1Pct: yPct }
+      : { ...x, x2Pct: xPct, y2Pct: yPct };
   });
 }
 function onArrowEndpointDragEnd(which: "start" | "end", ann: ArrowAnnotation) {
   const current = annotations.value.find((x) => x.id === ann.id);
   if (!current || current.type !== "arrow") return;
-  const anchor = plan.value ? resolveAnchor(comparePins.value, plan.value, current.pinRef, current.bandKey) : null;
+  const anchor = plan.value
+    ? resolveAnchor(
+        comparePins.value,
+        plan.value,
+        current.pinRef,
+        current.bandKey,
+      )
+    : null;
   if (!anchor) return;
-  const movedX = anchor.x + (which === "start" ? current.x1Pct : current.x2Pct) * anchor.w;
-  const movedY = anchor.y + (which === "start" ? current.y1Pct : current.y2Pct) * anchor.h;
-  const otherX = anchor.x + (which === "start" ? current.x2Pct : current.x1Pct) * anchor.w;
-  const otherY = anchor.y + (which === "start" ? current.y2Pct : current.y1Pct) * anchor.h;
-  const rebanded = rebandArrow(current.pinRef, which === "start" ? movedX : otherX, which === "start" ? movedY : otherY, which === "start" ? otherX : movedX, which === "start" ? otherY : movedY);
+  const movedX =
+    anchor.x + (which === "start" ? current.x1Pct : current.x2Pct) * anchor.w;
+  const movedY =
+    anchor.y + (which === "start" ? current.y1Pct : current.y2Pct) * anchor.h;
+  const otherX =
+    anchor.x + (which === "start" ? current.x2Pct : current.x1Pct) * anchor.w;
+  const otherY =
+    anchor.y + (which === "start" ? current.y2Pct : current.y1Pct) * anchor.h;
+  const rebanded = rebandArrow(
+    current.pinRef,
+    which === "start" ? movedX : otherX,
+    which === "start" ? movedY : otherY,
+    which === "start" ? otherX : movedX,
+    which === "start" ? otherY : movedY,
+  );
   if (!rebanded) return;
-  annotations.value = annotations.value.map((x) => (x.id === ann.id && x.type === "arrow" ? { ...x, ...rebanded } : x));
+  annotations.value = annotations.value.map((x) =>
+    x.id === ann.id && x.type === "arrow" ? { ...x, ...rebanded } : x,
+  );
   refreshSelectedBounds();
 }
 function onMovableDragMove(id: string, e: KonvaEventObject<DragEvent>) {
@@ -1654,7 +1954,10 @@ function onMovableDragMove(id: string, e: KonvaEventObject<DragEvent>) {
   const stage = node.getStage();
   if (stage) selectedBounds.value = node.getClientRect({ relativeTo: stage });
 }
-function onMovableDragEnd(a: PostitAnnotation | StampAnnotation, e: KonvaEventObject<DragEvent>) {
+function onMovableDragEnd(
+  a: PostitAnnotation | StampAnnotation,
+  e: KonvaEventObject<DragEvent>,
+) {
   const p = plan.value;
   const idx = comparePins.value.findIndex((x) => x.ref === a.pinRef);
   if (!p || idx === -1) return;
@@ -1664,7 +1967,14 @@ function onMovableDragEnd(a: PostitAnnotation | StampAnnotation, e: KonvaEventOb
   const bandY = band ? band.y : 0;
   const bandH = band ? band.height : p.height;
   annotations.value = annotations.value.map((x) =>
-    x.id === a.id ? { ...x, bandKey: band?.key ?? null, xPct: (node.x() - colX) / COL_WIDTH, yPct: (node.y() - bandY) / bandH } : x,
+    x.id === a.id
+      ? {
+          ...x,
+          bandKey: band?.key ?? null,
+          xPct: (node.x() - colX) / COL_WIDTH,
+          yPct: (node.y() - bandY) / bandH,
+        }
+      : x,
   );
   refreshSelectedBounds();
 }
@@ -1680,7 +1990,9 @@ function refreshSelectedBounds() {
   }
   const stage = stageRef.value?.getStage();
   const node = stage?.findOne(`#${selectedAnnotationId.value}`);
-  selectedBounds.value = node ? node.getClientRect({ relativeTo: stage }) : null;
+  selectedBounds.value = node
+    ? node.getClientRect({ relativeTo: stage })
+    : null;
 }
 function selectAnnotation(id: string) {
   if (activeTool.value !== "pointer") return;
@@ -1700,7 +2012,9 @@ function selectNewlyPlaced(id: string) {
 }
 const selectedControls = computed(() => {
   if (!selectedAnnotationId.value || !selectedBounds.value) return null;
-  const ann = annotations.value.find((a) => a.id === selectedAnnotationId.value);
+  const ann = annotations.value.find(
+    (a) => a.id === selectedAnnotationId.value,
+  );
   if (!ann) return null;
   const b = selectedBounds.value;
   return { annotation: ann, x: b.x + b.width, y: b.y };
@@ -1713,9 +2027,19 @@ const selectionOutlineConfig = computed(() => {
   // endpoint handles -- either already shows selection clearly enough on
   // its own, so this generic box would just be visual noise on top.
   const type = selectedControls.value?.annotation.type;
-  if (!selectedBounds.value || type === "frame" || type === "arrow") return null;
+  if (!selectedBounds.value || type === "frame" || type === "arrow")
+    return null;
   const b = selectedBounds.value;
-  return { x: b.x - 4, y: b.y - 4, width: b.width + 8, height: b.height + 8, stroke: "#0072b2", strokeWidth: 1.5, dash: [3, 2], cornerRadius: 4 };
+  return {
+    x: b.x - 4,
+    y: b.y - 4,
+    width: b.width + 8,
+    height: b.height + 8,
+    stroke: "#0072b2",
+    strokeWidth: 1.5,
+    dash: [3, 2],
+    cornerRadius: 4,
+  };
 });
 
 // Attaches the Transformer to the selected shape ONLY when it's a frame
@@ -1728,7 +2052,8 @@ watch(selectedAnnotationId, (id) => {
     if (!tr) return;
     const ann = id ? annotations.value.find((a) => a.id === id) : null;
     const stage = stageRef.value?.getStage();
-    const node = ann?.type === "frame" && stage ? stage.findOne(`#${id}`) : null;
+    const node =
+      ann?.type === "frame" && stage ? stage.findOne(`#${id}`) : null;
     tr.nodes(node ? [node] : []);
     tr.getLayer()?.batchDraw();
   });
@@ -1745,7 +2070,15 @@ let isErasing = false;
 const eraserCursorPt = ref<{ x: number; y: number } | null>(null);
 const eraserCursorConfig = computed(() =>
   activeTool.value === "eraser" && eraserCursorPt.value
-    ? { x: eraserCursorPt.value.x, y: eraserCursorPt.value.y, radius: 10, stroke: "#d55e00", strokeWidth: 1.2, dash: [3, 2], fill: "rgba(213,94,0,0.12)" }
+    ? {
+        x: eraserCursorPt.value.x,
+        y: eraserCursorPt.value.y,
+        radius: 10,
+        stroke: "#d55e00",
+        strokeWidth: 1.2,
+        dash: [3, 2],
+        fill: "rgba(213,94,0,0.12)",
+      }
     : null,
 );
 function eraseAt(pos: { x: number; y: number }) {
@@ -1776,7 +2109,12 @@ function eraseAt(pos: { x: number; y: number }) {
   // Konva node there for stage.getIntersection to find.
   const band = bandAt(pos.y);
   const gestureKey = band ? `highlight:${band.key}` : null;
-  if (band && gestureKey && highlightedKeys.value.has(band.key) && !erasedThisGesture.has(gestureKey)) {
+  if (
+    band &&
+    gestureKey &&
+    highlightedKeys.value.has(band.key) &&
+    !erasedThisGesture.has(gestureKey)
+  ) {
     if (!eraserGestureStarted) {
       pushHistory();
       eraserGestureStarted = true;
@@ -1794,15 +2132,34 @@ function eraseAt(pos: { x: number; y: number }) {
 const hoverBand = ref<CompareRowBand | null>(null);
 const activePenPoints = ref<{ x: number; y: number }[] | null>(null);
 let dragStart: { x: number; y: number } | null = null;
-const previewShape = ref<{ type: "frame" | "arrow" | "underline"; start: { x: number; y: number }; end: { x: number; y: number } } | null>(null);
+const previewShape = ref<{
+  type: "frame" | "arrow" | "underline";
+  start: { x: number; y: number };
+  end: { x: number; y: number };
+} | null>(null);
 
 const activePenDotConfig = computed(() => {
   const p = activePenPoints.value?.[0];
-  return p ? { x: p.x, y: p.y, radius: PEN_WIDTH / 2, fill: activeColor.value, opacity: 0.55 } : null;
+  return p
+    ? {
+        x: p.x,
+        y: p.y,
+        radius: PEN_WIDTH / 2,
+        fill: activeColor.value,
+        opacity: 0.55,
+      }
+    : null;
 });
 const activePenPreviewConfig = computed(() => {
   if (!activePenPoints.value || activePenPoints.value.length < 2) return null;
-  return { points: activePenPoints.value.flatMap((p) => [p.x, p.y]), stroke: activeColor.value, strokeWidth: PEN_WIDTH, opacity: 0.55, lineCap: "round", lineJoin: "round" };
+  return {
+    points: activePenPoints.value.flatMap((p) => [p.x, p.y]),
+    stroke: activeColor.value,
+    strokeWidth: PEN_WIDTH,
+    opacity: 0.55,
+    lineCap: "round",
+    lineJoin: "round",
+  };
 });
 const previewFrameConfig = computed(() => {
   if (!previewShape.value || previewShape.value.type !== "frame") return null;
@@ -1811,23 +2168,53 @@ const previewFrameConfig = computed(() => {
   const y = Math.min(start.y, end.y);
   const w = Math.abs(end.x - start.x);
   const h = Math.abs(end.y - start.y);
-  return { x: x + w / 2, y: y + h / 2, radiusX: Math.max(4, w / 2), radiusY: Math.max(4, h / 2), stroke: activeColor.value, strokeWidth: 2, dash: [4, 3] };
+  return {
+    x: x + w / 2,
+    y: y + h / 2,
+    radiusX: Math.max(4, w / 2),
+    radiusY: Math.max(4, h / 2),
+    stroke: activeColor.value,
+    strokeWidth: 2,
+    dash: [4, 3],
+  };
 });
 const previewArrowConfig = computed(() => {
   if (!previewShape.value || previewShape.value.type !== "arrow") return null;
   const { start, end } = previewShape.value;
-  return { points: [start.x, start.y, end.x, end.y], stroke: activeColor.value, strokeWidth: 2, dash: [4, 3] };
+  return {
+    points: [start.x, start.y, end.x, end.y],
+    stroke: activeColor.value,
+    strokeWidth: 2,
+    dash: [4, 3],
+  };
 });
 // Y is locked to the drag's start point (see onStageMouseMove) so this
 // always previews as a straight horizontal underline, never a diagonal.
 const previewUnderlineConfig = computed(() => {
-  if (!previewShape.value || previewShape.value.type !== "underline") return null;
+  if (!previewShape.value || previewShape.value.type !== "underline")
+    return null;
   const { start, end } = previewShape.value;
-  return { points: [start.x, start.y, end.x, start.y], stroke: activeColor.value, strokeWidth: 3, dash: [4, 3], lineCap: "round" };
+  return {
+    points: [start.x, start.y, end.x, start.y],
+    stroke: activeColor.value,
+    strokeWidth: 3,
+    dash: [4, 3],
+    lineCap: "round",
+  };
 });
 const hoverBandConfig = computed(() => {
-  if (activeTool.value !== "highlight" || !hoverBand.value || !plan.value) return null;
-  return { x: 4, y: hoverBand.value.y - 3, width: plan.value.width - 8, height: hoverBand.value.height + 3, stroke: activeColor.value, strokeWidth: 1.5, dash: [4, 3], cornerRadius: 4 };
+  if (activeTool.value !== "highlight" || !hoverBand.value || !plan.value)
+    return null;
+  return {
+    x: 4,
+    y: hoverBand.value.y - 3,
+    width: plan.value.width - 8,
+    height: hoverBand.value.height + 3,
+    stroke: activeColor.value,
+    strokeWidth: 1.5,
+    dash: [4, 3],
+    cornerRadius: 4,
+  };
 });
 
 // Ghost preview of where a new post-it would land, shown while hovering
@@ -1839,11 +2226,22 @@ const postitPreviewConfig = computed(() => {
   // Hidden while a note is actively being written -- the real (opaque)
   // editing box already sits right there, showing the translucent ghost
   // underneath it too would just look like a rendering glitch.
-  if (activeTool.value !== "postit" || editingPostit.value || !hoverPostitPt.value || !plan.value) return null;
+  if (
+    activeTool.value !== "postit" ||
+    editingPostit.value ||
+    !hoverPostitPt.value ||
+    !plan.value
+  )
+    return null;
   const pinRef = pinRefAt(hoverPostitPt.value.x);
   const pct = pinRef ? toBandPct(pinRef, hoverPostitPt.value) : null;
   if (!pinRef || !pct) return null;
-  const anchor = resolveAnchor(comparePins.value, plan.value, pinRef, pct.bandKey);
+  const anchor = resolveAnchor(
+    comparePins.value,
+    plan.value,
+    pinRef,
+    pct.bandKey,
+  );
   if (!anchor) return null;
   return {
     x: anchor.x + pct.xPct * anchor.w,
@@ -1863,20 +2261,46 @@ const postitPreviewConfig = computed(() => {
 // new note" (postit tool click) and "re-editing an existing one" (pencil
 // icon / double-click), distinguished by editingAnnotationId: null means
 // commit creates a new annotation, set means commit updates that one.
-const editingPostit = ref<{ pinRef: string; bandKey: string | null; xPct: number; yPct: number; text: string; color: string; width: number; height: number } | null>(null);
+const editingPostit = ref<{
+  pinRef: string;
+  bandKey: string | null;
+  xPct: number;
+  yPct: number;
+  text: string;
+  color: string;
+  width: number;
+  height: number;
+} | null>(null);
 let editingAnnotationId: string | null = null;
 const postitInputEl = ref<InstanceType<typeof Textarea> | null>(null);
 const editingPostitPos = computed(() => {
   if (!editingPostit.value || !plan.value) return null;
-  const anchor = resolveAnchor(comparePins.value, plan.value, editingPostit.value.pinRef, editingPostit.value.bandKey);
+  const anchor = resolveAnchor(
+    comparePins.value,
+    plan.value,
+    editingPostit.value.pinRef,
+    editingPostit.value.bandKey,
+  );
   if (!anchor) return null;
-  return { x: anchor.x + editingPostit.value.xPct * anchor.w, y: anchor.y + editingPostit.value.yPct * anchor.h };
+  return {
+    x: anchor.x + editingPostit.value.xPct * anchor.w,
+    y: anchor.y + editingPostit.value.yPct * anchor.h,
+  };
 });
 // Matches whatever height the note will actually render at once committed
 // (see postitHeight) -- keeps the editing box from clipping a longer note,
 // and reflows live as the resize handle changes editingPostit.width/height.
 const editingPostitHeight = computed(() =>
-  editingPostit.value ? Math.max(editingPostit.value.height, postitHeight(measureCtx, editingPostit.value.text, editingPostit.value.width)) : POSTIT_MIN_H,
+  editingPostit.value
+    ? Math.max(
+        editingPostit.value.height,
+        postitHeight(
+          measureCtx,
+          editingPostit.value.text,
+          editingPostit.value.width,
+        ),
+      )
+    : POSTIT_MIN_H,
 );
 
 function startEditPostit(ann: PostitAnnotation) {
@@ -1887,7 +2311,16 @@ function startEditPostit(ann: PostitAnnotation) {
   // "click anywhere else".
   if (editingPostit.value && editingAnnotationId !== ann.id) commitPostit();
   editingAnnotationId = ann.id;
-  editingPostit.value = { pinRef: ann.pinRef, bandKey: ann.bandKey, xPct: ann.xPct, yPct: ann.yPct, text: ann.text, color: ann.color, width: ann.width, height: ann.height };
+  editingPostit.value = {
+    pinRef: ann.pinRef,
+    bandKey: ann.bandKey,
+    xPct: ann.xPct,
+    yPct: ann.yPct,
+    text: ann.text,
+    color: ann.color,
+    width: ann.width,
+    height: ann.height,
+  };
   nextTick(() => {
     const el = postitInputEl.value?.$el as HTMLTextAreaElement | undefined;
     el?.focus();
@@ -1916,7 +2349,9 @@ function commitPostitInternal(selectAfter: boolean) {
     // in place, keeping its original color/anchor.
     pushHistory();
     annotations.value = text
-      ? annotations.value.map((a) => (a.id === targetId && a.type === "postit" ? { ...a, text } : a))
+      ? annotations.value.map((a) =>
+          a.id === targetId && a.type === "postit" ? { ...a, text } : a,
+        )
       : annotations.value.filter((a) => a.id !== targetId);
     return;
   }
@@ -1926,7 +2361,18 @@ function commitPostitInternal(selectAfter: boolean) {
   pushHistory();
   annotations.value = [
     ...annotations.value,
-    { id, type: "postit", color: editing.color, pinRef: editing.pinRef, bandKey: editing.bandKey, xPct: editing.xPct, yPct: editing.yPct, text, width: editing.width, height: editing.height },
+    {
+      id,
+      type: "postit",
+      color: editing.color,
+      pinRef: editing.pinRef,
+      bandKey: editing.bandKey,
+      xPct: editing.xPct,
+      yPct: editing.yPct,
+      text,
+      width: editing.width,
+      height: editing.height,
+    },
   ];
   if (selectAfter) selectNewlyPlaced(id);
 }
@@ -1944,7 +2390,9 @@ function cancelPostit() {
 // per-shape drag/click (moving/selecting an EXISTING one) handled above.
 // ---------------------------------------------------------------------------
 
-function stagePointerPos(e: KonvaEventObject<MouseEvent>): { x: number; y: number } | null {
+function stagePointerPos(
+  e: KonvaEventObject<MouseEvent>,
+): { x: number; y: number } | null {
   const stage = e.target.getStage();
   return stage ? stage.getPointerPosition() : null;
 }
@@ -1977,7 +2425,11 @@ function onStageMouseDown(e: KonvaEventObject<MouseEvent>) {
     activePenPoints.value = [pos];
     return;
   }
-  if (activeTool.value === "frame" || activeTool.value === "arrow" || activeTool.value === "underline") {
+  if (
+    activeTool.value === "frame" ||
+    activeTool.value === "arrow" ||
+    activeTool.value === "underline"
+  ) {
     dragStart = pos;
     previewShape.value = { type: activeTool.value, start: pos, end: pos };
     return;
@@ -1987,8 +2439,19 @@ function onStageMouseDown(e: KonvaEventObject<MouseEvent>) {
     const pct = pinRef ? toBandPct(pinRef, pos) : null;
     if (!pinRef || !pct) return;
     editingAnnotationId = null;
-    editingPostit.value = { pinRef, bandKey: pct.bandKey, xPct: pct.xPct, yPct: pct.yPct, text: "", color: activeColor.value, width: POSTIT_W, height: POSTIT_MIN_H };
-    nextTick(() => (postitInputEl.value?.$el as HTMLTextAreaElement | undefined)?.focus());
+    editingPostit.value = {
+      pinRef,
+      bandKey: pct.bandKey,
+      xPct: pct.xPct,
+      yPct: pct.yPct,
+      text: "",
+      color: activeColor.value,
+      width: POSTIT_W,
+      height: POSTIT_MIN_H,
+    };
+    nextTick(() =>
+      (postitInputEl.value?.$el as HTMLTextAreaElement | undefined)?.focus(),
+    );
     return;
   }
   if (activeTool.value === "stamp") {
@@ -1999,7 +2462,16 @@ function onStageMouseDown(e: KonvaEventObject<MouseEvent>) {
     pushHistory();
     annotations.value = [
       ...annotations.value,
-      { id, type: "stamp", pinRef, bandKey: pct.bandKey, kind: activeStampKind.value, color: STAMP_COLORS[activeStampKind.value], xPct: pct.xPct, yPct: pct.yPct },
+      {
+        id,
+        type: "stamp",
+        pinRef,
+        bandKey: pct.bandKey,
+        kind: activeStampKind.value,
+        color: STAMP_COLORS[activeStampKind.value],
+        xPct: pct.xPct,
+        yPct: pct.yPct,
+      },
     ];
     selectNewlyPlaced(id);
   }
@@ -2030,10 +2502,17 @@ function onStageMouseMove(e: KonvaEventObject<MouseEvent>) {
     // Y locked to the drag's start -- an underline is always horizontal,
     // never a diagonal like the arrow it otherwise shares its drag gesture
     // with (see previewUnderlineConfig).
-    previewShape.value = { type: "underline", start: dragStart, end: { x: pos.x, y: dragStart.y } };
+    previewShape.value = {
+      type: "underline",
+      start: dragStart,
+      end: { x: pos.x, y: dragStart.y },
+    };
     return;
   }
-  if ((activeTool.value === "frame" || activeTool.value === "arrow") && dragStart) {
+  if (
+    (activeTool.value === "frame" || activeTool.value === "arrow") &&
+    dragStart
+  ) {
     previewShape.value = { type: activeTool.value, start: dragStart, end: pos };
   }
 }
@@ -2054,11 +2533,21 @@ function onStageMouseUp() {
     if (points.length > 1) {
       const id = nextAnnotationId();
       pushHistory();
-      annotations.value = [...annotations.value, { id, type: "pen", color: activeColor.value, points }];
+      annotations.value = [
+        ...annotations.value,
+        { id, type: "pen", color: activeColor.value, points },
+      ];
     }
     return;
   }
-  if ((activeTool.value === "frame" || activeTool.value === "arrow" || activeTool.value === "underline") && dragStart && previewShape.value && plan.value) {
+  if (
+    (activeTool.value === "frame" ||
+      activeTool.value === "arrow" ||
+      activeTool.value === "underline") &&
+    dragStart &&
+    previewShape.value &&
+    plan.value
+  ) {
     const { start, end } = previewShape.value;
     const pinRef = pinRefAt((start.x + end.x) / 2);
     const idx = pinIndexAt((start.x + end.x) / 2);
@@ -2070,8 +2559,14 @@ function onStageMouseUp() {
     const band = nearestBand((start.y + end.y) / 2);
     const bandY = band ? band.y : 0;
     const bandH = band ? band.height : plan.value.height;
-    const startPct = { xPct: (start.x - colX) / COL_WIDTH, yPct: (start.y - bandY) / bandH };
-    const endPct = { xPct: (end.x - colX) / COL_WIDTH, yPct: (end.y - bandY) / bandH };
+    const startPct = {
+      xPct: (start.x - colX) / COL_WIDTH,
+      yPct: (start.y - bandY) / bandH,
+    };
+    const endPct = {
+      xPct: (end.x - colX) / COL_WIDTH,
+      yPct: (end.y - bandY) / bandH,
+    };
     if (pinRef) {
       const id = nextAnnotationId();
       pushHistory();
@@ -2093,7 +2588,17 @@ function onStageMouseUp() {
       } else if (previewShape.value.type === "arrow") {
         annotations.value = [
           ...annotations.value,
-          { id, type: "arrow", color: activeColor.value, pinRef, bandKey: band?.key ?? null, x1Pct: startPct.xPct, y1Pct: startPct.yPct, x2Pct: endPct.xPct, y2Pct: endPct.yPct },
+          {
+            id,
+            type: "arrow",
+            color: activeColor.value,
+            pinRef,
+            bandKey: band?.key ?? null,
+            x1Pct: startPct.xPct,
+            y1Pct: startPct.yPct,
+            x2Pct: endPct.xPct,
+            y2Pct: endPct.yPct,
+          },
         ];
       } else {
         // A plain click (no real drag) still gets a visible, usable
@@ -2101,10 +2606,22 @@ function onStageMouseUp() {
         // degenerate gesture a sane minimum size" idea as the frame's own
         // `|| 0.1` above.
         const x1Pct = Math.min(startPct.xPct, endPct.xPct);
-        const x2Pct = Math.abs(endPct.xPct - startPct.xPct) < 0.02 ? x1Pct + 0.12 : Math.max(startPct.xPct, endPct.xPct);
+        const x2Pct =
+          Math.abs(endPct.xPct - startPct.xPct) < 0.02
+            ? x1Pct + 0.12
+            : Math.max(startPct.xPct, endPct.xPct);
         annotations.value = [
           ...annotations.value,
-          { id, type: "underline", color: activeColor.value, pinRef, bandKey: band?.key ?? null, x1Pct, x2Pct, yPct: startPct.yPct },
+          {
+            id,
+            type: "underline",
+            color: activeColor.value,
+            pinRef,
+            bandKey: band?.key ?? null,
+            x1Pct,
+            x2Pct,
+            yPct: startPct.yPct,
+          },
         ];
       }
       selectNewlyPlaced(id);
@@ -2144,14 +2661,16 @@ function onStageClick(e: KonvaEventObject<MouseEvent>) {
   // highlighted in a DIFFERENT color -> recolor it (lets you fix a color
   // without erasing + redrawing first). Already highlighted in the SAME
   // color you've got selected -> toggle it off, same as before.
-  if (current === undefined || current !== activeColor.value) next.set(band.key, activeColor.value);
+  if (current === undefined || current !== activeColor.value)
+    next.set(band.key, activeColor.value);
   else next.delete(band.key);
   highlightedKeys.value = next;
 }
 
 function onKeydown(e: KeyboardEvent) {
   const target = e.target as HTMLElement | null;
-  if (target && (target.tagName === "TEXTAREA" || target.tagName === "INPUT")) return;
+  if (target && (target.tagName === "TEXTAREA" || target.tagName === "INPUT"))
+    return;
   if (e.code === "Space" && !isSpacePanning.value) {
     e.preventDefault();
     isSpacePanning.value = true;
@@ -2162,7 +2681,10 @@ function onKeydown(e: KeyboardEvent) {
     selectedBounds.value = null;
     return;
   }
-  if ((e.key === "Delete" || e.key === "Backspace") && selectedAnnotationId.value) {
+  if (
+    (e.key === "Delete" || e.key === "Backspace") &&
+    selectedAnnotationId.value
+  ) {
     e.preventDefault();
     removeSelectedAnnotation();
     return;
@@ -2179,145 +2701,35 @@ function onKeyup(e: KeyboardEvent) {
 onUnmounted(() => {
   window.removeEventListener("keydown", onKeydown);
   window.removeEventListener("keyup", onKeyup);
-  window.removeEventListener("resize", onWindowResize);
-  railResizeObserver?.disconnect();
+  disposeZoomPan();
 });
 
-// -- Chip reordering: native HTML5 drag-and-drop, same pattern as
-// LayerStructureField.vue's layer rows (dragIndex is the chip being
-// carried, dragOverIndex only drives the hover highlight -- the actual move
-// always resolves against the drop target's own index).
-const dragIndex = ref<number | null>(null);
-const dragOverIndex = ref<number | null>(null);
-function onChipDragStart(index: number, ev: DragEvent) {
-  dragIndex.value = index;
-  if (ev.dataTransfer) ev.dataTransfer.effectAllowed = "move";
-}
-function onChipDragOver(index: number, ev: DragEvent) {
-  ev.preventDefault();
-  if (ev.dataTransfer) ev.dataTransfer.dropEffect = "move";
-  dragOverIndex.value = index;
-}
-function onChipDrop(index: number, ev: DragEvent) {
-  ev.preventDefault();
-  const from = dragIndex.value;
-  dragIndex.value = null;
-  dragOverIndex.value = null;
-  if (from === null || from === index) return;
-  const next = [...order.value];
-  const [moved] = next.splice(from, 1);
-  next.splice(index, 0, moved);
-  order.value = next;
-}
-function moveChip(index: number, dir: -1 | 1) {
-  const target = index + dir;
-  if (target < 0 || target >= order.value.length) return;
-  const next = [...order.value];
-  [next[index], next[target]] = [next[target], next[index]];
-  order.value = next;
-}
-function removeChip(id: string) {
-  order.value = order.value.filter((existing) => existing !== id);
-}
+// -- Chip reordering/add/remove/sort -- see composables/useCompareChips.ts.
+const {
+  dragIndex,
+  dragOverIndex,
+  onChipDragStart,
+  onChipDragOver,
+  onChipDrop,
+  moveChip,
+  removeChip,
+  addPointOpen,
+  addPoint,
+  sortMode,
+  applySort,
+} = useCompareChips({ order, orderedPins, comparePins, bestWorstKeys, compareMax: COMPARE_MAX });
 
-const addPointOpen = ref(false);
-function addPoint(id: string) {
-  if (order.value.length >= COMPARE_MAX) return;
-  order.value = [...order.value, id];
-  addPointOpen.value = false;
-}
-
-// -- Sort: each option is a one-shot re-sort of `order`, not a locked mode,
-// so a manual drag afterward always still works -- "reverse" is a separate
-// one-click action rather than a select option for the same reason.
-type SortMode = "selection" | "ref" | "metric-asc" | "metric-desc";
-const sortMode = ref<SortMode>("selection");
-function metricValueForId(id: string, key: string): number | null {
-  const ref = orderedPins.value.find((p) => p.id === id)?.ref;
-  const pinData = ref ? comparePins.value.find((p) => p.ref === ref) : undefined;
-  if (!pinData) return null;
-  for (const section of pinData.sections) {
-    const row = section.rows?.find((r) => r.key === key);
-    if (row) return parseMetricNumber(row.value);
-  }
-  return null;
-}
-function applySort(mode: SortMode) {
-  sortMode.value = mode;
-  if (mode === "selection") return;
-  const next = [...order.value];
-  if (mode === "ref") {
-    next.sort((a, b) => {
-      const refA = orderedPins.value.find((p) => p.id === a)?.ref ?? "";
-      const refB = orderedPins.value.find((p) => p.id === b)?.ref ?? "";
-      return refA.localeCompare(refB, undefined, { numeric: true });
-    });
-  } else if (bestWorstKeys.value.length > 0) {
-    const dir = mode === "metric-asc" ? 1 : -1;
-    // Several metrics can be active at once (see bestWorstKeys) -- sorting
-    // needs exactly one, so this uses whichever was toggled on first.
-    const key = bestWorstKeys.value[0];
-    next.sort((a, b) => {
-      const va = metricValueForId(a, key);
-      const vb = metricValueForId(b, key);
-      if (va === null && vb === null) return 0;
-      if (va === null) return 1;
-      if (vb === null) return -1;
-      return (va - vb) * dir;
-    });
-  }
-  order.value = next;
-}
-
-// -- Title auto-fill: same logic as GraphControls' chart title (see
-// VisualizationView's autoChartTitle/chartTitleIsAuto) -- the field starts
-// pre-filled with a real, editable auto-generated title (not just a grey
-// placeholder) built from the compared refs, stays in sync as chips are
-// added/removed/reordered, and stops the moment the user types or explicitly
-// clears it.
-const titleIsAuto = ref(true);
-const autoTitle = computed(() =>
-  orderedPins.value.length > 0 ? t("fomcharts.compare.titleAuto", { refs: orderedPins.value.map((p) => p.ref).join(", ") }) : t("fomcharts.compare.titlePlaceholder"),
-);
-
-watch(orderedPins, () => {
-  if (titleIsAuto.value) titleText.value = autoTitle.value;
-});
-
-// Click-to-rename in the footer (see the template) -- editingTitleInline
-// swaps the plain text/pencil trigger for a real Input, with a × (shown only
-// once there's text) to clear it in one click. Clearing it and then
-// committing (blur/Enter) reverts to the auto-generated title rather than
-// leaving the comparison unlabeled.
-const editingTitleInline = ref(false);
+// -- Title auto-fill/rename -- see composables/useCompareTitle.ts.
 const titleInlineInputEl = ref<InstanceType<typeof Input> | null>(null);
-let titleTextBeforeEdit = "";
-function startEditTitleInline() {
-  titleTextBeforeEdit = titleText.value;
-  titleIsAuto.value = false;
-  editingTitleInline.value = true;
-  nextTick(() => {
-    const el = titleInlineInputEl.value?.$el as HTMLInputElement | undefined;
-    el?.focus();
-    el?.select();
-  });
-}
-function clearInlineTitle() {
-  titleText.value = "";
-  const el = titleInlineInputEl.value?.$el as HTMLInputElement | undefined;
-  el?.focus();
-}
-function commitInlineTitle() {
-  editingTitleInline.value = false;
-  if (titleText.value.trim() === "") {
-    titleIsAuto.value = true;
-    titleText.value = autoTitle.value;
-  }
-}
-function cancelInlineTitle() {
-  editingTitleInline.value = false;
-  titleText.value = titleTextBeforeEdit;
-}
+const {
+  autoTitle,
+  editingTitleInline,
+  startEditTitleInline,
+  clearInlineTitle,
+  commitInlineTitle,
+  cancelInlineTitle,
+  reset: resetTitle,
+} = useCompareTitle({ titleText, orderedPins, t, titleInlineInputEl });
 
 // A fresh compare session each time the dialog reopens -- otherwise
 // annotations/highlights from a previous, unrelated comparison would still
@@ -2328,23 +2740,12 @@ watch(open, (isOpen) => {
   if (!isOpen) {
     window.removeEventListener("keydown", onKeydown);
     window.removeEventListener("keyup", onKeyup);
-    window.removeEventListener("resize", onWindowResize);
-    railResizeObserver?.disconnect();
-    railResizeObserver = null;
+    disposeZoomPan();
     return;
   }
   window.addEventListener("keydown", onKeydown);
   window.addEventListener("keyup", onKeyup);
-  window.addEventListener("resize", onWindowResize);
-  railHorizontal.value = false;
-  nextTick(() => {
-    if (!previewAreaEl.value) return;
-    railResizeObserver = new ResizeObserver(() => updateRailOrientation());
-    railResizeObserver.observe(previewAreaEl.value);
-    updateRailOrientation();
-  });
-  titleIsAuto.value = true;
-  titleText.value = autoTitle.value;
+  resetTitle();
   editingTitleInline.value = false;
   highlightedKeys.value = new Map();
   activeTool.value = "pan";
@@ -2356,19 +2757,10 @@ watch(open, (isOpen) => {
   previewShape.value = null;
   editingPostit.value = null;
   editingAnnotationId = null;
-  isSpacePanning.value = false;
-  isPanningNow.value = false;
-  undoStack = [];
-  redoStack = [];
-  canUndo.value = false;
-  canRedo.value = false;
-  userAdjustedZoom.value = false;
-  zoom.value = 1;
+  resetHistory();
   bestWorstKeys.value = [];
   sortMode.value = "selection";
-  nextTick(() => {
-    autoFit();
-  });
+  initZoomPan();
 });
 
 // Pen strokes are pixel-tied to this exact layout -- if the content's size
@@ -2397,7 +2789,9 @@ watch(
   { immediate: true },
 );
 
-watch([titleText, highlightedKeys, bestWorstList], () => nextTick(renderContent));
+watch([titleText, highlightedKeys, bestWorstList], () =>
+  nextTick(renderContent),
+);
 
 const handleDownload = () => {
   const content = contentCanvasEl.value;
@@ -2418,12 +2812,9 @@ const handleDownload = () => {
   ctx.scale(CANVAS_SCALE, CANVAS_SCALE);
   drawCompareAnnotations(ctx, annotations.value, comparePins.value, p);
   const url = out.toDataURL("image/png");
-  const a = document.createElement("a");
-  a.href = url;
-  const refs = orderedPins.value.map((p) => p.ref.replace(/[^a-z0-9_-]+/gi, "_")).join("_");
-  a.download = `compare_${refs}.png`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  const refs = orderedPins.value
+    .map((p) => p.ref.replace(/[^a-z0-9_-]+/gi, "_"))
+    .join("_");
+  downloadDataUrl(url, `compare_${refs}.png`);
 };
 </script>

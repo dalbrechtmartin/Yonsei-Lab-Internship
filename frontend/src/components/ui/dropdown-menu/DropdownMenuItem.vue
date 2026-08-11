@@ -5,7 +5,9 @@ import { reactiveOmit } from "@vueuse/core";
 import { DropdownMenuItem, useForwardPropsEmits } from "reka-ui";
 import { cn } from "@/lib/utils";
 
-const props = defineProps<DropdownMenuItemProps & { class?: HTMLAttributes["class"] }>();
+const props = defineProps<
+  DropdownMenuItemProps & { class?: HTMLAttributes["class"] }
+>();
 const emits = defineEmits<DropdownMenuItemEmits>();
 
 const delegatedProps = reactiveOmit(props, "class");

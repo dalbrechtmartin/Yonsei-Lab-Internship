@@ -1,0 +1,8 @@
+# λLens
+
+> λLens is a tool for wavelength-domain FOM (Figure of Merit) data from photonic biosensors. Upload a gold-standard Excel/CSV file and explore it as an interactive scatter plot with filters, group comparisons, and pinned annotations.
+
+## Pages
+
+- [Home](https://lambdalens.danaedev.fr/): App entry point and overview
+- [Visualization](https://lambdalens.danaedev.fr/visualization): Interactive FOM scatter plot with axis controls, filters, group comparison, and pinned annotations

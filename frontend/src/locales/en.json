@@ -86,6 +86,7 @@
     "success": "Extraction done. Your Excel file has been saved.",
     "partialSuccess": "Some files were skipped. The export only includes the ones that succeeded.",
     "error": "Something went wrong extracting those PDFs.",
+    "noData": "No data could be extracted from those PDFs.",
     "quotaExceeded": "Gemini's free-tier quota is already reached. Try again later or with fewer files.",
     "ready": {
       "heading": "Your export is ready",
@@ -121,7 +122,8 @@
         "processing": "Processing",
         "almostDone": "Almost done",
         "done": "Done",
-        "failed": "Failed"
+        "failed": "Failed",
+        "outOfDomain": "Off-topic"
       },
       "heading": "Extracting your papers…",
       "overall": "{done} / {total} files processed",
@@ -163,14 +165,14 @@
       "title": "Why λLens?",
       "abstractBody": "λLens speeds up literature reviews on integrated photonic sensors. Comparing a dozen papers by hand means as many spreadsheets, copy-pastes, and transcription slips for the same FOM values (wavelength, sensitivity, Q-factor, FWHM). λLens automates PDF extraction, then visualization: from a folder of papers to an exportable chart in minutes, not days.",
       "guideBody": "This guide covers Mode 1 (Excel-to-Plot visualization), fully available today. Mode 2 (PDF extraction) will be added once it stabilizes.",
-      "contextBody": "λLens was built at Yonsei University's MPBEL, within the international optics and photonics community introduced below.",
+      "contextBody": "λLens was built at Yonsei University's BPEL, within the international optics and photonics community introduced below.",
       "diagram": {
         "folder": "Paper folder",
         "extraction": "Guided extraction",
         "chart": "Chart & export"
       },
       "yonsei": "Founded 1885, one of South Korea's oldest and most prestigious research universities, Seoul.",
-      "mpbel": "Medical Physics and Biomedical Engineering Lab, Yonsei University (Yonsei Cancer Center), directed by Prof. Jin Sung Kim. Medical image reconstruction, AI for radio-oncology, particle therapy research.",
+      "bpel": "BioPhotonics Engineering Laboratory, Yonsei University, directed by Prof. Donghyun Kim. Plasmonic nanostructures and structured light for super-resolution microscopy and biosensing.",
       "spie": "International society for optics and photonics, founded 1955. 25,000+ members, conferences and publications.",
       "optica": "Founded 1916 as the Optical Society of America (OSA), the world's leading society for light science."
     },
@@ -634,8 +636,8 @@
     },
     "about": {
       "eyebrow": "About the author",
-      "body": "This guide was designed and built by Danaé Albrecht-Martin, a software engineering intern (apprentice at CNAM Grand Est) from July 6 to September 6, 2026, at Yonsei University's MPBEL. Her role spanned all of λLens: application architecture, the PDF extraction pipeline, and the interactive visualization interface.",
-      "supervision": "Supervised by Professor Donghyun Kim (Yonsei University, School of Electrical and Electronic Engineering; Fellow of SPIE/Optica, Senior Member IEEE, President of the OSK), and Inseop (MPBEL).",
+      "body": "This guide was designed and built by Danaé Albrecht-Martin, a software engineering intern (apprentice at CNAM Grand Est) from July 6 to September 6, 2026, at Yonsei University's BPEL. Her role spanned all of λLens: application architecture, the PDF extraction pipeline, and the interactive visualization interface.",
+      "supervision": "Supervised by Professor Donghyun Kim (Yonsei University, School of Electrical and Electronic Engineering; Fellow of SPIE/Optica, Senior Member IEEE, President of the OSK), and Inseop (BPEL).",
       "signoff": "— Danaé Albrecht-Martin, September 2026"
     }
   },

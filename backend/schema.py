@@ -21,9 +21,8 @@ COLUMN_ORDER = [
     "Review status",
     "Notes",
     "Reconciliation Log",
-    "Model Used"
+    "Model Used",
 ]
-
 
 
 # Standard optical band boundaries, in nm. Only meaningful for wavelength-

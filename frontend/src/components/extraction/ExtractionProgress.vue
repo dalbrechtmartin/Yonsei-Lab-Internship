@@ -2,7 +2,12 @@
   <div class="w-full max-w-2xl">
     <div class="flex items-start gap-4.5">
       <div class="relative h-13 w-11 shrink-0 overflow-visible">
-        <svg class="lv-logo-bounce absolute top-2 left-0" width="44" height="44" viewBox="0 0 100 100">
+        <svg
+          class="lv-logo-bounce absolute top-2 left-0"
+          width="44"
+          height="44"
+          viewBox="0 0 100 100"
+        >
           <defs>
             <radialGradient id="lensGlareLoader" cx="35%" cy="35%" r="60%">
               <stop offset="0%" stop-color="#ffffff" stop-opacity="0.1" />
@@ -13,28 +18,73 @@
           <circle cx="30" cy="35" r="2.5" fill="#1c2541" opacity="0.6" />
           <circle cx="58" cy="30" r="3.5" fill="#0b132b" opacity="0.8" />
           <circle cx="60" cy="52" r="2" fill="#0072b2" opacity="0.7" />
-          <g stroke="#0072b2" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+          <g
+            stroke="#0072b2"
+            stroke-width="7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <line x1="38" y1="28" x2="56" y2="62" />
             <line x1="47" y1="44" x2="34" y2="62" />
           </g>
-          <circle cx="45" cy="45" r="32" fill="none" stroke="#3a506b" stroke-width="6" />
-          <line x1="66" y1="66" x2="86" y2="86" stroke="#1c2541" stroke-width="10" stroke-linecap="round" />
-          <line x1="68" y1="68" x2="80" y2="80" stroke="#3a506b" stroke-width="2" stroke-linecap="round" />
+          <circle
+            cx="45"
+            cy="45"
+            r="32"
+            fill="none"
+            stroke="#3a506b"
+            stroke-width="6"
+          />
+          <line
+            x1="66"
+            y1="66"
+            x2="86"
+            y2="86"
+            stroke="#1c2541"
+            stroke-width="10"
+            stroke-linecap="round"
+          />
+          <line
+            x1="68"
+            y1="68"
+            x2="80"
+            y2="80"
+            stroke="#3a506b"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
         </svg>
-        <div class="lv-logo-shadow absolute bottom-0.5 left-1/2 h-1.5 w-6.5 rounded-full bg-ink" />
+        <div
+          class="lv-logo-shadow absolute bottom-0.5 left-1/2 h-1.5 w-6.5 rounded-full bg-ink"
+        />
       </div>
 
       <div class="min-w-0 flex-1 pt-2.5">
-        <div class="text-sm font-semibold text-ink">{{ t("extraction.progress.heading") }}</div>
+        <div class="text-sm font-semibold text-ink">
+          {{ t("extraction.progress.heading") }}
+        </div>
         <div class="text-xs text-secondary">
-          {{ t("extraction.progress.overall", { done: job.completedCount, total: job.totalFiles }) }}
-          <template v-if="etaLabel"> · {{ t("extraction.progress.etaRemaining", { eta: etaLabel }) }}</template>
+          {{
+            t("extraction.progress.overall", {
+              done: job.completedCount,
+              total: job.totalFiles,
+            })
+          }}
+          <template v-if="etaLabel">
+            ·
+            {{
+              t("extraction.progress.etaRemaining", { eta: etaLabel })
+            }}</template
+          >
         </div>
       </div>
     </div>
 
     <div class="mt-3.5 h-2 overflow-hidden rounded-full bg-secondary/12">
-      <div class="h-full rounded-full bg-emerald-600 transition-[width] duration-150" :style="{ width: overallPct + '%' }" />
+      <div
+        class="h-full rounded-full bg-emerald-600 transition-[width] duration-150"
+        :style="{ width: overallPct + '%' }"
+      />
     </div>
 
     <div
@@ -43,7 +93,11 @@
     >
       <span class="mt-px text-sm leading-none">⚠</span>
       <p class="text-xs leading-relaxed text-amber-900">
-        {{ t(`extraction.notice.${job.notice.reason}`, { count: job.notice.pendingCount }) }}
+        {{
+          t(`extraction.notice.${job.notice.reason}`, {
+            count: job.notice.pendingCount,
+          })
+        }}
         {{ t("extraction.notice.retryIn", { seconds: retrySecondsLeft }) }}
       </p>
     </div>
@@ -55,10 +109,12 @@
         class="flex flex-col gap-1.5 rounded-xl border border-secondary/15 bg-secondary/5 px-3 py-2 text-sm"
       >
         <div class="flex items-center justify-between gap-3">
-          <span class="min-w-0 flex-1 truncate text-ink">{{ file.filename }}</span>
+          <span class="min-w-0 flex-1 truncate text-ink">{{
+            file.filename
+          }}</span>
           <span
             class="inline-flex shrink-0 items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium"
-            :class="pillClass(file.status)"
+            :class="pillClass(file)"
           >
             <span
               v-if="file.status === 'processing'"
@@ -69,7 +125,11 @@
           </span>
         </div>
         <div class="h-1.25 overflow-hidden rounded-full bg-secondary/12">
-          <div class="h-full rounded-full transition-[width] duration-300 ease-linear" :class="fileBarClass(file)" :style="{ width: fileProgressPct(file) + '%' }" />
+          <div
+            class="h-full rounded-full transition-[width] duration-300 ease-linear"
+            :class="fileBarClass(file)"
+            :style="{ width: fileProgressPct(file) + '%' }"
+          />
         </div>
       </li>
     </ul>
@@ -79,7 +139,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
-import type { JobFileStatus, JobFileStatusValue, JobStatusResponse } from "@/services/api";
+import type { JobFileStatus, JobStatusResponse } from "@/services/api";
 
 const { t } = useI18n();
 
@@ -90,7 +150,10 @@ const props = defineProps<{ job: JobStatusResponse }>();
 const MIN_OVERALL_PCT = 4;
 
 const overallPct = computed(() => {
-  const pct = props.job.totalFiles > 0 ? (props.job.completedCount / props.job.totalFiles) * 100 : 0;
+  const pct =
+    props.job.totalFiles > 0
+      ? (props.job.completedCount / props.job.totalFiles) * 100
+      : 0;
   return Math.max(MIN_OVERALL_PCT, Math.round(pct));
 });
 
@@ -144,14 +207,21 @@ const etaLabel = computed(() => {
 
 const retrySecondsLeft = computed(() => {
   if (!props.job.notice) return 0;
-  return Math.max(0, Math.round((new Date(props.job.notice.retryAt).getTime() - nowMs.value) / 1000));
+  return Math.max(
+    0,
+    Math.round(
+      (new Date(props.job.notice.retryAt).getTime() - nowMs.value) / 1000,
+    ),
+  );
 });
 
 const PROCESSING_BAR_CAP_PCT = 92;
 
 const isOvertime = (file: JobFileStatus) => {
   if (file.status !== "processing" || !file.startedAt) return false;
-  return nowMs.value - new Date(file.startedAt).getTime() >= ESTIMATED_MS_PER_FILE;
+  return (
+    nowMs.value - new Date(file.startedAt).getTime() >= ESTIMATED_MS_PER_FILE
+  );
 };
 
 const fileLabelKey = (file: JobFileStatus) => {
@@ -159,11 +229,17 @@ const fileLabelKey = (file: JobFileStatus) => {
   // A 'pending' file that already failed once this job is being held for
   // an automatic retry, not just waiting for its turn -- worth saying so.
   if (file.status === "pending" && file.errorReason) return "retrying";
+  // Rejected by the pre-extraction domain check (see jobs.py) -- not a
+  // technical failure, so it gets its own label instead of "Failed".
+  if (file.status === "failed" && file.errorReason === "out_of_domain")
+    return "outOfDomain";
   return file.status;
 };
 
-const pillClass = (status: JobFileStatusValue) => {
-  switch (status) {
+const pillClass = (file: JobFileStatus) => {
+  if (file.status === "failed" && file.errorReason === "out_of_domain")
+    return "bg-amber-500/10 text-amber-700";
+  switch (file.status) {
     case "done":
       return "bg-emerald-500/10 text-emerald-700";
     case "failed":

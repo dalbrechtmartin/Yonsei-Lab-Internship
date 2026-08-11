@@ -5,7 +5,8 @@ export interface UploadExcelResponse {
   data: Record<string, unknown>[];
 }
 
-export type ModelChoice = "default" | "gemini-3.5-flash" | "gemini-3.5-flash-lite";
+export type ModelChoice =
+  "default" | "gemini-3.5-flash" | "gemini-3.5-flash-lite";
 
 // A job only ever sits in one of these three states now -- a file whose
 // whole model chain fails (quota, timeout, ...) is deferred and retried
@@ -107,7 +108,9 @@ export const apiService = {
         if (response.status === 400) {
           const body = await response.json().catch(() => null);
           if (body?.detail === "multiple_sheets") {
-            throw new MultipleSheetsError("This workbook has more than one sheet.");
+            throw new MultipleSheetsError(
+              "This workbook has more than one sheet.",
+            );
           }
         }
         throw new Error("Server error while uploading the file.");
@@ -152,7 +155,10 @@ export const apiService = {
    * progress available via getJobStatus() and the final .xlsx fetched
    * separately via downloadJobResult() once the job reaches 'done'.
    */
-  async extractPdfs(files: File[], model: ModelChoice): Promise<CreateJobResponse> {
+  async extractPdfs(
+    files: File[],
+    model: ModelChoice,
+  ): Promise<CreateJobResponse> {
     const formData = new FormData();
     for (const file of files) formData.append("files", file);
     formData.append("model", model);
@@ -179,13 +185,17 @@ export const apiService = {
 
   async getJobStatus(jobId: string): Promise<JobStatusResponse> {
     const response = await fetch(`${API_URL}jobs/${jobId}/status`);
-    if (!response.ok) throw new Error("Server error while checking job status.");
+    if (!response.ok)
+      throw new Error("Server error while checking job status.");
     return toJobStatusResponse(await response.json());
   },
 
-  async downloadJobResult(jobId: string): Promise<{ blob: Blob; partial: boolean }> {
+  async downloadJobResult(
+    jobId: string,
+  ): Promise<{ blob: Blob; partial: boolean }> {
     const response = await fetch(`${API_URL}jobs/${jobId}/download`);
-    if (!response.ok) throw new Error("Server error while downloading the result.");
+    if (!response.ok)
+      throw new Error("Server error while downloading the result.");
     return {
       blob: await response.blob(),
       partial: response.headers.get("X-Extraction-Partial") === "true",

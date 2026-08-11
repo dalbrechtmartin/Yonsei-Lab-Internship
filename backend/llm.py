@@ -5,9 +5,10 @@ or an explicit single-model job) and pinned/single-attempt (runs 2 and
 """
 
 import json
+import logging
 import os
 import time
-from typing import Optional, cast
+from typing import cast
 
 import fitz  # PyMuPDF
 from dotenv import load_dotenv
@@ -17,6 +18,8 @@ from google.genai import types
 
 import state
 
+logger = logging.getLogger(__name__)
+
 load_dotenv()
 api_key = os.getenv("GEMINI_API_KEY")
 if not api_key:
@@ -24,7 +27,7 @@ if not api_key:
 
 client = genai.Client(api_key=api_key)
 
-with open("prompt.txt", "r", encoding="utf-8") as f:
+with open("prompt.txt", encoding="utf-8") as f:
     PROMPT_TEMPLATE = f.read()
 
 
@@ -85,7 +88,9 @@ _RECORD_PROPERTIES: dict[str, types.Schema] = {
     "Base Materials": types.Schema(type=types.Type.STRING),
     "Layer Structure": types.Schema(type=types.Type.STRING),
     "Origin": types.Schema(type=types.Type.STRING, enum=["EXP", "SIM", "UNCLEAR"]),
-    "Domain": types.Schema(type=types.Type.STRING, enum=["Wavelength", "Frequency", "Other", "Unclear"]),
+    "Domain": types.Schema(
+        type=types.Type.STRING, enum=["Wavelength", "Frequency", "Other", "Unclear"]
+    ),
     "Resonance Wavelength (nm)": types.Schema(type=types.Type.NUMBER, nullable=True),
     "FOM (RIU^-1)": types.Schema(type=types.Type.NUMBER, nullable=True),
     "Definition": types.Schema(type=types.Type.STRING),
@@ -107,9 +112,20 @@ RESPONSE_SCHEMA = types.Schema(
         type=types.Type.OBJECT,
         properties=_RECORD_PROPERTIES,
         required=[
-            "Ref", "Title", "Short Title", "Mode ID", "Mode Description",
-            "Material Class", "Base Materials", "Layer Structure", "Origin",
-            "Domain", "Definition", "Evidence", "Location", "Review status",
+            "Ref",
+            "Title",
+            "Short Title",
+            "Mode ID",
+            "Mode Description",
+            "Material Class",
+            "Base Materials",
+            "Layer Structure",
+            "Origin",
+            "Domain",
+            "Definition",
+            "Evidence",
+            "Location",
+            "Review status",
         ],
         property_ordering=list(_RECORD_PROPERTIES),
     ),
@@ -127,6 +143,7 @@ def get_model_config(
         response_schema=response_schema,
     )
 
+
 # "Default": most powerful/latest model first, falling back through
 # progressively cheaper/more available tiers.
 # actual (07.27.2026) gemini-flash-latest = gemini-3.6-flash
@@ -135,12 +152,14 @@ EXPLICIT_MODEL_CHOICES = ["gemini-3.5-flash", "gemini-3.5-flash-lite"]
 
 MODEL_CHOICES = ["default", *EXPLICIT_MODEL_CHOICES]
 
+
 def build_available_models(model_choice: str) -> list[str]:
     if model_choice == "default":
         return list(MODEL_FALLBACK_CHAIN)
     if model_choice in EXPLICIT_MODEL_CHOICES:
         return [model_choice]
     raise ValueError(f"Unknown model choice: {model_choice}")
+
 
 MODEL_SLEEP_SECONDS = {
     "gemini-3.5-flash-lite": 5,  # 15 RPM
@@ -194,7 +213,7 @@ def filter_models_by_quota(models: list[str]) -> list[str]:
     return kept
 
 
-def _call_model(model: str, final_prompt: str, filename: str) -> Optional[list[dict]]:
+def _call_model(model: str, final_prompt: str, filename: str) -> list[dict] | None:
     response = client.models.generate_content(
         model=model,
         contents=final_prompt,
@@ -280,7 +299,7 @@ def _retry_delay_seconds(e: Exception, attempt: int) -> float:
     return BASE_429_BACKOFF_SECONDS * (2**attempt)
 
 
-def _call_model_with_429_retry(model: str, final_prompt: str, filename: str) -> Optional[list[dict]]:
+def _call_model_with_429_retry(model: str, final_prompt: str, filename: str) -> list[dict] | None:
     for attempt in range(MAX_429_RETRIES + 1):
         try:
             return _call_model(model, final_prompt, filename)
@@ -294,28 +313,87 @@ def _call_model_with_429_retry(model: str, final_prompt: str, filename: str) -> 
                 # Record it so filter_models_by_quota can skip it for
                 # every subsequent file today too, not just this call.
                 state.mark_model_exhausted_today(model)
-                print(f"  -> {model} hit a DAILY quota 429 for {filename} -- not retrying, skipping it for the rest of today")
+                logger.warning(
+                    "%s hit a DAILY quota 429 for %s -- not retrying, skipping it for the rest of today",
+                    model,
+                    filename,
+                )
                 raise
             if attempt == MAX_429_RETRIES:
                 raise
             delay = _retry_delay_seconds(e, attempt)
             if delay > MAX_429_RETRY_SLEEP_SECONDS:
-                print(
-                    f"  -> {model} hit 429 for {filename} with a {delay:.0f}s retry window -- "
-                    f"not blocking on it, giving up on this model for now"
+                logger.warning(
+                    "%s hit 429 for %s with a %.0fs retry window -- "
+                    "not blocking on it, giving up on this model for now",
+                    model,
+                    filename,
+                    delay,
                 )
                 raise
-            print(
-                f"  -> {model} hit 429 for {filename} "
-                f"(attempt {attempt + 1}/{MAX_429_RETRIES + 1}), retrying in {delay:.0f}s"
+            logger.info(
+                "%s hit 429 for %s (attempt %d/%d), retrying in %.0fs",
+                model,
+                filename,
+                attempt + 1,
+                MAX_429_RETRIES + 1,
+                delay,
             )
             time.sleep(delay)
     raise AssertionError("unreachable")  # loop always returns or raises
 
 
-def analyze_paper_with_llm(
-    paper_text: str, filename: str, models: list[str]
-) -> Optional[list[dict]]:
+DOMAIN_CHECK_MODEL = "gemini-3.5-flash-lite"
+
+_DOMAIN_CHECK_SCHEMA = types.Schema(
+    type=types.Type.OBJECT,
+    properties={"in_domain": types.Schema(type=types.Type.BOOLEAN)},
+    required=["in_domain"],
+)
+
+DOMAIN_CHECK_PROMPT = """Role: You are a fast triage filter placed before a detailed nanophotonics extraction pipeline.
+
+TASK: Decide whether the paper below reports ANY optical-resonance figure-of-merit data for a photonic/plasmonic/optical structure -- specifically at least one of: a resonance wavelength or frequency, a Q-factor, a Figure of Merit (FOM), a refractive-index sensitivity, or a resonance FWHM/linewidth. Wavelength-domain or frequency-domain, experimental or simulated -- all count; the detailed pipeline downstream handles that distinction, you only decide whether ANY such metric is present at all.
+
+Answer "in_domain": true if the paper reports at least one such metric for at least one mode/peak/configuration, even a single one. Answer false only if the paper is about something else entirely (a different kind of device or physics, a review with no reported metric, an unrelated field) and contains none of these metrics anywhere.
+
+Respond STRICTLY as JSON: {"in_domain": true or false}. No other text."""
+
+
+def check_domain_relevance(paper_text: str, filename: str, job_id: str, file_id: str) -> bool:
+    """Cheap single-call gate run before the expensive 3-run consensus
+    extraction (see jobs.py's _process_one_file) -- rejects papers with no
+    optical-resonance FOM metric anywhere (wrong field entirely, e.g. an
+    OLED or solar-cell paper) without burning that whole budget on them.
+
+    Always uses the cheapest/highest-RPD model (flash-lite, 500/day vs
+    20/day for the others -- see MODEL_RPD_LIMITS) regardless of the job's
+    own model choice, so this check never competes with the real
+    extraction for the tight default-chain quota. Fails OPEN (returns
+    True, i.e. "let the real extraction decide") on any error -- a flaky
+    triage call must never be the reason a legitimate paper gets skipped.
+    """
+    prompt = DOMAIN_CHECK_PROMPT + f"\n\n--- PAPER TEXT ({filename}) ---\n{paper_text}"
+    try:
+        response = client.models.generate_content(
+            model=DOMAIN_CHECK_MODEL,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                temperature=0,
+                response_mime_type="application/json",
+                response_schema=_DOMAIN_CHECK_SCHEMA,
+            ),
+        )
+        in_domain = bool(json.loads((response.text or "").strip()).get("in_domain", True))
+        state.log_usage(DOMAIN_CHECK_MODEL, job_id, file_id, "ok")
+        return in_domain
+    except Exception as e:
+        logger.warning("Domain check failed for %s, letting the full extraction decide: %s", filename, e)
+        state.log_usage(DOMAIN_CHECK_MODEL, job_id, file_id, "error")
+        return True
+
+
+def analyze_paper_with_llm(paper_text: str, filename: str, models: list[str]) -> list[dict] | None:
     final_prompt = PROMPT_TEMPLATE.replace("{filename}", filename)
     final_prompt += f"\n\n--- PAPER TEXT ---\n{paper_text}"
 
@@ -326,7 +404,7 @@ def analyze_paper_with_llm(
             return _call_model_with_429_retry(model, final_prompt, filename)
         except Exception as e:
             last_reason = _classify_error(e)
-            print(f"  -> {model} failed ({last_reason}) for {filename}, falling back: {e}")
+            logger.warning("%s failed (%s) for %s, falling back: %s", model, last_reason, filename, e)
             models.pop(0)
             continue
 
@@ -335,9 +413,7 @@ def analyze_paper_with_llm(
     )
 
 
-def analyze_paper_with_llm_pinned(
-    paper_text: str, filename: str, model: str
-) -> Optional[list[dict]]:
+def analyze_paper_with_llm_pinned(paper_text: str, filename: str, model: str) -> list[dict] | None:
     final_prompt = PROMPT_TEMPLATE.replace("{filename}", filename)
     final_prompt += f"\n\n--- PAPER TEXT ---\n{paper_text}"
 
@@ -345,12 +421,12 @@ def analyze_paper_with_llm_pinned(
         return _call_model_with_429_retry(model, final_prompt, filename)
     except genai_errors.ClientError as e:
         if e.code == 429:
-            print(f"  -> {model} quota exhausted on a reconciliation run for {filename}")
+            logger.warning("%s quota exhausted on a reconciliation run for %s", model, filename)
         else:
-            print(f"Error for {filename}: {e}")
+            logger.error("Error for %s: %s", filename, e)
         return None
     except Exception as e:
-        print(f"Error for {filename}: {e}")
+        logger.error("Error for %s: %s", filename, e)
         return None
 
 
@@ -368,7 +444,9 @@ _VIZ_RECORD_PROPERTIES: dict[str, types.Schema] = {
     "Base Materials": types.Schema(type=types.Type.STRING, nullable=True),
     "Layer Structure": types.Schema(type=types.Type.STRING, nullable=True),
     "Origin": types.Schema(type=types.Type.STRING, enum=["EXP", "SIM", "UNCLEAR"]),
-    "Domain": types.Schema(type=types.Type.STRING, enum=["Wavelength", "Frequency", "Other", "Unclear"]),
+    "Domain": types.Schema(
+        type=types.Type.STRING, enum=["Wavelength", "Frequency", "Other", "Unclear"]
+    ),
     "Resonance Wavelength (nm)": types.Schema(type=types.Type.NUMBER, nullable=True),
     "FOM (RIU^-1)": types.Schema(type=types.Type.NUMBER, nullable=True),
     "Sensitivity (nm/RIU)": types.Schema(type=types.Type.NUMBER, nullable=True),
@@ -445,7 +523,9 @@ def convert_table_to_viz_schema(columns: list[str], rows: list[dict]) -> list[di
             return parsed
         except Exception as e:
             last_reason = _classify_error(e)
-            print(f"  -> {model} failed ({last_reason}) during viz conversion, falling back: {e}")
+            logger.warning(
+                "%s failed (%s) during viz conversion, falling back: %s", model, last_reason, e
+            )
             models.pop(0)
             continue
 

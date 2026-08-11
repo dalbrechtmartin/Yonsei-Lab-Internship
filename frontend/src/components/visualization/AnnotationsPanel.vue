@@ -7,29 +7,52 @@
         </span>
       </template>
       <template #header-suffix>
-        <span class="font-mono text-[11px] font-normal text-muted-foreground">{{ annotations.length }}</span>
+        <span class="font-mono text-[11px] font-normal text-muted-foreground">{{
+          annotations.length
+        }}</span>
       </template>
 
-      <div class="mt-2.5 rounded-[10px] border border-secondary/15 bg-secondary/5 p-3">
-        <div v-if="annotations.length > 0" class="mb-2.5 flex items-center justify-between gap-2">
+      <div
+        class="mt-2.5 rounded-[10px] border border-secondary/15 bg-secondary/5 p-3"
+      >
+        <div
+          v-if="annotations.length > 0"
+          class="mb-2.5 flex items-center justify-between gap-2"
+        >
           <Select v-model="sort">
             <SelectTrigger size="sm" class="w-auto bg-card text-[10.5px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="newest">{{ t("fomcharts.annotations.sort.newest") }}</SelectItem>
-              <SelectItem value="oldest">{{ t("fomcharts.annotations.sort.oldest") }}</SelectItem>
-              <SelectItem value="ref">{{ t("fomcharts.annotations.sort.ref") }}</SelectItem>
+              <SelectItem value="newest">{{
+                t("fomcharts.annotations.sort.newest")
+              }}</SelectItem>
+              <SelectItem value="oldest">{{
+                t("fomcharts.annotations.sort.oldest")
+              }}</SelectItem>
+              <SelectItem value="ref">{{
+                t("fomcharts.annotations.sort.ref")
+              }}</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="link" size="xs" class="h-auto p-0 text-[10.5px]" @click="$emit('clear')">
+          <Button
+            variant="link"
+            size="xs"
+            class="h-auto p-0 text-[10.5px]"
+            @click="$emit('clear')"
+          >
             {{ t("fomcharts.annotations.clearAll") }}
           </Button>
         </div>
 
-        <div v-if="annotations.length > 0" class="mb-2.5 flex items-center justify-between gap-2">
+        <div
+          v-if="annotations.length > 0"
+          class="mb-2.5 flex items-center justify-between gap-2"
+        >
           <span class="flex items-center gap-1 text-xs text-ink">
-            <InfoTooltip :text="t('fomcharts.annotations.showOnlyPinnedTooltip')" />
+            <InfoTooltip
+              :text="t('fomcharts.annotations.showOnlyPinnedTooltip')"
+            />
             {{ t("fomcharts.annotations.showOnlyPinned") }}
           </span>
           <Switch v-model="showOnlyAnnotated" />
@@ -37,7 +60,10 @@
 
         <!-- Only shown once there's something to compare, so this bar doesn't
              take up space with a single (or zero) pin. -->
-        <div v-if="annotations.length > 1" class="mb-2.5 flex items-center justify-between gap-2">
+        <div
+          v-if="annotations.length > 1"
+          class="mb-2.5 flex items-center justify-between gap-2"
+        >
           <Button
             size="xs"
             class="shrink-0 bg-primary text-primary-foreground hover:bg-primary/90"
@@ -45,10 +71,25 @@
             @click="showCompareDialog = true"
           >
             <GitCompare class="size-3.5" />
-            {{ t("fomcharts.compare.compareButton", { count: selectedOrder.length }) }}
+            {{
+              t("fomcharts.compare.compareButton", {
+                count: selectedOrder.length,
+              })
+            }}
           </Button>
-          <Button variant="link" size="xs" class="h-auto p-0 text-[10.5px]" @click="toggleSelectAll">
-            {{ t(allSelected ? "fomcharts.compare.deselectAll" : "fomcharts.compare.selectAll") }}
+          <Button
+            variant="link"
+            size="xs"
+            class="h-auto p-0 text-[10.5px]"
+            @click="toggleSelectAll"
+          >
+            {{
+              t(
+                allSelected
+                  ? "fomcharts.compare.deselectAll"
+                  : "fomcharts.compare.selectAll",
+              )
+            }}
           </Button>
         </div>
 
@@ -65,7 +106,10 @@
             :expanded="isExpanded(note.id)"
             :description-expanded="isDescriptionExpanded(note.id)"
             :selected="selectedOrder.includes(note.id)"
-            :compare-limit-reached="selectedOrder.length >= compareMax && !selectedOrder.includes(note.id)"
+            :compare-limit-reached="
+              selectedOrder.length >= compareMax &&
+              !selectedOrder.includes(note.id)
+            "
             :compare-max="compareMax"
             :x-axis="xAxis"
             :y-axis="yAxis"
@@ -94,7 +138,11 @@
       </div>
     </CollapsibleSection>
 
-    <CompareDialog v-model:open="showCompareDialog" v-model:order="selectedOrder" :all-pins="allCardData" />
+    <CompareDialog
+      v-model:open="showCompareDialog"
+      v-model:order="selectedOrder"
+      :all-pins="allCardData"
+    />
   </TooltipProvider>
 </template>
 
@@ -104,14 +152,23 @@ import { useI18n } from "vue-i18n";
 import { GitCompare } from "@lucide/vue";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import InfoTooltip from "@/components/shared/InfoTooltip.vue";
 import CollapsibleSection from "@/components/shared/CollapsibleSection.vue";
 import AnnotationCard from "./AnnotationCard.vue";
 import CompareDialog from "./CompareDialog.vue";
 import { annotationFieldColumns } from "@/utils/annotationFields";
-import { buildAnnotationCardData, type AnnotationCardData } from "@/utils/annotationCardData";
+import {
+  buildAnnotationCardData,
+  type AnnotationCardData,
+} from "@/utils/annotationCardData";
 import type { AnnotationExportSection } from "@/utils/annotationExport";
 import { renderComparePng, type ComparePinData } from "@/utils/compareExport";
 import {
@@ -124,7 +181,10 @@ import {
   findOriginColumn,
   type DataRow,
 } from "@/utils/columnTypes";
-import { parseLayerStructure, type StructureLayer } from "@/utils/layerStructure";
+import {
+  parseLayerStructure,
+  type StructureLayer,
+} from "@/utils/layerStructure";
 import { formatUnitSuperscripts } from "@/utils/columnTypes";
 
 const { t } = useI18n();
@@ -165,13 +225,17 @@ defineEmits<{
 }>();
 
 const open = defineModel<boolean>("open", { default: true });
-const showOnlyAnnotated = defineModel<boolean>("showOnlyAnnotated", { default: false });
+const showOnlyAnnotated = defineModel<boolean>("showOnlyAnnotated", {
+  default: false,
+});
 const sort = ref<"newest" | "oldest" | "ref">("newest");
 
 const sortedAnnotations = computed(() => {
   const sorted = [...props.annotations];
   if (sort.value === "ref") {
-    sorted.sort((a, b) => a.ref.localeCompare(b.ref, undefined, { numeric: true }));
+    sorted.sort((a, b) =>
+      a.ref.localeCompare(b.ref, undefined, { numeric: true }),
+    );
   } else if (sort.value === "oldest") {
     sorted.sort((a, b) => a.createdAt - b.createdAt);
   } else {
@@ -184,7 +248,9 @@ const sortedAnnotations = computed(() => {
 // default (see expandedDescriptions below) in its own toggle instead of
 // alongside the compact key/value field grid, so a long description
 // doesn't push every other field down the card.
-const modeDescriptionColumnName = computed(() => findModeDescriptionColumn(props.columns));
+const modeDescriptionColumnName = computed(() =>
+  findModeDescriptionColumn(props.columns),
+);
 const modeDescriptionFor = (note: Annotation): string | null => {
   const col = modeDescriptionColumnName.value;
   if (!col) return null;
@@ -193,11 +259,17 @@ const modeDescriptionFor = (note: Annotation): string | null => {
 };
 
 const modeIdColumnName = computed(() => findModeIdColumn(props.columns));
-const layerStructureColumnName = computed(() => findLayerStructureColumn(props.columns));
+const layerStructureColumnName = computed(() =>
+  findLayerStructureColumn(props.columns),
+);
 const domainColumnName = computed(() => findDomainColumn(props.columns));
 const originColumnName = computed(() => findOriginColumn(props.columns));
-const materialClassColumnName = computed(() => findMaterialClassColumn(props.columns));
-const baseMaterialsColumnName = computed(() => findBaseMaterialsColumn(props.columns));
+const materialClassColumnName = computed(() =>
+  findMaterialClassColumn(props.columns),
+);
+const baseMaterialsColumnName = computed(() =>
+  findBaseMaterialsColumn(props.columns),
+);
 
 // Mode ID renders in its own leading grid, immediately followed by its Mode
 // Description toggle (see template) -- foldFieldColumns is what's left
@@ -212,9 +284,16 @@ const baseMaterialsColumnName = computed(() => findBaseMaterialsColumn(props.col
 // wavelength-domain FOM records (see backend/prompt.txt's scope rule), so
 // "Domain: Wavelength" repeats on every single pin without distinguishing
 // any of them.
-const leadingFieldColumns = computed(() => (modeIdColumnName.value ? [modeIdColumnName.value] : []));
+const leadingFieldColumns = computed(() =>
+  modeIdColumnName.value ? [modeIdColumnName.value] : [],
+);
 const foldFieldColumns = computed(() =>
-  annotationFieldColumns(props.columns, props.xAxis, props.yAxis, props.groupBy).filter(
+  annotationFieldColumns(
+    props.columns,
+    props.xAxis,
+    props.yAxis,
+    props.groupBy,
+  ).filter(
     (col) =>
       col !== modeDescriptionColumnName.value &&
       col !== modeIdColumnName.value &&
@@ -233,10 +312,17 @@ const foldFieldColumns = computed(() =>
 const fieldRowsFor = (note: Annotation, cols: string[]) =>
   cols.map((col) => ({
     key: formatUnitSuperscripts(col),
-    value: note.row[col] === null || note.row[col] === undefined || note.row[col] === "" ? "—" : String(note.row[col]),
+    value:
+      note.row[col] === null ||
+      note.row[col] === undefined ||
+      note.row[col] === ""
+        ? "—"
+        : String(note.row[col]),
   }));
-const leadingFieldsFor = (note: Annotation) => fieldRowsFor(note, leadingFieldColumns.value);
-const foldFieldsFor = (note: Annotation) => fieldRowsFor(note, foldFieldColumns.value);
+const leadingFieldsFor = (note: Annotation) =>
+  fieldRowsFor(note, leadingFieldColumns.value);
+const foldFieldsFor = (note: Annotation) =>
+  fieldRowsFor(note, foldFieldColumns.value);
 
 const layersFor = (note: Annotation): StructureLayer[] => {
   const col = layerStructureColumnName.value;
@@ -261,7 +347,8 @@ const toggleExpanded = (id: string) => {
 };
 
 const expandedDescriptions = ref<Set<string>>(new Set());
-const isDescriptionExpanded = (id: string) => expandedDescriptions.value.has(id);
+const isDescriptionExpanded = (id: string) =>
+  expandedDescriptions.value.has(id);
 const toggleDescription = (id: string) => {
   const next = new Set(expandedDescriptions.value);
   if (next.has(id)) next.delete(id);
@@ -308,7 +395,9 @@ const showCompareDialog = ref(false);
 const toggleSelect = (id: string) => {
   const idx = selectedOrder.value.indexOf(id);
   if (idx !== -1) {
-    selectedOrder.value = selectedOrder.value.filter((existing) => existing !== id);
+    selectedOrder.value = selectedOrder.value.filter(
+      (existing) => existing !== id,
+    );
   } else if (selectedOrder.value.length < compareMax) {
     selectedOrder.value = [...selectedOrder.value, id];
   }
@@ -330,7 +419,9 @@ const toggleSelectAll = () => {
   if (allSelected.value) {
     clearSelection();
   } else {
-    selectedOrder.value = sortedAnnotations.value.slice(0, compareMax).map((a) => a.id);
+    selectedOrder.value = sortedAnnotations.value
+      .slice(0, compareMax)
+      .map((a) => a.id);
   }
 };
 
@@ -393,7 +484,9 @@ const cardDataFor = (note: Annotation): AnnotationCardData =>
 // this plus selectedOrder (its v-model:order), so it can offer the full
 // "+ Add point" candidate list (every pin not currently in the comparison)
 // without the panel needing to know anything about the dialog's internals.
-const allCardData = computed<AnnotationCardData[]>(() => sortedAnnotations.value.map(cardDataFor));
+const allCardData = computed<AnnotationCardData[]>(() =>
+  sortedAnnotations.value.map(cardDataFor),
+);
 
 // Guide-only: renders the same side-by-side comparison CompareDialog draws
 // (mirroring its own AnnotationCardData -> ComparePinData mapping with every
@@ -408,13 +501,34 @@ const comparePinsFor = (ids: string[]): ComparePinData[] =>
     .map(cardDataFor)
     .map((d) => {
       const sections: AnnotationExportSection[] = [];
-      if (d.modeRows.length > 0 || d.modeDescription) sections.push({ title: t("fomcharts.annotations.mode"), rows: d.modeRows, text: d.modeDescription ?? undefined });
-      if (d.structureExtraFields.length > 0 || d.layers.length > 0) sections.push({ title: t("fomcharts.annotations.layerStructure"), rows: d.structureExtraFields, layers: d.layers });
-      if (d.metricsRows.length > 0) sections.push({ title: t("fomcharts.annotations.metrics"), rows: d.metricsRows });
-      if (d.note) sections.push({ title: t("fomcharts.annotations.notes"), text: d.note });
+      if (d.modeRows.length > 0 || d.modeDescription)
+        sections.push({
+          title: t("fomcharts.annotations.mode"),
+          rows: d.modeRows,
+          text: d.modeDescription ?? undefined,
+        });
+      if (d.structureExtraFields.length > 0 || d.layers.length > 0)
+        sections.push({
+          title: t("fomcharts.annotations.layerStructure"),
+          rows: d.structureExtraFields,
+          layers: d.layers,
+        });
+      if (d.metricsRows.length > 0)
+        sections.push({
+          title: t("fomcharts.annotations.metrics"),
+          rows: d.metricsRows,
+        });
+      if (d.note)
+        sections.push({
+          title: t("fomcharts.annotations.notes"),
+          text: d.note,
+        });
       return { ref: d.ref, title: d.title, origin: d.origin, sections };
     });
-const getComparePngDataUrl = (ids: string[], title: string | null = null): string | null => renderComparePng(title, comparePinsFor(ids));
+const getComparePngDataUrl = (
+  ids: string[],
+  title: string | null = null,
+): string | null => renderComparePng(title, comparePinsFor(ids));
 
 // Guide-only: v-for + ref="cardRefs" collects one entry per rendered card,
 // in the same order as sortedAnnotations -- looking a note up by id (rather
@@ -427,7 +541,13 @@ const getExportDataUrl = (noteId: string): string | null => {
 };
 const getMetricsExportDataUrl = (noteId: string): string | null => {
   const idx = sortedAnnotations.value.findIndex((n) => n.id === noteId);
-  return idx >= 0 ? (cardRefs.value[idx]?.getMetricsExportDataUrl() ?? null) : null;
+  return idx >= 0
+    ? (cardRefs.value[idx]?.getMetricsExportDataUrl() ?? null)
+    : null;
 };
-defineExpose({ getExportDataUrl, getMetricsExportDataUrl, getComparePngDataUrl });
+defineExpose({
+  getExportDataUrl,
+  getMetricsExportDataUrl,
+  getComparePngDataUrl,
+});
 </script>

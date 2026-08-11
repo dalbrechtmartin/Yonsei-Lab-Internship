@@ -10,14 +10,28 @@
       type="button"
       class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold transition-colors"
       :class="[
-        modelValue === opt.value ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:bg-secondary/10 hover:text-ink',
+        modelValue === opt.value
+          ? 'bg-primary text-primary-foreground'
+          : 'bg-card text-muted-foreground hover:bg-secondary/10 hover:text-ink',
         idx > 0 ? 'border-l border-input' : '',
       ]"
       @click="modelValue = opt.value"
     >
-      <Circle v-if="opt.value === 'circle'" class="size-3.5" :class="modelValue === opt.value ? 'fill-current' : ''" />
-      <Diamond v-else-if="opt.value === 'diamond'" class="size-3.5" :class="modelValue === opt.value ? 'fill-current' : ''" />
-      <Star v-else class="size-3.5" :class="modelValue === opt.value ? 'fill-current' : ''" />
+      <Circle
+        v-if="opt.value === 'circle'"
+        class="size-3.5"
+        :class="modelValue === opt.value ? 'fill-current' : ''"
+      />
+      <Diamond
+        v-else-if="opt.value === 'diamond'"
+        class="size-3.5"
+        :class="modelValue === opt.value ? 'fill-current' : ''"
+      />
+      <Star
+        v-else
+        class="size-3.5"
+        :class="modelValue === opt.value ? 'fill-current' : ''"
+      />
       {{ opt.label }}
     </button>
   </div>

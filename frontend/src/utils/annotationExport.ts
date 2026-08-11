@@ -1,4 +1,9 @@
-import { darkenColor, layerLabel, materialColor, type StructureLayer } from "./layerStructure";
+import {
+  darkenColor,
+  layerLabel,
+  materialColor,
+  type StructureLayer,
+} from "./layerStructure";
 
 export interface AnnotationExportSection {
   title: string;
@@ -34,12 +39,23 @@ export const VALUE_COLOR = "#1c2541";
 // on the page happened to need "IBM Plex Mono" 700 yet, ready may resolve
 // before that request is even made. Explicitly loading these exact faces
 // sidesteps that.
-const CANVAS_FONT_FACES = ["400 12px Inter", "700 12px Inter", "400 12px 'IBM Plex Mono'", "600 12px 'IBM Plex Mono'", "700 12px 'IBM Plex Mono'"];
+const CANVAS_FONT_FACES = [
+  "400 12px Inter",
+  "700 12px Inter",
+  "400 12px 'IBM Plex Mono'",
+  "600 12px 'IBM Plex Mono'",
+  "700 12px 'IBM Plex Mono'",
+];
 let canvasFontsLoadPromise: Promise<unknown> | null = null;
 export function ensureCanvasFontsLoaded(): Promise<unknown> {
-  if (typeof document === "undefined" || !("fonts" in document)) return Promise.resolve();
+  if (typeof document === "undefined" || !("fonts" in document))
+    return Promise.resolve();
   if (!canvasFontsLoadPromise) {
-    canvasFontsLoadPromise = Promise.all(CANVAS_FONT_FACES.map((f) => document.fonts.load(f).catch(() => undefined)));
+    canvasFontsLoadPromise = Promise.all(
+      CANVAS_FONT_FACES.map((f) =>
+        document.fonts.load(f).catch(() => undefined),
+      ),
+    );
   }
   return canvasFontsLoadPromise;
 }
@@ -54,7 +70,11 @@ export function ensureCanvasFontsLoaded(): Promise<unknown> {
  * a hard character wrap for a single piece that's long even on its own (e.g.
  * one long, delimiter-free material name).
  */
-function breakLongToken(ctx: CanvasRenderingContext2D, token: string, maxWidth: number): string[] {
+function breakLongToken(
+  ctx: CanvasRenderingContext2D,
+  token: string,
+  maxWidth: number,
+): string[] {
   if (ctx.measureText(token).width <= maxWidth) return [token];
   const pieces = token.split(/(?<=[;,])/).filter(Boolean);
   const lines: string[] = [];
@@ -90,7 +110,11 @@ function breakLongToken(ctx: CanvasRenderingContext2D, token: string, maxWidth: 
   return lines;
 }
 
-export function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
+export function wrapText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  maxWidth: number,
+): string[] {
   const words = text.split(/\s+/).filter(Boolean);
   const lines: string[] = [];
   let line = "";
@@ -118,12 +142,17 @@ export function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: 
 }
 
 export function layerHeights(layers: StructureLayer[]): number[] {
-  const known = layers.map((l) => l.thicknessNm).filter((v): v is number => v !== null);
+  const known = layers
+    .map((l) => l.thicknessNm)
+    .filter((v): v is number => v !== null);
   const min = known.length ? Math.min(...known) : 0;
   const max = known.length ? Math.max(...known) : 0;
   return layers.map((l) => {
-    if (l.thicknessNm === null || known.length === 0 || max === min) return MIN_LAYER_H;
-    return Math.round(MIN_LAYER_H + ((l.thicknessNm - min) / (max - min)) * EXTRA_LAYER_H);
+    if (l.thicknessNm === null || known.length === 0 || max === min)
+      return MIN_LAYER_H;
+    return Math.round(
+      MIN_LAYER_H + ((l.thicknessNm - min) / (max - min)) * EXTRA_LAYER_H,
+    );
   });
 }
 
@@ -153,15 +182,26 @@ function drawRow(
   if (draw) {
     ctx.font = LABEL_FONT;
     ctx.fillStyle = LABEL_COLOR;
-    labelLines.forEach((line, i) => ctx.fillText(line, x, y + 11 + i * ROW_LINE_H));
+    labelLines.forEach((line, i) =>
+      ctx.fillText(line, x, y + 11 + i * ROW_LINE_H),
+    );
     ctx.font = VALUE_FONT;
     ctx.fillStyle = VALUE_COLOR;
-    valueLines.forEach((line, i) => ctx.fillText(line, x + labelW + 10, y + 11 + i * ROW_LINE_H));
+    valueLines.forEach((line, i) =>
+      ctx.fillText(line, x + labelW + 10, y + 11 + i * ROW_LINE_H),
+    );
   }
   return lineCount * ROW_LINE_H + ROW_GAP;
 }
 
-function drawBoxStart(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, draw: boolean) {
+function drawBoxStart(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  draw: boolean,
+) {
   if (!draw) return;
   ctx.fillStyle = BOX_BG;
   ctx.strokeStyle = BORDER;
@@ -225,10 +265,29 @@ export function layoutAndMaybeDraw(
   y += titleLines.length * 16 + SECTION_GAP;
 
   if (origin) {
-    const rowH = drawRow(ctx, x + BOX_PAD, y + BOX_PAD, labelW, valueW, origin.key, origin.value, false);
+    const rowH = drawRow(
+      ctx,
+      x + BOX_PAD,
+      y + BOX_PAD,
+      labelW,
+      valueW,
+      origin.key,
+      origin.value,
+      false,
+    );
     const boxH = rowH - ROW_GAP + BOX_PAD * 2;
     drawBoxStart(ctx, originX + PAD_X, y, contentW, boxH, draw);
-    if (draw) drawRow(ctx, x + BOX_PAD, y + BOX_PAD, labelW, valueW, origin.key, origin.value, true);
+    if (draw)
+      drawRow(
+        ctx,
+        x + BOX_PAD,
+        y + BOX_PAD,
+        labelW,
+        valueW,
+        origin.key,
+        origin.value,
+        true,
+      );
     y += boxH + SECTION_GAP;
   }
 
@@ -248,11 +307,24 @@ export function layoutAndMaybeDraw(
     // First measure the box's inner content height (rows + layer stack +
     // wrapped text), then draw the box background/border, then draw the
     // content again on top of it.
-    const measureInner = (innerDraw: boolean, innerX: number, startY: number): number => {
+    const measureInner = (
+      innerDraw: boolean,
+      innerX: number,
+      startY: number,
+    ): number => {
       let iy = startY;
       if (hasRows) {
         for (const row of section.rows!) {
-          iy += drawRow(ctx, innerX, iy, labelW, valueW, row.key, row.value, innerDraw);
+          iy += drawRow(
+            ctx,
+            innerX,
+            iy,
+            labelW,
+            valueW,
+            row.key,
+            row.value,
+            innerDraw,
+          );
         }
       }
       if (hasLayers) {
@@ -291,7 +363,9 @@ export function layoutAndMaybeDraw(
         const lines = wrapText(ctx, section.text!, contentW - BOX_PAD * 2);
         if (innerDraw) {
           ctx.fillStyle = "#3a506b";
-          lines.forEach((line, i) => ctx.fillText(line, innerX, iy + 11 + i * ROW_LINE_H));
+          lines.forEach((line, i) =>
+            ctx.fillText(line, innerX, iy + 11 + i * ROW_LINE_H),
+          );
         }
         iy += lines.length * ROW_LINE_H + ROW_GAP;
       }
@@ -323,7 +397,13 @@ export function renderAnnotationPng(
   const measureCanvas = document.createElement("canvas");
   const measureCtx = measureCanvas.getContext("2d");
   if (!measureCtx) return null;
-  const height = layoutAndMaybeDraw(measureCtx, source, origin, sections, false);
+  const height = layoutAndMaybeDraw(
+    measureCtx,
+    source,
+    origin,
+    sections,
+    false,
+  );
 
   const canvas = document.createElement("canvas");
   const scale = 2;
@@ -356,7 +436,8 @@ export function exportAnnotationPng(
   if (!url) return;
   const a = document.createElement("a");
   a.href = url;
-  a.download = filename ?? `pin_${source.ref.replace(/[^a-z0-9_-]+/gi, "_")}.png`;
+  a.download =
+    filename ?? `pin_${source.ref.replace(/[^a-z0-9_-]+/gi, "_")}.png`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

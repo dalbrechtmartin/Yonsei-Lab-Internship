@@ -7,7 +7,6 @@ classifications, and even different row counts, across runs).
 
 import math
 from collections import Counter
-from typing import Optional
 
 from schema import spectral_range
 
@@ -174,7 +173,7 @@ def _reconcile_slot(contributing: list[dict], total_runs: int, is_extra_row: boo
     return result
 
 
-def _reconcile_set_field(contributing: list[dict], field: str) -> tuple[Optional[str], Optional[str]]:
+def _reconcile_set_field(contributing: list[dict], field: str) -> tuple[str | None, str | None]:
     per_run_sets = [
         {tok.strip() for tok in (rec.get(field) or "").split(";") if tok.strip()}
         for rec in contributing
@@ -194,7 +193,7 @@ def _reconcile_set_field(contributing: list[dict], field: str) -> tuple[Optional
     if len({frozenset(s) for s in per_run_sets}) > 1:
         raw = [";".join(sorted(s)) for s in per_run_sets]
         note = (
-            f'{field} disagreed across runs: {" / ".join(raw)} — used tokens '
+            f"{field} disagreed across runs: {' / '.join(raw)} — used tokens "
             f"appearing in >= {threshold}/{n} runs."
         )
     else:
@@ -204,7 +203,7 @@ def _reconcile_set_field(contributing: list[dict], field: str) -> tuple[Optional
 
 def _reconcile_scalar_field(
     contributing: list[dict], primary: dict, field: str
-) -> tuple[object, Optional[str]]:
+) -> tuple[object, str | None]:
     values = [rec.get(field) for rec in contributing]
     normalized = [(str(v).strip().lower() if v is not None else None) for v in values]
 
@@ -237,7 +236,7 @@ def _values_match(a: object, b: object) -> bool:
 
 def _reconcile_numeric_field(
     contributing: list[dict], primary: dict, field: str
-) -> tuple[object, Optional[str]]:
+) -> tuple[object, str | None]:
     values = [rec.get(field) for rec in contributing]
 
     # Cluster values by numeric match. With at most 3 runs this is cheap;

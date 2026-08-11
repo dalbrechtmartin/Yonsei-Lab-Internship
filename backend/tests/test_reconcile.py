@@ -3,8 +3,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from schema import normalize_result
 from reconcile import reconcile_runs
+from schema import normalize_result
 
 
 def make_record(**overrides) -> dict:
@@ -182,4 +182,6 @@ class TestOriginAlignment:
         by_origin = {r["Origin"]: r for r in merged}
         assert set(by_origin) == {"SIM", "EXP"}
         assert by_origin["SIM"]["Q-factor"] == 100
-        assert by_origin["EXP"]["Q-factor"] == 50  # no 2-run agreement -> primary (run_a)'s value wins
+        assert (
+            by_origin["EXP"]["Q-factor"] == 50
+        )  # no 2-run agreement -> primary (run_a)'s value wins

@@ -12,10 +12,22 @@
     @drop.prevent="handleDrop"
     @click="triggerFileInput"
   >
-    <p :class="compact ? 'text-base font-semibold text-ink' : 'text-ink font-semibold text-lg'">
+    <p
+      :class="
+        compact
+          ? 'text-base font-semibold text-ink'
+          : 'text-ink font-semibold text-lg'
+      "
+    >
       {{ title ?? $t("dropzone.title") }}
     </p>
-    <p :class="compact ? 'text-sm text-secondary mt-1.5' : 'text-sm text-secondary mt-2'">
+    <p
+      :class="
+        compact
+          ? 'text-sm text-secondary mt-1.5'
+          : 'text-sm text-secondary mt-2'
+      "
+    >
       {{ subtitle ?? $t("dropzone.subtitle") }}
     </p>
 

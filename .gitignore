@@ -1,7 +1,51 @@
+# --- Env / secrets ---
 .env
+
+# --- Editors / OS ---
+/.vscode/
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# --- Python (backend/) ---
+__pycache__/
+*.pyc
+backend/venv/
+backend/**/*.xlsx
+backend/tests-pdfs/
+backend/test_upload.py
+backend/data/
+backend/.pytest_cache/
+
+# --- Node / frontend ---
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/**/*.local
+frontend/**/*.tsbuildinfo
+frontend/vite.config.d.ts
+frontend/vite.config.js
+frontend/.vscode/*
+!frontend/.vscode/extensions.json
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# --- Docs (personal working files, not part of the shipped project) ---
 docs/notes.md
-backend/tests/*.png
-backend/tests/*.pdf
 docs/GUIDE_UTILISATEUR.md
 docs/*.txt
 docs/*.png
+docs/evaluation/
+docs/project.pdf
+docs/implementation_plan.md
+backend/tests/*.png
+backend/tests/*.pdf

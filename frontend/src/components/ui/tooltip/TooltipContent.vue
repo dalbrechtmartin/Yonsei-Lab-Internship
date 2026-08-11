@@ -2,7 +2,12 @@
 import type { HTMLAttributes } from "vue";
 import type { TooltipContentEmits, TooltipContentProps } from "reka-ui";
 import { reactiveOmit } from "@vueuse/core";
-import { TooltipArrow, TooltipContent, TooltipPortal, useForwardPropsEmits } from "reka-ui";
+import {
+  TooltipArrow,
+  TooltipContent,
+  TooltipPortal,
+  useForwardPropsEmits,
+} from "reka-ui";
 import { cn } from "@/lib/utils";
 
 const props = withDefaults(

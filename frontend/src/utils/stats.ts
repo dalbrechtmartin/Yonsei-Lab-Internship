@@ -9,7 +9,11 @@ import type { DataRow } from "./columnTypes";
  * a category (e.g. a categorical Y axis), where a non-numeric string is the
  * expected, plottable value rather than bad data.
  */
-export function filterPlottable(rows: DataRow[], column: string | null, requireNumeric = true): DataRow[] {
+export function filterPlottable(
+  rows: DataRow[],
+  column: string | null,
+  requireNumeric = true,
+): DataRow[] {
   if (!column) return rows;
   return rows.filter((row) => {
     const raw = row[column];
@@ -31,14 +35,17 @@ export function computeStats(values: number[]): GroupStats {
   const mean = values.reduce((sum, v) => sum + v, 0) / n;
   const sorted = [...values].sort((a, b) => a - b);
   const mid = Math.floor(n / 2);
-  const median = n % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+  const median =
+    n % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
   const variance = values.reduce((sum, v) => sum + (v - mean) ** 2, 0) / n;
   return { n, mean, median, std: Math.sqrt(variance) };
 }
 
 /** Compact display for a stat value: whole numbers past 100, one decimal below. */
 export function formatStat(value: number): string {
-  return Math.abs(value) >= 100 ? Math.round(value).toString() : (Math.round(value * 10) / 10).toString();
+  return Math.abs(value) >= 100
+    ? Math.round(value).toString()
+    : (Math.round(value * 10) / 10).toString();
 }
 
 /**
@@ -60,7 +67,9 @@ export interface LinearFit {
 }
 
 /** Ordinary least-squares fit. Returns null when there aren't enough points, or they're collinear in x (zero variance). */
-export function linearRegression(points: Array<[number, number]>): LinearFit | null {
+export function linearRegression(
+  points: Array<[number, number]>,
+): LinearFit | null {
   const n = points.length;
   if (n < 2) return null;
   const sx = points.reduce((sum, p) => sum + p[0], 0);
@@ -74,7 +83,8 @@ export function linearRegression(points: Array<[number, number]>): LinearFit | n
   return { slope, intercept };
 }
 
-export type TrendType = "linear" | "exponential" | "logarithmic" | "power" | "polynomial";
+export type TrendType =
+  "linear" | "exponential" | "logarithmic" | "power" | "polynomial";
 
 export interface TrendFit {
   type: TrendType;
@@ -83,7 +93,10 @@ export interface TrendFit {
   predict: (x: number) => number;
 }
 
-function rSquared(points: Array<[number, number]>, predict: (x: number) => number): number {
+function rSquared(
+  points: Array<[number, number]>,
+  predict: (x: number) => number,
+): number {
   const ys = points.map((p) => p[1]);
   const meanY = ys.reduce((sum, v) => sum + v, 0) / ys.length;
   const ssTot = ys.reduce((sum, v) => sum + (v - meanY) ** 2, 0);
@@ -104,7 +117,9 @@ function fitLinear(points: Array<[number, number]>): TrendFit | null {
 /** y = a * e^(b x), fit by linear regression on (x, ln y) -- only valid when every y is strictly positive. */
 function fitExponential(points: Array<[number, number]>): TrendFit | null {
   if (points.some(([, y]) => y <= 0)) return null;
-  const fit = linearRegression(points.map(([x, y]): [number, number] => [x, Math.log(y)]));
+  const fit = linearRegression(
+    points.map(([x, y]): [number, number] => [x, Math.log(y)]),
+  );
   if (!fit) return null;
   const a = Math.exp(fit.intercept);
   const b = fit.slope;
@@ -115,7 +130,9 @@ function fitExponential(points: Array<[number, number]>): TrendFit | null {
 /** y = a + b*ln(x), fit by linear regression on (ln x, y) -- only valid when every x is strictly positive. */
 function fitLogarithmic(points: Array<[number, number]>): TrendFit | null {
   if (points.some(([x]) => x <= 0)) return null;
-  const fit = linearRegression(points.map(([x, y]): [number, number] => [Math.log(x), y]));
+  const fit = linearRegression(
+    points.map(([x, y]): [number, number] => [Math.log(x), y]),
+  );
   if (!fit) return null;
   const predict = (x: number) => fit.intercept + fit.slope * Math.log(x);
   return { type: "logarithmic", r2: rSquared(points, predict), predict };
@@ -124,7 +141,9 @@ function fitLogarithmic(points: Array<[number, number]>): TrendFit | null {
 /** y = a * x^b, fit by linear regression on (ln x, ln y) -- only valid when every x and y are strictly positive. */
 function fitPower(points: Array<[number, number]>): TrendFit | null {
   if (points.some(([x, y]) => x <= 0 || y <= 0)) return null;
-  const fit = linearRegression(points.map(([x, y]): [number, number] => [Math.log(x), Math.log(y)]));
+  const fit = linearRegression(
+    points.map(([x, y]): [number, number] => [Math.log(x), Math.log(y)]),
+  );
   if (!fit) return null;
   const a = Math.exp(fit.intercept);
   const b = fit.slope;
@@ -133,11 +152,15 @@ function fitPower(points: Array<[number, number]>): TrendFit | null {
 }
 
 /** Solves a 3x3 linear system via Gaussian elimination with partial pivoting. Returns null if singular. */
-function solve3x3(rows: number[][], rhs: number[]): [number, number, number] | null {
+function solve3x3(
+  rows: number[][],
+  rhs: number[],
+): [number, number, number] | null {
   const a = rows.map((row, i) => [...row, rhs[i]]);
   for (let i = 0; i < 3; i++) {
     let pivot = i;
-    for (let k = i + 1; k < 3; k++) if (Math.abs(a[k][i]) > Math.abs(a[pivot][i])) pivot = k;
+    for (let k = i + 1; k < 3; k++)
+      if (Math.abs(a[k][i]) > Math.abs(a[pivot][i])) pivot = k;
     if (Math.abs(a[pivot][i]) < 1e-12) return null;
     [a[i], a[pivot]] = [a[pivot], a[i]];
     for (let k = i + 1; k < 3; k++) {
@@ -199,9 +222,15 @@ function fitPolynomial(points: Array<[number, number]>): TrendFit | null {
  * letting the shape match the data, per the standard curve-fitting practice
  * of comparing candidate models by R^2 rather than assuming linearity.
  */
-export function fitTrend(points: Array<[number, number]>, type: TrendType | "auto"): TrendFit | null {
+export function fitTrend(
+  points: Array<[number, number]>,
+  type: TrendType | "auto",
+): TrendFit | null {
   if (points.length < 2) return null;
-  const fitters: Record<TrendType, (pts: Array<[number, number]>) => TrendFit | null> = {
+  const fitters: Record<
+    TrendType,
+    (pts: Array<[number, number]>) => TrendFit | null
+  > = {
     linear: fitLinear,
     exponential: fitExponential,
     logarithmic: fitLogarithmic,
@@ -217,7 +246,12 @@ export function fitTrend(points: Array<[number, number]>, type: TrendType | "aut
 }
 
 /** Samples a fitted curve at evenly-spaced x values between xmin and xmax -- needed to draw an actual curve (exponential/logarithmic/power/polynomial), since a 2-point line only ever renders straight. */
-export function sampleTrendCurve(fit: TrendFit, xmin: number, xmax: number, steps = 60): Array<[number, number]> {
+export function sampleTrendCurve(
+  fit: TrendFit,
+  xmin: number,
+  xmax: number,
+  steps = 60,
+): Array<[number, number]> {
   if (xmin === xmax) return [[xmin, fit.predict(xmin)]];
   const points: Array<[number, number]> = [];
   for (let i = 0; i <= steps; i++) {
@@ -248,7 +282,7 @@ export interface ParetoPoint {
  */
 export function computeParetoFrontier(points: ParetoPoint[]): ParetoPoint[] {
   if (points.length === 0) return [];
-  const sorted = [...points].sort((a, b) => (b.x - a.x) || (b.y - a.y));
+  const sorted = [...points].sort((a, b) => b.x - a.x || b.y - a.y);
   const frontier: ParetoPoint[] = [];
   let bestY = -Infinity;
   for (const p of sorted) {

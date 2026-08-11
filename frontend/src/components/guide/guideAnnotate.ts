@@ -13,7 +13,11 @@ export interface GuideMark {
  * trimmed text content starts with `text`. Used to locate a real control by
  * its visible, translated label -- so a callout always points at whatever
  * the label currently says, in whatever language the guide is rendering. */
-export function findByText(container: HTMLElement, selectors: string, text: string): HTMLElement | null {
+export function findByText(
+  container: HTMLElement,
+  selectors: string,
+  text: string,
+): HTMLElement | null {
   const needle = text.trim();
   if (!needle) return null;
   const els = Array.from(container.querySelectorAll<HTMLElement>(selectors));
@@ -24,7 +28,12 @@ export function findByText(container: HTMLElement, selectors: string, text: stri
  * visible text -- for a control whose only translated label lives in
  * aria-label rather than its own text content (e.g. AxisSelector's Y/X
  * buttons, whose visible text is just a bare "Y"/"X" badge). */
-export function findByAttr(container: HTMLElement, selectors: string, attr: string, value: string): HTMLElement | null {
+export function findByAttr(
+  container: HTMLElement,
+  selectors: string,
+  attr: string,
+  value: string,
+): HTMLElement | null {
   const needle = value.trim();
   if (!needle) return null;
   const els = Array.from(container.querySelectorAll<HTMLElement>(selectors));
@@ -34,7 +43,11 @@ export function findByAttr(container: HTMLElement, selectors: string, attr: stri
 /** `el`'s bounding box in pixels relative to `container`'s own box, padded
  * out by `pad` on every side -- the shape a callout ring needs to sit
  * snugly (not flush) around the real control it's circling. */
-export function markRect(container: HTMLElement, el: HTMLElement, pad = 5): GuideMark {
+export function markRect(
+  container: HTMLElement,
+  el: HTMLElement,
+  pad = 5,
+): GuideMark {
   const c = container.getBoundingClientRect();
   const r = el.getBoundingClientRect();
   return {
@@ -50,7 +63,11 @@ export function markRect(container: HTMLElement, el: HTMLElement, pad = 5): Guid
  * are always siblings under one flex row in these components) rather than
  * just the label text itself, so the callout covers the actual switch/
  * select/button next to it too. */
-export function markRow(container: HTMLElement, labelText: string, pad = 5): GuideMark | null {
+export function markRow(
+  container: HTMLElement,
+  labelText: string,
+  pad = 5,
+): GuideMark | null {
   const label = findByText(container, "span", labelText);
   const row = label?.parentElement;
   return row ? markRect(container, row, pad) : null;
@@ -58,7 +75,11 @@ export function markRow(container: HTMLElement, labelText: string, pad = 5): Gui
 
 /** A GraphControls Chart-section field: the `<label>` itself already wraps
  * both the caption and its Select, so no parent walk is needed. */
-export function markLabel(container: HTMLElement, labelText: string, pad = 5): GuideMark | null {
+export function markLabel(
+  container: HTMLElement,
+  labelText: string,
+  pad = 5,
+): GuideMark | null {
   const label = findByText(container, "label", labelText);
   return label ? markRect(container, label, pad) : null;
 }
@@ -69,7 +90,11 @@ export function markLabel(container: HTMLElement, labelText: string, pad = 5): G
  * better than three overlapping ones. Elements are the loose family of
  * `null`s the various findByText/findByAttr lookups above already return,
  * so callers don't need to filter before passing them in. */
-export function markUnion(container: HTMLElement, els: (HTMLElement | null)[], pad = 5): GuideMark | null {
+export function markUnion(
+  container: HTMLElement,
+  els: (HTMLElement | null)[],
+  pad = 5,
+): GuideMark | null {
   const valid = els.filter((e): e is HTMLElement => !!e);
   if (valid.length === 0) return null;
   const c = container.getBoundingClientRect();
@@ -78,7 +103,12 @@ export function markUnion(container: HTMLElement, els: (HTMLElement | null)[], p
   const left = Math.min(...rects.map((r) => r.left));
   const right = Math.max(...rects.map((r) => r.right));
   const bottom = Math.max(...rects.map((r) => r.bottom));
-  return { top: top - c.top - pad, left: left - c.left - pad, width: right - left + pad * 2, height: bottom - top + pad * 2 };
+  return {
+    top: top - c.top - pad,
+    left: left - c.left - pad,
+    width: right - left + pad * 2,
+    height: bottom - top + pad * 2,
+  };
 }
 
 /** Converts a rect given in a canvas-rendered chart's own logical pixel

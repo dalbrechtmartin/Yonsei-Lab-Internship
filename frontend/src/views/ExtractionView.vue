@@ -7,7 +7,9 @@
 
   <main class="animate-in fade-in grow px-3 pb-8 duration-300 sm:px-4 lg:px-5">
     <div class="mx-auto flex w-full max-w-7xl flex-col gap-4">
-      <Card class="mt-4 overflow-hidden rounded-4xl border-white/50 bg-card/80 p-6 shadow-2xl shadow-slate-900/5 backdrop-blur-xl">
+      <Card
+        class="mt-4 overflow-hidden rounded-4xl border-white/50 bg-card/80 p-6 shadow-2xl shadow-slate-900/5 backdrop-blur-xl"
+      >
         <div class="flex flex-col gap-6 md:flex-row md:items-stretch md:gap-8">
           <div class="flex flex-col md:w-2/3">
             <p class="text-xs uppercase tracking-[0.3em] text-secondary">
@@ -55,9 +57,16 @@
       </section>
 
       <section v-if="readyToSave" class="flex justify-center py-4">
-        <div class="w-full max-w-2xl rounded-xl border border-secondary/15 bg-secondary/5 p-4">
-          <p class="text-sm font-semibold text-ink">{{ t("extraction.ready.heading") }}</p>
-          <p v-if="readyToSave.partial" class="mt-1 text-xs leading-relaxed text-amber-700">
+        <div
+          class="w-full max-w-2xl rounded-xl border border-secondary/15 bg-secondary/5 p-4"
+        >
+          <p class="text-sm font-semibold text-ink">
+            {{ t("extraction.ready.heading") }}
+          </p>
+          <p
+            v-if="readyToSave.partial"
+            class="mt-1 text-xs leading-relaxed text-amber-700"
+          >
             {{ t("extraction.partialSuccess") }}
           </p>
           <div class="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -78,8 +87,12 @@
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuItem @select="saveFormat = 'xlsx'">.xlsx</DropdownMenuItem>
-                <DropdownMenuItem @select="saveFormat = 'csv'">.csv</DropdownMenuItem>
+                <DropdownMenuItem @select="saveFormat = 'xlsx'"
+                  >.xlsx</DropdownMenuItem
+                >
+                <DropdownMenuItem @select="saveFormat = 'csv'"
+                  >.csv</DropdownMenuItem
+                >
               </DropdownMenuContent>
             </DropdownMenu>
             <Button type="button" :disabled="isSaving" @click="handleSaveClick">
@@ -98,7 +111,12 @@ import { useI18n } from "vue-i18n";
 import { ChevronDown } from "@lucide/vue";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import ToolActionsBar from "@/components/layout/ToolActionsBar.vue";
 import FileDropzone from "@/components/shared/FileDropzone.vue";
 import StatusToast from "@/components/shared/StatusToast.vue";
@@ -111,7 +129,10 @@ import {
   type ModelChoice,
 } from "@/services/api";
 import { useTransientStatus } from "@/composables/useTransientStatus";
-import { buildDefaultExportName, normalizeFilename } from "@/utils/exportFilename";
+import {
+  buildDefaultExportName,
+  normalizeFilename,
+} from "@/utils/exportFilename";
 import { saveBlobWithPicker, convertXlsxBlobToCsv } from "@/utils/saveFile";
 
 const STATUS_VISIBLE_MS = 15000;
@@ -180,6 +201,20 @@ const resetJob = () => {
 const markReady = (status: JobStatusResponse) => {
   stopPolling();
   isBusy.value = false;
+
+  // Mirrors the backend's own check (see download_job_result): a job can
+  // reach "done" with zero records across every file (e.g. no data table
+  // found in any paper). GET .../download then 400s, so bail out here
+  // instead of showing a Save button that's guaranteed to fail.
+  if (!status.files.some((f) => f.recordCount > 0)) {
+    resetJob();
+    setTransientStatus(
+      "extraction.noData",
+      "border-rose-500/20 bg-rose-500/12 text-rose-950",
+    );
+    return;
+  }
+
   readyToSave.value = {
     jobId: status.jobId,
     partial: status.files.some((f) => f.status === "failed"),
@@ -192,9 +227,17 @@ const handleSaveClick = async () => {
   if (!readyToSave.value) return;
   isSaving.value = true;
   try {
-    const { blob: xlsxBlob, partial } = await apiService.downloadJobResult(readyToSave.value.jobId);
-    const blob = saveFormat.value === "csv" ? await convertXlsxBlobToCsv(xlsxBlob) : xlsxBlob;
-    const filename = normalizeFilename(saveName.value || readyToSave.value.defaultName, saveFormat.value);
+    const { blob: xlsxBlob, partial } = await apiService.downloadJobResult(
+      readyToSave.value.jobId,
+    );
+    const blob =
+      saveFormat.value === "csv"
+        ? await convertXlsxBlobToCsv(xlsxBlob)
+        : xlsxBlob;
+    const filename = normalizeFilename(
+      saveName.value || readyToSave.value.defaultName,
+      saveFormat.value,
+    );
     await saveBlobWithPicker(blob, filename, saveFormat.value);
     setTransientStatus(
       partial ? "extraction.partialSuccess" : "extraction.success",
@@ -208,7 +251,10 @@ const handleSaveClick = async () => {
       return; // user cancelled the save dialog -- leave the prompt as-is
     }
     console.error("Failed to save job result:", error);
-    setTransientStatus("extraction.error", "border-rose-500/20 bg-rose-500/12 text-rose-950");
+    setTransientStatus(
+      "extraction.error",
+      "border-rose-500/20 bg-rose-500/12 text-rose-950",
+    );
   } finally {
     isSaving.value = false;
   }

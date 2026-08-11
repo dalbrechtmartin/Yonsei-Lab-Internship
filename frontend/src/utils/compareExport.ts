@@ -15,7 +15,12 @@ import {
   wrapText,
   type AnnotationExportSection,
 } from "./annotationExport";
-import { darkenColor, layerLabel, materialColor, type StructureLayer } from "./layerStructure";
+import {
+  darkenColor,
+  layerLabel,
+  materialColor,
+  type StructureLayer,
+} from "./layerStructure";
 
 export interface ComparePinData {
   ref: string;
@@ -124,7 +129,9 @@ export interface ComparePlan {
   rowBands: CompareRowBand[];
 }
 
-function unionFieldKeys(perPinRows: (Array<{ key: string; value: string }> | undefined)[]): string[] {
+function unionFieldKeys(
+  perPinRows: (Array<{ key: string; value: string }> | undefined)[],
+): string[] {
   const seen = new Set<string>();
   const keys: string[] = [];
   for (const rows of perPinRows) {
@@ -139,7 +146,9 @@ function unionFieldKeys(perPinRows: (Array<{ key: string; value: string }> | und
   return keys;
 }
 
-function valueMap(rows: Array<{ key: string; value: string }> | undefined): Map<string, string> {
+function valueMap(
+  rows: Array<{ key: string; value: string }> | undefined,
+): Map<string, string> {
   const m = new Map<string, string>();
   if (rows) for (const r of rows) m.set(r.key, r.value);
   return m;
@@ -168,7 +177,10 @@ function unionSectionTitles(pins: ComparePinData[]): string[] {
  * every column; a pin simply missing a given field shows "--" in its slot
  * rather than the whole row shifting.
  */
-export function planComparePins(pins: ComparePinData[], hasTitle: boolean): ComparePlan {
+export function planComparePins(
+  pins: ComparePinData[],
+  hasTitle: boolean,
+): ComparePlan {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d")!;
   ctx.textBaseline = "alphabetic";
@@ -186,7 +198,10 @@ export function planComparePins(pins: ComparePinData[], hasTitle: boolean): Comp
   const rowBands: CompareRowBand[] = [];
 
   ctx.font = "400 12px Inter, sans-serif";
-  const headerLines = Math.max(...pins.map((p) => wrapText(ctx, p.title, contentW).length), 1);
+  const headerLines = Math.max(
+    ...pins.map((p) => wrapText(ctx, p.title, contentW).length),
+    1,
+  );
   const headerHeight = 24 + headerLines * 16 + SECTION_GAP;
 
   let y = topY + headerHeight;
@@ -206,7 +221,10 @@ export function planComparePins(pins: ComparePinData[], hasTitle: boolean): Comp
     let maxValueLines = 1;
     for (const p of pins) {
       if (!p.origin) continue;
-      maxValueLines = Math.max(maxValueLines, wrapText(ctx, p.origin.value, valueW).length);
+      maxValueLines = Math.max(
+        maxValueLines,
+        wrapText(ctx, p.origin.value, valueW).length,
+      );
     }
     const rowH = Math.max(labelLines, maxValueLines, 1) * ROW_LINE_H + ROW_GAP;
     const boxH = rowH - ROW_GAP + BOX_PAD * 2;
@@ -215,7 +233,12 @@ export function planComparePins(pins: ComparePinData[], hasTitle: boolean): Comp
       title: null,
       y,
       boxHeight: boxH,
-      rows: { keys: [key], labels: new Map([[key, key]]), values, heights: [rowH] },
+      rows: {
+        keys: [key],
+        labels: new Map([[key, key]]),
+        values,
+        heights: [rowH],
+      },
       layers: null,
       text: null,
     });
@@ -227,7 +250,10 @@ export function planComparePins(pins: ComparePinData[], hasTitle: boolean): Comp
 
     const rowKeys = unionFieldKeys(perPin.map((s) => s?.rows));
     const rowLabels = new Map<string, string>();
-    for (const s of perPin) if (s?.rows) for (const r of s.rows) if (!rowLabels.has(r.key)) rowLabels.set(r.key, r.key);
+    for (const s of perPin)
+      if (s?.rows)
+        for (const r of s.rows)
+          if (!rowLabels.has(r.key)) rowLabels.set(r.key, r.key);
     const rowValues = perPin.map((s) => valueMap(s?.rows));
     const rowHeights: number[] = [];
     let rowsHeight = 0;
@@ -236,7 +262,11 @@ export function planComparePins(pins: ComparePinData[], hasTitle: boolean): Comp
       const labelLines = wrapText(ctx, key, labelW).length;
       ctx.font = VALUE_FONT;
       let maxValueLines = 1;
-      for (const vm of rowValues) maxValueLines = Math.max(maxValueLines, wrapText(ctx, vm.get(key) ?? "—", valueW).length);
+      for (const vm of rowValues)
+        maxValueLines = Math.max(
+          maxValueLines,
+          wrapText(ctx, vm.get(key) ?? "—", valueW).length,
+        );
       const h = Math.max(labelLines, maxValueLines, 1) * ROW_LINE_H + ROW_GAP;
       rowHeights.push(h);
       rowsHeight += h;
@@ -279,24 +309,48 @@ export function planComparePins(pins: ComparePinData[], hasTitle: boolean): Comp
 
     let cursor = sectionY + BOX_PAD;
     for (let i = 0; i < rowKeys.length; i++) {
-      rowBands.push({ key: `${title}:${rowKeys[i]}`, y: cursor, height: rowHeights[i] });
+      rowBands.push({
+        key: `${title}:${rowKeys[i]}`,
+        y: cursor,
+        height: rowHeights[i],
+      });
       cursor += rowHeights[i];
     }
     const layersY = cursor - sectionY;
     if (hasLayers) {
-      rowBands.push({ key: `${title}:layers`, y: cursor, height: layersHeight });
+      rowBands.push({
+        key: `${title}:layers`,
+        y: cursor,
+        height: layersHeight,
+      });
       cursor += layersHeight;
     }
     const textY = cursor - sectionY;
-    if (hasText) rowBands.push({ key: `${title}:text`, y: cursor, height: textHeight });
+    if (hasText)
+      rowBands.push({ key: `${title}:text`, y: cursor, height: textHeight });
 
     sections.push({
       title,
       y,
       boxHeight: boxH,
-      rows: rowKeys.length ? { keys: rowKeys, labels: rowLabels, values: rowValues, heights: rowHeights } : null,
-      layers: hasLayers ? { perPin: perPin.map((s) => s?.layers), y: layersY, height: layersHeight } : null,
-      text: hasText ? { perPin: textLinesPerPin, y: textY, height: textHeight } : null,
+      rows: rowKeys.length
+        ? {
+            keys: rowKeys,
+            labels: rowLabels,
+            values: rowValues,
+            heights: rowHeights,
+          }
+        : null,
+      layers: hasLayers
+        ? {
+            perPin: perPin.map((s) => s?.layers),
+            y: layersY,
+            height: layersHeight,
+          }
+        : null,
+      text: hasText
+        ? { perPin: textLinesPerPin, y: textY, height: textHeight }
+        : null,
     });
 
     y += SECTION_TITLE_H + boxH + SECTION_GAP;
@@ -306,7 +360,13 @@ export function planComparePins(pins: ComparePinData[], hasTitle: boolean): Comp
   return { width, height: y, headerHeight, hasTitle, sections, rowBands };
 }
 
-function drawBoxBg(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) {
+function drawBoxBg(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+) {
   ctx.fillStyle = BOX_BG;
   ctx.strokeStyle = BORDER;
   ctx.lineWidth = 1;
@@ -329,14 +389,24 @@ function drawRowAt(
 ) {
   ctx.font = LABEL_FONT;
   ctx.fillStyle = LABEL_COLOR;
-  wrapText(ctx, key, labelW).forEach((line, i) => ctx.fillText(line, x, y + 11 + i * ROW_LINE_H));
+  wrapText(ctx, key, labelW).forEach((line, i) =>
+    ctx.fillText(line, x, y + 11 + i * ROW_LINE_H),
+  );
   ctx.font = VALUE_FONT;
   ctx.fillStyle = valueColor;
   const displayValue = marker ? `${value} ${marker}` : value;
-  wrapText(ctx, displayValue, valueW).forEach((line, i) => ctx.fillText(line, x + labelW + 10, y + 11 + i * ROW_LINE_H));
+  wrapText(ctx, displayValue, valueW).forEach((line, i) =>
+    ctx.fillText(line, x + labelW + 10, y + 11 + i * ROW_LINE_H),
+  );
 }
 
-function drawLayerStack(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, layers: StructureLayer[]) {
+function drawLayerStack(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  layers: StructureLayer[],
+) {
   const heights = layerHeights(layers);
   const sideW = 10;
   const mainW = w - sideW;
@@ -367,7 +437,10 @@ function drawLayerStack(ctx: CanvasRenderingContext2D, x: number, y: number, w: 
  * the first one "best" while its equally-good twin got no marker at all
  * (see drawComparePins, which renders "=" for anything in a set with more
  * than one member) misrepresented a tie as one pin beating the other. */
-function computeBestWorstOne(pins: ComparePinData[], bestWorst: { key: string; direction: "higher" | "lower" }): { bestIndices: Set<number>; worstIndices: Set<number> } {
+function computeBestWorstOne(
+  pins: ComparePinData[],
+  bestWorst: { key: string; direction: "higher" | "lower" },
+): { bestIndices: Set<number>; worstIndices: Set<number> } {
   const values: (number | null)[] = pins.map((p) => {
     for (const s of p.sections) {
       const row = s.rows?.find((r) => r.key === bestWorst.key);
@@ -379,8 +452,14 @@ function computeBestWorstOne(pins: ComparePinData[], bestWorst: { key: string; d
   const worstIndices = new Set<number>();
   const nonNull = values.filter((v): v is number => v !== null);
   if (nonNull.length === 0) return { bestIndices, worstIndices };
-  const bestVal = bestWorst.direction === "higher" ? Math.max(...nonNull) : Math.min(...nonNull);
-  const worstVal = bestWorst.direction === "higher" ? Math.min(...nonNull) : Math.max(...nonNull);
+  const bestVal =
+    bestWorst.direction === "higher"
+      ? Math.max(...nonNull)
+      : Math.min(...nonNull);
+  const worstVal =
+    bestWorst.direction === "higher"
+      ? Math.min(...nonNull)
+      : Math.max(...nonNull);
   values.forEach((v, i) => {
     if (v === bestVal) bestIndices.add(i);
   });
@@ -400,8 +479,14 @@ function computeBestWorstOne(pins: ComparePinData[], bestWorst: { key: string; d
  * ITS OWN row's coloring (looked up by key while drawing that row), so
  * multiple active metrics never collide with each other even when they land
  * on the same pin. */
-function computeBestWorst(pins: ComparePinData[], bestWorst: { key: string; direction: "higher" | "lower" }[]): Map<string, { bestIndices: Set<number>; worstIndices: Set<number> }> {
-  const map = new Map<string, { bestIndices: Set<number>; worstIndices: Set<number> }>();
+function computeBestWorst(
+  pins: ComparePinData[],
+  bestWorst: { key: string; direction: "higher" | "lower" }[],
+): Map<string, { bestIndices: Set<number>; worstIndices: Set<number> }> {
+  const map = new Map<
+    string,
+    { bestIndices: Set<number>; worstIndices: Set<number> }
+  >();
   for (const bw of bestWorst) map.set(bw.key, computeBestWorstOne(pins, bw));
   return map;
 }
@@ -420,7 +505,13 @@ export interface CompareLabels {
  * Colors come from computeBestWorst's own win/measured color (bluishGreen)
  * and the app's own primary blue for simulated, so text color is picked via
  * pickTextColor rather than assumed. */
-function drawOriginBadge(ctx: CanvasRenderingContext2D, x: number, y: number, label: string, measured: boolean): void {
+function drawOriginBadge(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  label: string,
+  measured: boolean,
+): void {
   const bg = measured ? WIN_COLOR : OKABE_ITO.blue;
   const textColor = pickTextColor(bg);
   const glyphW = 11;
@@ -512,13 +603,21 @@ export function drawComparePins(
       const originValue = pin.origin.value.trim().toUpperCase();
       if (originValue === "EXP" || originValue === "SIM") {
         const measured = originValue === "EXP";
-        drawOriginBadge(ctx, x + refWidth + 10, topY + 3, measured ? labels.measured : labels.simulated, measured);
+        drawOriginBadge(
+          ctx,
+          x + refWidth + 10,
+          topY + 3,
+          measured ? labels.measured : labels.simulated,
+          measured,
+        );
       }
     }
 
     ctx.font = "400 12px Inter, sans-serif";
     ctx.fillStyle = "#1c2541";
-    wrapText(ctx, pin.title, contentW).forEach((line, li) => ctx.fillText(line, x, topY + 24 + 12 + li * 16));
+    wrapText(ctx, pin.title, contentW).forEach((line, li) =>
+      ctx.fillText(line, x, topY + 24 + 12 + li * 16),
+    );
 
     for (const section of plan.sections) {
       if (section.title) {
@@ -558,20 +657,43 @@ export function drawComparePins(
               marker = bw.worstIndices.size > 1 ? "=" : "▽";
             }
           }
-          drawRowAt(ctx, x + BOX_PAD, ry, labelW, valueW, section.rows.labels.get(key)!, value, valueColor, marker);
+          drawRowAt(
+            ctx,
+            x + BOX_PAD,
+            ry,
+            labelW,
+            valueW,
+            section.rows.labels.get(key)!,
+            value,
+            valueColor,
+            marker,
+          );
           ry += section.rows.heights[k];
         }
       }
       if (section.layers) {
         const layers = section.layers.perPin[i];
-        if (layers && layers.length > 0) drawLayerStack(ctx, x + BOX_PAD, boxY + section.layers.y, contentW - BOX_PAD * 2, layers);
+        if (layers && layers.length > 0)
+          drawLayerStack(
+            ctx,
+            x + BOX_PAD,
+            boxY + section.layers.y,
+            contentW - BOX_PAD * 2,
+            layers,
+          );
       }
       if (section.text) {
         const lines = section.text.perPin[i];
         if (lines) {
           ctx.font = "400 11px 'IBM Plex Mono', monospace";
           ctx.fillStyle = "#3a506b";
-          lines.forEach((line, li) => ctx.fillText(line, x + BOX_PAD, boxY + section.text!.y + 11 + li * ROW_LINE_H));
+          lines.forEach((line, li) =>
+            ctx.fillText(
+              line,
+              x + BOX_PAD,
+              boxY + section.text!.y + 11 + li * ROW_LINE_H,
+            ),
+          );
         }
       }
       ctx.restore(); // matches the per-box clip save() above
@@ -645,7 +767,12 @@ export type StampKind = "favorite" | "validated" | "exclude";
 // Okabe-Ito again (see the palette block near the top of this file) -- these
 // were an arbitrary amber/pink/mint/sky set before, not colorblind-safe and
 // not related to the app's own palette.
-export const ANNOTATION_COLORS = [OKABE_ITO.blue, OKABE_ITO.orange, OKABE_ITO.bluishGreen, OKABE_ITO.reddishPurple];
+export const ANNOTATION_COLORS = [
+  OKABE_ITO.blue,
+  OKABE_ITO.orange,
+  OKABE_ITO.bluishGreen,
+  OKABE_ITO.reddishPurple,
+];
 export const STAMP_COLORS: Record<StampKind, string> = {
   favorite: OKABE_ITO.orange,
   validated: OKABE_ITO.bluishGreen,
@@ -677,26 +804,74 @@ interface AnnotationBase {
 // case. When the band itself is hidden (its section got toggled off),
 // resolveAnchor returns null and the annotation simply stops drawing --
 // same "stop drawing, don't delete" behavior as removing a compared pin.
-export type PenAnnotation = AnnotationBase & { type: "pen"; points: { x: number; y: number }[] };
-export type FrameAnnotation = AnnotationBase & { type: "frame"; pinRef: string; bandKey: string | null; xPct: number; yPct: number; wPct: number; hPct: number };
-export type ArrowAnnotation = AnnotationBase & { type: "arrow"; pinRef: string; bandKey: string | null; x1Pct: number; y1Pct: number; x2Pct: number; y2Pct: number };
+export type PenAnnotation = AnnotationBase & {
+  type: "pen";
+  points: { x: number; y: number }[];
+};
+export type FrameAnnotation = AnnotationBase & {
+  type: "frame";
+  pinRef: string;
+  bandKey: string | null;
+  xPct: number;
+  yPct: number;
+  wPct: number;
+  hPct: number;
+};
+export type ArrowAnnotation = AnnotationBase & {
+  type: "arrow";
+  pinRef: string;
+  bandKey: string | null;
+  x1Pct: number;
+  y1Pct: number;
+  x2Pct: number;
+  y2Pct: number;
+};
 // width/height are per-note (resizable via a drag handle -- see
 // CompareDialog), defaulting to POSTIT_W/POSTIT_MIN_H for any note created
 // before that existed. height is a MINIMUM, not a fixed box -- if the text
 // wraps taller than the stored height (e.g. after editing in more text, or
 // shrinking the width), the note still grows to fit it; see postitHeight.
-export type PostitAnnotation = AnnotationBase & { type: "postit"; pinRef: string; bandKey: string | null; xPct: number; yPct: number; text: string; width: number; height: number };
+export type PostitAnnotation = AnnotationBase & {
+  type: "postit";
+  pinRef: string;
+  bandKey: string | null;
+  xPct: number;
+  yPct: number;
+  text: string;
+  width: number;
+  height: number;
+};
 // Freely placed exactly where clicked (xPct/yPct), same as frame/arrow/
 // postit -- previously stamps always landed in the column's top-right
 // corner and stacked downward for a second/third stamp on the same column,
 // which didn't let a stamp point at a specific value.
-export type StampAnnotation = AnnotationBase & { type: "stamp"; pinRef: string; bandKey: string | null; kind: StampKind; xPct: number; yPct: number };
+export type StampAnnotation = AnnotationBase & {
+  type: "stamp";
+  pinRef: string;
+  bandKey: string | null;
+  kind: StampKind;
+  xPct: number;
+  yPct: number;
+};
 // Always horizontal (a single yPct, not two) -- this is meant to underline a
 // specific value/word, not a free diagonal line like the pen; locking the Y
 // while dragging (see CompareDialog's onStageMouseMove) is what keeps it
 // reading as an underline instead of an arbitrary stroke.
-export type UnderlineAnnotation = AnnotationBase & { type: "underline"; pinRef: string; bandKey: string | null; x1Pct: number; x2Pct: number; yPct: number };
-export type CompareAnnotation = PenAnnotation | FrameAnnotation | ArrowAnnotation | PostitAnnotation | StampAnnotation | UnderlineAnnotation;
+export type UnderlineAnnotation = AnnotationBase & {
+  type: "underline";
+  pinRef: string;
+  bandKey: string | null;
+  x1Pct: number;
+  x2Pct: number;
+  yPct: number;
+};
+export type CompareAnnotation =
+  | PenAnnotation
+  | FrameAnnotation
+  | ArrowAnnotation
+  | PostitAnnotation
+  | StampAnnotation
+  | UnderlineAnnotation;
 /** Annotation types anchored to a single point (as opposed to a shape/path)
  * -- these are the ones the Pointer tool can drag to reposition (see
  * CompareDialog's drag handling). */
@@ -713,7 +888,12 @@ function pinIndexByRef(pins: ComparePinData[], ref: string): number {
  * OTHER sections being toggled on/off (see the CompareAnnotation types
  * above). Returns null if a bandKey was given but that band isn't in the
  * current plan (its section is hidden right now). */
-export function resolveAnchor(pins: ComparePinData[], plan: ComparePlan, pinRef: string, bandKey?: string | null): { x: number; y: number; w: number; h: number } | null {
+export function resolveAnchor(
+  pins: ComparePinData[],
+  plan: ComparePlan,
+  pinRef: string,
+  bandKey?: string | null,
+): { x: number; y: number; w: number; h: number } | null {
   const i = pinIndexByRef(pins, pinRef);
   if (i === -1) return null;
   const x = i * (COL_WIDTH + COL_GAP);
@@ -725,7 +905,14 @@ export function resolveAnchor(pins: ComparePinData[], plan: ComparePlan, pinRef:
   return { x, y: 0, w: COL_WIDTH, h: plan.height };
 }
 
-function drawArrowShape(ctx: CanvasRenderingContext2D, x1: number, y1: number, x2: number, y2: number, color: string) {
+function drawArrowShape(
+  ctx: CanvasRenderingContext2D,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  color: string,
+) {
   const headLen = 10;
   const angle = Math.atan2(y2 - y1, x2 - x1);
   ctx.strokeStyle = color;
@@ -737,19 +924,37 @@ function drawArrowShape(ctx: CanvasRenderingContext2D, x1: number, y1: number, x
   ctx.stroke();
   ctx.beginPath();
   ctx.moveTo(x2, y2);
-  ctx.lineTo(x2 - headLen * Math.cos(angle - Math.PI / 6), y2 - headLen * Math.sin(angle - Math.PI / 6));
-  ctx.lineTo(x2 - headLen * Math.cos(angle + Math.PI / 6), y2 - headLen * Math.sin(angle + Math.PI / 6));
+  ctx.lineTo(
+    x2 - headLen * Math.cos(angle - Math.PI / 6),
+    y2 - headLen * Math.sin(angle - Math.PI / 6),
+  );
+  ctx.lineTo(
+    x2 - headLen * Math.cos(angle + Math.PI / 6),
+    y2 - headLen * Math.sin(angle + Math.PI / 6),
+  );
   ctx.closePath();
   ctx.fill();
 }
 
-export function postitHeight(ctx: CanvasRenderingContext2D, text: string, width: number = POSTIT_W): number {
+export function postitHeight(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  width: number = POSTIT_W,
+): number {
   ctx.font = "400 11px Inter, sans-serif";
   const lines = wrapText(ctx, text, width - 16);
   return Math.max(POSTIT_MIN_H, lines.length * POSTIT_LINE_H + 20);
 }
 
-function drawPostitShape(ctx: CanvasRenderingContext2D, x: number, y: number, text: string, color: string, width: number, height: number) {
+function drawPostitShape(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  text: string,
+  color: string,
+  width: number,
+  height: number,
+) {
   const h = Math.max(height, postitHeight(ctx, text, width));
   ctx.save();
   ctx.fillStyle = color;
@@ -761,11 +966,19 @@ function drawPostitShape(ctx: CanvasRenderingContext2D, x: number, y: number, te
   ctx.stroke();
   ctx.fillStyle = "rgba(28,20,10,0.8)";
   ctx.font = "400 11px Inter, sans-serif";
-  wrapText(ctx, text, width - 16).forEach((line, i) => ctx.fillText(line, x + 8, y + 18 + i * POSTIT_LINE_H));
+  wrapText(ctx, text, width - 16).forEach((line, i) =>
+    ctx.fillText(line, x + 8, y + 18 + i * POSTIT_LINE_H),
+  );
   ctx.restore();
 }
 
-function drawStarShape(ctx: CanvasRenderingContext2D, cx: number, cy: number, outerR: number, innerR: number) {
+function drawStarShape(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  outerR: number,
+  innerR: number,
+) {
   const points = 5;
   ctx.beginPath();
   for (let i = 0; i < points * 2; i++) {
@@ -779,7 +992,13 @@ function drawStarShape(ctx: CanvasRenderingContext2D, cx: number, cy: number, ou
   ctx.closePath();
 }
 
-function drawStampShape(ctx: CanvasRenderingContext2D, cx: number, cy: number, kind: StampKind, color: string) {
+function drawStampShape(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  kind: StampKind,
+  color: string,
+) {
   ctx.save();
   ctx.fillStyle = color;
   ctx.strokeStyle = "#1c2541";
@@ -816,13 +1035,25 @@ function drawStampShape(ctx: CanvasRenderingContext2D, cx: number, cy: number, k
 /** Where a freely-placed stamp renders -- single source both
  * drawCompareAnnotations and hitTestAnnotation use, so they can never
  * disagree. Same xPct/yPct-of-column resolution as frame/arrow/postit. */
-export function stampCenter(pins: ComparePinData[], plan: ComparePlan, stamp: StampAnnotation): { x: number; y: number } | null {
+export function stampCenter(
+  pins: ComparePinData[],
+  plan: ComparePlan,
+  stamp: StampAnnotation,
+): { x: number; y: number } | null {
   const anchor = resolveAnchor(pins, plan, stamp.pinRef, stamp.bandKey);
   if (!anchor) return null;
-  return { x: anchor.x + stamp.xPct * anchor.w, y: anchor.y + stamp.yPct * anchor.h };
+  return {
+    x: anchor.x + stamp.xPct * anchor.w,
+    y: anchor.y + stamp.yPct * anchor.h,
+  };
 }
 
-export function drawCompareAnnotations(ctx: CanvasRenderingContext2D, annotations: CompareAnnotation[], pins: ComparePinData[], plan: ComparePlan): void {
+export function drawCompareAnnotations(
+  ctx: CanvasRenderingContext2D,
+  annotations: CompareAnnotation[],
+  pins: ComparePinData[],
+  plan: ComparePlan,
+): void {
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
   for (const a of annotations) {
@@ -857,7 +1088,15 @@ export function drawCompareAnnotations(ctx: CanvasRenderingContext2D, annotation
       ctx.strokeStyle = a.color;
       ctx.lineWidth = 2.5;
       ctx.beginPath();
-      ctx.ellipse(x + w / 2, y + h / 2, Math.max(4, Math.abs(w) / 2), Math.max(4, Math.abs(h) / 2), 0, 0, Math.PI * 2);
+      ctx.ellipse(
+        x + w / 2,
+        y + h / 2,
+        Math.max(4, Math.abs(w) / 2),
+        Math.max(4, Math.abs(h) / 2),
+        0,
+        0,
+        Math.PI * 2,
+      );
       ctx.stroke();
     } else if (a.type === "arrow") {
       drawArrowShape(
@@ -869,10 +1108,19 @@ export function drawCompareAnnotations(ctx: CanvasRenderingContext2D, annotation
         a.color,
       );
     } else if (a.type === "postit") {
-      drawPostitShape(ctx, anchor.x + a.xPct * anchor.w, anchor.y + a.yPct * anchor.h, a.text, a.color, a.width, a.height);
+      drawPostitShape(
+        ctx,
+        anchor.x + a.xPct * anchor.w,
+        anchor.y + a.yPct * anchor.h,
+        a.text,
+        a.color,
+        a.width,
+        a.height,
+      );
     } else if (a.type === "stamp") {
       const center = stampCenter(pins, plan, a);
-      if (center) drawStampShape(ctx, center.x, center.y, a.kind, STAMP_COLORS[a.kind]);
+      if (center)
+        drawStampShape(ctx, center.x, center.y, a.kind, STAMP_COLORS[a.kind]);
     } else if (a.type === "underline") {
       const y = anchor.y + a.yPct * anchor.h;
       ctx.strokeStyle = a.color;
@@ -916,7 +1164,9 @@ const METRIC_PATTERNS: MetricPattern[] = [
 ];
 
 export function metricDirection(key: string): "higher" | "lower" {
-  return METRIC_PATTERNS.find((m) => m.pattern.test(key))?.direction ?? "higher";
+  return (
+    METRIC_PATTERNS.find((m) => m.pattern.test(key))?.direction ?? "higher"
+  );
 }
 
 // Whole-string numeric test used ONLY to decide candidacy below -- deliberately
@@ -976,4 +1226,3 @@ export function parseMetricNumber(raw: string): number | null {
   const n = Number(match[0]);
   return Number.isFinite(n) ? n : null;
 }
-

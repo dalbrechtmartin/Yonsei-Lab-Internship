@@ -1,6 +1,10 @@
 <template>
   <Select v-model="locale">
-    <SelectTrigger size="sm" class="gap-1.5 bg-background/80 px-2.5 text-xs">
+    <SelectTrigger
+      size="sm"
+      class="gap-1.5 bg-background/80 px-2.5 text-xs"
+      :aria-label="t('nav.language')"
+    >
       <SelectValue v-slot="{ modelValue }">
         <span class="flex items-center gap-1.5">
           <span>{{ optionFor(modelValue as string).label }}</span>
@@ -49,7 +53,7 @@ import frFlag from "flag-icons/flags/4x3/fr.svg";
 import krFlag from "flag-icons/flags/4x3/kr.svg";
 import cnFlag from "flag-icons/flags/4x3/cn.svg";
 
-const { locale } = useI18n();
+const { t, locale } = useI18n();
 
 const options = [
   { value: "en", label: "EN", flag: usFlag },

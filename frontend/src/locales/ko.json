@@ -86,6 +86,7 @@
     "success": "추출 완료. 엑셀 파일이 저장되었습니다.",
     "partialSuccess": "일부 파일은 건너뛰었습니다. 성공한 파일만 내보내기에 포함됩니다.",
     "error": "PDF 추출 중 문제가 발생했습니다.",
+    "noData": "이 PDF들에서 데이터를 추출하지 못했습니다.",
     "quotaExceeded": "Gemini 무료 할당량에 도달했습니다. 나중에 다시 시도하거나 파일 수를 줄여주세요.",
     "ready": {
       "heading": "내보내기 준비 완료",
@@ -121,7 +122,8 @@
         "processing": "처리 중",
         "almostDone": "거의 완료",
         "done": "완료",
-        "failed": "실패"
+        "failed": "실패",
+        "outOfDomain": "주제 아님"
       },
       "heading": "논문을 추출하는 중…",
       "overall": "{done} / {total} 파일 처리됨",
@@ -163,14 +165,14 @@
       "title": "왜 λLens인가?",
       "abstractBody": "λLens는 집적 광자 센서 문헌 조사 속도를 높입니다. 논문 10여 편을 손으로 비교하려면, 같은 FOM 값(파장, 민감도, Q-팩터, FWHM)을 두고 그만큼의 스프레드시트와 복사·붙여넣기, 입력 실수가 쌓입니다. λLens는 PDF 추출과 시각화를 자동화합니다: 논문 폴더에서 며칠이 아닌 몇 분 만에 내보내기 가능한 그래프까지.",
       "guideBody": "이 가이드는 오늘 바로 사용 가능한 모드 1(엑셀-투-플롯 시각화)을 다룹니다. 모드 2(PDF 추출)는 안정화되면 추가됩니다.",
-      "contextBody": "λLens는 연세대 MPBEL에서 개발되었으며, 아래 소개하는 국제 광학·포토닉스 커뮤니티와 맞닿아 있습니다.",
+      "contextBody": "λLens는 연세대 BPEL에서 개발되었으며, 아래 소개하는 국제 광학·포토닉스 커뮤니티와 맞닿아 있습니다.",
       "diagram": {
         "folder": "논문 폴더",
         "extraction": "안내형 추출",
         "chart": "그래프 및 내보내기"
       },
       "yonsei": "1885년 설립, 서울에 위치한 한국에서 가장 오래되고 명망 있는 연구 중심 대학 중 하나입니다.",
-      "mpbel": "연세대 의학물리 및 생체공학 연구실(연세암병원), Jin Sung Kim 교수가 이끕니다. 의료 영상 재구성, AI 기반 방사선종양학, 입자 치료 연구를 수행합니다.",
+      "bpel": "연세대학교 바이오포토닉스 공학 연구실(BPEL), Donghyun Kim 교수가 이끕니다. 플라즈모닉 나노구조와 구조광을 이용한 초고해상도 현미경 및 바이오센싱 연구를 수행합니다.",
       "spie": "광학 및 포토닉스 분야의 국제 학회, 1955년 설립. 회원 25,000명 이상, 학술대회와 출판을 제공합니다.",
       "optica": "1916년 Optical Society of America(OSA)로 설립된, 빛의 과학을 다루는 세계 최고의 학회입니다."
     },
@@ -634,8 +636,8 @@
     },
     "about": {
       "eyebrow": "저자 소개",
-      "body": "이 가이드는 소프트웨어 엔지니어링 인턴(CNAM Grand Est 견습생) Danaé Albrecht-Martin이 2026년 7월 6일부터 9월 6일까지 연세대 MPBEL에서 설계하고 개발했습니다. λLens 전반, 애플리케이션 아키텍처, PDF 추출 파이프라인, 인터랙티브 시각화 인터페이스를 모두 맡았습니다.",
-      "supervision": "지도교수: Donghyun Kim 교수(연세대학교 전기전자공학부, SPIE/Optica 펠로우, IEEE 시니어 멤버, OSK 회장), 그리고 Inseop(MPBEL).",
+      "body": "이 가이드는 소프트웨어 엔지니어링 인턴(CNAM Grand Est 견습생) Danaé Albrecht-Martin이 2026년 7월 6일부터 9월 6일까지 연세대 BPEL에서 설계하고 개발했습니다. λLens 전반, 애플리케이션 아키텍처, PDF 추출 파이프라인, 인터랙티브 시각화 인터페이스를 모두 맡았습니다.",
+      "supervision": "지도교수: Donghyun Kim 교수(연세대학교 전기전자공학부, SPIE/Optica 펠로우, IEEE 시니어 멤버, OSK 회장), 그리고 Inseop(BPEL).",
       "signoff": "— Danaé Albrecht-Martin, 2026년 9월"
     }
   },

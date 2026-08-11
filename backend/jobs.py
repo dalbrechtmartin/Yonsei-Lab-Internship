@@ -17,13 +17,15 @@ RESILIENCE & RETRIES (100% Automated)
 """
 
 import asyncio
-from datetime import datetime, timedelta, timezone
-from typing import Optional
+import logging
+from datetime import UTC, datetime, timedelta
 
 import llm
 import reconcile
 import schema
 import state
+
+logger = logging.getLogger(__name__)
 
 RUNNING_JOBS: dict[str, asyncio.Task] = {}
 RETRY_BACKOFFS_SECONDS = [20, 40, 90, 180, 300, 300]
@@ -36,23 +38,23 @@ def start_job(job_id: str) -> None:
     RUNNING_JOBS[job_id] = asyncio.create_task(run_job(job_id))
 
 
-async def _sleep_for(model: Optional[str]) -> None:
+async def _sleep_for(model: str | None) -> None:
     if model is None:
         seconds = llm.DEFAULT_SLEEP_SECONDS
     else:
         seconds = llm.MODEL_SLEEP_SECONDS.get(model, llm.DEFAULT_SLEEP_SECONDS)
-        
+
     await asyncio.sleep(seconds)
 
 
 async def _process_one_file(job_id: str, job_file: dict, any_call_made: bool) -> tuple[bool, bool]:
     file_id = job_file["id"]
     filename = job_file["filename"]
-    
+
     job = state.get_job(job_id)
     if not job:
-        return False, any_call_made 
-        
+        return False, any_call_made
+
     # Re-checked per file (not just once per job pass): daily quota
     # keeps shrinking as the batch runs, so a model that had room for
     # file 1 may not for file 5. See llm.filter_models_by_quota.
@@ -63,6 +65,20 @@ async def _process_one_file(job_id: str, job_file: dict, any_call_made: bool) ->
     with open(job_file["pdf_path"], "rb") as f:
         pdf_bytes = f.read()
     text = await asyncio.to_thread(llm.extract_text_from_pdf, pdf_bytes)
+
+    # Early-exit triage: rejects a paper with no optical-resonance FOM
+    # metric at all (wrong field entirely) before spending the 3-call
+    # consensus budget below on it. See llm.check_domain_relevance for
+    # why this is safe to run unconditionally (fails open, cheap model).
+    if any_call_made:
+        await _sleep_for(llm.DOMAIN_CHECK_MODEL)
+    in_domain = await asyncio.to_thread(
+        llm.check_domain_relevance, text, filename, job_id, file_id
+    )
+    any_call_made = True
+    if not in_domain:
+        state.update_job_file_status(job_id, file_id, "failed", error_reason="out_of_domain")
+        return True, any_call_made
 
     if any_call_made:
         await _sleep_for(available_models[0] if available_models else None)
@@ -79,8 +95,12 @@ async def _process_one_file(job_id: str, job_file: dict, any_call_made: bool) ->
     pinned_model = available_models[0]  # guaranteed non-empty: no exception was raised above
     state.set_available_models(job_id, available_models)
     state.add_job_file_run(
-        job_id, file_id, 0, pinned_model,
-        "ok" if run1_records else "error", run1_records,
+        job_id,
+        file_id,
+        0,
+        pinned_model,
+        "ok" if run1_records else "error",
+        run1_records,
     )
     state.log_usage(pinned_model, job_id, file_id, "ok" if run1_records else "error")
 
@@ -122,19 +142,25 @@ async def run_job(job_id: str) -> None:
         while True:
             job = state.get_job(job_id)
             if not job:
-                print(f"Job {job_id} introuvable.")
+                logger.warning("Job %s introuvable.", job_id)
                 break
-                
+
             state.set_available_models(job_id, llm.build_available_models(job["model_choice"]))
             state.set_job_notice(job_id, None)
 
             deferred_reasons: list[str] = []
             for job_file in state.list_job_files(job_id, status="pending"):
                 try:
-                    resolved, any_call_made = await _process_one_file(job_id, job_file, any_call_made)
-                except Exception as e:
-                    print(f"Unexpected error processing file {job_file['id']} in job {job_id}: {e}")
-                    state.update_job_file_status(job_id, job_file["id"], "pending", error_reason="error")
+                    resolved, any_call_made = await _process_one_file(
+                        job_id, job_file, any_call_made
+                    )
+                except Exception:
+                    logger.exception(
+                        "Unexpected error processing file %s in job %s", job_file["id"], job_id
+                    )
+                    state.update_job_file_status(
+                        job_id, job_file["id"], "pending", error_reason="error"
+                    )
                     resolved = False
                 if not resolved:
                     deferred_reasons.append("error")
@@ -144,12 +170,15 @@ async def run_job(job_id: str) -> None:
                 break  # done, or out of automatic retries -- finalize below
 
             backoff = RETRY_BACKOFFS_SECONDS[attempt]
-            retry_at = (datetime.now(timezone.utc) + timedelta(seconds=backoff)).isoformat()
-            state.set_job_notice(job_id, {
-                "reason": deferred_reasons[0] if deferred_reasons else "unavailable",
-                "pending_count": len(still_pending),
-                "retry_at": retry_at,
-            })
+            retry_at = (datetime.now(UTC) + timedelta(seconds=backoff)).isoformat()
+            state.set_job_notice(
+                job_id,
+                {
+                    "reason": deferred_reasons[0] if deferred_reasons else "unavailable",
+                    "pending_count": len(still_pending),
+                    "retry_at": retry_at,
+                },
+            )
             await asyncio.sleep(backoff)
             attempt += 1
 
@@ -159,7 +188,7 @@ async def run_job(job_id: str) -> None:
         state.set_job_notice(job_id, None)
         state.set_job_status(job_id, "done")
     except Exception as e:
-        print(f"Job {job_id} failed unexpectedly: {e}")
+        logger.exception("Job %s failed unexpectedly", job_id)
         state.set_job_status(job_id, "error", error_message=str(e))
     finally:
         RUNNING_JOBS.pop(job_id, None)

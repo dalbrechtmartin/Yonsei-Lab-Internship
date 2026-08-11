@@ -44,7 +44,8 @@ const FALLBACK_COLORS = ["#d8c9dc", "#c9dcd0", "#dccbc9", "#c9d0dc", "#d6dcc9"];
 /** Deterministic fallback color for a material not in LAYER_COLORS, so the same unrecognized material always renders the same color within a session. */
 function fallbackColor(material: string): string {
   let hash = 0;
-  for (let i = 0; i < material.length; i++) hash = (hash * 31 + material.charCodeAt(i)) >>> 0;
+  for (let i = 0; i < material.length; i++)
+    hash = (hash * 31 + material.charCodeAt(i)) >>> 0;
   return FALLBACK_COLORS[hash % FALLBACK_COLORS.length];
 }
 
@@ -66,8 +67,10 @@ function shiftColor(hex: string, amt: number): string {
   return "#" + (((r << 16) | (g << 8) | b) >>> 0).toString(16).padStart(6, "0");
 }
 
-export const darkenColor = (hex: string, amt: number): string => shiftColor(hex, -amt);
-export const lightenColor = (hex: string, amt: number): string => shiftColor(hex, amt);
+export const darkenColor = (hex: string, amt: number): string =>
+  shiftColor(hex, -amt);
+export const lightenColor = (hex: string, amt: number): string =>
+  shiftColor(hex, amt);
 
 /** nm-per-unit factor for the thickness units a paper might state, despite backend/prompt.txt requiring the AI to normalize to nm itself (belt-and-suspenders for older/already-extracted data that predates that rule, or a hand-typed µm value). */
 function unitToNmFactor(unit: string): number {
@@ -78,7 +81,10 @@ function unitToNmFactor(unit: string): number {
 }
 
 const UNIT_ALT = "nm|pm|um|µm|μm";
-const LAYER_TOKEN_RE = new RegExp(`^(.*?)\\s*\\(\\s*([\\d.]+)\\s*(${UNIT_ALT})\\s*\\)\\s*$`, "i");
+const LAYER_TOKEN_RE = new RegExp(
+  `^(.*?)\\s*\\(\\s*([\\d.]+)\\s*(${UNIT_ALT})\\s*\\)\\s*$`,
+  "i",
+);
 // A whole "+"-joined token that is itself a repeating period, written
 // "(MaterialA(tA) / MaterialB(tB)) xN" or "... ×N" -- see parseLayerStructure.
 const GROUP_TOKEN_RE = /^\(\s*(.+?)\s*\)\s*[x×]\s*(\d+)\s*$/i;
@@ -95,7 +101,8 @@ const RAW_PERIODIC_RE = new RegExp(
 function parseSingleLayer(token: string): StructureLayer {
   const match = token.match(LAYER_TOKEN_RE);
   if (match) {
-    const thicknessNm = Math.round(Number(match[2]) * unitToNmFactor(match[3]) * 1000) / 1000;
+    const thicknessNm =
+      Math.round(Number(match[2]) * unitToNmFactor(match[3]) * 1000) / 1000;
     return { material: match[1].trim(), thicknessNm };
   }
   return { material: token, thicknessNm: null };
@@ -150,11 +157,25 @@ export function parseLayerStructure(value: unknown): StructureLayer[] {
       if (rawMatch) {
         const repeatCount = Number(rawMatch[7]);
         const groupId = nextGroupId++;
-        const thicknessA = Math.round(Number(rawMatch[2]) * unitToNmFactor(rawMatch[3]) * 1000) / 1000;
-        const thicknessB = Math.round(Number(rawMatch[5]) * unitToNmFactor(rawMatch[6]) * 1000) / 1000;
+        const thicknessA =
+          Math.round(Number(rawMatch[2]) * unitToNmFactor(rawMatch[3]) * 1000) /
+          1000;
+        const thicknessB =
+          Math.round(Number(rawMatch[5]) * unitToNmFactor(rawMatch[6]) * 1000) /
+          1000;
         return [
-          { material: rawMatch[1].trim(), thicknessNm: thicknessA, repeatCount, groupId },
-          { material: rawMatch[4].trim(), thicknessNm: thicknessB, repeatCount, groupId },
+          {
+            material: rawMatch[1].trim(),
+            thicknessNm: thicknessA,
+            repeatCount,
+            groupId,
+          },
+          {
+            material: rawMatch[4].trim(),
+            thicknessNm: thicknessB,
+            repeatCount,
+            groupId,
+          },
         ];
       }
 
@@ -164,8 +185,13 @@ export function parseLayerStructure(value: unknown): StructureLayer[] {
 
 /** Human-readable label for one layer row, shared by LayerStack.vue and the PNG export helpers so a repeating period always reads the same way ("Material · 107nm ×10") wherever it's rendered. */
 export function layerLabel(layer: StructureLayer): string {
-  const base = layer.thicknessNm !== null ? `${layer.material} · ${layer.thicknessNm}nm` : layer.material;
-  return layer.repeatCount && layer.repeatCount > 1 ? `${base} ×${layer.repeatCount}` : base;
+  const base =
+    layer.thicknessNm !== null
+      ? `${layer.material} · ${layer.thicknessNm}nm`
+      : layer.material;
+  return layer.repeatCount && layer.repeatCount > 1
+    ? `${base} ×${layer.repeatCount}`
+    : base;
 }
 
 /**
@@ -184,7 +210,9 @@ export function layerLabel(layer: StructureLayer): string {
  */
 export function formatLayerStructure(layers: StructureLayer[]): string {
   const layerText = (layer: StructureLayer): string =>
-    layer.thicknessNm !== null && !isNaN(layer.thicknessNm) ? `${layer.material.trim()}(${layer.thicknessNm}nm)` : layer.material.trim();
+    layer.thicknessNm !== null && !isNaN(layer.thicknessNm)
+      ? `${layer.material.trim()}(${layer.thicknessNm}nm)`
+      : layer.material.trim();
 
   const validLayers = layers.filter((layer) => layer.material.trim() !== "");
   const tokens: string[] = [];
@@ -194,7 +222,11 @@ export function formatLayerStructure(layers: StructureLayer[]): string {
     if (layer.repeatCount && layer.repeatCount > 1) {
       const run = [layer];
       let j = i + 1;
-      while (j < validLayers.length && validLayers[j].repeatCount === layer.repeatCount && validLayers[j].groupId === layer.groupId) {
+      while (
+        j < validLayers.length &&
+        validLayers[j].repeatCount === layer.repeatCount &&
+        validLayers[j].groupId === layer.groupId
+      ) {
         run.push(validLayers[j]);
         j++;
       }
