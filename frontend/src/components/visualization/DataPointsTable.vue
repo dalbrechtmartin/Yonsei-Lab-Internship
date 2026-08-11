@@ -370,106 +370,18 @@
 
     <!-- Right-click on a row opens the same actions as its ⋯ menu, at the
          cursor, so a mouse user never has to aim for the small icon button.
-         Mirrors FomChart's own on-chart context menu -- fixed overlay that
-         closes on outside click, a second right-click, or Escape. Position
-         is clamped on-screen (see useClampedMenuPosition) since it's placed
-         at the raw click point, which can otherwise render partially
-         off-screen near a viewport edge. Teleported to <body> -- this
-         component sits inside the workspace Card's backdrop-blur, which
-         (like any filter/backdrop-filter/transform ancestor) makes
-         `position: fixed` descendants relative to ITS box instead of the
-         viewport, silently breaking clientX/clientY-based positioning. -->
-    <Teleport to="body">
-      <div
-        v-if="menuTarget"
-        class="fixed inset-0 z-40"
-        @click="menuTarget = null"
-        @contextmenu.prevent="menuTarget = null"
-      />
-      <div
-        v-if="menuTarget"
-        ref="menuRef"
-        class="fixed z-50 min-w-36 rounded-md border border-secondary/15 bg-popover p-1 shadow-lg"
-        :style="menuStyle"
-      >
-        <button
-          type="button"
-          class="flex w-full items-center gap-1.5 rounded px-2 py-1 text-left text-[11px] text-ink hover:bg-secondary/10"
-          @click="runMenuAction((row) => $emit('edit', row))"
-        >
-          <Pencil class="size-3 text-muted-foreground" />
-          {{ t("fomcharts.pointsTable.edit") }}
-        </button>
-        <button
-          v-if="isEditedRow(menuTarget.row)"
-          type="button"
-          class="flex w-full items-center gap-1.5 rounded px-2 py-1 text-left text-[11px] text-ink hover:bg-secondary/10"
-          @click="runMenuAction((row) => $emit('reset-point', row))"
-        >
-          <RotateCcw class="size-3 text-muted-foreground" />
-          {{ t("fomcharts.pointsTable.resetPoint") }}
-        </button>
-        <button
-          type="button"
-          class="flex w-full items-center gap-1.5 rounded px-2 py-1 text-left text-[11px] hover:bg-secondary/10"
-          :class="
-            isPinned(menuTarget.row) ? 'bg-amber-50 text-amber-700' : 'text-ink'
-          "
-          @click="runMenuAction(togglePin)"
-        >
-          <Pin
-            class="size-3"
-            :class="
-              isPinned(menuTarget.row)
-                ? 'fill-amber-600 text-amber-600'
-                : 'text-muted-foreground'
-            "
-          />
-          {{
-            isPinned(menuTarget.row)
-              ? t("fomcharts.pointsTable.unpin")
-              : t("fomcharts.pointsTable.pin")
-          }}
-        </button>
-
-        <div class="my-0.5 h-px bg-secondary/10" />
-
-        <div
-          v-if="isPinned(menuTarget.row)"
-          class="mb-0.5 flex items-start gap-1 rounded bg-amber-50 px-2 py-1.5 text-[10px] text-amber-800"
-        >
-          <TriangleAlert class="mt-0.5 size-3 shrink-0" />
-          <span>{{ t("fomcharts.pointsTable.pinGuardHint") }}</span>
-        </div>
-
-        <button
-          type="button"
-          class="flex w-full items-center gap-1.5 rounded px-2 py-1 text-left text-[11px] text-ink transition hover:bg-secondary/10 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
-          :disabled="isPinned(menuTarget.row)"
-          @click="runMenuAction(toggleHide)"
-        >
-          <EyeOff
-            v-if="!isHidden(menuTarget.row)"
-            class="size-3 text-muted-foreground"
-          />
-          <Eye v-else class="size-3 text-muted-foreground" />
-          {{
-            isHidden(menuTarget.row)
-              ? t("fomcharts.pointsTable.unhide")
-              : t("fomcharts.pointsTable.hide")
-          }}
-        </button>
-        <button
-          type="button"
-          class="flex w-full items-center gap-1.5 rounded px-2 py-1 text-left text-[11px] text-rose-600 transition hover:bg-rose-500/10 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
-          :disabled="isPinned(menuTarget.row)"
-          @click="runMenuAction(confirmDelete)"
-        >
-          <Trash2 class="size-3" />
-          {{ t("fomcharts.pointsTable.deletePermanently") }}
-        </button>
-      </div>
-    </Teleport>
+         Shared with FomChart's own on-chart context menu -- see
+         PointActionsMenu. -->
+    <PointActionsMenu
+      v-model:target="menuTarget"
+      :is-pinned-row="isPinned"
+      :is-hidden-row="isHidden"
+      @edit="(row) => emit('edit', row)"
+      @reset="(row) => emit('reset-point', row)"
+      @toggle-pin="togglePin"
+      @toggle-hide="toggleHide"
+      @delete="(row) => emit('remove', row)"
+    />
 
     <!-- Right-click on a group's header (the dépliant itself) opens the same
          kind of menu as a single row, but scoped to every row in that group
@@ -570,6 +482,7 @@ import {
 } from "@/components/ui/tooltip";
 import InfoTooltip from "@/components/shared/InfoTooltip.vue";
 import CollapsibleSection from "@/components/shared/CollapsibleSection.vue";
+import PointActionsMenu from "@/components/visualization/PointActionsMenu.vue";
 import { useClampedMenuPosition } from "@/composables/useClampedMenuPosition";
 import {
   isManualRow,
@@ -753,23 +666,13 @@ const confirmDelete = (row: DataRow) => {
 };
 
 // Right-click on a row opens a menu at the cursor with the same actions as
-// its ⋯ dropdown (see the template's menuTarget block) -- an alternative to
-// aiming for the small icon button, mirroring FomChart's own on-chart
-// right-click menu.
+// its ⋯ dropdown -- an alternative to aiming for the small icon button,
+// shared with FomChart's own on-chart right-click menu (see
+// PointActionsMenu, which owns positioning/guards/the action list itself
+// now).
 const menuTarget = ref<{ x: number; y: number; row: DataRow } | null>(null);
-const menuRef = ref<HTMLElement | null>(null);
-const { menuStyle, show: showRowMenu } = useClampedMenuPosition();
 const openRowMenu = (event: MouseEvent, row: DataRow) => {
   menuTarget.value = { x: event.clientX, y: event.clientY, row };
-  showRowMenu(menuRef, event.clientX, event.clientY);
-};
-// Takes the action as a callback (rather than reading menuTarget.value.row
-// itself) so template call sites never need a non-null assertion on a ref
-// that's only known non-null via the surrounding v-if.
-const runMenuAction = (action: (row: DataRow) => void) => {
-  if (!menuTarget.value) return;
-  action(menuTarget.value.row);
-  menuTarget.value = null;
 };
 const closeMenuOnEscape = (event: KeyboardEvent) => {
   if (event.key !== "Escape") return;

@@ -325,9 +325,7 @@ import StatusToast from "@/components/shared/StatusToast.vue";
 import GraphControls from "@/components/visualization/GraphControls.vue";
 import FomChart from "@/components/visualization/FomChart.vue";
 import StatsSummaryPanel from "@/components/visualization/StatsSummaryPanel.vue";
-import AnnotationsPanel, {
-  type Annotation,
-} from "@/components/visualization/AnnotationsPanel.vue";
+import AnnotationsPanel from "@/components/visualization/AnnotationsPanel.vue";
 import AddPointDialog from "@/components/visualization/AddPointDialog.vue";
 import DataPointsTable from "@/components/visualization/DataPointsTable.vue";
 import { apiService, MultipleSheetsError } from "@/services/api";
@@ -336,6 +334,8 @@ import { exportRowsAsCsv } from "@/utils/csvExport";
 import { useTransientStatus } from "@/composables/useTransientStatus";
 import { useAccordionPanel } from "@/composables/useAccordionPanel";
 import { useFomColumnMeta } from "@/composables/useFomColumnMeta";
+import { useManualPoints } from "@/composables/useManualPoints";
+import { useAnnotationPins } from "@/composables/useAnnotationPins";
 import { filterPlottable, type TrendType } from "@/utils/stats";
 import {
   guessDefaultYAxis,
@@ -343,23 +343,13 @@ import {
   guessDefaultColorGroup,
   groupableColumns,
   filterExportColumns,
-  findEvidenceColumn,
-  findNotesColumn,
   isNeedsReviewRow,
   isManualRow,
-  MANUAL_ROW_FLAG,
-  buildManualPointFields,
   formatUnitSuperscripts,
   tokenizeValue,
   needsAiConversion,
-  pointShape,
-  applyRowEdit,
-  revertToOriginal,
-  POINT_SHAPE_FLAG,
   rowKey,
-  rowsEqual,
   type DataRow,
-  type PointShape,
 } from "@/utils/columnTypes";
 
 const STATUS_VISIBLE_MS = 15000;
@@ -441,7 +431,6 @@ const excludeNeedsReview = ref(false);
 const pointSizeMode = ref<"constant" | "byValue">("constant");
 const pointSizeBy = ref<string | null>(null);
 const pointSize = ref(16);
-const annotations = ref<Annotation[]>([]);
 // "Afficher uniquement les points épinglés" (AnnotationsPanel) -- narrows
 // the chart and stats down to exactly the pinned rows, for comparing a
 // handful of specific points (e.g. one paper's several modes) without the
@@ -449,7 +438,6 @@ const annotations = ref<Annotation[]>([]);
 // plottableData below; forced back off whenever there's nothing pinned
 // left to show (see the annotations-length watch).
 const showOnlyAnnotated = ref(false);
-let annotationSeq = 0;
 
 // Active Benchmarking: rows the researcher manually added via "Add data"
 // (see MANUAL_ROW_FLAG/isManualRow) -- session-only like annotations, always
@@ -457,18 +445,12 @@ let annotationSeq = 0;
 // chartDisplayData), and removed outright (not "hidden") since there's no
 // underlying file record to hide-and-restore.
 const customPoints = ref<DataRow[]>([]);
-let manualPointSeq = 0;
 // "Inclure mes points ajoutés dans les statistiques" -- gates whether
 // customPoints count toward median/trend/Pareto/N (see FomChart's
 // includeCustomInStats prop and statsRows below). On by default: the whole
 // point of adding a point is usually to see how it stacks up.
 const includeCustomInStats = ref(true);
 const addPointDialogOpen = ref(false);
-// Set once right after a point is added, read by FomChart to draw a brief
-// confirmation ring around it (see its pulseTargetRef prop) -- never reset
-// back to null here; each add uses a fresh, unique ref so the watcher always
-// fires again even without an intermediate null.
-const pulseTargetRef = ref<string | null>(null);
 // The row currently hovered in the DataPointsTable panel -- forwarded
 // straight to FomChart's own hoveredRow prop so hovering a row previews
 // exactly which point a click there would hide/remove (see FomChart's
@@ -480,10 +462,10 @@ const hoveredRow = ref<DataRow | null>(null);
 // actual rows (not just a key set) so the DataPointsTable panel can list them
 // with a one-click "Réafficher" back to visible, not only via the toolbar's
 // full "Réinitialiser". Content-keyed rather than by object reference, same
-// reasoning as the annotations feature's rowsEqual (ECharts' click round-trip
-// doesn't reliably preserve object identity, see handlePointClick's
-// row/rowsEqual comment below). Persists across Domain/Origin/Material filter
-// changes by construction (nothing here reacts to those refs) -- only
+// reasoning as the annotations feature's sameRow (ECharts' click round-trip
+// doesn't reliably preserve object identity, see
+// composables/useAnnotationPins.ts). Persists across Domain/Origin/Material
+// filter changes by construction (nothing here reacts to those refs) -- only
 // cleared by unhiding a row individually, "Réinitialiser", or a fresh upload
 // (see handleUpload).
 const hiddenRows = ref<DataRow[]>([]);
@@ -519,29 +501,6 @@ const hideDataRows = (rows: DataRow[]) => {
 const previewRow = computed(() =>
   hoveredRow.value && isRowHidden(hoveredRow.value) ? hoveredRow.value : null,
 );
-// Permanent -- the only way a manually added point actually disappears for
-// good (as opposed to hideDataRow, which now applies uniformly to manual and
-// literature rows alike and is always reversible from the hidden-rows list).
-const removeCustomPoint = (row: DataRow) => {
-  const key = rowKey(row);
-  customPoints.value = customPoints.value.filter((r) => rowKey(r) !== key);
-};
-
-// Deleting a literature row (DataPointsTable's "Supprimer définitivement",
-// now offered for every row, not just manually added ones) drops it from
-// fomData itself -- unlike hideDataRow, there's no way back for the rest of
-// this session short of re-uploading the file, which is why the panel gates
-// it behind a confirm() first. Also prunes it from hiddenRows so a
-// previously hidden-then-deleted row doesn't linger there as a dead entry.
-const removeDataRow = (row: DataRow) => {
-  if (isManualRow(row)) {
-    removeCustomPoint(row);
-    return;
-  }
-  const key = rowKey(row);
-  fomData.value = fomData.value.filter((r) => rowKey(r) !== key);
-  hiddenRows.value = hiddenRows.value.filter((r) => rowKey(r) !== key);
-};
 
 // Right-side panels behave as an accordion -- only one of Stats Summary /
 // Data points / Annotations stays open at a time, so the sidebar never grows
@@ -577,6 +536,60 @@ const {
   baseMaterialsCounts,
   groupColorMap,
 } = useFomColumnMeta({ fomData, fomColumns, customPoints, groupBy, t });
+
+// Active Benchmarking: add/edit/reset CRUD for manually-entered data points
+// -- see composables/useManualPoints.ts.
+const {
+  manualPointFields,
+  pulseTargetRef,
+  removeCustomPoint,
+  handleAddPointSubmit,
+  editPointDialogOpen,
+  editingRow,
+  editingInitialLabel,
+  editingInitialNotes,
+  editingInitialShape,
+  openEditDialog,
+  handleEditPointSubmit,
+  handleResetPoint,
+} = useManualPoints({
+  fomData,
+  fomColumns,
+  customPoints,
+  selectedXAxis,
+  selectedYAxis,
+  numericColumns,
+});
+
+// Pin/unpin CRUD for chart annotations -- see composables/useAnnotationPins.ts.
+const {
+  annotations,
+  sameRow,
+  pinnedRows,
+  handlePointClick,
+  pinRows,
+  removeAnnotation,
+  unpinRow,
+  unpinRows,
+  clearAnnotations,
+  updateAnnotationNote,
+} = useAnnotationPins({ fomColumns, hiddenRows, annotationsPanelOpen });
+
+// Deleting a literature row (DataPointsTable's "Supprimer définitivement",
+// now offered for every row, not just manually added ones) drops it from
+// fomData itself -- unlike hideDataRow, there's no way back for the rest of
+// this session short of re-uploading the file, which is why the panel gates
+// it behind a confirm() first. Also prunes it from hiddenRows so a
+// previously hidden-then-deleted row doesn't linger there as a dead entry.
+const removeDataRow = (row: DataRow) => {
+  if (isManualRow(row)) {
+    removeCustomPoint(row);
+    return;
+  }
+  const key = rowKey(row);
+  fomData.value = fomData.value.filter((r) => rowKey(r) !== key);
+  hiddenRows.value = hiddenRows.value.filter((r) => rowKey(r) !== key);
+};
 
 // Drives both the X-axis type on the chart (category vs. numeric value
 // axis) and whether the "Trend line" control is enabled -- a regression
@@ -708,10 +721,10 @@ const allPlottableData = computed(() => {
 // recomputes (observed in practice: `fomData.value.some(r => r ===
 // annotation.row)` can come back false for a row that was just pinned off
 // that very array). Content equality is what the rest of the annotations
-// feature already relies on for "is this the same row" (see rowsEqual /
-// isAlreadyPinned below), so this reuses the same rule instead of a
-// reference-based Set that silently drops rows whose identity didn't survive
-// the click round-trip.
+// feature already relies on for "is this the same row" (see sameRow in
+// composables/useAnnotationPins.ts), so this reuses the same rule instead of
+// a reference-based Set that silently drops rows whose identity didn't
+// survive the click round-trip.
 const chartDisplayData = computed(() =>
   showOnlyAnnotated.value
     ? [...fomData.value, ...customPoints.value].filter((row) =>
@@ -742,20 +755,6 @@ const statsRows = computed(() =>
   includeCustomInStats.value
     ? plottableData.value
     : plottableData.value.filter((row) => !isManualRow(row)),
-);
-
-// Curated fixed-field form for "Add data" (see utils/columnTypes.ts) --
-// always resolves against the currently loaded file's real columns and the
-// currently selected axes, so a saved point is guaranteed plottable on the
-// chart the researcher is looking at right now.
-const manualPointFields = computed(() =>
-  buildManualPointFields(
-    fomColumns.value,
-    fomData.value,
-    selectedXAxis.value,
-    selectedYAxis.value,
-    numericColumns.value,
-  ),
 );
 
 // Only offer low-cardinality columns for "Group / Color by" — computed off
@@ -960,7 +959,7 @@ const handleUpload = async ([file]: File[]) => {
   fomData.value = data;
   fomColumns.value = columns;
   applyDefaults();
-  annotations.value = [];
+  clearAnnotations();
   // A fresh file makes any previously hidden row or manually added point
   // meaningless (they were calibrated against the dataset just replaced) --
   // clear them the same way a brand-new upload always resets the workspace.
@@ -1008,7 +1007,7 @@ const handleReimportFileSelect = (event: Event) => {
 // removeCustomPoint/permanentlyDeleteCustomPoint).
 const resetWorkspace = () => {
   applyDefaults();
-  annotations.value = [];
+  clearAnnotations();
   hiddenRows.value = [];
   includeCustomInStats.value = true;
 };
@@ -1055,215 +1054,8 @@ const handleExportXlsx = () => {
   );
 };
 
-// Active Benchmarking: builds a manual row from the dialog's raw string
-// values, coercing numeric-kind fields (see buildManualPointFields) --
-// everything else (Domain/Origin/select values, free text) is stored as-is,
-// already matching the exact column keys the chart/filters/tooltip expect.
-// Notes is handled separately from `values`/`manualPointFields` (see
-// AddPointDialog) since it's a free note about the manual point itself, not
-// a field resolved from a real column of the loaded file -- stored under
-// whichever key the loaded file's own Notes column uses if it has one (so it
-// merges into the exact same column literature rows use), else the literal
-// "Notes" key, matched by buildAnnotation's own fallback below.
-const handleAddPointSubmit = (
-  values: Record<string, string>,
-  label: string,
-  notes: string,
-  shape: PointShape,
-) => {
-  const row: DataRow = { [MANUAL_ROW_FLAG]: true, [POINT_SHAPE_FLAG]: shape };
-  for (const field of manualPointFields.value) {
-    const raw = values[field.column];
-    if (raw === undefined || raw === "") continue;
-    row[field.column] = field.kind === "numeric" ? Number(raw) : raw;
-  }
-  if (notes.trim() !== "") {
-    row[findNotesColumn(fomColumns.value) ?? "Notes"] = notes.trim();
-  }
-  manualPointSeq += 1;
-  const generatedRef = `M${manualPointSeq}`;
-  row.Ref = generatedRef;
-  row.ref = generatedRef;
-  row.Title = label;
-  row.title = label;
-  customPoints.value = [...customPoints.value, row];
-  pulseTargetRef.value = generatedRef;
-};
 const handleExportPng = () => {
   fomChartRef.value?.exportPng();
-};
-
-// Locates the actual object living in fomData/customPoints for a row handed
-// back from a click event or a table row -- vue-echarts' click round-trip
-// doesn't reliably preserve object identity (see chartDisplayData's own
-// comment on this same gotcha), so an edit/reset must re-resolve the live
-// reference by content before mutating it. Mutating that exact reference
-// (rather than replacing it with a new object) is what keeps any existing
-// pin/hidden-row entry pointing at the same point automatically -- both rely
-// on rowsEqual, which checks reference equality first.
-const findLiveRow = (row: DataRow): DataRow | null =>
-  fomData.value.find((r) => sameRow(r, row)) ??
-  customPoints.value.find((r) => sameRow(r, row)) ??
-  null;
-
-const editPointDialogOpen = ref(false);
-const editingRow = ref<DataRow | null>(null);
-const editingInitialLabel = computed(() =>
-  String(editingRow.value?.title ?? editingRow.value?.Title ?? ""),
-);
-const editingInitialNotes = computed(() => {
-  if (!editingRow.value) return "";
-  const notesCol = findNotesColumn(fomColumns.value);
-  return String(editingRow.value[notesCol ?? "Notes"] ?? "");
-});
-const editingInitialShape = computed<PointShape>(() =>
-  editingRow.value ? pointShape(editingRow.value) : "diamond",
-);
-
-const openEditDialog = (row: DataRow) => {
-  editingRow.value = findLiveRow(row) ?? row;
-  editPointDialogOpen.value = true;
-};
-
-// Same coercion as handleAddPointSubmit's create path, except a field the
-// researcher cleared back to blank must actively overwrite the row's
-// existing value (null, the same "no value" sentinel the rest of the app
-// already checks for) rather than being skipped -- skipping would leave
-// the old value in place, since Object.assign never removes a key that
-// simply isn't present in the patch.
-const handleEditPointSubmit = (
-  values: Record<string, string>,
-  label: string,
-  notes: string,
-  shape: PointShape,
-) => {
-  if (!editingRow.value) return;
-  const patch: DataRow = {};
-  for (const field of manualPointFields.value) {
-    const raw = values[field.column];
-    patch[field.column] =
-      raw === undefined || raw === ""
-        ? null
-        : field.kind === "numeric"
-          ? Number(raw)
-          : raw;
-  }
-  patch[findNotesColumn(fomColumns.value) ?? "Notes"] = notes.trim() || null;
-  patch.Title = label;
-  patch.title = label;
-  patch[POINT_SHAPE_FLAG] = shape;
-  applyRowEdit(editingRow.value, patch);
-  editPointDialogOpen.value = false;
-};
-
-const handleResetPoint = (row: DataRow) => {
-  const liveRow = findLiveRow(row);
-  if (liveRow) revertToOriginal(liveRow);
-};
-
-// Pre-fills a new annotation's note with whatever the Excel already says
-// about this record (Notes, then the Evidence quote) instead of only
-// surfacing that text in the chart's hover tooltip -- a note is a place to
-// actually read it, not a popup that has to stay short. Shared by
-// handlePointClick (one row) and pinRows (several at once, e.g. "pin the
-// other modes of this paper") so both build annotations the same way.
-const buildAnnotation = (row: DataRow): Annotation => {
-  // Falls back to the literal "Notes" key when the loaded file has no Notes
-  // column of its own -- the only way a manually added point's note (see
-  // handleAddPointSubmit) can still get here, since it was never part of
-  // `fomColumns` to begin with.
-  const notesCol = findNotesColumn(fomColumns.value);
-  const evidenceCol = findEvidenceColumn(fomColumns.value);
-  const notesText = String(row[notesCol ?? "Notes"] ?? "").trim();
-  const evidenceText = evidenceCol ? String(row[evidenceCol] ?? "").trim() : "";
-  const prefilledNote = [notesText, evidenceText].filter(Boolean).join("\n\n");
-  const ref = String(row.ref ?? row.Ref ?? "");
-  return {
-    id: `${ref}-${annotationSeq++}`,
-    ref,
-    title: String(row.title ?? row.Title ?? ""),
-    row,
-    note: prefilledNote,
-    createdAt: Date.now(),
-  };
-};
-
-// Rows are the same PIN candidate either when they're the exact same object
-// (re-clicking/re-pinning the identical record -- filtering/mapping never
-// clones rows, so reference equality already catches this) OR when every
-// column value matches (two genuinely duplicate rows in the source data,
-// e.g. the same paper/mode listed twice) -- without the second check, two
-// such rows look pinned twice for "the same point" even though they're
-// technically distinct row objects. See utils/columnTypes.ts's rowsEqual.
-const sameRow = (a: DataRow, b: DataRow): boolean => rowsEqual(a, b, fomColumns.value);
-const isAlreadyPinned = (row: DataRow) =>
-  annotations.value.some((a) => sameRow(a.row, row));
-
-// FomChart's pinnedRows prop -- keeps a pinned point's on-chart ref label
-// visible even outside hover/isolation (see its withItemStyle).
-const pinnedRows = computed(() => annotations.value.map((a) => a.row));
-
-// Pinning is a lightweight, session-only bookmark -- no persistence, no
-// backend round-trip. Re-clicking the same (or a content-identical) point
-// is a no-op rather than stacking duplicate pins.
-const handlePointClick = (point: {
-  ref: string;
-  xLabel: string;
-  xValue: unknown;
-  yLabel: string;
-  yValue: unknown;
-  extras: Record<string, unknown>;
-  row: DataRow;
-}) => {
-  if (isAlreadyPinned(point.row)) return;
-  const newAnnotation = buildAnnotation(point.row);
-  annotations.value = [...annotations.value, newAnnotation];
-  // Pinning a point is the whole point of clicking the chart -- open the
-  // Annotations panel automatically so the researcher immediately sees the
-  // pin land, instead of having to know to expand the accordion themselves.
-  annotationsPanelOpen.value = true;
-};
-
-// "Épingler aussi les N autres points de cet article" (AnnotationsPanel,
-// per pinned card) -- pins every given row in one go instead of making the
-// researcher click each overlapping mode individually on the chart.
-// openPanel defaults to true (jumping to the Annotations panel is exactly
-// the point when a chart click or a "pin siblings" shortcut lands a new
-// pin), but DataPointsTable's own "Épingler" menu action opts out of it --
-// pinning is now visible directly in that panel too (its own "Épinglés"
-// group), so switching the sidebar away from under the researcher there
-// would only lose their place for no benefit.
-const pinRows = (
-  rows: DataRow[],
-  { openPanel = true }: { openPanel?: boolean } = {},
-) => {
-  const newAnnotations: Annotation[] = [];
-  for (const row of rows) {
-    // Also guard within this same batch -- siblingsFor can otherwise offer
-    // several source rows that are themselves content-duplicates of each
-    // other, which would pin the same-looking point more than once in a
-    // single click.
-    if (
-      isAlreadyPinned(row) ||
-      newAnnotations.some((a) => sameRow(a.row, row))
-    )
-      continue;
-    newAnnotations.push(buildAnnotation(row));
-  }
-  if (newAnnotations.length === 0) return;
-  annotations.value = [...annotations.value, ...newAnnotations];
-  // Pinned rows must never be hidden (Hide is disabled in the panel/menu the
-  // moment a row is pinned) -- but a row can arrive here already hidden, e.g.
-  // pinned from DataPointsTable's Masqués filter, so enforce the invariant
-  // here too. Otherwise it lingers in hiddenRows: still counted by the
-  // Masqués chip, yet unreachable there since Épinglés always takes pinned
-  // rows out of that filtered list, and its own eye toggle is disabled while
-  // pinned -- a hidden row with no way left to unhide it.
-  const newlyPinnedKeys = new Set(newAnnotations.map((a) => rowKey(a.row)));
-  hiddenRows.value = hiddenRows.value.filter(
-    (r) => !newlyPinnedKeys.has(rowKey(r)),
-  );
-  if (openPanel) annotationsPanelOpen.value = true;
 };
 
 // DataPointsTable's group context menu "Afficher uniquement ces points" --
@@ -1276,34 +1068,5 @@ const pinRows = (
 const showOnlyRows = (rows: DataRow[]) => {
   pinRows(rows, { openPanel: false });
   showOnlyAnnotated.value = true;
-};
-
-const removeAnnotation = (id: string) => {
-  annotations.value = annotations.value.filter((a) => a.id !== id);
-};
-
-// DataPointsTable's "Désépingler" menu action -- same removal as
-// removeAnnotation, just keyed by row (what that panel has) instead of
-// annotation id (which it deliberately doesn't need to know about).
-const unpinRow = (row: DataRow) => {
-  annotations.value = annotations.value.filter((a) => !sameRow(a.row, row));
-};
-
-// DataPointsTable's group context menu "Désépingler" -- same removal as
-// unpinRow, applied to every row of the (already all-pinned) group at once.
-const unpinRows = (rows: DataRow[]) => {
-  annotations.value = annotations.value.filter(
-    (a) => !rows.some((row) => sameRow(a.row, row)),
-  );
-};
-
-const clearAnnotations = () => {
-  annotations.value = [];
-};
-
-const updateAnnotationNote = (id: string, note: string) => {
-  annotations.value = annotations.value.map((a) =>
-    a.id === id ? { ...a, note } : a,
-  );
 };
 </script>

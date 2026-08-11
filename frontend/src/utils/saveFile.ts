@@ -67,6 +67,16 @@ export function downloadDataUrl(url: string, filename: string): void {
   document.body.removeChild(a);
 }
 
+/** Downloads a Blob under `filename` -- backs it with a short-lived object
+ * URL (unlike downloadDataUrl's data: URLs, a Blob needs one to become a
+ * clickable href) and revokes it right after the click has queued the
+ * download. */
+export function downloadBlob(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob);
+  downloadDataUrl(url, filename);
+  URL.revokeObjectURL(url);
+}
+
 interface FileSystemFileHandleLike {
   createWritable(): Promise<{
     write(data: Blob): Promise<void>;

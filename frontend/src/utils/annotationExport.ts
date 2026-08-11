@@ -1,9 +1,6 @@
-import {
-  darkenColor,
-  layerLabel,
-  materialColor,
-  type StructureLayer,
-} from "./layerStructure";
+import { drawLayerStack, layerHeights } from "./layerStackExport";
+import type { StructureLayer } from "./layerStructure";
+import { downloadDataUrl } from "./saveFile";
 
 export interface AnnotationExportSection {
   title: string;
@@ -19,8 +16,6 @@ export const ROW_LINE_H = 15;
 export const ROW_GAP = 8;
 export const SECTION_GAP = 16;
 export const SECTION_TITLE_H = 16;
-const MIN_LAYER_H = 26;
-const EXTRA_LAYER_H = 34;
 export const BORDER = "rgba(58,80,107,0.22)";
 export const BOX_BG = "#f8fafc";
 export const LABEL_FONT = "400 11px Inter, sans-serif";
@@ -139,21 +134,6 @@ export function wrapText(
   }
   if (line) lines.push(line);
   return lines;
-}
-
-export function layerHeights(layers: StructureLayer[]): number[] {
-  const known = layers
-    .map((l) => l.thicknessNm)
-    .filter((v): v is number => v !== null);
-  const min = known.length ? Math.min(...known) : 0;
-  const max = known.length ? Math.max(...known) : 0;
-  return layers.map((l) => {
-    if (l.thicknessNm === null || known.length === 0 || max === min)
-      return MIN_LAYER_H;
-    return Math.round(
-      MIN_LAYER_H + ((l.thicknessNm - min) / (max - min)) * EXTRA_LAYER_H,
-    );
-  });
 }
 
 /**
@@ -329,33 +309,17 @@ export function layoutAndMaybeDraw(
       }
       if (hasLayers) {
         const layers = section.layers!;
-        const heights = layerHeights(layers);
         const innerContentW = contentW - BOX_PAD * 2;
-        const sideW = 10;
-        const mainW = innerContentW - sideW;
-        if (innerDraw) {
-          const topColor = materialColor(layers[0].material);
-          ctx.fillStyle = topColor;
-          ctx.fillRect(innerX, iy, innerContentW, 3);
-        }
-        iy += 3;
-        layers.forEach((layer, i) => {
-          const h = heights[i];
-          const color = materialColor(layer.material);
-          if (innerDraw) {
-            ctx.fillStyle = color;
-            ctx.fillRect(innerX, iy, mainW, h);
-            ctx.fillStyle = darkenColor(color, 40);
-            ctx.fillRect(innerX + mainW, iy, sideW, h);
-            ctx.strokeStyle = "rgba(0,0,0,0.15)";
-            ctx.strokeRect(innerX, iy, innerContentW, h);
-            const label = layerLabel(layer);
-            ctx.font = "600 11px 'IBM Plex Mono', monospace";
-            ctx.fillStyle = "rgba(0,0,0,0.72)";
-            ctx.fillText(label, innerX + 8, iy + h / 2 + 4);
-          }
-          iy += h;
-        });
+        iy += drawLayerStack(
+          ctx,
+          innerX,
+          iy,
+          innerContentW,
+          layers,
+          layerHeights(layers),
+          { sideAccentW: 10, topStripH: 3 },
+          innerDraw,
+        );
         iy += ROW_GAP;
       }
       if (hasText) {
@@ -434,11 +398,8 @@ export function exportAnnotationPng(
 ): void {
   const url = renderAnnotationPng(source, origin, sections);
   if (!url) return;
-  const a = document.createElement("a");
-  a.href = url;
-  a.download =
-    filename ?? `pin_${source.ref.replace(/[^a-z0-9_-]+/gi, "_")}.png`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  downloadDataUrl(
+    url,
+    filename ?? `pin_${source.ref.replace(/[^a-z0-9_-]+/gi, "_")}.png`,
+  );
 }
