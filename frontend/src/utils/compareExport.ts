@@ -11,16 +11,11 @@ import {
   SECTION_TITLE_H,
   VALUE_COLOR,
   VALUE_FONT,
-  layerHeights,
   wrapText,
   type AnnotationExportSection,
 } from "./annotationExport";
-import {
-  darkenColor,
-  layerLabel,
-  materialColor,
-  type StructureLayer,
-} from "./layerStructure";
+import { drawLayerStack, layerHeights } from "./layerStackExport";
+import type { StructureLayer } from "./layerStructure";
 
 export interface ComparePinData {
   ref: string;
@@ -400,36 +395,6 @@ function drawRowAt(
   );
 }
 
-function drawLayerStack(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  w: number,
-  layers: StructureLayer[],
-) {
-  const heights = layerHeights(layers);
-  const sideW = 10;
-  const mainW = w - sideW;
-  ctx.fillStyle = materialColor(layers[0].material);
-  ctx.fillRect(x, y, w, 3);
-  let iy = y + 3;
-  layers.forEach((layer, i) => {
-    const h = heights[i];
-    const color = materialColor(layer.material);
-    ctx.fillStyle = color;
-    ctx.fillRect(x, iy, mainW, h);
-    ctx.fillStyle = darkenColor(color, 40);
-    ctx.fillRect(x + mainW, iy, sideW, h);
-    ctx.strokeStyle = "rgba(0,0,0,0.15)";
-    ctx.strokeRect(x, iy, w, h);
-    const label = layerLabel(layer);
-    ctx.font = "600 11px 'IBM Plex Mono', monospace";
-    ctx.fillStyle = "rgba(0,0,0,0.72)";
-    ctx.fillText(label, x + 8, iy + h / 2 + 4);
-    iy += h;
-  });
-}
-
 /** Which pin indices hold the best/worst value for ONE metric row, read
  * straight off ComparePinData (not the plan) since that's where the raw
  * per-pin values already live. Sets, not single indices -- two (or more)
@@ -680,6 +645,8 @@ export function drawComparePins(
             boxY + section.layers.y,
             contentW - BOX_PAD * 2,
             layers,
+            layerHeights(layers),
+            { sideAccentW: 10, topStripH: 3 },
           );
       }
       if (section.text) {
