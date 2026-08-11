@@ -414,7 +414,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, ref, watch, type ComputedRef, type Ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { Info, X } from "@lucide/vue";
 import {
@@ -705,37 +705,40 @@ const yAxisIsNumeric = computed(() =>
   props.numericColumns.includes(yAxis.value ?? ""),
 );
 
+// A toggle/mode becomes meaningless once some other state invalidates its
+// precondition (e.g. an axis stops being numeric) -- rather than leave a
+// checked-but-disabled control sitting on screen, snap the target back to
+// its inert off-value the moment the condition flips true.
+function forceOffWhenDisabled<T>(
+  disabled: Ref<boolean> | ComputedRef<boolean>,
+  target: Ref<T>,
+  offValue: T,
+) {
+  watch(disabled, (isDisabled) => {
+    if (isDisabled && target.value !== offValue) target.value = offValue;
+  });
+}
+
 // A trend line/Pareto frontier need both axes to be an actual coordinate,
 // not a category label -- fitting a line against, say, Material Class would
 // draw a meaningless curve through unrelated buckets.
 const trendDisabled = computed(
   () => !xAxisIsNumeric.value || !yAxisIsNumeric.value,
 );
-
-// Switching either axis away from a numeric column makes any active trend
-// line meaningless -- turn it off rather than leave a stale checked-but-
-// disabled control.
-watch(trendDisabled, (disabled) => {
-  if (disabled && showTrend.value) showTrend.value = false;
-});
+forceOffWhenDisabled(trendDisabled, showTrend, false);
 
 // Pareto frontier shares trend line's precondition (both axes numeric).
 const paretoDisabled = trendDisabled;
-watch(paretoDisabled, (disabled) => {
-  if (disabled && showPareto.value) showPareto.value = false;
-});
+forceOffWhenDisabled(paretoDisabled, showPareto, false);
 
 // Log/linear scale and the median line both only make sense against a
 // numeric Y -- a category axis has no "order of magnitude" to compress and
 // no midpoint to draw a median line through.
 const scaleDisabled = computed(() => !yAxisIsNumeric.value);
-watch(scaleDisabled, (disabled) => {
-  if (disabled) scale.value = "value";
-});
+forceOffWhenDisabled(scaleDisabled, scale, "value");
+
 const medianDisabled = computed(() => !yAxisIsNumeric.value);
-watch(medianDisabled, (disabled) => {
-  if (disabled && showMedian.value) showMedian.value = false;
-});
+forceOffWhenDisabled(medianDisabled, showMedian, false);
 
 // Placeholder for the title field once it's genuinely empty -- normally
 // that only happens right after clearTitle (see above), since otherwise
