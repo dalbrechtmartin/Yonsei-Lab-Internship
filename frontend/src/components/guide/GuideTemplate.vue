@@ -2872,7 +2872,7 @@ const addPointFieldLabel = (field: Parameters<typeof addPointFieldLabelWithT>[0]
 
 // Kept as a plain constant (rather than importing package.json, which sits
 // outside the tsconfig `src` root) -- bump alongside real app releases.
-const appVersion = "1.0.0";
+const appVersion = "1.1.0";
 const rootEl = useTemplateRef<HTMLDivElement>("rootEl");
 
 // Fixed page numbers -- referenced both in each page's own footer and by
