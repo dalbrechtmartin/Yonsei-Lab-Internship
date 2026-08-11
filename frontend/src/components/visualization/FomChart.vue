@@ -143,100 +143,17 @@
       />
 
       <!-- Right-click on a point offers the same full set of actions as its
-           DataPointsTable row menu -- see handleChartContextMenu. Closes on
-           outside click, Escape, or picking an action. Position is clamped
-           on-screen by useClampedMenuPosition (see menuRef/menuStyle) since
-           it's placed at the raw click point, which can otherwise render
-           partially off-screen near a viewport edge. Teleported to <body> --
-           this component sits inside the workspace Card's backdrop-blur,
-           which (like any filter/backdrop-filter/transform ancestor) makes
-           `position: fixed` descendants relative to ITS box instead of the
-           viewport, silently breaking clientX/clientY-based positioning. -->
-      <Teleport to="body">
-        <div
-          v-if="contextMenuTarget"
-          class="fixed inset-0 z-40"
-          @click="contextMenuTarget = null"
-          @contextmenu.prevent="contextMenuTarget = null"
-        />
-        <div
-          v-if="contextMenuTarget"
-          ref="menuRef"
-          class="fixed z-50 min-w-36 rounded-md border border-secondary/15 bg-popover p-1 shadow-lg"
-          :style="menuStyle"
-        >
-          <button
-            type="button"
-            class="flex w-full items-center gap-1.5 rounded px-2 py-1 text-left text-[11px] text-ink hover:bg-secondary/10"
-            @click="confirmContextMenuEdit"
-          >
-            <Pencil class="size-3 text-muted-foreground" />
-            {{ t("fomcharts.pointsTable.edit") }}
-          </button>
-          <button
-            v-if="isEditedRow(contextMenuTarget.row)"
-            type="button"
-            class="flex w-full items-center gap-1.5 rounded px-2 py-1 text-left text-[11px] text-ink hover:bg-secondary/10"
-            @click="confirmContextMenuReset"
-          >
-            <RotateCcw class="size-3 text-muted-foreground" />
-            {{ t("fomcharts.pointsTable.resetPoint") }}
-          </button>
-          <button
-            type="button"
-            class="flex w-full items-center gap-1.5 rounded px-2 py-1 text-left text-[11px] hover:bg-secondary/10"
-            :class="
-              isPinnedRow(contextMenuTarget.row)
-                ? 'bg-amber-50 text-amber-700'
-                : 'text-ink'
-            "
-            @click="confirmContextMenuTogglePin"
-          >
-            <Pin
-              class="size-3"
-              :class="
-                isPinnedRow(contextMenuTarget.row)
-                  ? 'fill-amber-600 text-amber-600'
-                  : 'text-muted-foreground'
-              "
-            />
-            {{
-              isPinnedRow(contextMenuTarget.row)
-                ? t("fomcharts.pointsTable.unpin")
-                : t("fomcharts.pointsTable.pin")
-            }}
-          </button>
-
-          <div class="my-0.5 h-px bg-secondary/10" />
-
-          <div
-            v-if="isPinnedRow(contextMenuTarget.row)"
-            class="mb-0.5 flex items-start gap-1 rounded bg-amber-50 px-2 py-1.5 text-[10px] text-amber-800"
-          >
-            <TriangleAlert class="mt-0.5 size-3 shrink-0" />
-            <span>{{ t("fomcharts.pointsTable.pinGuardHint") }}</span>
-          </div>
-
-          <button
-            type="button"
-            class="flex w-full items-center gap-1.5 rounded px-2 py-1 text-left text-[11px] text-ink transition hover:bg-secondary/10 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
-            :disabled="isPinnedRow(contextMenuTarget.row)"
-            @click="confirmContextMenuHide"
-          >
-            <EyeOff class="size-3 text-muted-foreground" />
-            {{ t("fomcharts.pointsTable.hide") }}
-          </button>
-          <button
-            type="button"
-            class="flex w-full items-center gap-1.5 rounded px-2 py-1 text-left text-[11px] text-rose-600 transition hover:bg-rose-500/10 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
-            :disabled="isPinnedRow(contextMenuTarget.row)"
-            @click="confirmContextMenuDelete"
-          >
-            <Trash2 class="size-3" />
-            {{ t("fomcharts.pointsTable.deletePermanently") }}
-          </button>
-        </div>
-      </Teleport>
+           DataPointsTable row menu -- see handleChartContextMenu and
+           PointActionsMenu (shared with that row menu). -->
+      <PointActionsMenu
+        v-model:target="contextMenuTarget"
+        :is-pinned-row="isPinnedRow"
+        @edit="(row) => emit('point-context-edit', row)"
+        @reset="(row) => emit('point-context-reset', row)"
+        @toggle-pin="onContextMenuTogglePin"
+        @toggle-hide="(row) => emit('point-context-hide', row)"
+        @delete="(row) => emit('point-context-delete', row)"
+      />
 
       <!-- Active Benchmarking: a brief expanding ring around a point right
            after "Add data" saves it -- confirms where it landed without
@@ -261,7 +178,6 @@ import {
   computed,
   nextTick,
   onBeforeUnmount,
-  onMounted,
   provide,
   ref,
   watch,
@@ -286,19 +202,15 @@ import {
   Lock,
   Unlock,
   Diamond,
-  Trash2,
-  EyeOff,
-  Pencil,
-  Pin,
-  TriangleAlert,
 } from "@lucide/vue";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import InfoTooltip from "@/components/shared/InfoTooltip.vue";
+import PointActionsMenu from "@/components/visualization/PointActionsMenu.vue";
 import { useFomChartZoom } from "@/composables/useFomChartZoom";
 import { useFomChartContextMenu } from "@/composables/useFomChartContextMenu";
+import { useFomChartSeries } from "@/composables/useFomChartSeries";
+import { useFomChartOption } from "@/composables/useFomChartOption";
 import { useFomChartGuideApi } from "@/composables/useFomChartGuideApi";
-import { escapeHtml, gradientColor, spreadDuplicatePoints } from "@/utils/fomChartPoints";
-import { estimateAxisNameSpace, estimateLegendWrapRows } from "@/utils/fomChartLegend";
 import { downloadDataUrl } from "@/utils/saveFile";
 import {
   findOriginColumn,
@@ -310,26 +222,16 @@ import {
   findModeDescriptionColumn,
   isNeedsReviewRow,
   isManualRow,
-  isEditedRow,
-  pointShape,
   keptTokens,
   formatUnitSuperscripts,
   rowsEqual,
   type DataRow,
 } from "@/utils/columnTypes";
-
-// Custom ECharts symbol path (5-point star, arbitrary coordinate space --
-// ECharts fits it to symbolSize like any other custom symbol) -- "star" has
-// no built-in ECharts symbol name, unlike "circle"/"diamond".
-const STAR_SYMBOL_PATH =
-  "path://M12 2l2.9 6.9 7.1.6-5.4 4.6 1.7 7-6.3-4-6.3 4 1.7-7L1 9.5l7.1-.6z";
 import {
   computeStats,
   filterPlottable,
   fitTrend,
-  sampleTrendCurve,
   formatStat,
-  computeParetoFrontier,
   type TrendType,
 } from "@/utils/stats";
 
@@ -494,8 +396,6 @@ const chartRef = ref<InstanceType<typeof VChart> | null>(null);
 const badgesRowRef = ref<HTMLElement | null>(null);
 
 const displayTitle = computed(() => props.chartTitle.trim());
-
-const MAX_AXIS_LABEL_LENGTH = 24;
 
 const palette: string[] = labTheme.theme.color;
 const medianLineColor: string = labTheme.theme._custom.accentColor;
@@ -895,591 +795,47 @@ const groupNamesByCount = computed(() => {
   );
 });
 
-// Hidden by default -- with every dot labeled at once the chart reads as a
-// wall of overlapping ref numbers. A label only earns its place when a point
-// is actually the one being looked at: hovering it (series-level `emphasis`
-// below), isolating its group, or pinning it (see withItemStyle's showLabel,
-// which sets each point's own `label.show`).
-const pointLabel = {
-  show: false,
-  position: "top",
-  formatter: (params: any) => params.data.refLabel,
-  fontSize: 10,
-  color: legendColor,
-};
-const pointLabelEmphasis = { label: { show: true } };
-
-const buildPoint = (item: DataRow) => {
-  const extras: Record<string, unknown> = {};
-  for (const col of extraTooltipColumns.value) {
-    const v = item[col];
-    if (v !== null && v !== undefined && v !== "") extras[col] = v;
-  }
-  const needsReview = isEditStatus(item);
-  const rawX = props.xAxis ? item[props.xAxis] : undefined;
-  const rawY = props.yAxis ? item[props.yAxis] : undefined;
-  const rawSizeValue = props.pointSizeBy
-    ? Number(item[props.pointSizeBy])
-    : NaN;
-  // Already shown via the axis/group-by line below when Mode ID happens to
-  // be picked as one of those -- no need to print it twice.
-  const modeId =
-    modeIdColumn.value &&
-    modeIdColumn.value !== props.xAxis &&
-    modeIdColumn.value !== props.groupBy
-      ? item[modeIdColumn.value]
-      : null;
-  const modeDescription = modeDescriptionColumn.value
-    ? item[modeDescriptionColumn.value]
-    : null;
-  const modeCase = [modeId, modeDescription]
-    .filter((v) => v !== null && v !== undefined && v !== "")
-    .join(" — ");
-  // Every group this point belongs to (composite grouping only) -- powers
-  // both the tooltip's "also classified as" line and, for a merged marker,
-  // the dimming check in withItemStyle below (a merged point anchored on
-  // one group must still stay bright when a *different* member group is
-  // isolated).
-  const groups = isGroupingByCompositeColumn.value
-    ? compositeGroupTokens(item)
-    : null;
-  const isManual = isManualRow(item);
-  const shape = pointShape(item);
-  // A diamond/star reads visually smaller than a circle at the same
-  // symbolSize (less filled area for the same bounding box) -- scaled up so
-  // neither shape looks small/secondary next to a plain circle at the same
-  // underlying size.
-  const baseSize = bubbleSizeFor(rawSizeValue);
-
-  return {
-    value: [
-      props.xAxisNumeric ? Number(rawX) : (rawX ?? t("fomcharts.unknownGroup")),
-      props.yAxisNumeric ? Number(rawY) : (rawY ?? t("fomcharts.unknownGroup")),
-    ],
-    title: item.title ?? item.Title,
-    refLabel: item.ref ?? item.Ref,
-    modeCase: modeCase || null,
-    extras,
-    needsReview,
-    isFlagged: needsReview,
-    isManual,
-    isHovered: isHoveredRow(item),
-    row: item,
-    groups,
-    isPinned: isPinnedRow(item),
-    symbol:
-      shape === "circle"
-        ? undefined
-        : shape === "diamond"
-          ? "diamond"
-          : STAR_SYMBOL_PATH,
-    symbolSize: shape === "circle" ? baseSize : baseSize * 1.2,
-    symbolOffset: undefined as [number, number] | undefined,
-    label: undefined as { show: boolean } | undefined,
-  };
-};
-
-// A dashed outline flags points that need a second look — Review status is
-// "Edit" (a value like FWHM was calculated/estimated rather than read
-// directly from the paper) — a data-quality signal, not a category, so it
-// rides on top of whatever fill color the group/series already assigned
-// rather than replacing it.
-// Isolating one group (via StatsSummaryPanel) dims the rest instead of
-// hiding them, so the overall shape of the dataset stays visible. Every
-// point's color always matches the series/legend it belongs to — see
-// isGroupingByCompositeColumn above for how Material Class points land in
-// the right (possibly several) series to begin with.
-const withItemStyle = (
-  point: ReturnType<typeof buildPoint>,
-  color: string | Record<string, unknown>,
-  // The group(s) that must include highlightGroup for this exact point to
-  // stay bright. Normally just [groupName] of whichever series built this
-  // point (dimmed unless it's the isolated group). A merged marker (see
-  // seriesList below) passes its *full* member-token list instead, since one
-  // marker there really does represent several groups at once and must not
-  // dim just because its series/anchor happens not to be the isolated one.
-  dimGroups: string[] | null,
-) => {
-  const memberOfIsolated =
-    props.highlightGroup !== null &&
-    dimGroups !== null &&
-    dimGroups.includes(props.highlightGroup);
-  const dimmedByGroup =
-    props.highlightGroup !== null && dimGroups !== null && !memberOfIsolated;
-  // Hovering a row in the DataPointsTable panel previews exactly the point a
-  // click there would hide/remove -- every OTHER point dims (like isolating a
-  // group does) so the hovered one reads unambiguously at a glance, on top of
-  // whatever group-dim state was already active.
-  const dimmedByHover = hasVisibleHoveredMatch.value && !point.isHovered;
-  const dimmed = dimmedByGroup || dimmedByHover;
-  const opacity = point.isHovered ? 1 : dimmed ? 0.15 : 0.88;
-  // The ref-label above each dot is hidden by default (see pointLabel below)
-  // and only forced on for a point that's meaningfully "the one being looked
-  // at" right now: isolated via a group click, pinned as an annotation, or
-  // hovered from the side panel. Hovering the CHART itself reveals it too,
-  // but that's handled by the series-level `emphasis` style, not here. A
-  // merge-mode invisible sibling (symbolSize 0) never gets a label
-  // regardless -- it isn't drawn, so a label would float unanchored right on
-  // top of its visible anchor's own label.
-  // Manually added points always stay labeled (their ref, e.g. "M1") for the
-  // same reason a pinned/isolated point does -- they're purpose-built to be
-  // individually identified while comparing against the literature, not
-  // blended anonymously into a series of dozens.
-  const showLabel =
-    (point.symbolSize ?? 0) !== 0 &&
-    (point.isPinned || memberOfIsolated || point.isManual || point.isHovered);
-  // The gold diamond outline takes priority over the dashed "needs review"
-  // border -- a manually entered point never carries a Review status to
-  // begin with (see isNeedsReviewRow), so the two are not expected to
-  // co-occur, but the manual cue is the more important one when they do.
-  const baseItemStyle = point.isManual
-    ? { color, opacity, borderWidth: 2.5, borderColor: manualPointBorderColor }
-    : point.isFlagged
-      ? {
-          color,
-          opacity,
-          borderType: "dashed" as const,
-          borderWidth: 1,
-          borderColor: legendColor,
-        }
-      : { color, opacity };
-  // The hover-preview ring wins over every other border treatment (manual
-  // gold, flagged dashed) -- while hovering a panel row, unambiguously
-  // pointing at the right dot matters more than any other cue that point
-  // might also carry.
-  const itemStyle = point.isHovered
-    ? {
-        ...baseItemStyle,
-        opacity,
-        borderWidth: 1.5,
-        borderColor: hoverRingColor,
-      }
-    : baseItemStyle;
-  return {
-    ...point,
-    label: { show: showLabel },
-    itemStyle,
-    // Bumped, not just outlined, so the preview reads clearly even at the
-    // small end of the size-by-value range (see bubbleSizeFor).
-    symbolSize: point.isHovered
-      ? (point.symbolSize ?? 10) * 1.35
-      : point.symbolSize,
-  };
-};
-
-// A merged multi-category marker must stay legible at its smallest -- the
-// ordinary size-by-value bubble size (see bubbleSizeFor) can go as low as
-// pointSize's floor, too small for a multi-band gradient to read as
-// anything but a smear. Merged points get floored to pointSize itself
-// instead (still scaling up further for a genuinely large value, just
-// never below it).
-const mergedMinBubbleSize = computed(() => props.pointSize);
-
-const seriesList = computed(() => {
-  const medianMarkLine = {
-    lineStyle: { type: "dashed", color: medianLineColor, width: 1 },
-    data: props.showMedian
-      ? [{ yAxis: medianValue.value, name: t("fomcharts.medianLine.name") }]
-      : [],
-    label: {
-      formatter: t("fomcharts.medianLine.name") + "\n{c}",
-      position: "middle",
-      color: medianLineColor,
-      // Explicit so the label sits vertically CENTERED on the line rather
-      // than echarts' default of stacking it entirely above -- without
-      // this, getMedianLineRect's symmetric (y ± half-height) guide callout
-      // rect only ever covered the bottom half of the two-line label,
-      // clipping "Median" off the top.
-      align: "center",
-      verticalAlign: "middle",
-      // A plain center-of-the-line label had the dashed stroke cutting
-      // straight through the text, unreadable. A solid backdrop (matching
-      // the chart's own canvas background -- see exportPng's white
-      // background) sits the line behind the chip instead of through the
-      // glyphs, without moving the label off the centered position
-      // getMedianLineRect's callout box above assumes.
-      backgroundColor: "#fff",
-      padding: [2, 5],
-      borderRadius: 3,
-    },
-  };
-
-  const series: any[] = [];
-
-  if (!props.groupBy || !groupValues.value) {
-    series.push({
-      name: t("fomcharts.type.scatter"),
-      symbolSize: 10,
-      type: "scatter",
-      data: plottableData.value.map((item) =>
-        withItemStyle(buildPoint(item), palette[0], null),
-      ),
-      label: pointLabel,
-      emphasis: pointLabelEmphasis,
-      // Papers plotted at the same x-tick with close FOM values get
-      // stacked ref-labels ("47" printed twice, directly overlapping).
-      // hideOverlap keeps whichever label fits and drops the rest rather
-      // than rendering illegible stacked text — the point itself and its
-      // tooltip are unaffected.
-      labelLayout: { hideOverlap: true },
-      markLine: medianMarkLine,
-    });
-  } else {
-    groupValues.value.forEach((groupName, idx) => {
-      const color =
-        props.groupColorMap[groupName] ?? palette[idx % palette.length];
-      series.push({
-        name: groupName,
-        symbolSize: 10,
-        type: "scatter",
-        // A series-level color is what the legend icon actually reads —
-        // without it, echarts falls back to auto-cycling its own theme
-        // colors by series position, which drifts out of sync with our
-        // fixed groupColorMap the moment a filter hides an entire category
-        // (shrinking the series list and shifting every later series'
-        // auto-assigned position/color).
-        color,
-        itemStyle: { color },
-        data: plottableData.value
-          .filter((item) => matchesGroup(item, groupName))
-          .map((item) => {
-            const point = buildPoint(item);
-            if (isGroupingByCompositeColumn.value) {
-              const tokens = compositeGroupTokens(item);
-              if (props.mergeMultiCategoryPoints && tokens.length > 1) {
-                // Merge mode: a row with several kept tokens draws as ONE
-                // marker instead of one duplicate per token, anchored on a
-                // deterministically sorted first token so every series
-                // agrees on which copy is the visible one. The other member
-                // series still carry an invisible (symbolSize 0) copy of the
-                // same row purely so matchesGroup-driven logic (isolate,
-                // stats) keeps treating it as a member of every one of its
-                // groups -- see the symbolSize-0 filter in
-                // spreadDuplicatePoints below, which keeps that invisible
-                // sibling from nudging the visible anchor off its true
-                // coordinate.
-                // Known trade-off: ECharts' own legend row for a non-anchor
-                // member group can't hide this marker by itself (it isn't
-                // really drawn in that series) -- only the anchor group's
-                // legend row can. The sidebar filter chips are unaffected.
-                const sortedTokens = [...tokens].sort();
-                const anchor = sortedTokens[0];
-                point.symbolOffset = [0, 0];
-                if (groupName === anchor) {
-                  const memberColors = sortedTokens.map(
-                    (tok) => props.groupColorMap[tok] ?? color,
-                  );
-                  point.symbolSize = Math.max(
-                    point.symbolSize,
-                    mergedMinBubbleSize.value,
-                  );
-                  return withItemStyle(
-                    point,
-                    gradientColor(memberColors),
-                    sortedTokens,
-                  );
-                }
-                point.symbolSize = 0;
-                return withItemStyle(point, color, [groupName]);
-              }
-              // Separated mode (default): a row with several materials (e.g.
-              // "Dielectric;Metal") plots once per material at the exact
-              // same x/y -- without an offset the duplicates stack perfectly
-              // on top of each other and only the last-drawn series' color
-              // is ever visible, which is what made the chart's colors look
-              // arbitrary/wrong. symbolOffset shifts each duplicate a few
-              // pixels apart (screen space, not data space) so every
-              // material's dot stays visible without moving the point off
-              // its real coordinate. Scales gently with pointSize so bigger
-              // bubbles (the Display > point-size slider) still separate
-              // cleanly instead of overlapping at the same fixed step.
-              const n = Math.max(tokens.length, 1);
-              const i = Math.max(tokens.indexOf(groupName), 0);
-              const offsetStep = Math.max(7, props.pointSize * 0.4);
-              point.symbolOffset = [(i - (n - 1) / 2) * offsetStep, 0];
-            }
-            return withItemStyle(point, color, [groupName]);
-          }),
-        label: pointLabel,
-        emphasis: pointLabelEmphasis,
-        labelLayout: { hideOverlap: true },
-        // Only the first series carries the median markLine — echarts draws it
-        // across the full plot width regardless of which series owns it, so
-        // attaching it to every series would just duplicate the line.
-        markLine: idx === 0 ? medianMarkLine : { data: [] },
-      });
-    });
-  }
-
-  // Spread duplicate coordinates across the WHOLE chart, not per series --
-  // two points from *different* series (e.g. one EXP, one SIM) landing on
-  // the same x/y would otherwise never get separated, since each series only
-  // ever saw its own single point at that spot. Points are the same object
-  // references inside each series' data array, so mutating them here also
-  // updates them in place there. symbolSize-0 points are excluded -- those
-  // are merge mode's invisible per-token siblings of an already-visible
-  // anchor (see above); they always share their anchor's exact coordinate,
-  // so without this filter every merged marker would get needlessly nudged
-  // off its true position by its own invisible copy.
-  spreadDuplicatePoints(
-    series
-      .filter((s) => s.type === "scatter")
-      .flatMap((s) => s.data)
-      .filter((p) => (p.symbolSize ?? 10) !== 0),
-  );
-
-  // A least-squares fit over the plotted points — only meaningful when the
-  // X axis is itself a numeric quantity (e.g. Sensitivity), not a category
-  // label like Material Class. Fit itself is computed once in trendFit
-  // above (shared with the trendUnavailable badge). Sampled at many x
-  // values rather than drawn as a single 2-point segment: a non-linear
-  // model (exponential/logarithmic/power/polynomial) is an actual curve,
-  // and even a linear fit needs sampling to render as a straight line once
-  // the Y axis itself is log-scaled (echarts interpolates a "line" series
-  // in data space between whatever points it's given, so 2 points would
-  // draw straight in *pixel* space and come out visibly bent on a log axis).
-  if (trendFit.value) {
-    const xs = highlightedRows.value
-      .map((item) => Number(item[props.xAxis as string]))
-      .filter((x) => !isNaN(x));
-    const xmin = Math.min(...xs);
-    const xmax = Math.max(...xs);
-    const fit = trendFit.value;
-    series.push({
-      name: t("fomcharts.controls.trendLine"),
-      type: "line",
-      data: sampleTrendCurve(fit, xmin, xmax),
-      showSymbol: false,
-      silent: true,
-      smooth: true,
-      z: 5,
-      lineStyle: { type: "dashed", width: 2, color: trendLineColor },
-    });
-  }
-
-  // Pareto frontier (maximize-both-axes non-dominated set) — only meaningful
-  // when both X and Y axes are numeric.
-  if (
-    props.showPareto &&
-    props.xAxisNumeric &&
-    props.yAxisNumeric &&
-    props.xAxis &&
-    props.yAxis
-  ) {
-    const points = highlightedRows.value
-      .map((item) => ({
-        x: Number(item[props.xAxis as string]),
-        y: Number(item[props.yAxis as string]),
-        row: item,
-      }))
-      .filter((p) => !isNaN(p.x) && !isNaN(p.y));
-    const frontier = computeParetoFrontier(points);
-    // A frontier of exactly one point has no line segment to draw --
-    // `type: "line"` with a single coordinate renders nothing at all, which
-    // reads as "the toggle did nothing" even though it worked correctly.
-    // Draw it as a visible marker instead so a single non-dominated point
-    // is never silently invisible.
-    if (frontier.length === 1) {
-      series.push({
-        name: t("fomcharts.controls.pareto"),
-        type: "scatter",
-        data: [[frontier[0].x, frontier[0].y]],
-        symbol: "diamond",
-        symbolSize: 14,
-        silent: true,
-        z: 6,
-        itemStyle: { color: "#009E73", borderColor: "#fff", borderWidth: 1.5 },
-      });
-    } else if (frontier.length > 1) {
-      series.push({
-        name: t("fomcharts.controls.pareto"),
-        type: "line",
-        data: frontier.map((p) => [p.x, p.y]),
-        showSymbol: false,
-        silent: true,
-        step: false,
-        z: 6,
-        lineStyle: { type: "solid", width: 2, color: "#009E73" },
-      });
-    }
-  }
-
-  // A legend-only entry for "Taille selon une mesure" (Display section) --
-  // no data of its own, it exists purely so the point-size encoding gets a
-  // row in the chart's own legend (see sizeLegendNames/chartOption's third
-  // legend row), the same way Trend line / Pareto frontier do, instead of
-  // living only in a floating HTML badge disconnected from the chart itself.
-  // name is the full "Taille : {column} ({min}-{max})" text (see
-  // sizeLegendFullText), not a short placeholder later swapped in via a
-  // legend `formatter` -- echarts sizes a "plain"-type legend item's own
-  // box from its DATA name, before any formatter ever runs, so a formatter
-  // that rewrites a short name into a much longer string just gets that
-  // longer string clipped to the short name's box. Matches this series'
-  // name to what the legend row (and legendTooltipFormatter's lookup)
-  // actually display.
-  if (pointSizeLegend.value) {
-    series.push({
-      name: sizeLegendFullText.value,
-      type: "scatter",
-      data: [],
-      silent: true,
-      symbol: "circle",
-      itemStyle: { color: legendColor },
-    });
-  }
-
-  // Hovering a hidden row in the panel's disclosure previews where it would
-  // reappear -- a faint, dashed-ring ghost point rather than a real, styled
-  // series member (it isn't actually visible yet, just a preview of a click
-  // away). silent: true keeps it out of hover/click/tooltip handling
-  // entirely, and it's excluded from the legend (see groupLegendNames etc.
-  // below, which never reference this series' name).
-  if (previewPoint.value) {
-    series.push({
-      name: t("fomcharts.pointsTable.unhide"),
-      type: "scatter",
-      data: [
-        {
-          value: previewPoint.value.value,
-          refLabel: previewPoint.value.refLabel,
-          title: previewPoint.value.title,
-        },
-      ],
-      symbol: "circle",
-      symbolSize: previewPoint.value.symbolSize * 1.35,
-      silent: true,
-      z: 7,
-      label: {
-        show: true,
-        position: "top",
-        formatter: () => String(previewPoint.value?.refLabel ?? ""),
-        fontSize: 10,
-        color: hoverRingColor,
-      },
-      itemStyle: {
-        color: hoverRingColor,
-        opacity: 0.35,
-        borderWidth: 1.5,
-        borderColor: hoverRingColor,
-        borderType: "dashed",
-      },
-    });
-  }
-
-  return series;
-});
-
-// The legend should only list names a user can actually make sense of.
-// With no groupBy, all points share one series internally named after the
-// generic "Scatter Plot" chart type — showing that as a legend chip reads
-// as a meaningless label, so it's left out; only real group names (or the
-// median/trend/Pareto overlays, when active) are listed.
-// Split into two groups -- group-by colors vs. trend/Pareto overlays -- so
-// they can render as two visually distinct legend rows (see chartOption's
-// `legend` array below) instead of one run-on line that was hard to parse
-// when both a color legend and the overlay names were mixed together.
-// Every group gets its own legend entry, ranked most-populous-first
-// (groupNamesByCount) -- with many groups, legend[0] below wraps onto
-// however many lines it needs (see estimateLegendWrapRows/groupLegendRows
-// in chartOption) rather than truncating some away: every group is always
-// fully listed, at full legible size, right there on the chart. Isolating a
-// single group (StatsSummaryPanel's isolate click) narrows the on-chart
-// legend down to just that one group instead -- the rest are already
-// dimmed on the chart itself, so listing their names alongside adds
-// nothing but extra wrapped lines.
-const groupLegendNames = computed<string[]>(() => {
-  if (!props.groupBy || !groupValues.value) return [];
-  if (props.highlightGroup !== null) return [props.highlightGroup];
-  return groupNamesByCount.value;
-});
-const overlayLegendNames = computed(() => {
-  const names: string[] = [];
-  if (
-    props.showTrend &&
-    props.xAxisNumeric &&
-    props.yAxisNumeric &&
-    props.xAxis &&
-    props.yAxis
-  ) {
-    names.push(t("fomcharts.controls.trendLine"));
-  }
-  if (
-    props.showPareto &&
-    props.xAxisNumeric &&
-    props.yAxisNumeric &&
-    props.xAxis &&
-    props.yAxis
-  ) {
-    names.push(t("fomcharts.controls.pareto"));
-  }
-  return names;
-});
-// Its own legend row (rather than folded into overlayLegendNames) because it
-// needs a square, circle-friendly icon box (itemWidth === itemHeight) --
-// Trend/Pareto's elongated line-swatch box (14x8) would squash a circle icon
-// into an oval.
-// The full "Taille : {column} ({min}-{max})" text, computed once and used
-// directly as BOTH the legend's data name and the point-size helper
-// series' own name below -- see that series' comment for why a `formatter`
-// alone isn't enough here.
-const sizeLegendFullText = computed(() =>
-  pointSizeLegend.value
-    ? t("fomcharts.pointSizeLegend", {
-        column: pointSizeLegend.value.column,
-        min: pointSizeLegend.value.min,
-        max: pointSizeLegend.value.max,
-      })
-    : t("fomcharts.controls.pointSize"),
-);
-const sizeLegendNames = computed(() =>
-  pointSizeLegend.value ? [sizeLegendFullText.value] : [],
-);
-
-// Hover explanations for the overlay/size legend rows -- "what it shows and
-// how it's calculated" for Trend/Pareto/point-size, since a bare "Ligne de
-// tendance" swatch name on its own doesn't say anything about the fit method
-// or what a bigger dot means. Keyed by the exact legend entry name so the
-// formatter below can look an item up regardless of which row it's in.
-const legendTooltipFormatter = (params: any): string => {
-  const name = params.name;
-  if (name === t("fomcharts.controls.trendLine")) {
-    return trendFit.value
-      ? `${t(`fomcharts.trendType.${trendFit.value.type}`)} · R² ${formatStat(trendFit.value.r2)}<br/>${t("fomcharts.trendLineExplain")}`
-      : name;
-  }
-  if (name === t("fomcharts.controls.pareto")) {
-    return t("fomcharts.paretoExplain");
-  }
-  if (name === sizeLegendFullText.value && pointSizeLegend.value) {
-    return t("fomcharts.pointSizeLegendExplain", {
-      column: pointSizeLegend.value.column,
-    });
-  }
-  return name;
-};
-
 const { zoomLocked, zoomIn, zoomOut, resetZoom } = useFomChartZoom(chartRef);
 
-// chartRef.getWidth() is a live imperative read, not a reactive Vue value --
-// calling it inside chartOption's computed wouldn't register as a
-// dependency, so a container resize would never re-trigger the group
-// legend's wrap-row estimate (see estimateLegendWrapRows/groupLegendRows
-// below) even though the actual number of wrapped lines needed changes with
-// the chart's width. legendWidthTick is a plain reactive counter bumped by
-// a ResizeObserver purely to force that recomputation; chartOption then
-// re-reads the chart's current getWidth() fresh each time it fires.
-const legendWidthTick = ref(0);
-let legendWidthObserver: ResizeObserver | null = null;
-onMounted(() => {
-  const dom = chartRef.value?.getDom();
-  if (!dom) return;
-  legendWidthObserver = new ResizeObserver(() => {
-    legendWidthTick.value += 1;
-  });
-  legendWidthObserver.observe(dom);
-});
-onBeforeUnmount(() => {
-  legendWidthObserver?.disconnect();
+// Turns this component's already-derived data model above into echarts
+// series + legend name lists -- see useFomChartSeries.ts for point-building/
+// item-style/grouping logic pulled out of what used to be this file's own
+// chartOption computed.
+const {
+  seriesList,
+  groupLegendNames,
+  overlayLegendNames,
+  sizeLegendFullText,
+  sizeLegendNames,
+  legendTooltipFormatter,
+} = useFomChartSeries({
+  props,
+  t,
+  palette,
+  medianLineColor,
+  legendColor,
+  trendLineColor,
+  manualPointBorderColor,
+  hoverRingColor,
+  plottableData,
+  highlightedRows,
+  medianValue,
+  trendFit,
+  previewPoint,
+  groupValues,
+  groupNamesByCount,
+  isGroupingByCompositeColumn,
+  compositeGroupTokens,
+  matchesGroup,
+  extraTooltipColumns,
+  modeIdColumn,
+  modeDescriptionColumn,
+  isEditStatus,
+  isPinnedRow,
+  isHoveredRow,
+  hasVisibleHoveredMatch,
+  bubbleSizeFor,
+  pointSizeLegend,
 });
 
 // Pinning a point is meant for comparing metrics across papers, not for
@@ -1505,32 +861,17 @@ const handleChartClick = (params: any) => {
 };
 
 // Right-clicking a point opens a menu with the full set of actions
-// (Edit/Reset/Pin/Hide/Delete, same as DataPointsTable's row menu -- see the
-// template's contextMenuTarget block) instead of acting immediately, so a
-// stray right-click never silently drops a point with no way back (hidden
-// rows come back via the DataPointsTable panel or the toolbar's Reset -- see
-// VisualizationView). See composables/useFomChartContextMenu.ts.
-const menuRef = ref<HTMLElement | null>(null);
-const {
-  contextMenuTarget,
-  menuStyle,
-  handleChartContextMenu,
-  confirmContextMenuEdit,
-  confirmContextMenuReset,
-  confirmContextMenuTogglePin,
-  confirmContextMenuHide,
-  confirmContextMenuDelete,
-} = useFomChartContextMenu({
-  menuRef,
-  isPinnedRow,
-  confirmDeleteMessage: () => t("fomcharts.pointsTable.deleteConfirm"),
-  onEdit: (row) => emit("point-context-edit", row),
-  onReset: (row) => emit("point-context-reset", row),
-  onPin: (row) => emit("point-context-pin", row),
-  onUnpin: (row) => emit("point-context-unpin", row),
-  onHide: (row) => emit("point-context-hide", row),
-  onDelete: (row) => emit("point-context-delete", row),
-});
+// (Edit/Reset/Pin/Hide/Delete, same as DataPointsTable's row menu -- see
+// PointActionsMenu in the template, shared by both) instead of acting
+// immediately, so a stray right-click never silently drops a point with no
+// way back (hidden rows come back via the DataPointsTable panel or the
+// toolbar's Reset -- see VisualizationView). See
+// composables/useFomChartContextMenu.ts.
+const { contextMenuTarget, handleChartContextMenu } = useFomChartContextMenu();
+const onContextMenuTogglePin = (row: DataRow) => {
+  if (isPinnedRow(row)) emit("point-context-unpin", row);
+  else emit("point-context-pin", row);
+};
 
 // See pulseTargetRef's prop doc -- a brief ring around a just-added manual
 // point. Double nextTick (same pattern as elsewhere in this file's guide
@@ -1603,265 +944,24 @@ defineExpose({
   ...guideApi,
 });
 
-const chartOption = computed(() => {
-  const xName = props.xAxis ? formatUnitSuperscripts(props.xAxis) : "";
-  const yName = props.yAxis ? formatUnitSuperscripts(props.yAxis) : "";
-  const xNameSpace = estimateAxisNameSpace(xName);
-  const yNameSpace = yName ? 26 : 0;
-
-  // The chart title and the legend both default to the top-center of the
-  // canvas -- with no reservation for the title's own line height, a
-  // non-empty title sat directly on top of (or under) the legend/points.
-  // titleSpace pushes everything below it down by one line when a title is
-  // actually set.
-  const hasTitle = !!displayTitle.value;
-  const titleTop = 4;
-  const titleSpace = hasTitle ? 26 : 0;
-
-  // Group-by colors, trend/Pareto overlays, and the point-size encoding
-  // render as up to three separate legend rows (rather than one run-on line)
-  // so a researcher isn't left parsing "Dielectric, Metal, Trend line, Taille
-  // des points" as if they were all the same kind of thing.
-  const showGroupLegend = props.showLegend && groupLegendNames.value.length > 0;
-  const showOverlayLegend =
-    props.showLegend && overlayLegendNames.value.length > 0;
-  const showSizeLegend = props.showLegend && sizeLegendNames.value.length > 0;
-  // legendWidthTick is read purely to register a reactive dependency (see
-  // its own comment) -- chartRef.getWidth() itself is a live, non-reactive
-  // read, so without this a container resize would never re-run this
-  // estimate even though the real wrap-row count depends on the current
-  // width. Unlike the fixed single-row assumption every other legend
-  // section gets, the group legend can wrap onto several lines once there
-  // are enough groups (see estimateLegendWrapRows) -- undercounting here
-  // would let a wrapped line overlap the plotted points below it, so a
-  // width unavailable yet (pre-mount) falls back to a conservative 600.
-  // eslint-disable-next-line @typescript-eslint/no-unused-expressions -- deliberate reactive-dependency read, see comment above
-  legendWidthTick.value;
-  const chartWidthPx = chartRef.value?.getWidth() ?? 600;
-  const groupLegendRows = showGroupLegend
-    ? estimateLegendWrapRows(
-        groupLegendNames.value,
-        Math.max(0, chartWidthPx - 48),
-      )
-    : 0;
-  const legendRows =
-    groupLegendRows + (showOverlayLegend ? 1 : 0) + (showSizeLegend ? 1 : 0);
-  const groupLegendTop = titleTop + titleSpace;
-  const overlayLegendTop = groupLegendTop + groupLegendRows * 22;
-  const sizeLegendTop = overlayLegendTop + (showOverlayLegend ? 22 : 0);
-  // Trend's swatch stays the bare overlay name in legend.data (identity used
-  // for matching); the type + R² only shows via this formatter, which
-  // rewrites the DISPLAYED text without touching the underlying name --
-  // otherwise "what it shows" (the fit stats) would only ever surface on
-  // hover via legendTooltipFormatter, one click of context a researcher
-  // shouldn't have to go looking for.
-  const overlayLegendFormatter = (name: string): string =>
-    name === t("fomcharts.controls.trendLine") && trendFit.value
-      ? `${name} (${t(`fomcharts.trendType.${trendFit.value.type}`)}, R² ${formatStat(trendFit.value.r2)})`
-      : name;
-  return {
-    // Changing an axis, groupBy, or the trend-line toggle usually reshapes the
-    // series array enough that echarts can't match old vs new series/data and
-    // smoothly interpolate -- it tears the series down and replays its
-    // default "grow from nothing" enter animation (~1s), during which the
-    // chart looks empty/frozen. animationDurationUpdate: 0 alone doesn't
-    // cover this case (echarts treats a torn-down-and-rebuilt series as a
-    // fresh enter, not an update), so animation is disabled outright --
-    // control-driven changes should be instant on a data tool like this one.
-    animation: false,
-    title: { text: displayTitle.value, left: "center", top: titleTop },
-    // Controlled by Display > Show legend (GraphControls) -- on by default so
-    // exporting the chart as an image (see exportPng below) still carries a
-    // key for which color is which group. Three rows: group-by colors, then
-    // trend/Pareto overlays, then the point-size encoding (see
-    // groupLegendTop/overlayLegendTop/sizeLegendTop above) -- each with a
-    // hover tooltip explaining what it shows and how it's computed
-    // (legendTooltipFormatter), since a bare swatch name alone doesn't.
-    legend: [
-      {
-        // Default "plain" type -- wraps onto as many centered lines as it
-        // needs instead of paginating, so every group is always fully listed
-        // at once (see groupLegendRows/estimateLegendWrapRows above, which
-        // reserve enough grid.top space for however many lines that turns out
-        // to be).
-        show: showGroupLegend,
-        data: groupLegendNames.value,
-        top: groupLegendTop,
-        left: "center",
-        selectedMode: false,
-        textStyle: { color: legendColor, fontSize: 11 },
-        itemWidth: 14,
-        itemHeight: 8,
-      },
-      {
-        show: showOverlayLegend,
-        data: overlayLegendNames.value,
-        top: overlayLegendTop,
-        left: "center",
-        selectedMode: false,
-        textStyle: { color: legendColor, fontSize: 11 },
-        itemWidth: 14,
-        itemHeight: 8,
-        formatter: overlayLegendFormatter,
-        tooltip: { show: true, formatter: legendTooltipFormatter },
-      },
-      {
-        show: showSizeLegend,
-        data: sizeLegendNames.value,
-        top: sizeLegendTop,
-        left: "center",
-        selectedMode: false,
-        textStyle: { color: legendColor, fontSize: 11 },
-        itemWidth: 10,
-        itemHeight: 10,
-        tooltip: { show: true, formatter: legendTooltipFormatter },
-      },
-    ],
-    // left/right stay modest (containLabel still grows them further if an
-    // unusually wide tick label needs it) instead of the ~10% default on
-    // both sides, which left a dead strip on the left; too tight on the left
-    // and a numeric (value-type) x-axis, which has no category buckets
-    // holding points away from x=0, ends up drawing points/labels right
-    // through that area. right/top get an explicit reservation for the axis
-    // names themselves (see estimateAxisNameSpace above) since they now
-    // render at the end of each axis rather than below/beside the ticks.
-    grid: {
-      // legendRows now already accounts for however many lines the group
-      // legend itself wraps onto (see groupLegendRows above), not just a flat
-      // one-row assumption -- so this reservation grows automatically with a
-      // wider groupBy column instead of the wrapped legend overlapping the
-      // plotted points below it.
-      top: 16 + titleSpace + legendRows * 24 + yNameSpace,
-      left: 56,
-      right: 32 + xNameSpace,
-      bottom: 8,
-      containLabel: true,
-    },
-    tooltip: {
-      trigger: "item",
-      // Compact chrome (padding/font/line-height) around the formatted HTML
-      // below -- echarts' own tooltip defaults are noticeably roomier than
-      // this app's UI text elsewhere, and a hover popup is read at a glance,
-      // not a document.
-      padding: [7, 10],
-      textStyle: { fontSize: 11.5, lineHeight: 15.5 },
-      formatter: (params: any) => {
-        if (params.componentType === "markLine") {
-          return `${t("fomcharts.medianLine.name")}: ${escapeHtml(params.data.value)}`;
-        }
-        if (params.seriesType === "line") {
-          return escapeHtml(params.seriesName);
-        }
-        const groupLine = props.groupBy
-          ? `${escapeHtml(formatUnitSuperscripts(props.groupBy))}: <strong>${escapeHtml(params.seriesName)}</strong><br/>`
-          : "";
-        // A row with several kept Material Class/Base Materials tokens plots
-        // as more than one dot (or, in merge mode, one dot anchored on just
-        // one of them) -- without this, two neighboring points (or a single
-        // merged marker) give no hint they're actually the *same* row split
-        // across categories. Lists every other group this exact point also
-        // belongs to, alongside the one groupLine already names.
-        const otherGroups = (params.data.groups ?? []).filter(
-          (g: string) => g !== params.seriesName,
-        );
-        const alsoInGroupsLine =
-          otherGroups.length > 0
-            ? `<em style="opacity:0.75">${t("fomcharts.alsoInGroups", { groups: otherGroups.map(escapeHtml).join(", ") })}</em><br/>`
-            : "";
-        // Disambiguates which of a paper's several extracted rows this point
-        // is -- Mode ID + Mode Description together (e.g. "Mode 1 —
-        // Resonance peak P1") -- without it, two points from the same
-        // Ref/Title look identical in the tooltip.
-        const modeCaseLine = params.data.modeCase
-          ? `<em style="opacity:0.75">${escapeHtml(params.data.modeCase)}</em><br/>`
-          : "";
-        const needsReviewLine = params.data.needsReview
-          ? `<span style="color:${medianLineColor}">${t("fomcharts.needsReview")}</span><br/>`
-          : "";
-        const extraLines = Object.entries(params.data.extras ?? {})
-          .map(
-            ([key, val]) =>
-              `${escapeHtml(formatUnitSuperscripts(key))}: <strong>${escapeHtml(val)}</strong><br/>`,
-          )
-          .join("");
-        // X and Y share one line (· -separated) instead of two -- the plotted
-        // axes are the two values a researcher reads first, so keeping them
-        // together also puts them right under the title instead of pushed
-        // down by every optional line above.
-        const axisLine = `${escapeHtml(formatUnitSuperscripts(props.xAxis ?? ""))}: <strong>${escapeHtml(params.data.value[0])}</strong> · ${escapeHtml(formatUnitSuperscripts(props.yAxis ?? ""))}: <strong>${escapeHtml(params.data.value[1])}</strong><br/>`;
-        return `<div style="max-width: 260px; white-space: normal;">
-                <strong>${escapeHtml(params.data.refLabel ?? "")}</strong> ${escapeHtml(params.data.title ?? "")}<br/>
-                ${modeCaseLine}
-                ${needsReviewLine}
-                ${groupLine}
-                ${alsoInGroupsLine}
-                ${axisLine}
-                ${extraLines}
-              </div>`;
-      },
-    },
-    // The visible slider bar sat right under the x-axis name and would overlap
-    // it for long names -- "inside" (scroll-wheel/pinch/drag zoom) covers
-    // zooming without it. zoomOnMouseWheel is off: the wheel is handled by our
-    // own handleWheelZoom listener instead (see its comment for why), so
-    // ECharts' own built-in wheel handling would otherwise double up with it.
-    // Un-zooming is the +/- buttons or scrolling/dragging back out -- there's
-    // no separate reset control.
-    dataZoom: [{ type: "inside", zoomOnMouseWheel: false }],
-    // nameLocation "end" puts the column name right at the tip of each axis
-    // (past the last tick) instead of centered below/beside the tick labels --
-    // this both answers "which axis is X and which is Y" directly on the
-    // chart, and sidesteps the old clipping bug, since grid.right/top above
-    // now reserve dedicated space for it rather than relying on containLabel.
-    xAxis: props.xAxisNumeric
-      ? { type: "value", name: xName, nameLocation: "end", nameGap: 12 }
-      : {
-          type: "category",
-          name: xName,
-          nameLocation: "end",
-          nameGap: 12,
-          axisLabel: {
-            interval: 0,
-            rotate: 30,
-            // Full layer-structure strings can run to 80+ characters — rotated
-            // at full length they sprawl across most of the chart height and
-            // still overlap their neighbors. Truncate the tick label; the full
-            // text stays available in the tooltip on hover.
-            formatter: (value: string) =>
-              value.length > MAX_AXIS_LABEL_LENGTH
-                ? `${value.slice(0, MAX_AXIS_LABEL_LENGTH)}…`
-                : value,
-          },
-        },
-    // Same value/category split as the X axis above -- a categorical Y (e.g.
-    // Material Class) can't take a log/linear scale, so it falls back to a
-    // plain category axis instead of props.yAxisScale (GraphControls forces
-    // the scale toggle to "value" and disables it whenever Y isn't numeric,
-    // but this is what actually makes the axis itself render correctly).
-    // No rotate here, unlike the X category axis -- Y tick labels are
-    // horizontal text stacked vertically, so they don't run into each other
-    // the way X's horizontal row of category ticks does.
-    yAxis: props.yAxisNumeric
-      ? {
-          type: props.yAxisScale,
-          name: yName,
-          nameLocation: "end",
-          nameGap: 12,
-        }
-      : {
-          type: "category",
-          name: yName,
-          nameLocation: "end",
-          nameGap: 12,
-          axisLabel: {
-            formatter: (value: string) =>
-              value.length > MAX_AXIS_LABEL_LENGTH
-                ? `${value.slice(0, MAX_AXIS_LABEL_LENGTH)}…`
-                : value,
-          },
-        },
-    series: seriesList.value,
-  };
+// Assembles the actual echarts option (title/legend/grid layout math, the
+// tooltip formatter, axis config) off of seriesList/the legend name lists
+// above -- see useFomChartOption.ts, split out of this file's own chartOption
+// computed since axis/tooltip/legend assembly is a distinct concern from
+// building the series themselves.
+const { chartOption } = useFomChartOption({
+  props,
+  t,
+  medianLineColor,
+  legendColor,
+  displayTitle,
+  chartRef,
+  seriesList,
+  groupLegendNames,
+  overlayLegendNames,
+  sizeLegendNames,
+  legendTooltipFormatter,
+  trendFit,
 });
 </script>
 
