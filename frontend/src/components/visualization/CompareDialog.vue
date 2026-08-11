@@ -679,14 +679,14 @@
 
                       <v-circle
                         v-if="activePenPoints && activePenPoints.length === 1"
-                        :config="activePenDotConfig"
+                        :config="activePenDotConfig ?? undefined"
                         :listening="false"
                       />
                       <v-line
                         v-else-if="
                           activePenPoints && activePenPoints.length > 1
                         "
-                        :config="activePenPreviewConfig"
+                        :config="activePenPreviewConfig ?? undefined"
                         :listening="false"
                       />
                       <v-ellipse
@@ -976,6 +976,19 @@ import {
 import { useI18n } from "vue-i18n";
 import type { KonvaEventObject } from "konva/lib/Node";
 import type Konva from "konva";
+import {
+  Stage as VStage,
+  Layer as VLayer,
+  Group as VGroup,
+  Rect as VRect,
+  Text as VText,
+  Line as VLine,
+  Ellipse as VEllipse,
+  Arrow as VArrow,
+  Circle as VCircle,
+  Star as VStar,
+  Transformer as VTransformer,
+} from "vue-konva";
 import {
   ArrowUpRight,
   CheckCircle2,

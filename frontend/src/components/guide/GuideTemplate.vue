@@ -61,6 +61,8 @@
           <img
             :src="yonseiSymbol"
             alt="Yonsei University"
+            width="64"
+            height="64"
             class="h-16 w-auto"
           />
           <div class="h-10 w-px bg-border" />
@@ -72,6 +74,8 @@
           <img
             :src="yonseiOptica"
             alt="Optica"
+            width="96"
+            height="48"
             class="h-12 w-auto"
             style="filter: brightness(0)"
           />
@@ -168,6 +172,8 @@
             <img
               :src="yonseiSymbol"
               alt="Yonsei University"
+              width="32"
+              height="32"
               class="h-8 w-auto"
             />
             <span class="text-[11px] text-secondary">Yonsei<sup>1</sup></span>

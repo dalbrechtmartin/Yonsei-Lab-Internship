@@ -4,7 +4,10 @@
       class="relative overflow-hidden bg-[#0b1824] px-6 pt-14 pb-12 text-center sm:px-20 sm:pt-20 sm:pb-19"
     >
       <img
-        :src="yonseiCampus"
+        :src="yonseiCampus1600"
+        :srcset="`${yonseiCampus640} 640w, ${yonseiCampus960} 960w, ${yonseiCampus1280} 1280w, ${yonseiCampus1600} 1600w`"
+        sizes="100vw"
+        fetchpriority="high"
         alt=""
         width="1600"
         height="991"
@@ -20,12 +23,16 @@
           <img
             :src="yonseiSymbol"
             alt="Yonsei University"
+            width="56"
+            height="56"
             class="h-14 w-auto drop-shadow-[0_0_6px_rgba(255,255,255,0.25)] sm:h-16"
           />
           <div class="h-12 w-px bg-white/20 sm:h-14" />
           <img
             :src="yonseiOptica"
             alt="Optica"
+            width="88"
+            height="44"
             class="h-11 w-auto drop-shadow-[0_0_6px_rgba(255,255,255,0.25)] sm:h-12.5"
           />
         </div>
@@ -172,23 +179,26 @@
     </div>
 
     <!-- Hidden multilingual guide, captured to PDF on demand -- see
-         GuideTemplate.vue and utils/pdfExport.ts. -->
-    <GuideTemplate ref="guideTemplateRef" />
+         GuideTemplate.vue and utils/pdfExport.ts. Kept out of the DOM until
+         the first download request so its heavy dependency chunk (echarts,
+         konva...) never loads on a plain home-page visit. -->
+    <GuideTemplate v-if="showGuideTemplate" ref="guideTemplateRef" />
   </main>
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, ref } from "vue";
+import { defineAsyncComponent, nextTick, ref } from "vue";
 import { ChevronDown, Download } from "@lucide/vue";
 import { RouterLink } from "vue-router";
 import { useI18n } from "vue-i18n";
 
 // GuideTemplate pulls in the whole visualization component tree (echarts,
 // konva...) just to render the off-screen PDF guide, so it's loaded as its
-// own chunk instead of shipping with every visit to the home page.
-const GuideTemplate = defineAsyncComponent(
-  () => import("@/components/guide/GuideTemplate.vue"),
-);
+// own chunk instead of shipping with every visit to the home page. The
+// loader is kept as a named function (rather than inlined) so downloadGuide
+// can await the same cached import() promise Vue uses internally.
+const loadGuideTemplate = () => import("@/components/guide/GuideTemplate.vue");
+const GuideTemplate = defineAsyncComponent(loadGuideTemplate);
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -198,18 +208,31 @@ import {
 import { exportGuideToPdf } from "@/utils/pdfExport";
 import yonseiSymbol from "@/assets/yonsei-logo.svg";
 import yonseiOptica from "@/assets/yonsei-optica.svg";
-import yonseiCampus from "@/assets/yonsei-university.webp";
+import yonseiCampus640 from "@/assets/yonsei-university-640.webp";
+import yonseiCampus960 from "@/assets/yonsei-university-960.webp";
+import yonseiCampus1280 from "@/assets/yonsei-university-1280.webp";
+import yonseiCampus1600 from "@/assets/yonsei-university-1600.webp";
 
 const { t, locale } = useI18n();
 
 const guideTemplateRef = ref<InstanceType<typeof GuideTemplate> | null>(null);
+const showGuideTemplate = ref(false);
 const generatingGuide = ref(false);
 
 async function downloadGuide() {
-  if (generatingGuide.value || !guideTemplateRef.value?.rootEl) return;
+  if (generatingGuide.value) return;
 
   generatingGuide.value = true;
   try {
+    showGuideTemplate.value = true;
+    // v-if just turned on; awaiting the same (module-cached) import promise
+    // Vue's async component uses internally -- rather than polling with
+    // nextTick(), which would busy-loop on microtasks and starve the chunk
+    // fetch's own completion -- then one nextTick() flush lets Vue commit
+    // the mount so guideTemplateRef/rootEl are populated.
+    await loadGuideTemplate();
+    await nextTick();
+    if (!guideTemplateRef.value?.rootEl) return;
     // The guide being mounted doesn't mean its rings/PNG exports have
     // finished computing yet -- they re-run async on every locale switch,
     // so exporting right after switching language could otherwise snapshot
