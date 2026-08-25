@@ -3,7 +3,8 @@
     "title": "λLens"
   },
   "footer": {
-    "copyright": "© {year} λLens, 연세대 포토닉스 연구실. 모든 권리 보유."
+    "copyright": "© {year} λLens, 연세대 포토닉스 연구실. 모든 권리 보유.",
+    "play": "Photon Dash 플레이"
   },
   "nav": {
     "home": "홈",
@@ -56,6 +57,10 @@
         "title": "PDF에서 데이터 추출",
         "description": "PDF를 놓으면 엑셀 파일이 생성됩니다. 논문 수에 따라 몇 분 걸릴 수 있습니다."
       }
+    },
+    "play": {
+      "title": "Photon Dash",
+      "back": "홈으로 돌아가기"
     }
   },
   "actions": {
@@ -78,9 +83,28 @@
     "dismiss": "메시지 닫기"
   },
   "extraction": {
+    "stepper": {
+      "deposer": "업로드",
+      "extraire": "추출",
+      "verifier": "검토",
+      "exporter": "내보내기"
+    },
     "dropzone": {
       "title": "PDF 논문을 여기에 놓으세요",
       "subtitle": "클릭해서 찾아보세요 (최대 10개)"
+    },
+    "drop": {
+      "removeFileAria": "{filename} 제거",
+      "resuming": "진행 중인 추출을 이어서 불러오는 중…",
+      "stagedCount": "{count}개 파일 선택됨",
+      "etaEstimate": "예상 약 {eta}",
+      "fileEta": "약 {eta}",
+      "pages": "{count}쪽",
+      "maxReached": "최대 개수 도달",
+      "addFile": "추가",
+      "empty": "아직 선택된 파일이 없습니다.",
+      "launch": "추출 시작",
+      "resumedToast": "진행 중이던 추출을 이어서 불러왔습니다."
     },
     "processing": "{count}개 논문 추출 중...",
     "success": "추출 완료. 엑셀 파일이 저장되었습니다.",
@@ -125,9 +149,177 @@
         "failed": "실패",
         "outOfDomain": "주제 아님"
       },
-      "heading": "논문을 추출하는 중…",
-      "overall": "{done} / {total} 파일 처리됨",
       "etaRemaining": "약 {eta} 남음"
+    },
+    "running": {
+      "heading": "추출 중 · {done} / {total} 파일",
+      "batch": "배치",
+      "nextFile": {
+        "label": "다음"
+      },
+      "journal": {
+        "title": "로그",
+        "warnings": "경고 {count}건",
+        "empty": "아직 기록이 없습니다."
+      }
+    },
+    "log": {
+      "fileProcessing": "{filename}: 처리 중",
+      "fileDone": "{filename}: {count}행 추출됨",
+      "fileFailed": "{filename}: 실패",
+      "noticeStarted": "{count}개 파일에서 할당량에 도달해 재시도가 예약되었습니다.",
+      "noticeCleared": "정상적으로 처리가 재개되었습니다."
+    },
+    "summary": {
+      "heading": "추출 완료",
+      "subheading": "검토 화면으로 이동합니다.",
+      "stats": {
+        "files": "{files}개 파일 처리 · {records}행",
+        "warnings": "경고 {count}건"
+      },
+      "cta": "지금 검토하기"
+    },
+    "review": {
+      "rowOf": "{current} / {total}행",
+      "continueToExport": "내보내기로 계속",
+      "empty": "표시할 행이 없습니다.",
+      "flaggedAria": "확인이 필요한 행",
+      "tabs": {
+        "all": "전체 · {count}",
+        "toConfirm": "확인 필요 · {count}",
+        "excluded": "제외됨 · {count}"
+      },
+      "table": {
+        "columns": {
+          "ref": "참조",
+          "wavelength": "λ (nm)",
+          "fom": "FOM",
+          "fwhm": "FWHM",
+          "q": "Q",
+          "origin": "출처"
+        }
+      },
+      "callout": {
+        "evidenceLabel": "인용:",
+        "locationLabel": "위치:",
+        "sourceOf": "출처 {current}/{total}"
+      },
+      "actions": {
+        "validate": "승인",
+        "correct": "수정",
+        "exclude": "제외",
+        "previous": "이전",
+        "next": "다음",
+        "shortcuts": {
+          "validate": "(V)",
+          "next": "⏎"
+        }
+      },
+      "edit": {
+        "title": "행 수정",
+        "moreFields": "더 많은 필드",
+        "save": "저장",
+        "cancel": "취소",
+        "fields": {
+          "ref": "참조",
+          "title": "제목",
+          "shortTitle": "짧은 제목",
+          "modeId": "모드 ID",
+          "modeDescription": "모드 설명",
+          "materialClass": "재료 분류",
+          "baseMaterials": "기본 재료",
+          "layerStructure": "층 구조",
+          "origin": "출처",
+          "domain": "도메인",
+          "resonanceWavelengthNm": "공진 파장 (nm)",
+          "spectralRange": "스펙트럼 범위",
+          "fomRiuInv": "FOM (RIU^-1)",
+          "definition": "정의",
+          "sensitivityNmPerRiu": "감도 (nm/RIU)",
+          "fwhmNm": "FWHM (nm)",
+          "qFactor": "Q 인자",
+          "notes": "메모"
+        }
+      },
+      "reviewedBy": {
+        "you": "나 · {time}",
+        "ai": "AI"
+      },
+      "pdf": {
+        "pageOf": "p. {current} / {total}",
+        "prevPage": "이전 페이지",
+        "nextPage": "다음 페이지",
+        "zoomOut": "축소",
+        "zoomIn": "확대"
+      }
+    },
+    "export": {
+      "preview": "미리보기 · {count}행",
+      "reviewedByLegend": "회색 = 제외됨, 기록으로 보관",
+      "reviewedByColumn": "검토자",
+      "summaryLine": "{ready}행 준비됨 · {excluded}행 제외 · {confirmed}행 확인됨",
+      "visualizeError": "시각화 화면에 결과를 불러오지 못했습니다."
+    },
+    "minigame": {
+      "eyebrow": "로딩 미니게임",
+      "title": "Photon Dash",
+      "startCta": "클릭하거나 스페이스바를 누르세요",
+      "helpAria": "게임 방법",
+      "closeAria": "닫기",
+      "teaser": "기다리는 동안 플레이",
+      "fold": "접기",
+      "jobDone": {
+        "message": "추출이 완료되었습니다. 게임을 마치시겠어요?"
+      },
+      "paused": {
+        "eyebrow": "일시정지",
+        "title": "게임 일시정지",
+        "resume": "여기를 클릭해서 계속하기"
+      },
+      "rules": {
+        "title": "게임 방법",
+        "intro": "노이즈, 기판, 낮은 FOM 데이터를 피하세요. Q와 FOM을 모아 점수를 올리세요.",
+        "powerups": "보호막은 충돌 1회를 막고 중첩되며, 3개가 쌓이면 슈퍼 보호막으로 바뀝니다. 더블 점프는 10초간 공중에서 한 번 더 점프할 수 있고, 점선 원 안에서 뛰면 보너스 점수를 얻습니다. 황금 슈퍼 보호막은 10초간 장애물을 부수고 점수도 줍니다.",
+        "floating": "일부 장애물은 공중에 떠 있습니다. 땅에 붙어 있거나 점프 타이밍을 조절해 피하세요."
+      },
+      "legend": {
+        "fom": "FOM",
+        "q": "Q",
+        "shield": "보호막",
+        "double": "더블 점프",
+        "super": "슈퍼 보호막"
+      },
+      "hud": {
+        "fom": "FOM",
+        "best": "최고 기록",
+        "soundOn": "소리 켜짐",
+        "soundOff": "소리 꺼짐",
+        "shield": "보호막 ×{count}",
+        "superShield": "슈퍼 보호막",
+        "doubleJump": "더블 점프 활성"
+      },
+      "gameOver": {
+        "eyebrow": "충돌 감지",
+        "title": "Game over",
+        "scoreLabel": "총 FOM",
+        "namePlaceholder": "이름 (인증서용)",
+        "download": "인증서 다운로드",
+        "replayHint": "바깥을 클릭하면 다시 시작합니다"
+      },
+      "tiers": {
+        "0": "연구실 신입",
+        "1": "광자 정찰병",
+        "2": "공진 엔지니어",
+        "3": "Q인자 마스터",
+        "4": "FOM 레전드"
+      },
+      "certificate": {
+        "heading": "Photon Dash 성과 인증서",
+        "certifies": "다음을 인증합니다",
+        "achieved": "{date}에 FOM {score}점을 달성",
+        "tiersHeading": "Photon Dash 등급",
+        "anonymous": "익명 연구자"
+      }
     }
   },
   "guide": {
@@ -735,6 +927,8 @@
     "reviewWarning": "{count}건 검토 필요",
     "manualCount": "{count}개 수동 추가",
     "manualHint": "금색 테두리의 다이아몬드 마커는 직접 추가한 점입니다. 문서에서 가져온 것이 아닙니다.",
+    "missingAxisCount": "{count}건 표시 안 됨",
+    "missingAxisHint": "선택한 X축 또는 Y축 값이 없어 그래프에 표시할 수 없는 행입니다. 다른 축을 선택하면 볼 수 있습니다.",
     "workspace": {
       "title": "분석 작업 공간",
       "pinHint": "점을 클릭하면 주석으로 고정됩니다",

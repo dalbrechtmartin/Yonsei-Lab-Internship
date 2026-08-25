@@ -3,7 +3,8 @@
     "title": "λLens"
   },
   "footer": {
-    "copyright": "© {year} λLens, Yonsei Photonics Lab. All rights reserved."
+    "copyright": "© {year} λLens, Yonsei Photonics Lab. All rights reserved.",
+    "play": "Play Photon Dash"
   },
   "nav": {
     "home": "Home",
@@ -56,6 +57,10 @@
         "title": "Extract data from PDFs",
         "description": "Drop your PDFs to generate an Excel file. This can take a few minutes depending on the number of papers."
       }
+    },
+    "play": {
+      "title": "Photon Dash",
+      "back": "Back to home"
     }
   },
   "actions": {
@@ -78,9 +83,28 @@
     "dismiss": "Dismiss message"
   },
   "extraction": {
+    "stepper": {
+      "deposer": "Drop",
+      "extraire": "Extract",
+      "verifier": "Review",
+      "exporter": "Export"
+    },
     "dropzone": {
       "title": "Drop your PDF papers here",
       "subtitle": "or click to browse (up to 10 files)"
+    },
+    "drop": {
+      "removeFileAria": "Remove {filename}",
+      "resuming": "Resuming an extraction in progress…",
+      "stagedCount": "{count} file(s) selected",
+      "etaEstimate": "~{eta} estimated",
+      "fileEta": "~{eta}",
+      "pages": "{count} page(s)",
+      "maxReached": "maximum reached",
+      "addFile": "Add",
+      "empty": "No files selected yet.",
+      "launch": "Start extraction",
+      "resumedToast": "Resuming your extraction in progress."
     },
     "processing": "Extracting {count} paper(s)...",
     "success": "Extraction done. Your Excel file has been saved.",
@@ -125,9 +149,177 @@
         "failed": "Failed",
         "outOfDomain": "Off-topic"
       },
-      "heading": "Extracting your papers…",
-      "overall": "{done} / {total} files processed",
       "etaRemaining": "~{eta} remaining"
+    },
+    "running": {
+      "heading": "Extracting · {done} / {total} files",
+      "batch": "Batch",
+      "nextFile": {
+        "label": "Next"
+      },
+      "journal": {
+        "title": "Journal",
+        "warnings": "{count} warning(s)",
+        "empty": "No events yet."
+      }
+    },
+    "log": {
+      "fileProcessing": "{filename}: processing",
+      "fileDone": "{filename}: {count} row(s) extracted",
+      "fileFailed": "{filename}: failed",
+      "noticeStarted": "Quota reached for {count} file(s), retry scheduled.",
+      "noticeCleared": "Back to normal processing."
+    },
+    "summary": {
+      "heading": "Extraction done",
+      "subheading": "Moving on to review.",
+      "stats": {
+        "files": "{files} file(s) processed · {records} row(s)",
+        "warnings": "{count} warning(s)"
+      },
+      "cta": "Review now"
+    },
+    "review": {
+      "rowOf": "Row {current} / {total}",
+      "continueToExport": "Continue to export",
+      "empty": "No rows to show.",
+      "flaggedAria": "Row needs confirmation",
+      "tabs": {
+        "all": "All · {count}",
+        "toConfirm": "To confirm · {count}",
+        "excluded": "Excluded · {count}"
+      },
+      "table": {
+        "columns": {
+          "ref": "Reference",
+          "wavelength": "λ (nm)",
+          "fom": "FOM",
+          "fwhm": "FWHM",
+          "q": "Q",
+          "origin": "Origin"
+        }
+      },
+      "callout": {
+        "evidenceLabel": "Quote:",
+        "locationLabel": "Location:",
+        "sourceOf": "Source {current} of {total}"
+      },
+      "actions": {
+        "validate": "Approve",
+        "correct": "Correct",
+        "exclude": "Exclude",
+        "previous": "Previous",
+        "next": "Next",
+        "shortcuts": {
+          "validate": "(V)",
+          "next": "⏎"
+        }
+      },
+      "edit": {
+        "title": "Correct this row",
+        "moreFields": "More fields",
+        "save": "Save",
+        "cancel": "Cancel",
+        "fields": {
+          "ref": "Reference",
+          "title": "Title",
+          "shortTitle": "Short title",
+          "modeId": "Mode ID",
+          "modeDescription": "Mode description",
+          "materialClass": "Material class",
+          "baseMaterials": "Base materials",
+          "layerStructure": "Layer structure",
+          "origin": "Origin",
+          "domain": "Domain",
+          "resonanceWavelengthNm": "Resonance wavelength (nm)",
+          "spectralRange": "Spectral range",
+          "fomRiuInv": "FOM (RIU^-1)",
+          "definition": "Definition",
+          "sensitivityNmPerRiu": "Sensitivity (nm/RIU)",
+          "fwhmNm": "FWHM (nm)",
+          "qFactor": "Q-factor",
+          "notes": "Notes"
+        }
+      },
+      "reviewedBy": {
+        "you": "You · {time}",
+        "ai": "AI"
+      },
+      "pdf": {
+        "pageOf": "p. {current} / {total}",
+        "prevPage": "Previous page",
+        "nextPage": "Next page",
+        "zoomOut": "Zoom out",
+        "zoomIn": "Zoom in"
+      }
+    },
+    "export": {
+      "preview": "Preview · {count} row(s)",
+      "reviewedByLegend": "Grayed out = excluded, kept for traceability",
+      "reviewedByColumn": "Reviewed by",
+      "summaryLine": "{ready} row(s) ready · {excluded} excluded · {confirmed} confirmed",
+      "visualizeError": "Couldn't load the export into visualization."
+    },
+    "minigame": {
+      "eyebrow": "Loading minigame",
+      "title": "Photon Dash",
+      "startCta": "Click or press space",
+      "helpAria": "How to play",
+      "closeAria": "Close",
+      "teaser": "Play while you wait",
+      "fold": "Fold",
+      "jobDone": {
+        "message": "Extraction done. Want to finish your game?"
+      },
+      "paused": {
+        "eyebrow": "Paused",
+        "title": "Game paused",
+        "resume": "Click here to resume"
+      },
+      "rules": {
+        "title": "How to play",
+        "intro": "Avoid noise, substrates and low-FOM data. Collect Q and FOM to raise your score.",
+        "powerups": "Shield absorbs one hit and stacks; 3 stacked become a super shield. Double jump adds a second jump for 10s: aim for the dotted air circles for bonus points. Gold super shield breaks obstacles for 10s and scores points too.",
+        "floating": "Some hazards float above the ground. Stay grounded or time your jump to dodge them."
+      },
+      "legend": {
+        "fom": "FOM",
+        "q": "Q",
+        "shield": "Shield",
+        "double": "Double jump",
+        "super": "Super shield"
+      },
+      "hud": {
+        "fom": "FOM",
+        "best": "Best",
+        "soundOn": "Sound on",
+        "soundOff": "Sound off",
+        "shield": "Shield ×{count}",
+        "superShield": "Super shield",
+        "doubleJump": "Double jump active"
+      },
+      "gameOver": {
+        "eyebrow": "Collision detected",
+        "title": "Game over",
+        "scoreLabel": "Total FOM",
+        "namePlaceholder": "Your name (for the certificate)",
+        "download": "Download certificate",
+        "replayHint": "Click outside to play again"
+      },
+      "tiers": {
+        "0": "Lab recruit",
+        "1": "Photon scout",
+        "2": "Resonance engineer",
+        "3": "Q factor master",
+        "4": "FOM legend"
+      },
+      "certificate": {
+        "heading": "Photon Dash performance certificate",
+        "certifies": "Certifies that",
+        "achieved": "reached an FOM of {score} on {date}",
+        "tiersHeading": "Photon Dash tiers",
+        "anonymous": "Anonymous researcher"
+      }
     }
   },
   "guide": {
@@ -735,6 +927,8 @@
     "reviewWarning": "{count} to review",
     "manualCount": "{count} added manually",
     "manualHint": "Diamond markers with a gold outline are points you added manually. They aren't from a document.",
+    "missingAxisCount": "{count} not plotted",
+    "missingAxisHint": "These rows have no value for the selected X or Y axis, so they can't be placed on the chart. Pick a different axis to see them.",
     "workspace": {
       "title": "Analysis workspace",
       "pinHint": "Click a point to pin an annotation",

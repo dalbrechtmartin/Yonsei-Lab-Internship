@@ -39,6 +39,16 @@
                 />
               </span>
               <span
+                v-if="missingAxisCount > 0"
+                class="flex items-center gap-1 bg-amber-500/10 text-amber-800 text-xs font-medium pl-2.5 pr-1.5 py-0.5 rounded whitespace-nowrap"
+              >
+                {{ t("fomcharts.missingAxisCount", { count: missingAxisCount }) }}
+                <InfoTooltip
+                  :text="t('fomcharts.missingAxisHint')"
+                  icon-class="text-amber-800/70 hover:text-amber-800"
+                />
+              </span>
+              <span
                 class="bg-primary/10 text-primary text-xs font-medium px-2.5 py-0.5 rounded whitespace-nowrap"
               >
                 {{ sampleCount }} {{ t("fomcharts.sampleCount") }}
@@ -613,6 +623,18 @@ const hasFlaggedPoints = computed(() => needsReviewCount.value > 0);
 // accurate even while the toggle hides these rows from the stats overlays.
 const manualCount = computed(
   () => plottableData.value.filter(isManualRow).length,
+);
+
+// Rows that survived every other filter (domain/origin/material/needs-review/
+// hidden -- see chartData, built upstream in VisualizationView) but still
+// can't be drawn because they have no value for the selected X or Y axis
+// (see plottableData's own blank-drop rule above). Without this badge these
+// rows just vanish from the chart, the sample count, AND DataPointsTable
+// (which is fed plottableData too) with no trace they were ever imported --
+// e.g. a paper where only one mode reports FOM while the others only report
+// wavelength, plotted against FOM.
+const missingAxisCount = computed(
+  () => props.chartData.length - plottableData.value.length,
 );
 
 // Grouping by a composite column (Material Class or Base Materials) is a

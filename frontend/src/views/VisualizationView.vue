@@ -74,15 +74,6 @@
         />
       </Card>
 
-      <StatusToast
-        :status-key="statusKey"
-        :status-class="statusClass"
-        :fade-style="statusStyle"
-        :duration-ms="ringDurationMs"
-        :token="statusToken"
-        @dismiss="dismissStatus"
-      />
-
       <Card
         v-if="fomData.length > 0"
         class="mt-4 flex min-h-0 flex-1 flex-col gap-0 overflow-x-hidden overflow-y-auto rounded-2xl border-secondary/10 bg-card/70 p-0 shadow-xl shadow-slate-900/5 backdrop-blur-xl"
@@ -297,12 +288,21 @@
           </aside>
         </div>
       </Card>
+
+      <StatusToast
+        :status-key="statusKey"
+        :status-class="statusClass"
+        :fade-style="statusStyle"
+        :duration-ms="ringDurationMs"
+        :token="statusToken"
+        @dismiss="dismissStatus"
+      />
     </div>
   </main>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import {
   ChevronDown,
@@ -337,6 +337,7 @@ import { useFomColumnMeta } from "@/composables/useFomColumnMeta";
 import { useManualPoints } from "@/composables/useManualPoints";
 import { useAnnotationPins } from "@/composables/useAnnotationPins";
 import { filterPlottable, type TrendType } from "@/utils/stats";
+import { takeIncomingVisualizationFile } from "@/composables/useIncomingVisualizationFile";
 import {
   guessDefaultYAxis,
   guessDefaultXAxis,
@@ -352,7 +353,7 @@ import {
   type DataRow,
 } from "@/utils/columnTypes";
 
-const STATUS_VISIBLE_MS = 15000;
+const STATUS_VISIBLE_MS = 5000;
 
 const { t } = useI18n();
 
@@ -971,6 +972,16 @@ const handleUpload = async ([file]: File[]) => {
     "border-emerald-500/20 bg-emerald-500/12 text-emerald-950",
   );
 };
+
+// The Extraction screen's "Visualiser" button hands off its freshly
+// downloaded export via useIncomingVisualizationFile, then routes here --
+// picking it up and feeding it through the exact same handleUpload path a
+// manual drop uses is what makes the switch feel like the researcher
+// loaded the file themselves, page change included.
+onMounted(() => {
+  const incomingFile = takeIncomingVisualizationFile();
+  if (incomingFile) handleUpload([incomingFile]);
+});
 // Opens the OS file picker directly -- while a dataset is already loaded,
 // this must NOT touch fomData/the workspace view first (that briefly
 // swapped back to the empty dropzone Card before the picker even opened,

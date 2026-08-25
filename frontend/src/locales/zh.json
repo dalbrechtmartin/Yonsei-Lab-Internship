@@ -3,7 +3,8 @@
     "title": "λLens"
   },
   "footer": {
-    "copyright": "© {year} λLens，Yonsei Photonics Lab。保留所有权利。"
+    "copyright": "© {year} λLens，Yonsei Photonics Lab。保留所有权利。",
+    "play": "玩 Photon Dash"
   },
   "nav": {
     "home": "主页",
@@ -56,6 +57,10 @@
         "title": "从 PDF 中提取数据",
         "description": "拖放 PDF 文件以生成 Excel 文件。用时几分钟，取决于论文数量。"
       }
+    },
+    "play": {
+      "title": "Photon Dash",
+      "back": "返回主页"
     }
   },
   "actions": {
@@ -78,9 +83,28 @@
     "dismiss": "关闭消息"
   },
   "extraction": {
+    "stepper": {
+      "deposer": "上传",
+      "extraire": "提取",
+      "verifier": "核对",
+      "exporter": "导出"
+    },
     "dropzone": {
       "title": "把 PDF 论文拖放在这里",
       "subtitle": "或点击浏览（最多 10 个文件）"
+    },
+    "drop": {
+      "removeFileAria": "移除 {filename}",
+      "resuming": "正在恢复进行中的提取…",
+      "stagedCount": "已选择 {count} 个文件",
+      "etaEstimate": "预计约 {eta}",
+      "fileEta": "约 {eta}",
+      "pages": "{count} 页",
+      "maxReached": "已达上限",
+      "addFile": "添加",
+      "empty": "尚未选择文件。",
+      "launch": "开始提取",
+      "resumedToast": "已恢复正在进行的提取。"
     },
     "processing": "正在提取 {count} 篇论文...",
     "success": "提取完成，Excel 文件已保存。",
@@ -125,9 +149,177 @@
         "failed": "失败",
         "outOfDomain": "不相关"
       },
-      "heading": "正在提取论文数据…",
-      "overall": "已处理 {done} / {total} 个文件",
       "etaRemaining": "约剩 {eta}"
+    },
+    "running": {
+      "heading": "正在提取 · {done} / {total} 个文件",
+      "batch": "批次",
+      "nextFile": {
+        "label": "下一个"
+      },
+      "journal": {
+        "title": "日志",
+        "warnings": "{count} 条警告",
+        "empty": "暂无事件。"
+      }
+    },
+    "log": {
+      "fileProcessing": "{filename}：处理中",
+      "fileDone": "{filename}：已提取 {count} 行",
+      "fileFailed": "{filename}：失败",
+      "noticeStarted": "{count} 个文件已达到配额，已安排重试。",
+      "noticeCleared": "已恢复正常处理。"
+    },
+    "summary": {
+      "heading": "提取完成",
+      "subheading": "即将进入核对。",
+      "stats": {
+        "files": "已处理 {files} 个文件 · {records} 行",
+        "warnings": "{count} 条警告"
+      },
+      "cta": "立即核对"
+    },
+    "review": {
+      "rowOf": "第 {current} / {total} 行",
+      "continueToExport": "继续前往导出",
+      "empty": "没有可显示的行。",
+      "flaggedAria": "待确认行",
+      "tabs": {
+        "all": "全部 · {count}",
+        "toConfirm": "待确认 · {count}",
+        "excluded": "已排除 · {count}"
+      },
+      "table": {
+        "columns": {
+          "ref": "参考",
+          "wavelength": "λ (nm)",
+          "fom": "FOM",
+          "fwhm": "FWHM",
+          "q": "Q",
+          "origin": "来源"
+        }
+      },
+      "callout": {
+        "evidenceLabel": "引用：",
+        "locationLabel": "位置：",
+        "sourceOf": "来源 {current}/{total}"
+      },
+      "actions": {
+        "validate": "通过",
+        "correct": "修正",
+        "exclude": "排除",
+        "previous": "上一行",
+        "next": "下一行",
+        "shortcuts": {
+          "validate": "(V)",
+          "next": "⏎"
+        }
+      },
+      "edit": {
+        "title": "修正该行",
+        "moreFields": "更多字段",
+        "save": "保存",
+        "cancel": "取消",
+        "fields": {
+          "ref": "参考",
+          "title": "标题",
+          "shortTitle": "简短标题",
+          "modeId": "模式 ID",
+          "modeDescription": "模式说明",
+          "materialClass": "材料类别",
+          "baseMaterials": "基础材料",
+          "layerStructure": "层结构",
+          "origin": "来源",
+          "domain": "领域",
+          "resonanceWavelengthNm": "共振波长 (nm)",
+          "spectralRange": "光谱范围",
+          "fomRiuInv": "FOM (RIU^-1)",
+          "definition": "定义",
+          "sensitivityNmPerRiu": "灵敏度 (nm/RIU)",
+          "fwhmNm": "FWHM (nm)",
+          "qFactor": "Q 因子",
+          "notes": "备注"
+        }
+      },
+      "reviewedBy": {
+        "you": "我 · {time}",
+        "ai": "AI"
+      },
+      "pdf": {
+        "pageOf": "第 {current} / {total} 页",
+        "prevPage": "上一页",
+        "nextPage": "下一页",
+        "zoomOut": "缩小",
+        "zoomIn": "放大"
+      }
+    },
+    "export": {
+      "preview": "预览 · {count} 行",
+      "reviewedByLegend": "灰色 = 已排除，保留以供追溯",
+      "reviewedByColumn": "核对人",
+      "summaryLine": "{ready} 行就绪 · {excluded} 行已排除 · {confirmed} 行已确认",
+      "visualizeError": "无法将导出结果加载到可视化界面。"
+    },
+    "minigame": {
+      "eyebrow": "加载中的小游戏",
+      "title": "Photon Dash",
+      "startCta": "点击或按空格键开始",
+      "helpAria": "玩法说明",
+      "closeAria": "关闭",
+      "teaser": "边等边玩",
+      "fold": "收起",
+      "jobDone": {
+        "message": "提取已完成。要继续完成这局游戏吗？"
+      },
+      "paused": {
+        "eyebrow": "已暂停",
+        "title": "游戏已暂停",
+        "resume": "点击此处继续"
+      },
+      "rules": {
+        "title": "玩法说明",
+        "intro": "躲开噪声、基底和低 FOM 数据。收集 Q 和 FOM 来提高分数。",
+        "powerups": "护盾可抵挡一次碰撞并可叠加，叠满 3 个会变成超级护盾。双重跳跃可在空中额外跳一次，持续 10 秒，跳入空中虚线圆圈可获得加分。金色超级护盾可摧毁障碍，持续 10 秒，还能得分。",
+        "floating": "部分障碍悬浮在空中，请贴地跑动或掌握跳跃时机来躲避。"
+      },
+      "legend": {
+        "fom": "FOM",
+        "q": "Q",
+        "shield": "护盾",
+        "double": "双重跳跃",
+        "super": "超级护盾"
+      },
+      "hud": {
+        "fom": "FOM",
+        "best": "最佳",
+        "soundOn": "声音开",
+        "soundOff": "声音关",
+        "shield": "护盾 ×{count}",
+        "superShield": "超级护盾",
+        "doubleJump": "双重跳跃中"
+      },
+      "gameOver": {
+        "eyebrow": "检测到碰撞",
+        "title": "Game over",
+        "scoreLabel": "总 FOM",
+        "namePlaceholder": "你的名字（用于证书）",
+        "download": "下载证书",
+        "replayHint": "点击外部重新开始"
+      },
+      "tiers": {
+        "0": "实验室新人",
+        "1": "光子侦察员",
+        "2": "共振工程师",
+        "3": "Q 因子大师",
+        "4": "FOM 传奇"
+      },
+      "certificate": {
+        "heading": "Photon Dash 成绩证书",
+        "certifies": "兹证明",
+        "achieved": "于 {date} 达到 FOM {score}",
+        "tiersHeading": "Photon Dash 等级",
+        "anonymous": "匿名研究者"
+      }
     }
   },
   "guide": {
@@ -735,6 +927,8 @@
     "reviewWarning": "{count} 项待审核",
     "manualCount": "{count} 个手动添加",
     "manualHint": "带金色边框的菱形标记是您手动添加的点，并非来自文档。",
+    "missingAxisCount": "{count} 项未绘制",
+    "missingAxisHint": "这些行没有所选 X 轴或 Y 轴的值，无法显示在图表上。换一个轴即可看到它们。",
     "workspace": {
       "title": "分析工作区",
       "pinHint": "点击一个点以将其固定为注释",

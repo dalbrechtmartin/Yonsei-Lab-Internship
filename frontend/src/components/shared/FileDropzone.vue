@@ -2,7 +2,7 @@
   <div
     class="w-full border-2 border-dashed rounded-2xl bg-card/85 text-center transition cursor-pointer backdrop-blur-sm"
     :class="[
-      compact ? 'p-8' : 'max-w-lg p-12',
+      tightPadding ? 'p-3' : compact ? 'p-8' : 'max-w-lg p-12',
       isDragging
         ? 'border-primary bg-primary/8'
         : 'border-secondary/25 hover:border-primary hover:bg-background/80',
@@ -12,24 +12,26 @@
     @drop.prevent="handleDrop"
     @click="triggerFileInput"
   >
-    <p
-      :class="
-        compact
-          ? 'text-base font-semibold text-ink'
-          : 'text-ink font-semibold text-lg'
-      "
-    >
-      {{ title ?? $t("dropzone.title") }}
-    </p>
-    <p
-      :class="
-        compact
-          ? 'text-sm text-secondary mt-1.5'
-          : 'text-sm text-secondary mt-2'
-      "
-    >
-      {{ subtitle ?? $t("dropzone.subtitle") }}
-    </p>
+    <slot>
+      <p
+        :class="
+          compact
+            ? 'text-base font-semibold text-ink'
+            : 'text-ink font-semibold text-lg'
+        "
+      >
+        {{ title ?? $t("dropzone.title") }}
+      </p>
+      <p
+        :class="
+          compact
+            ? 'text-sm text-secondary mt-1.5'
+            : 'text-sm text-secondary mt-2'
+        "
+      >
+        {{ subtitle ?? $t("dropzone.subtitle") }}
+      </p>
+    </slot>
 
     <input
       type="file"
@@ -55,6 +57,11 @@ const props = withDefaults(
      * (e.g. between hero copy and info badges) instead of standing
      * alone as a big centered drop target. */
     compact?: boolean;
+    /** Even tighter padding than `compact` alone -- for when the slot is
+     * filled with real content (e.g. a grid of staged files) instead of
+     * the title/subtitle prompt, where p-8 reads as too much empty margin
+     * around already-dense content. */
+    tightPadding?: boolean;
   }>(),
   {
     accept: ".xlsx, .xls, .csv",
@@ -62,6 +69,7 @@ const props = withDefaults(
     title: null,
     subtitle: null,
     compact: false,
+    tightPadding: false,
   },
 );
 

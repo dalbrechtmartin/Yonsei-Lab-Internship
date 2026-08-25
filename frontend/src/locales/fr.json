@@ -3,7 +3,8 @@
     "title": "λLens"
   },
   "footer": {
-    "copyright": "© {year} λLens, Yonsei Photonics Lab. Tous droits réservés."
+    "copyright": "© {year} λLens, Yonsei Photonics Lab. Tous droits réservés.",
+    "play": "Jouer à Photon Dash"
   },
   "nav": {
     "home": "Accueil",
@@ -56,6 +57,10 @@
         "title": "Extraire des données depuis des PDF",
         "description": "Déposez vos PDF pour générer un fichier Excel. Cela peut prendre quelques minutes selon le nombre d'articles."
       }
+    },
+    "play": {
+      "title": "Photon Dash",
+      "back": "Retour à l'accueil"
     }
   },
   "actions": {
@@ -78,9 +83,28 @@
     "dismiss": "Fermer le message"
   },
   "extraction": {
+    "stepper": {
+      "deposer": "Déposer",
+      "extraire": "Extraire",
+      "verifier": "Vérifier",
+      "exporter": "Exporter"
+    },
     "dropzone": {
       "title": "Déposez vos articles PDF ici",
       "subtitle": "ou cliquez pour parcourir (jusqu'à 10 fichiers)"
+    },
+    "drop": {
+      "removeFileAria": "Retirer {filename}",
+      "resuming": "Reprise d'une extraction en cours…",
+      "stagedCount": "{count} fichier(s) sélectionné(s)",
+      "etaEstimate": "~{eta} estimé",
+      "fileEta": "~{eta}",
+      "pages": "{count} page(s)",
+      "maxReached": "maximum atteint",
+      "addFile": "Ajouter",
+      "empty": "Aucun fichier sélectionné.",
+      "launch": "Lancer l'extraction",
+      "resumedToast": "Reprise de votre extraction en cours."
     },
     "processing": "Extraction de {count} article(s) en cours...",
     "success": "Extraction terminée. Le fichier Excel a été enregistré.",
@@ -125,9 +149,177 @@
         "failed": "Échoué",
         "outOfDomain": "Hors sujet"
       },
-      "heading": "Extraction en cours…",
-      "overall": "{done} / {total} fichiers traités",
       "etaRemaining": "~{eta} restant(es)"
+    },
+    "running": {
+      "heading": "Extraction en cours · {done} / {total} fichiers",
+      "batch": "Lot",
+      "nextFile": {
+        "label": "Suivant"
+      },
+      "journal": {
+        "title": "Journal",
+        "warnings": "{count} avertissement(s)",
+        "empty": "Aucun événement pour le moment."
+      }
+    },
+    "log": {
+      "fileProcessing": "{filename} : traitement en cours",
+      "fileDone": "{filename} : {count} ligne(s) extraite(s)",
+      "fileFailed": "{filename} : échec",
+      "noticeStarted": "Quota atteint pour {count} fichier(s), nouvelle tentative programmée.",
+      "noticeCleared": "Reprise normale du traitement."
+    },
+    "summary": {
+      "heading": "Extraction terminée",
+      "subheading": "Passage à la vérification.",
+      "stats": {
+        "files": "{files} fichier(s) traité(s) · {records} ligne(s)",
+        "warnings": "{count} avertissement(s)"
+      },
+      "cta": "Vérifier maintenant"
+    },
+    "review": {
+      "rowOf": "Ligne {current} / {total}",
+      "continueToExport": "Continuer vers l'export",
+      "empty": "Aucune ligne à afficher.",
+      "flaggedAria": "Ligne à confirmer",
+      "tabs": {
+        "all": "Tout · {count}",
+        "toConfirm": "À confirmer · {count}",
+        "excluded": "Exclues · {count}"
+      },
+      "table": {
+        "columns": {
+          "ref": "Référence",
+          "wavelength": "λ (nm)",
+          "fom": "FOM",
+          "fwhm": "FWHM",
+          "q": "Q",
+          "origin": "Origine"
+        }
+      },
+      "callout": {
+        "evidenceLabel": "Citation :",
+        "locationLabel": "Emplacement :",
+        "sourceOf": "Source {current} sur {total}"
+      },
+      "actions": {
+        "validate": "Valider",
+        "correct": "Corriger",
+        "exclude": "Exclure",
+        "previous": "Précédent",
+        "next": "Suivant",
+        "shortcuts": {
+          "validate": "(V)",
+          "next": "⏎"
+        }
+      },
+      "edit": {
+        "title": "Corriger la ligne",
+        "moreFields": "Plus de champs",
+        "save": "Enregistrer",
+        "cancel": "Annuler",
+        "fields": {
+          "ref": "Référence",
+          "title": "Titre",
+          "shortTitle": "Titre court",
+          "modeId": "ID du mode",
+          "modeDescription": "Description du mode",
+          "materialClass": "Classe de matériau",
+          "baseMaterials": "Matériaux de base",
+          "layerStructure": "Structure des couches",
+          "origin": "Origine",
+          "domain": "Domaine",
+          "resonanceWavelengthNm": "Longueur d'onde de résonance (nm)",
+          "spectralRange": "Plage spectrale",
+          "fomRiuInv": "FOM (RIU^-1)",
+          "definition": "Définition",
+          "sensitivityNmPerRiu": "Sensibilité (nm/RIU)",
+          "fwhmNm": "FWHM (nm)",
+          "qFactor": "Facteur Q",
+          "notes": "Notes"
+        }
+      },
+      "reviewedBy": {
+        "you": "Vous · {time}",
+        "ai": "IA"
+      },
+      "pdf": {
+        "pageOf": "p. {current} / {total}",
+        "prevPage": "Page précédente",
+        "nextPage": "Page suivante",
+        "zoomOut": "Zoom arrière",
+        "zoomIn": "Zoom avant"
+      }
+    },
+    "export": {
+      "preview": "Aperçu · {count} ligne(s)",
+      "reviewedByLegend": "Grisé = exclu, gardé en trace",
+      "reviewedByColumn": "Vérifié par",
+      "summaryLine": "{ready} ligne(s) prête(s) · {excluded} exclue(s) · {confirmed} confirmée(s)",
+      "visualizeError": "Impossible de charger l'export dans la visualisation."
+    },
+    "minigame": {
+      "eyebrow": "Minijeu de chargement",
+      "title": "Photon Dash",
+      "startCta": "Cliquez ou appuyez sur espace",
+      "helpAria": "Comment jouer",
+      "closeAria": "Fermer",
+      "teaser": "Jouer en attendant",
+      "fold": "Replier",
+      "jobDone": {
+        "message": "Extraction terminée. Voulez-vous terminer votre partie ?"
+      },
+      "paused": {
+        "eyebrow": "Pause",
+        "title": "Jeu en pause",
+        "resume": "Cliquez ici pour reprendre"
+      },
+      "rules": {
+        "title": "Comment jouer",
+        "intro": "Évitez le bruit, les substrats et les données à faible FOM. Collectez Q et FOM pour augmenter votre score.",
+        "powerups": "Le bouclier absorbe un choc et se cumule ; 3 cumulés deviennent un super bouclier. Le double saut ajoute un second saut pendant 10s : visez les cercles pointillés en l'air pour des points bonus. Le super bouclier doré détruit les obstacles pendant 10s et rapporte des points.",
+        "floating": "Certains obstacles flottent en l'air. Restez au sol ou sautez au bon moment pour les éviter."
+      },
+      "legend": {
+        "fom": "FOM",
+        "q": "Q",
+        "shield": "Bouclier",
+        "double": "Double saut",
+        "super": "Super bouclier"
+      },
+      "hud": {
+        "fom": "FOM",
+        "best": "Meilleur",
+        "soundOn": "Son activé",
+        "soundOff": "Son coupé",
+        "shield": "Bouclier ×{count}",
+        "superShield": "Super bouclier",
+        "doubleJump": "Double saut actif"
+      },
+      "gameOver": {
+        "eyebrow": "Collision détectée",
+        "title": "Game over",
+        "scoreLabel": "FOM total",
+        "namePlaceholder": "Votre nom (pour le certificat)",
+        "download": "Télécharger le certificat",
+        "replayHint": "Cliquez en dehors pour rejouer"
+      },
+      "tiers": {
+        "0": "Recrue du labo",
+        "1": "Éclaireur de photons",
+        "2": "Ingénieur en résonance",
+        "3": "Maître du facteur Q",
+        "4": "Légende du FOM"
+      },
+      "certificate": {
+        "heading": "Certificat de performance Photon Dash",
+        "certifies": "Certifie que",
+        "achieved": "a atteint un FOM de {score} le {date}",
+        "tiersHeading": "Paliers Photon Dash",
+        "anonymous": "Chercheur anonyme"
+      }
     }
   },
   "guide": {
@@ -735,6 +927,8 @@
     "reviewWarning": "{count} à vérifier",
     "manualCount": "{count} ajouté(s) manuellement",
     "manualHint": "Les losanges à contour doré sont vos points ajoutés manuellement. Ils ne proviennent pas d'un document.",
+    "missingAxisCount": "{count} non tracé(s)",
+    "missingAxisHint": "Ces lignes n'ont pas de valeur pour l'axe X ou Y sélectionné, elles ne peuvent pas apparaître sur le graphique. Choisissez un autre axe pour les voir.",
     "workspace": {
       "title": "Espace d'analyse",
       "pinHint": "Cliquez sur un point pour l'épingler en annotation",
