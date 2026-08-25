@@ -22,6 +22,7 @@ import uuid
 from collections import Counter
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 DATA_DIR = Path(__file__).resolve().parent / "data"
 JOBS_DIR = DATA_DIR / "jobs"
@@ -190,14 +191,30 @@ def get_job_records(job_id: str) -> list[dict]:
     return records
 
 
-def set_record_review_status(job_id: str, file_id: str, record_index: int, status: str) -> dict:
+def set_record_review_status(
+    job_id: str,
+    file_id: str,
+    record_index: int,
+    status: str,
+    fields: dict[str, Any] | None = None,
+) -> dict:
     """A human reviewer overriding one record's "Review status" after
     checking an AI-flagged "Edit" row -- the only path allowed to write
     "Approve (Manual)" (the model itself never does, see prompt.txt).
+    `fields`, when given, overwrites specific extracted values (e.g. a
+    "Corriger" edit) before the status is set -- caller is responsible for
+    only passing editable columns (see schema.EDITABLE_RECORD_FIELDS).
     Raises IndexError if record_index is out of range for this file."""
     records = JOBS[job_id]["files"][file_id]["records"]
     record = records[record_index]
+    if fields:
+        record.update(fields)
     record["Review status"] = status
+    # Reachable only by a human reviewer (the model itself never calls
+    # this, see MANUAL_REVIEW_STATUSES' docstring in main.py) -- stamped
+    # unconditionally on every call. Extra dict key, harmless for the
+    # xlsx export (_build_xlsx_response selects only COLUMN_ORDER).
+    record["Reviewed At"] = _now()
     _persist_job(job_id)
     return record
 

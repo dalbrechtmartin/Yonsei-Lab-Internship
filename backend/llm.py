@@ -34,7 +34,7 @@ with open("prompt.txt", encoding="utf-8") as f:
 def extract_text_from_pdf(file_bytes: bytes) -> str:
     text = ""
     with fitz.open(stream=file_bytes, filetype="pdf") as doc:
-        for i, page in enumerate(doc[:8], start=1):
+        for i, page in enumerate(doc, start=1):
             text += f"\n\n=== PAGE {i} ===\n"
             text += cast(str, page.get_text("text"))
     return text
@@ -394,8 +394,7 @@ def check_domain_relevance(paper_text: str, filename: str, job_id: str, file_id:
 
 
 def analyze_paper_with_llm(paper_text: str, filename: str, models: list[str]) -> list[dict] | None:
-    final_prompt = PROMPT_TEMPLATE.replace("{filename}", filename)
-    final_prompt += f"\n\n--- PAPER TEXT ---\n{paper_text}"
+    final_prompt = PROMPT_TEMPLATE + f"\n\n--- PAPER TEXT ---\n{paper_text}"
 
     last_reason = "quota" if not models else "error"
     while models:
@@ -414,8 +413,7 @@ def analyze_paper_with_llm(paper_text: str, filename: str, models: list[str]) ->
 
 
 def analyze_paper_with_llm_pinned(paper_text: str, filename: str, model: str) -> list[dict] | None:
-    final_prompt = PROMPT_TEMPLATE.replace("{filename}", filename)
-    final_prompt += f"\n\n--- PAPER TEXT ---\n{paper_text}"
+    final_prompt = PROMPT_TEMPLATE + f"\n\n--- PAPER TEXT ---\n{paper_text}"
 
     try:
         return _call_model_with_429_retry(model, final_prompt, filename)
