@@ -3,7 +3,8 @@
     "title": "λLens"
   },
   "footer": {
-    "copyright": "© {year} λLens, Yonsei Photonics Lab. Tous droits réservés."
+    "copyright": "© {year} λLens, Yonsei Photonics Lab. Tous droits réservés.",
+    "play": "Jouer à Photon Dash"
   },
   "nav": {
     "home": "Accueil",
@@ -56,6 +57,10 @@
         "title": "Extraire des données depuis des PDF",
         "description": "Déposez vos PDF pour générer un fichier Excel. Cela peut prendre quelques minutes selon le nombre d'articles."
       }
+    },
+    "play": {
+      "title": "Photon Dash",
+      "back": "Retour à l'accueil"
     }
   },
   "actions": {
@@ -78,9 +83,28 @@
     "dismiss": "Fermer le message"
   },
   "extraction": {
+    "stepper": {
+      "deposer": "Déposer",
+      "extraire": "Extraire",
+      "verifier": "Vérifier",
+      "exporter": "Exporter"
+    },
     "dropzone": {
       "title": "Déposez vos articles PDF ici",
       "subtitle": "ou cliquez pour parcourir (jusqu'à 10 fichiers)"
+    },
+    "drop": {
+      "removeFileAria": "Retirer {filename}",
+      "resuming": "Reprise d'une extraction en cours…",
+      "stagedCount": "{count} fichier(s) sélectionné(s)",
+      "etaEstimate": "~{eta} estimé",
+      "fileEta": "~{eta}",
+      "pages": "{count} page(s)",
+      "maxReached": "maximum atteint",
+      "addFile": "Ajouter",
+      "empty": "Aucun fichier sélectionné.",
+      "launch": "Lancer l'extraction",
+      "resumedToast": "Reprise de votre extraction en cours."
     },
     "processing": "Extraction de {count} article(s) en cours...",
     "success": "Extraction terminée. Le fichier Excel a été enregistré.",
@@ -125,9 +149,177 @@
         "failed": "Échoué",
         "outOfDomain": "Hors sujet"
       },
-      "heading": "Extraction en cours…",
-      "overall": "{done} / {total} fichiers traités",
       "etaRemaining": "~{eta} restant(es)"
+    },
+    "running": {
+      "heading": "Extraction en cours · {done} / {total} fichiers",
+      "batch": "Lot",
+      "nextFile": {
+        "label": "Suivant"
+      },
+      "journal": {
+        "title": "Journal",
+        "warnings": "{count} avertissement(s)",
+        "empty": "Aucun événement pour le moment."
+      }
+    },
+    "log": {
+      "fileProcessing": "{filename} : traitement en cours",
+      "fileDone": "{filename} : {count} ligne(s) extraite(s)",
+      "fileFailed": "{filename} : échec",
+      "noticeStarted": "Quota atteint pour {count} fichier(s), nouvelle tentative programmée.",
+      "noticeCleared": "Reprise normale du traitement."
+    },
+    "summary": {
+      "heading": "Extraction terminée",
+      "subheading": "Passage à la vérification.",
+      "stats": {
+        "files": "{files} fichier(s) traité(s) · {records} ligne(s)",
+        "warnings": "{count} avertissement(s)"
+      },
+      "cta": "Vérifier maintenant"
+    },
+    "review": {
+      "rowOf": "Ligne {current} / {total}",
+      "continueToExport": "Continuer vers l'export",
+      "empty": "Aucune ligne à afficher.",
+      "flaggedAria": "Ligne à confirmer",
+      "tabs": {
+        "all": "Tout · {count}",
+        "toConfirm": "À confirmer · {count}",
+        "excluded": "Exclues · {count}"
+      },
+      "table": {
+        "columns": {
+          "ref": "Référence",
+          "wavelength": "λ (nm)",
+          "fom": "FOM",
+          "fwhm": "FWHM",
+          "q": "Q",
+          "origin": "Origine"
+        }
+      },
+      "callout": {
+        "evidenceLabel": "Citation :",
+        "locationLabel": "Emplacement :",
+        "sourceOf": "Source {current} sur {total}"
+      },
+      "actions": {
+        "validate": "Valider",
+        "correct": "Corriger",
+        "exclude": "Exclure",
+        "previous": "Précédent",
+        "next": "Suivant",
+        "shortcuts": {
+          "validate": "(V)",
+          "next": "⏎"
+        }
+      },
+      "edit": {
+        "title": "Corriger la ligne",
+        "moreFields": "Plus de champs",
+        "save": "Enregistrer",
+        "cancel": "Annuler",
+        "fields": {
+          "ref": "Référence",
+          "title": "Titre",
+          "shortTitle": "Titre court",
+          "modeId": "ID du mode",
+          "modeDescription": "Description du mode",
+          "materialClass": "Classe de matériau",
+          "baseMaterials": "Matériaux de base",
+          "layerStructure": "Structure des couches",
+          "origin": "Origine",
+          "domain": "Domaine",
+          "resonanceWavelengthNm": "Longueur d'onde de résonance (nm)",
+          "spectralRange": "Plage spectrale",
+          "fomRiuInv": "FOM (RIU^-1)",
+          "definition": "Définition",
+          "sensitivityNmPerRiu": "Sensibilité (nm/RIU)",
+          "fwhmNm": "FWHM (nm)",
+          "qFactor": "Facteur Q",
+          "notes": "Notes"
+        }
+      },
+      "reviewedBy": {
+        "you": "Vous · {time}",
+        "ai": "IA"
+      },
+      "pdf": {
+        "pageOf": "p. {current} / {total}",
+        "prevPage": "Page précédente",
+        "nextPage": "Page suivante",
+        "zoomOut": "Zoom arrière",
+        "zoomIn": "Zoom avant"
+      }
+    },
+    "export": {
+      "preview": "Aperçu · {count} ligne(s)",
+      "reviewedByLegend": "Grisé = exclu, gardé en trace",
+      "reviewedByColumn": "Vérifié par",
+      "summaryLine": "{ready} ligne(s) prête(s) · {excluded} exclue(s) · {confirmed} confirmée(s)",
+      "visualizeError": "Impossible de charger l'export dans la visualisation."
+    },
+    "minigame": {
+      "eyebrow": "Minijeu de chargement",
+      "title": "Photon Dash",
+      "startCta": "Cliquez ou appuyez sur espace",
+      "helpAria": "Comment jouer",
+      "closeAria": "Fermer",
+      "teaser": "Jouer en attendant",
+      "fold": "Replier",
+      "jobDone": {
+        "message": "Extraction terminée. Voulez-vous terminer votre partie ?"
+      },
+      "paused": {
+        "eyebrow": "Pause",
+        "title": "Jeu en pause",
+        "resume": "Cliquez ici pour reprendre"
+      },
+      "rules": {
+        "title": "Comment jouer",
+        "intro": "Évitez le bruit, les substrats et les données à faible FOM. Collectez Q et FOM pour augmenter votre score.",
+        "powerups": "Le bouclier absorbe un choc et se cumule ; 3 cumulés deviennent un super bouclier. Le double saut ajoute un second saut pendant 10s : visez les cercles pointillés en l'air pour des points bonus. Le super bouclier doré détruit les obstacles pendant 10s et rapporte des points.",
+        "floating": "Certains obstacles flottent en l'air. Restez au sol ou sautez au bon moment pour les éviter."
+      },
+      "legend": {
+        "fom": "FOM",
+        "q": "Q",
+        "shield": "Bouclier",
+        "double": "Double saut",
+        "super": "Super bouclier"
+      },
+      "hud": {
+        "fom": "FOM",
+        "best": "Meilleur",
+        "soundOn": "Son activé",
+        "soundOff": "Son coupé",
+        "shield": "Bouclier ×{count}",
+        "superShield": "Super bouclier",
+        "doubleJump": "Double saut actif"
+      },
+      "gameOver": {
+        "eyebrow": "Collision détectée",
+        "title": "Game over",
+        "scoreLabel": "FOM total",
+        "namePlaceholder": "Votre nom (pour le certificat)",
+        "download": "Télécharger le certificat",
+        "replayHint": "Cliquez en dehors pour rejouer"
+      },
+      "tiers": {
+        "0": "Recrue du labo",
+        "1": "Éclaireur de photons",
+        "2": "Ingénieur en résonance",
+        "3": "Maître du facteur Q",
+        "4": "Légende du FOM"
+      },
+      "certificate": {
+        "heading": "Certificat de performance Photon Dash",
+        "certifies": "Certifie que",
+        "achieved": "a atteint un FOM de {score} le {date}",
+        "tiersHeading": "Paliers Photon Dash",
+        "anonymous": "Chercheur anonyme"
+      }
     }
   },
   "guide": {
@@ -145,26 +337,32 @@
       "cover": "Couverture",
       "intro": "Introduction",
       "toc": "Sommaire",
+      "toc2": "Sommaire (2/2)",
       "mode1Import": "1. Importer les données",
-      "mode1Controls": "2. Axes et affichage",
-      "mode1Filters": "3. Filtres",
-      "mode1Reading": "4. Lire le graphique",
-      "mode1Compare": "5. Comparer les groupes",
-      "mode1DataTable": "6. Gérer vos points de données",
-      "mode1AddPoint1": "7. Ajouter un point : l'essentiel",
-      "mode1AddPoint2": "8. Ajouter un point : structure et notes",
-      "mode1AddPoint3": "9. Ajouter un point : résultat",
-      "mode1Annotate": "10. Épingler et annoter",
-      "mode1ComparePins": "11. Comparer des points épinglés",
-      "mode1ExportChart": "12. Exporter le graphique",
-      "mode1ExportPin": "13. Exporter un point",
-      "mode2": "Mode 2 (extraction PDF)",
+      "mode1ControlsChart": "2. Réglages du graphique",
+      "mode1ControlsDisplay": "3. Réglages d'affichage",
+      "mode1Filters": "4. Filtres",
+      "mode1Reading": "5. Lire le graphique",
+      "mode1Compare": "6. Comparer les groupes",
+      "mode1DataTable": "7. Gérer vos points de données",
+      "mode1AddPoint1": "8. Ajouter un point : l'essentiel",
+      "mode1AddPoint2": "9. Ajouter un point : structure et notes",
+      "mode1AddPoint3": "10. Ajouter un point : résultat",
+      "mode1Annotate": "11. Épingler et annoter",
+      "mode1ComparePins": "12. Comparer des points épinglés",
+      "mode1ExportChart": "13. Exporter le graphique",
+      "mode1ExportPin": "14. Exporter un point",
+      "mode2Drop": "1. Déposer vos PDF",
+      "mode2Running": "2. Suivre l'extraction",
+      "mode2Review": "3. Vérifier une fiche",
+      "mode2Correct": "Corriger une fiche signalée",
+      "mode2Export": "4. Exporter vos données",
       "about": "À propos de l'auteure"
     },
     "intro": {
       "title": "Pourquoi λLens ?",
       "abstractBody": "λLens accélère la revue de littérature sur les capteurs photoniques intégrés. Comparer une dizaine d'articles à la main, c'est autant de tableurs, de copier-coller et d'erreurs de saisie pour les mêmes valeurs de FOM (longueur d'onde, sensibilité, facteur Q, FWHM). λLens automatise l'extraction PDF puis la visualisation : d'un dossier d'articles à un graphique exportable en quelques minutes, plutôt qu'en plusieurs jours.",
-      "guideBody": "Ce guide couvre le Mode 1 (visualisation Excel-to-Plot), entièrement disponible aujourd'hui. Le Mode 2 (extraction PDF) sera ajouté une fois stabilisé.",
+      "guideBody": "Ce guide couvre les deux modes de bout en bout : le Mode 1 (visualisation) et le Mode 2 (extraction PDF).",
       "contextBody": "λLens a été développé au BPEL, à l'Université Yonsei, au sein de la communauté internationale de l'optique et de la photonique présentée ci-dessous.",
       "diagram": {
         "folder": "Dossier PDF",
@@ -178,11 +376,13 @@
     },
     "toc": {
       "title": "Sommaire",
+      "title2": "Sommaire (suite)",
       "hint": "Cliquez sur une entrée pour y accéder directement.",
       "desc": {
         "intro": "Pourquoi λLens, en un coup d'œil.",
         "mode1Import": "Déposer un fichier Excel ou CSV.",
-        "mode1Controls": "Choisir les axes et régler l'affichage.",
+        "mode1ControlsChart": "Choisir les axes et nommer le graphique.",
+        "mode1ControlsDisplay": "Échelle, tendance, légende et plus.",
         "mode1Filters": "Restreindre les données sans les modifier.",
         "mode1Reading": "Lire chaque point du nuage.",
         "mode1Compare": "Regrouper et comparer par catégorie.",
@@ -194,7 +394,11 @@
         "mode1ComparePins": "Comparaison côte à côte, annotée.",
         "mode1ExportChart": "Données filtrées et graphique en image.",
         "mode1ExportPin": "Un point épinglé, exporté seul.",
-        "mode2": "Accessible dans l'application, pas encore documenté en détail."
+        "mode2Drop": "Déposez vos PDF et choisissez un modèle.",
+        "mode2Running": "Suivez le traitement du lot en direct.",
+        "mode2Review": "Vérifiez une valeur signalée face à sa source.",
+        "mode2Correct": "Corrigez une valeur à la main.",
+        "mode2Export": "Enregistrez un fichier validé."
       }
     },
     "mode1": {
@@ -217,7 +421,7 @@
         "title": "1. Importer les données",
         "overviewBody": "Une fois un fichier chargé, l'espace de travail a trois zones : contrôles à gauche (axes, affichage, filtres), graphique au centre, et panneau à droite pour comparer les groupes et annoter des points.",
         "body": "Déposez un fichier Excel ou CSV sur la zone ci-dessous, ou cliquez pour le sélectionner.",
-        "figure1Caption": "Fig. 1 : zone d'import (.xlsx, .xls, .csv, jusqu'à 10 Mo).",
+        "figure1Caption": "Fig. 1 : zone d'import (.xlsx, .xls, .csv).",
         "sampleDataLink": "↓ Pas de données ? Téléchargez l'exemple utilisé dans ce guide (.csv).",
         "figure2Caption": "Fig. 2 : barre d'outils, fichier chargé.",
         "toolbar": {
@@ -236,11 +440,10 @@
         },
         "aiNote": "Les colonnes non reconnues déclenchent une conversion automatique par IA avant le chargement. Vérifiez le résultat : certains champs peuvent manquer ou être reformulés."
       },
-      "controls": {
-        "title": "2. Axes et affichage",
-        "body": "La section Graphique choisit ce qui est tracé. La section Affichage contrôle comment c'est dessiné. Cliquez sur un en-tête pour l'ouvrir.",
-        "figureChartCaption": "Fig. 3 : section Graphique.",
-        "figureDisplayCaption": "Fig. 4 : section Affichage.",
+      "controlsChart": {
+        "title": "2. Réglages du graphique",
+        "body": "La section Graphique choisit ce qui est tracé : un titre optionnel, puis les axes Y et X. Cliquez sur l'en-tête de la section pour l'ouvrir.",
+        "figureCaption": "Fig. 3 : section Graphique.",
         "chart": {
           "title": {
             "label": "Titre du graphique",
@@ -248,17 +451,26 @@
           },
           "axes": {
             "label": "Axe Y / Axe X",
-            "body": "numérique ou catégoriel, au choix. L'icône de chaîne les lie (empêche de choisir deux fois la même colonne) ou les délie ; l'icône ⇅ les permute."
+            "body": "numérique ou catégoriel, au choix ; cliquez sur une ligne pour choisir une colonne. L'icône de chaîne les lie (empêche de choisir deux fois la même colonne) ou les délie ; l'icône ⇅ les permute."
+          },
+          "picker": {
+            "label": "Sélecteur de colonne",
+            "body": "onglets Numérique et Catégoriel, puis chaque colonne correspondante (ouvert ici pour l'axe Y). Cliquez sur l'une d'elles pour la tracer sur cet axe."
           }
-        },
+        }
+      },
+      "controlsDisplay": {
+        "title": "3. Réglages d'affichage",
+        "body": "La section Affichage contrôle comment le graphique est dessiné : échelle, ligne de tendance, légende et plus. Cliquez sur l'en-tête de la section pour l'ouvrir.",
+        "figureCaption": "Fig. 4 : section Affichage.",
         "display": {
           "scale": {
             "label": "Échelle",
-            "body": "bascule l'axe Y entre log et linéaire. Le log garde lisibles des valeurs très étalées."
+            "body": "bascule l'axe Y entre log et linéaire. Le log garde lisibles des valeurs très étalées. Désactivé si l'axe Y n'est pas numérique."
           },
           "trendLine": {
             "label": "Ligne de tendance",
-            "body": "ajuste une courbe aux points. Un menu permet de choisir sa forme."
+            "body": "ajuste une courbe aux points. Un menu permet de choisir sa forme. Désactivé sauf si les deux axes sont numériques."
           },
           "pareto": {
             "label": "Frontière de Pareto",
@@ -266,22 +478,22 @@
           },
           "legend": {
             "label": "Afficher la légende",
-            "body": "dessine les couleurs de groupe sur le graphique, incluses dans un export PNG."
+            "body": "dessine les couleurs de groupe sur le graphique, et les inclut dans un export PNG."
           },
           "median": {
             "label": "Ligne médiane",
-            "body": "trace une ligne pointillée à la valeur médiane de l'axe Y affiché."
+            "body": "trace une ligne pointillée à la valeur médiane de l'axe Y affiché. Désactivé si l'axe Y n'est pas numérique."
           },
           "pointSize": {
             "label": "Taille des points",
-            "body": "« Taille selon une mesure » ajuste les points selon une colonne. Le curseur fixe la taille max."
+            "body": "« Taille selon une mesure » ajuste les points selon une colonne ; le curseur fixe la taille max. Désactivé, le même curseur fixe une taille unique pour tous les points."
           }
         }
       },
       "filters": {
-        "title": "3. Filtres",
-        "body": "Les filtres restreignent les données sans modifier le fichier. Chaque catégorie est un menu déroulant : cliquez pour cocher ou décocher des valeurs. Une bande résumé montre toujours ce qui est actif. Une catégorie n'apparaît que si le fichier a la colonne correspondante.",
-        "figureCaption": "Fig. 5 : section Filtres, entièrement déployée.",
+        "title": "4. Filtres",
+        "body": "Les filtres restreignent les données sans modifier le fichier. Chaque catégorie est un menu déroulant : cliquez pour cocher ou décocher des valeurs. Une bande résumé montre toujours ce qui est actif. Une catégorie n'apparaît que si le fichier a la colonne correspondante, et « Masquer à vérifier » seulement si au moins une ligne est signalée.",
+        "figureCaption": "Fig. 5 : section Filtres ouverte.",
         "note": "Classe de matériau et Matériaux de base sont des filtres composites : une cellule comme « Diélectrique;Semi-conducteur » compte pour chaque valeur listée. Le mode d'exclusion règle ce qui se passe si seules certaines valeurs restent cochées : Permissif (par défaut) garde la ligne si une seule valeur est cochée ; Strict exige que toutes le soient.",
         "marks": {
           "needsReview": {
@@ -302,7 +514,7 @@
           },
           "baseMaterials": {
             "label": "Matériaux de base",
-            "body": "filtre par matériau précis (Si, SiN, Ta2O5...), même traitement que Classe de matériau."
+            "body": "filtre par matériau précis (Si, Si3N4, Ta2O5...), même traitement que Classe de matériau."
           },
           "exclusionMode": {
             "label": "Mode d'exclusion",
@@ -311,7 +523,7 @@
         }
       },
       "reading": {
-        "title": "4. Lire le graphique",
+        "title": "5. Lire le graphique",
         "body": "Chaque point est un enregistrement. Les couleurs suivent la colonne « Regrouper / Colorer par », ici Origine.",
         "figure4Caption": "Fig. 6 : FOM vs longueur d'onde, échelle log, coloré par Origine, taille selon Sensibilité.",
         "marks": {
@@ -321,7 +533,7 @@
           },
           "legend": {
             "label": "Légende",
-            "body": "une couleur par groupe. Cliquer sur une entrée isole cette série."
+            "body": "une couleur par groupe, une clé fixe (isoler un groupe se fait depuis sa carte, page suivante)."
           },
           "pointSize": {
             "label": "Taille des points",
@@ -355,13 +567,13 @@
           },
           "rightClick": {
             "label": "Clic droit",
-            "body": "ouvre le menu Modifier / Réinitialiser / Épingler / Masquer / Supprimer, identique à celui de sa ligne dans Points de données."
+            "body": "ouvre le menu Modifier / Réinitialiser (une fois modifié) / Épingler / Masquer / Supprimer, identique à celui de sa ligne dans Points de données."
           }
         },
         "flaggedNote": "Un contour pointillé signale une valeur extraite par IA jugée incertaine par le modèle. Le Mode 1 ne valide ni ne rejette jamais un enregistrement seul : ce contour signifie juste que personne ne l'a encore relu. Cette relecture se fera dans le futur écran de validation du Mode 2 ; la faire maintenant est optionnel."
       },
       "compare": {
-        "title": "5. Comparer les groupes",
+        "title": "6. Comparer les groupes",
         "body": "Le panneau Comparer les groupes résume la colonne « Regrouper / Colorer par » (ici Origine), avec des statistiques toujours à jour avec le graphique. Au-delà de quelques groupes, une recherche et un lien « Afficher plus » gardent la liste maniable.",
         "figureCaption": "Fig. 7 : panneau Comparer les groupes, EXP vs SIM.",
         "marks": {
@@ -375,14 +587,14 @@
           },
           "groupDetails": {
             "label": "Détails du groupe",
-            "body": "effectif, moyenne, médiane et σ pour ce groupe, révélés par la flèche."
+            "body": "moyenne, médiane et σ pour ce groupe, révélés par la flèche. L'effectif à côté du nom du groupe est toujours visible."
           }
         },
-        "note": "Moyenne, médiane et σ n'apparaissent qu'à partir de 3 points par groupe : en dessous, ce ne serait pas une vraie distribution.",
-        "mergeNote": "Groupé par une colonne composite (Classe de matériau, Matériaux de base), un interrupteur « Fusionner les points multi-catégories » apparaît, activé par défaut. Avant/après en image : Fig. 16-17, page 16."
+        "note": "Moyenne, médiane et σ n'apparaissent qu'à partir de 3 points par groupe : en dessous, une moyenne/médiane/σ ne refléterait pas une vraie distribution.",
+        "mergeNote": "Groupé par une colonne composite (Classe de matériau, Matériaux de base), un interrupteur « Fusionner les points multi-catégories » apparaît, disponible (désactivé par défaut). Avant/après en image : Fig. 16-17, page 18."
       },
       "dataTable": {
-        "title": "6. Gérer vos points de données",
+        "title": "7. Gérer vos points de données",
         "body": "L'onglet Points de données liste chaque enregistrement actuellement tracé, groupé par référence. Recherchez, triez, et agissez sur n'importe quel point : le masquer, le modifier, l'épingler ou le supprimer.",
         "figureCaption": "Fig. 8 : onglet Points de données, R6/SIM masqué, R3/EXP et R1/SIM épinglés.",
         "marks": {
@@ -402,20 +614,19 @@
         "actionsTitle": "Actions sur une ligne",
         "actions": {
           "click": "cliquez sur une ligne, ou son icône œil, pour la masquer/afficher. Désactivé tant qu'elle est épinglée ; désépinglez d'abord.",
-          "menu": "le menu ⋯, ou le clic droit : Modifier, Réinitialiser (une fois modifié), Épingler/Désépingler, Supprimer définitivement (irréversible pour cette session)."
+          "menu": "le menu ⋯, ou le clic droit : Modifier, Réinitialiser (une fois modifié), Épingler/Désépingler, Supprimer (irréversible pour cette session). Le clic droit sur l'en-tête d'un groupe ouvre un menu séparé pour tout le groupe : épingler, masquer, ou n'afficher que ces points."
         },
         "note": "Survoler une ligne prévisualise ce point sur le graphique ; une ligne masquée se prévisualise en contour pointillé pâle, à l'endroit où elle réapparaîtrait. Modifier un point, manuel ou issu d'un document, le marque « Modifié »."
       },
       "addPoint1": {
-        "title": "7. Ajouter un point manuellement",
+        "title": "8. Ajouter un point manuellement",
         "body": "« Ajouter des données », dans l'onglet Points de données, ouvre un assistant en 4 étapes pour tracer votre propre design de capteur, mesuré ou simulé, aux côtés de la littérature. Cela ne touche jamais le fichier importé, mais apparaît dans les exports.",
         "stepperCaption": "Fig. 9 : indicateur d'étapes. Seule l'étape en cours est mise en avant ; les autres ne forment pas une piste fait/pas fait.",
+        "footerCaption": "Précédent, Suivant et (étape 1 seulement) « Enregistrer sans plus de détails » restent visibles dans un pied de formulaire sur les 4 étapes ; à l'étape 4 le bouton devient « Enregistrer ».",
         "essentialsTitle": "Étape 1 : Essentiel",
-        "essentialsBody": "Un nom, les valeurs d'axes actuelles du graphique (toujours requises, pour que le point puisse être placé), Domaine, Origine, et forme du repère.",
-        "figureEssentialsCaption": "Fig. 10 : Essentiel, étape 1 sur 4.",
+        "essentialsBody": "Renseignez un nom et les valeurs d'axes actuelles du graphique (toujours requises, pour que le point puisse être placé), puis optionnellement Domaine, Origine, et forme du repère.",
         "metricsTitle": "Étape 2 : Métriques",
         "metricsBody": "Uniquement les colonnes de mesure que ce jeu de données possède réellement. Le facteur Q se calcule seul dès que Longueur d'onde de résonance et FWHM sont tous deux renseignés.",
-        "figureMetricsCaption": "Fig. 11 : Métriques, étape 2 sur 4, facteur Q calculé automatiquement.",
         "marks": {
           "label": {
             "label": "Nom du capteur",
@@ -423,7 +634,7 @@
           },
           "axes": {
             "label": "Valeurs d'axes",
-            "body": "requises : les colonnes Y et X actuellement tracées. Tout autre champ de cette page est optionnel."
+            "body": "requises : les colonnes Y et X actuellement tracées. Tout autre champ de cette étape est optionnel."
           },
           "domainOrigin": {
             "label": "Domaine et Origine",
@@ -444,31 +655,31 @@
         }
       },
       "addPoint2": {
-        "title": "8. Structure et notes",
-        "body": "L'étape 3 construit les matériaux et la pile de couches du capteur. L'étape 4 est pour les notes, libres et facultatives.",
+        "title": "9. Structure et notes",
+        "body": "L'étape 3 construit les matériaux et la pile de couches du capteur. L'étape 4 est pour des notes libres, facultatives.",
         "structureTitle": "Étape 3 : Structure et matériaux",
         "structureBody": "Cascade verrouillée : Matériaux de base, puis Classe de matériau (suggérée), puis Structure de couches. Chaque niveau se déverrouille une fois le précédent renseigné.",
         "figureStructureCaption": "Fig. 12 : Structure et matériaux, étape 3 sur 4.",
         "finishTitle": "Étape 4 : Finaliser",
         "finishBody": "Notes libres, facultatives, pour ce point.",
-        "converterCaption": "Une calculette de secours (µm/pm → nm) pour convertir à la main une valeur tirée d'un article.",
+        "converterCaption": "Une calculette de secours (µm/pm → nm, ou µm/RIU → nm/RIU) pour convertir à la main une valeur tirée d'un article.",
         "marks": {
           "baseMaterials": {
-            "label": "1. Matériaux de base",
+            "label": "Matériaux de base",
             "body": "recherchez ou ajoutez une valeur : de quoi ce point est physiquement fait."
           },
           "materialClass": {
-            "label": "2. Classe de matériau",
+            "label": "Classe de matériau",
             "body": "pré-cochée à partir de ce que ce jeu de données associe à ces matériaux. La modifier à la main arrête la suggestion automatique."
           },
           "layerStructure": {
-            "label": "3. Structure de couches",
-            "body": "glissez pour réordonner, fixez une épaisseur en nm, et un nombre de répétitions pour les piles périodiques. Un aperçu en direct se met à jour au fur et à mesure."
+            "label": "Structure de couches",
+            "body": "choisissez le matériau de chaque couche, glissez pour réordonner, fixez une épaisseur en nm, et un nombre de répétitions pour les piles périodiques. Un aperçu en direct se met à jour au fur et à mesure."
           }
         }
       },
       "addPoint3": {
-        "title": "9. Le résultat sur le graphique",
+        "title": "10. Le résultat sur le graphique",
         "body": "Une fois enregistré, le point apparaît immédiatement sur le graphique : un losange à contour doré, avec un bref halo pulsé à l'endroit où il atterrit.",
         "figureCaption": "Fig. 13 : le nouveau point sur le graphique, repéré et compté à part.",
         "marks": {
@@ -478,17 +689,15 @@
           },
           "newPoint": {
             "label": "Le nouveau point",
-            "body": "losange à contour doré avec un bref halo pulsé, le temps de le repérer sur le nuage."
+            "body": "un losange à contour doré, avec un bref halo pulsé juste après l'ajout pour aider à le repérer sur le nuage."
           }
         },
         "note": "Un interrupteur dans l'onglet Points de données décide si les points manuels comptent dans la médiane, la ligne de tendance et la frontière de Pareto."
       },
       "annotate": {
-        "title": "10. Épingler et annoter",
+        "title": "11. Épingler et annoter",
         "body": "Cliquer sur un point du graphique l'épingle ici sous forme de carte, un marque-page léger propre à la session, pour comparer des enregistrements précis. Cliquez sur l'en-tête d'une carte pour la déplier.",
         "figureCaption": "Fig. 14 : panneau Annotations.",
-        "expandTitle": "Ce que révèle une carte dépliée",
-        "expandIntro": "Déplier une carte révèle quatre sections supplémentaires (voir Fig. 18, page 17) :",
         "marks": {
           "sort": {
             "label": "Trier",
@@ -500,7 +709,7 @@
           },
           "compareSelect": {
             "label": "Sélection pour comparaison",
-            "body": "cochez une carte, ou utilisez Tout sélectionner / Tout désélectionner. Épingler une carte la sélectionne aussi automatiquement, jusqu'à 6, puis « Comparer (N) » ouvre un export côte à côte."
+            "body": "cochez une carte, ou utilisez Tout sélectionner / Tout désélectionner. Épingler une carte la sélectionne aussi automatiquement, jusqu'à 6, puis « Comparer (N) » ouvre une vue de comparaison côte à côte."
           },
           "card": {
             "label": "Carte épinglée",
@@ -508,7 +717,7 @@
           },
           "siblings": {
             "label": "Épingler les autres lignes de cet article",
-            "body": "raccourci en un clic vers les autres enregistrements d'un article, tant qu'il en reste à épingler."
+            "body": "affiché tant qu'il reste des enregistrements non épinglés de cet article ; un clic les épingle tous."
           },
           "layerStructure": {
             "label": "Structure de couches",
@@ -516,7 +725,7 @@
           },
           "metrics": {
             "label": "Métriques",
-            "body": "mesures non affichées dans l'en-tête. L'icône de zoom ouvre une vue agrandie exportable en PNG."
+            "body": "mesures non affichées dans l'en-tête. Même raccourci zoom-vers-PNG que Structure de couches."
           },
           "notes": {
             "label": "Notes",
@@ -525,9 +734,10 @@
         }
       },
       "comparePins": {
-        "title": "11. Comparer des points épinglés",
+        "title": "12. Comparer des points épinglés",
         "body": "Sélectionner 2 cartes épinglées ou plus (jusqu'à 6) active le bouton « Comparer (N) », qui ouvre une fenêtre affichant les points côte à côte. Le titre se remplit à partir des références épinglées et reste modifiable.",
-        "figureCaption": "Fig. 15 : comparaison des deux points épinglés page 14.",
+        "figureCaption": "Fig. 15 : comparaison des deux points épinglés page 16.",
+        "labelColon": "{label} :",
         "sections": {
           "origin": "si l'enregistrement est mesuré (EXP) ou simulé (SIM).",
           "mode": "le Mode ID et, si présente, sa description.",
@@ -535,9 +745,9 @@
           "metrics": "chaque valeur numérique tracée ou enregistrée.",
           "notes": "la note en texte libre associée au point."
         },
-        "note": "Le zoom (bas à droite), un glisser du repère ⇄ en haut de chaque colonne pour l'échanger avec une autre, et un clic sur le titre pour le renommer complètent l'aperçu. « Télécharger l'image de comparaison » exporte le résultat en PNG.",
+        "note": "Le zoom (bas à droite), un glisser du repère ⇄ en haut de chaque colonne pour l'échanger avec une autre, et un clic sur le titre pour le renommer complètent l'aperçu. « Télécharger le PNG de comparaison » exporte le résultat en PNG.",
         "markupTitle": "Annoter la comparaison",
-        "markupBody": "Avant d'exporter, annotez librement l'aperçu : dessin, cadres, flèches, soulignements, post-it et tampons, chacun dans une couleur au choix.",
+        "markupBody": "Avant d'exporter, annotez librement l'aperçu : dessin, cadres, flèches, soulignements et post-it, chacun dans une couleur au choix, plus des tampons à couleur fixe.",
         "markupMarks": {
           "tools": {
             "label": "Barre d'outils",
@@ -556,20 +766,20 @@
         }
       },
       "exportChart": {
-        "title": "12. Exporter le graphique",
+        "title": "13. Exporter le graphique",
         "body": "Le jeu de données filtré s'exporte en tableur, et le graphique tel que configuré en image.",
         "chartCaption": "Fig. 16 : groupé par Classe de matériau, fusion activée.",
         "chartCaption2": "Fig. 17 : groupé par Matériaux de base, fusion désactivée.",
-        "mergeExplain": "« Fusionner les points multi-catégories » s'applique à toute colonne composite, activé automatiquement dès qu'on regroupe par l'une d'elles. Activé (à gauche), un enregistrement multi-catégories devient un seul repère multicolore. Désactivé (à droite), il est tracé une fois par élément, chacun avec sa couleur.",
+        "mergeExplain": "« Fusionner les points multi-catégories » s'applique à toute colonne composite, s'activant automatiquement dès qu'on regroupe par l'une d'elles. Activé (à gauche), un enregistrement multi-catégories devient un seul repère multicolore. Désactivé (à droite), il est tracé une fois par élément, chacun avec sa couleur.",
         "formatsTitle": "Formats d'export",
         "formats": {
           "csv": "les lignes filtrées sous forme de fichier CSV.",
           "xlsx": "les lignes filtrées sous forme de classeur Excel.",
-          "png": "le graphique tel qu'affiché, avec titre, légende et éventuel overlay."
+          "png": "le graphique tel qu'affiché, avec titre, légende et éventuel overlay, sous forme d'image PNG."
         }
       },
       "exportPin": {
-        "title": "13. Exporter un point",
+        "title": "14. Exporter un point",
         "body": "Les détails d'un point épinglé s'exportent aussi seuls, à trois niveaux : toutes les infos en une image, ou juste sa structure de couches.",
         "pinExportCaption": "Fig. 18 : tous les champs combinés en une image PNG.",
         "metricsExportCaption": "Fig. 19 : mesures numériques seules, sans structure ni notes.",
@@ -579,59 +789,127 @@
         "pinFormats": {
           "note": "le texte de la note, en fichier .txt autonome.",
           "fields": "l'encart Métriques (ou Structure de couches) en petite image PNG autonome.",
-          "all": "tout le contenu de la carte (Mode, structure, métriques, note) en une seule image PNG."
+          "all": "tout le contenu de la carte (Origine, Mode, structure, métriques, note) en une seule image PNG."
+        }
+      },
+      "mode2Drop": {
+        "title": "1. Déposer vos PDF",
+        "body": "Déposez jusqu'à 10 PDF et choisissez le modèle Gemini qui les analyse.",
+        "marks": {
+          "files": {
+            "label": "Fichiers déposés",
+            "body": "Nombre de pages, taille et estimation de durée. Glissez une carte pour réordonner le lot."
+          },
+          "model": {
+            "label": "Modèle",
+            "body": "Par défaut essaie d'abord le modèle le plus puissant. Il bascule automatiquement si le quota est atteint."
+          },
+          "launch": {
+            "label": "Lancer",
+            "body": "Démarre le lot (les fichiers ne sont envoyés qu'à ce moment, pas au dépôt). Reste inactif tant qu'aucun fichier n'est déposé."
+          }
+        }
+      },
+      "mode2Running": {
+        "title": "2. Suivre l'extraction",
+        "body": "Les fichiers sont traités un par un. L'en-tête suit la progression globale et le journal note chaque événement.",
+        "marks": {
+          "header": {
+            "label": "Progression",
+            "body": "Progression globale et temps restant estimé, actualisés chaque seconde. Survoler une icône de fichier dans la bande ci-dessous affiche son nom et son statut."
+          },
+          "notice": {
+            "label": "Alerte de quota",
+            "body": "Le quota gratuit de Gemini peut être atteint en cours de lot. Le fichier concerné relance automatiquement. Rien n'est perdu."
+          },
+          "files": {
+            "label": "Fichier en cours et suivant",
+            "body": "Le fichier en cours de traitement, et celui qui attend son tour."
+          },
+          "log": {
+            "label": "Journal",
+            "body": "Un historique horodaté de chaque fichier qui démarre, termine, ou attend une relance."
+          },
+          "game": {
+            "label": "Mini-jeu logé / aperçu PDF",
+            "body": "Photon Dash démarre replié, ici même (une petite icône manette dans le pied de page de l'appli ouvre le même jeu séparément, à tout moment, hors extraction). Replié, cet emplacement montre plutôt un aperçu en direct du fichier en cours d'analyse."
+          }
+        }
+      },
+      "mode2Review": {
+        "title": "3. Vérifier une fiche",
+        "body": "Une fois l'extraction terminée, chaque valeur proposée s'affiche avec son article source. Une ligne dont le modèle n'est pas sûr est signalée pour un second regard.",
+        "pdfCaption": "Représentation simplifiée. Le vrai visualiseur affiche votre page PDF avec le passage cité automatiquement surligné.",
+        "note": "Il n'y a pas d'état « terminé » forcé ici : un bouton « Continuer vers l'export » permet d'avancer dès que vous êtes prêt, que chaque ligne signalée ait été vérifiée ou non. Un court écran récapitulatif, entre Suivre l'extraction et Vérifier, indique combien de fiches méritent un coup d'œil.",
+        "marks": {
+          "table": {
+            "label": "Lignes et onglets",
+            "body": "Filtrez par Toutes, À confirmer, ou Exclues. Cliquez une ligne pour l'examiner."
+          },
+          "callout": {
+            "label": "Preuve",
+            "body": "La citation exacte du modèle, et où il l'a trouvée. Cliquez un emplacement pour y amener le visualiseur."
+          },
+          "actions": {
+            "label": "Décider",
+            "body": "Approuvez, corrigez, ou excluez la ligne sélectionnée, puis passez à la suivante."
+          },
+          "pdf": {
+            "label": "Page source",
+            "body": "La page citée pour la ligne sélectionnée, défilée automatiquement jusqu'au passage."
+          }
+        }
+      },
+      "mode2Correct": {
+        "title": "Corriger une fiche signalée",
+        "body": "Corriger une ligne ouvre un formulaire modifiable pour elle, accessible depuis l'action « Corriger » du tableau de relecture. Les champs déjà visibles dans le tableau viennent en premier. Le reste se cache derrière « Plus de champs ». Cela ne fait pas avancer le stepper ci-dessus : corriger fait partie de l'étape Vérifier, pas d'une étape à part.",
+        "note": "Seuls ces champs sont modifiables à la main. Evidence, Location et Review status restent générés par le modèle.",
+        "marks": {
+          "primary": {
+            "label": "Champs principaux",
+            "body": "Les valeurs déjà visibles dans le tableau de relecture, plus Classe de matériau, Matériaux de base et Notes, qui elles ne le sont pas."
+          },
+          "more": {
+            "label": "Plus de champs",
+            "body": "Le reste de la fiche : titre, structure et définitions, masqué par défaut."
+          },
+          "save": {
+            "label": "Enregistrer / Annuler",
+            "body": "Enregistrer sauvegarde la correction et approuve la ligne ; Annuler l'abandonne et revient au tableau de relecture."
+          }
+        }
+      },
+      "mode2Export": {
+        "title": "4. Exporter vos données",
+        "body": "Un dernier aperçu avant l'enregistrement. Les lignes exclues restent visibles, barrées, pour la traçabilité.",
+        "note": "La colonne « Vérifié par » affiche IA tant qu'aucun humain n'a validé, corrigé ou exclu la ligne. Elle indique ensuite qui et quand.",
+        "marks": {
+          "legend": {
+            "label": "Nombre total",
+            "body": "Combien de lignes seront au total dans l'export, et ce que signifient les lignes grisées ci-dessous."
+          },
+          "table": {
+            "label": "Aperçu",
+            "body": "Chaque ligne extraite, y compris les exclues, telle qu'elle sera exportée. Le facteur Q ne fait pas partie de cet export ; « Vérifié par » (IA, ou qui et quand un humain a vérifié) en fait partie."
+          },
+          "save": {
+            "label": "Prêt à enregistrer",
+            "body": "Combien de lignes sont prêtes, exclues et confirmées. Nommez le fichier, choisissez .xlsx ou .csv, puis enregistrez."
+          }
         }
       }
     },
     "mode2": {
       "eyebrow": "Mode 2",
       "title": "Extraction PDF et validation",
-      "status": {
-        "title": "Accessible, pas encore documenté en détail",
-        "body": "Le Mode 2 est utilisable dès aujourd'hui dans λLens. Ce guide n'en couvre pour l'instant que les grandes lignes. L'écran de relecture et de validation est encore en cours de perfectionnement."
-      },
+      "partIntro": "Les pages suivantes présentent l'extraction PDF étape par étape, du premier dépôt jusqu'à l'export validé.",
       "divider": {
         "flow": {
-          "upload": "Importer des PDF",
+          "drop": "Déposer des PDF",
           "extract": "Extraction IA",
-          "review": "Relecture humaine"
-        },
-        "caption": "Import et extraction fonctionnent déjà. La relecture humaine est encore en conception."
-      },
-      "today": {
-        "title": "Aujourd'hui",
-        "body": "Déposez un ou plusieurs PDF, choisissez un modèle, et récupérez un fichier Excel ou CSV. Pas encore d'écran de relecture : les valeurs extraites ne sont pas vérifiées page par page.",
-        "flow": {
-          "upload": "Déposer des PDF",
-          "model": "Choisir un modèle",
-          "progress": "Suivi en direct",
-          "export": "Exporter (.xlsx/.csv)"
+          "review": "Relecture humaine",
+          "export": "Exporter"
         }
-      },
-      "preview": {
-        "title": "À venir",
-        "intro": "Les prochaines améliorations, pour fiabiliser ce flux :",
-        "rules": {
-          "title": "Règles d'extraction par IA",
-          "items": {
-            "scope": "Uniquement les enregistrements en longueur d'onde. Un seul Mode ID par paire EXP/SIM.",
-            "vocab": "Classe de matériau tirée d'un vocabulaire fixe. Les substrats inertes comme le verre restent hors de Layer Structure.",
-            "periodic": "Une pile périodique (un miroir de Bragg à 10 périodes, par exemple) devient une seule notation « (A/B) x10 », pas une liste couche par couche."
-          }
-        },
-        "columns": {
-          "title": "Colonnes extraites",
-          "body": "Référence, titre, Mode ID/description, Classe de matériau, Matériaux de base, Layer Structure, Origine, Domaine, longueur d'onde, FOM, sensibilité, FWHM, facteur Q, plus le texte source et sa localisation (page/figure)."
-        },
-        "validation": {
-          "title": "Validation humaine",
-          "body": "Un écran partagé affichera chaque valeur proposée à côté de sa page source, pour l'approuver, la modifier ou l'exclure."
-        }
-      },
-      "wireframe": {
-        "title": "Aperçu de l'écran de révision",
-        "badge": "Théorique",
-        "caption": "Ébauche non stylisée de l'écran partagé envisagé. Mise en page et texte sont illustratifs et évolueront."
       }
     },
     "about": {
@@ -735,6 +1013,8 @@
     "reviewWarning": "{count} à vérifier",
     "manualCount": "{count} ajouté(s) manuellement",
     "manualHint": "Les losanges à contour doré sont vos points ajoutés manuellement. Ils ne proviennent pas d'un document.",
+    "missingAxisCount": "{count} non tracé(s)",
+    "missingAxisHint": "Ces lignes n'ont pas de valeur pour l'axe X ou Y sélectionné, elles ne peuvent pas apparaître sur le graphique. Choisissez un autre axe pour les voir.",
     "workspace": {
       "title": "Espace d'analyse",
       "pinHint": "Cliquez sur un point pour l'épingler en annotation",

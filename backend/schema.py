@@ -51,6 +51,18 @@ def normalize_result(result: dict) -> dict:
     return record
 
 
+# Columns a human reviewer may overwrite via the review-status PATCH's
+# optional `fields` -- excludes the bookkeeping columns that stay
+# machine-authored/read-only (Evidence/Location are the model's own
+# citation of where it found the value; Review status/Reconciliation Log/
+# Model Used are workflow bookkeeping, not extracted data).
+EDITABLE_RECORD_FIELDS = [
+    c
+    for c in COLUMN_ORDER
+    if c not in {"Evidence", "Location", "Review status", "Reconciliation Log", "Model Used"}
+]
+
+
 # The subset of COLUMN_ORDER that actually drives the visualization -- the
 # axes/filters it plots against (see frontend/src/utils/columnTypes.ts's
 # find*Column helpers) rather than PDF-extraction bookkeeping (Short Title,

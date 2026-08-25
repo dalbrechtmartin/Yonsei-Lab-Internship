@@ -11,8 +11,18 @@ parts:
 
 ## Stack
 
-- Backend: [FastAPI](https://fastapi.tiangolo.com/) + [polars](https://pola.rs/) for data handling, [PyMuPDF](https://pymupdf.readthedocs.io/) for PDF parsing, [google-genai](https://ai.google.dev/) (Gemini) for extraction.
-- Frontend: [Vue 3](https://vuejs.org/) (`<script setup>`) + [Vite](https://vite.dev/), [Tailwind CSS v4](https://tailwindcss.com/) with [shadcn-vue](https://www.shadcn-vue.com/) components, [ECharts](https://echarts.apache.org/) (via `vue-echarts`) for the FOM scatter plot, [vue-i18n](https://vue-i18n.intlify.org/) for English, French, Korean, Chinese.
+**Runtime**
+
+- Backend: [FastAPI](https://fastapi.tiangolo.com/) + [polars](https://pola.rs/) (with [fastexcel](https://pypi.org/project/fastexcel/) for `.xlsx` reads) for data handling, [PyMuPDF](https://pymupdf.readthedocs.io/) for PDF parsing, [google-genai](https://ai.google.dev/) (Gemini) for extraction. No database: job state is persisted as JSON files (see `backend/state.py`).
+- Frontend: [Vue 3](https://vuejs.org/) (`<script setup>`, TypeScript) + [Vite](https://vite.dev/), [Tailwind CSS v4](https://tailwindcss.com/) with [shadcn-vue](https://www.shadcn-vue.com/) components, [vue-i18n](https://vue-i18n.intlify.org/) for English, French, Korean, Chinese.
+- Visualization & export: [ECharts](https://echarts.apache.org/) (via `vue-echarts`) for the FOM scatter plot, [Konva](https://konvajs.org/) (via `vue-konva`) for the comparison-view annotation canvas, [jsPDF](https://github.com/parallax/jsPDF) + [html2canvas-pro](https://github.com/niklasvh/html2canvas) for the PDF guide/exports, [SheetJS](https://sheetjs.com/) (`xlsx`) for client-side spreadsheet parsing, [@lucide/vue](https://lucide.dev/) for icons, [flag-icons](https://github.com/lipis/flag-icons) for the language selector, [@vueuse/core](https://vueuse.org/) for composition utilities.
+
+**Tooling & CI**
+
+- Linting/formatting: [Ruff](https://docs.astral.sh/ruff/) (backend), [ESLint](https://eslint.org/) + [Prettier](https://prettier.io/) (frontend), TypeScript in `strict` mode (`vue-tsc`).
+- Tests: [pytest](https://docs.pytest.org/) covers `backend/reconcile.py` (see `backend/tests/`). There is currently no automated frontend test suite (no Vitest/component tests, no e2e) — frontend changes are verified manually.
+- CI/CD: [GitHub Actions](.github/workflows/) run lint + tests on every push/PR, [Dependabot](.github/dependabot.yml) keeps dependencies current, [release-please](.github/workflows/release-please.yml) automates versioning and `CHANGELOG.md`.
+- Deployment: multi-stage [Docker](#docker) images (non-root user, healthcheck), frontend served by `nginx-unprivileged`.
 
 ## Quick start
 

@@ -20,6 +20,15 @@ const routes: RouteRecordRaw[] = [
     name: "extraction",
     component: () => import("../views/ExtractionView.vue"),
   },
+  {
+    // Not linked from the main nav on purpose -- reachable only via the
+    // discreet gamepad icon in the footer (see AppFooter.vue), so playing
+    // Photon Dash outside of an extraction run stays an easter egg rather
+    // than a listed feature.
+    path: "/play",
+    name: "play",
+    component: () => import("../views/PlayView.vue"),
+  },
 ];
 
 const router = createRouter({

@@ -142,7 +142,7 @@ async def run_job(job_id: str) -> None:
         while True:
             job = state.get_job(job_id)
             if not job:
-                logger.warning("Job %s introuvable.", job_id)
+                logger.warning("Job %s not found.", job_id)
                 break
 
             state.set_available_models(job_id, llm.build_available_models(job["model_choice"]))

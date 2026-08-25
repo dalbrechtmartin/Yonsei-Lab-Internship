@@ -1,3 +1,6 @@
+import { drawExportHeader, ellipsisTruncate } from "./layerStackExport";
+import { downloadDataUrl } from "./saveFile";
+
 /**
  * Renders a pinned point's metric/tag fields (Origin, Material Class,
  * Sensitivity, ...) as a label/value list onto a canvas -- same approach as
@@ -28,25 +31,7 @@ export function renderFieldListPng(
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, width, height);
 
-  ctx.textBaseline = "alphabetic";
-  ctx.font = "700 13px 'IBM Plex Mono', monospace";
-  ctx.fillStyle = "#0072b2";
-  ctx.fillText(source.ref, padX, 22);
-  ctx.font = "400 12px Inter, sans-serif";
-  ctx.fillStyle = "#52616b";
-  const maxWidth = width - padX * 2;
-  let title = source.title;
-  while (ctx.measureText(title).width > maxWidth && title.length > 1) {
-    title = title.slice(0, -1);
-  }
-  if (title !== source.title) title = title.replace(/.{3}$/, "...");
-  ctx.fillText(title, padX, 38);
-
-  ctx.strokeStyle = "rgba(58,80,107,0.2)";
-  ctx.beginPath();
-  ctx.moveTo(padX, headerH - 8);
-  ctx.lineTo(width - padX, headerH - 8);
-  ctx.stroke();
+  drawExportHeader(ctx, source, width, padX, headerH);
 
   const labelW = 150;
   fields.forEach((f, i) => {
@@ -56,14 +41,11 @@ export function renderFieldListPng(
     ctx.fillText(f.key, padX, y);
     ctx.font = '600 12px "IBM Plex Mono", monospace';
     ctx.fillStyle = "#1c2541";
-    let value = f.value;
-    while (
-      ctx.measureText(value).width > width - padX - (padX + labelW) &&
-      value.length > 1
-    ) {
-      value = value.slice(0, -1);
-    }
-    if (value !== f.value) value = value.replace(/.{3}$/, "...");
+    const value = ellipsisTruncate(
+      ctx,
+      f.value,
+      width - padX - (padX + labelW),
+    );
     ctx.fillText(value, padX + labelW, y);
   });
 
@@ -78,11 +60,8 @@ export function exportFieldListPng(
 ): void {
   const url = renderFieldListPng(source, fields);
   if (!url) return;
-  const a = document.createElement("a");
-  a.href = url;
-  a.download =
-    filename ?? `annotation_${source.ref.replace(/[^a-z0-9_-]+/gi, "_")}.png`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  downloadDataUrl(
+    url,
+    filename ?? `annotation_${source.ref.replace(/[^a-z0-9_-]+/gi, "_")}.png`,
+  );
 }

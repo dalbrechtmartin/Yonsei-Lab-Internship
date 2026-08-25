@@ -679,14 +679,14 @@
 
                       <v-circle
                         v-if="activePenPoints && activePenPoints.length === 1"
-                        :config="activePenDotConfig"
+                        :config="activePenDotConfig ?? undefined"
                         :listening="false"
                       />
                       <v-line
                         v-else-if="
                           activePenPoints && activePenPoints.length > 1
                         "
-                        :config="activePenPreviewConfig"
+                        :config="activePenPreviewConfig ?? undefined"
                         :listening="false"
                       />
                       <v-ellipse
@@ -977,6 +977,19 @@ import { useI18n } from "vue-i18n";
 import type { KonvaEventObject } from "konva/lib/Node";
 import type Konva from "konva";
 import {
+  Stage as VStage,
+  Layer as VLayer,
+  Group as VGroup,
+  Rect as VRect,
+  Text as VText,
+  Line as VLine,
+  Ellipse as VEllipse,
+  Arrow as VArrow,
+  Circle as VCircle,
+  Star as VStar,
+  Transformer as VTransformer,
+} from "vue-konva";
+import {
   ArrowUpRight,
   CheckCircle2,
   ChevronLeft,
@@ -1052,7 +1065,6 @@ import {
   PEN_WIDTH,
   POSTIT_MIN_H,
   POSTIT_W,
-  STAMP_COLORS,
   candidateBestWorstKeys,
   drawCompareAnnotations,
   drawComparePins,
@@ -1065,11 +1077,10 @@ import {
   type CompareAnnotation,
   type ComparePinData,
   type ComparePlan,
-  type CompareRowBand,
   type FrameAnnotation,
+  type MovableAnnotation,
   type PenAnnotation,
   type PostitAnnotation,
-  type StampAnnotation,
   type StampKind,
   type UnderlineAnnotation,
 } from "@/utils/compareExport";
@@ -1086,6 +1097,7 @@ import {
 } from "@/composables/useCompareKonvaConfigs";
 import { useCompareChips, type SortMode } from "@/composables/useCompareChips";
 import { useCompareTitle } from "@/composables/useCompareTitle";
+import { useCompareStageGestures } from "@/composables/useCompareStageGestures";
 
 const { t } = useI18n();
 
@@ -1719,6 +1731,57 @@ function onFrameTransformEnd(a: FrameAnnotation, e: KonvaEventObject<Event>) {
 function onAnnotationDragStart() {
   pushHistory();
 }
+
+// Every percentage-anchored type's drag-end handler below shares the same
+// shape: read where the Konva node actually landed, re-resolve which row
+// band it's now closest to (a drag can move an annotation onto a DIFFERENT
+// row -- this is what re-glues it there instead of leaving it attached to
+// the band it started in, the same band-relative anchoring new annotations
+// get via toBandPct), and write the new xPct/yPct-family fields back
+// relative to that band. resolveDragBand does the shared "which column,
+// which band" lookup; bandPct converts one absolute point into that band's
+// percentages; applyDragUpdate commits the result and refreshes the
+// selection outline. Only the anchor point(s) actually dragged and which
+// fields get written differ per type -- pen has no row/column concept at
+// all (a freehand stroke has no natural anchor), so onPenDragEnd below
+// skips all three and just re-bases its raw points.
+interface DragBand {
+  bandKey: string | null;
+  colX: number;
+  bandY: number;
+  bandH: number;
+}
+function resolveDragBand(pinRef: string, atY: number): DragBand | null {
+  const p = plan.value;
+  const idx = comparePins.value.findIndex((x) => x.ref === pinRef);
+  if (!p || idx === -1) return null;
+  const band = nearestBand(atY);
+  return {
+    bandKey: band?.key ?? null,
+    colX: idx * (COL_WIDTH + COL_GAP),
+    bandY: band ? band.y : 0,
+    bandH: band ? band.height : p.height,
+  };
+}
+function bandPct(
+  point: { x: number; y: number },
+  band: DragBand,
+): { xPct: number; yPct: number } {
+  return {
+    xPct: (point.x - band.colX) / COL_WIDTH,
+    yPct: (point.y - band.bandY) / band.bandH,
+  };
+}
+function applyDragUpdate<T extends CompareAnnotation>(
+  id: string,
+  patch: Partial<T>,
+) {
+  annotations.value = annotations.value.map((x) =>
+    x.id === id ? ({ ...x, ...patch } as T) : x,
+  );
+  refreshSelectedBounds();
+}
+
 function onPenDragEnd(a: PenAnnotation, e: KonvaEventObject<DragEvent>) {
   const node = e.target as unknown as Konva.Line;
   const dx = node.x();
@@ -1730,41 +1793,27 @@ function onPenDragEnd(a: PenAnnotation, e: KonvaEventObject<DragEvent>) {
   // just re-based to (0,0) so future drags start from a clean offset again.
   node.position({ x: 0, y: 0 });
   node.points(newPoints.flatMap((p) => [p.x, p.y]));
-  annotations.value = annotations.value.map((x) =>
-    x.id === a.id && x.type === "pen" ? { ...x, points: newPoints } : x,
-  );
-  refreshSelectedBounds();
+  applyDragUpdate<PenAnnotation>(a.id, { points: newPoints });
 }
-// Dragging can move an annotation onto a DIFFERENT row -- each drag-end
-// below re-resolves the nearest band at the drop point (not just the old
-// band it started in) so it re-glues to wherever it actually landed, the
-// same band-relative anchoring new annotations get (see toBandPct).
 function onFrameDragEnd(a: FrameAnnotation, e: KonvaEventObject<DragEvent>) {
   const p = plan.value;
-  const idx = comparePins.value.findIndex((x) => x.ref === a.pinRef);
-  if (!p || idx === -1) return;
-  const colX = idx * (COL_WIDTH + COL_GAP);
+  if (!p) return;
   const node = e.target;
   const cx = node.x();
   const cy = node.y();
+  // Width/height stay fixed across a plain move (only the resize handles --
+  // see onFrameTransformEnd -- change them), so the OLD band's pixel height
+  // is what the new band's hPct needs to reproduce the exact same size.
   const oldAnchor = resolveAnchor(comparePins.value, p, a.pinRef, a.bandKey);
   const oldPixelH = oldAnchor ? a.hPct * oldAnchor.h : 0;
-  const band = nearestBand(cy);
-  const bandY = band ? band.y : 0;
-  const bandH = band ? band.height : p.height;
   const w = a.wPct * COL_WIDTH;
-  annotations.value = annotations.value.map((x) =>
-    x.id === a.id && x.type === "frame"
-      ? {
-          ...x,
-          bandKey: band?.key ?? null,
-          xPct: (cx - w / 2 - colX) / COL_WIDTH,
-          yPct: (cy - oldPixelH / 2 - bandY) / bandH,
-          hPct: oldPixelH / bandH,
-        }
-      : x,
-  );
-  refreshSelectedBounds();
+  const band = resolveDragBand(a.pinRef, cy);
+  if (!band) return;
+  applyDragUpdate<FrameAnnotation>(a.id, {
+    bandKey: band.bandKey,
+    hPct: oldPixelH / band.bandH,
+    ...bandPct({ x: cx - w / 2, y: cy - oldPixelH / 2 }, band),
+  });
 }
 // Shared by whole-arrow dragging and single-endpoint dragging (below) --
 // both end up needing "here are the two endpoints in absolute pixels, figure
@@ -1783,19 +1832,16 @@ function rebandArrow(
   x2Pct: number;
   y2Pct: number;
 } | null {
-  const p = plan.value;
-  const idx = comparePins.value.findIndex((x) => x.ref === pinRef);
-  if (!p || idx === -1) return null;
-  const colX = idx * (COL_WIDTH + COL_GAP);
-  const band = nearestBand((y1 + y2) / 2);
-  const bandY = band ? band.y : 0;
-  const bandH = band ? band.height : p.height;
+  const band = resolveDragBand(pinRef, (y1 + y2) / 2);
+  if (!band) return null;
+  const p1 = bandPct({ x: x1, y: y1 }, band);
+  const p2 = bandPct({ x: x2, y: y2 }, band);
   return {
-    bandKey: band?.key ?? null,
-    x1Pct: (x1 - colX) / COL_WIDTH,
-    y1Pct: (y1 - bandY) / bandH,
-    x2Pct: (x2 - colX) / COL_WIDTH,
-    y2Pct: (y2 - bandY) / bandH,
+    bandKey: band.bandKey,
+    x1Pct: p1.xPct,
+    y1Pct: p1.yPct,
+    x2Pct: p2.xPct,
+    y2Pct: p2.yPct,
   };
 }
 function onArrowDragEnd(a: ArrowAnnotation, e: KonvaEventObject<DragEvent>) {
@@ -1815,10 +1861,7 @@ function onArrowDragEnd(a: ArrowAnnotation, e: KonvaEventObject<DragEvent>) {
   node.points([x1, y1, x2, y2]);
   const rebanded = rebandArrow(a.pinRef, x1, y1, x2, y2);
   if (!rebanded) return;
-  annotations.value = annotations.value.map((x) =>
-    x.id === a.id && x.type === "arrow" ? { ...x, ...rebanded } : x,
-  );
-  refreshSelectedBounds();
+  applyDragUpdate<ArrowAnnotation>(a.id, rebanded);
 }
 // Dragging moves the whole underline as one rigid horizontal segment --
 // reuses rebandArrow with y1=y2 (still keeps it perfectly horizontal, since
@@ -1843,18 +1886,12 @@ function onUnderlineDragEnd(
   node.points([x1, y, x2, y]);
   const rebanded = rebandArrow(a.pinRef, x1, y, x2, y);
   if (!rebanded) return;
-  annotations.value = annotations.value.map((x) =>
-    x.id === a.id && x.type === "underline"
-      ? {
-          ...x,
-          bandKey: rebanded.bandKey,
-          x1Pct: rebanded.x1Pct,
-          x2Pct: rebanded.x2Pct,
-          yPct: rebanded.y1Pct,
-        }
-      : x,
-  );
-  refreshSelectedBounds();
+  applyDragUpdate<UnderlineAnnotation>(a.id, {
+    bandKey: rebanded.bandKey,
+    x1Pct: rebanded.x1Pct,
+    x2Pct: rebanded.x2Pct,
+    yPct: rebanded.y1Pct,
+  });
 }
 
 // Endpoint handles -- shown only for a selected arrow (see the template),
@@ -1943,10 +1980,7 @@ function onArrowEndpointDragEnd(which: "start" | "end", ann: ArrowAnnotation) {
     which === "start" ? otherY : movedY,
   );
   if (!rebanded) return;
-  annotations.value = annotations.value.map((x) =>
-    x.id === ann.id && x.type === "arrow" ? { ...x, ...rebanded } : x,
-  );
-  refreshSelectedBounds();
+  applyDragUpdate<ArrowAnnotation>(ann.id, rebanded);
 }
 function onMovableDragMove(id: string, e: KonvaEventObject<DragEvent>) {
   if (selectedAnnotationId.value !== id) return;
@@ -1955,28 +1989,16 @@ function onMovableDragMove(id: string, e: KonvaEventObject<DragEvent>) {
   if (stage) selectedBounds.value = node.getClientRect({ relativeTo: stage });
 }
 function onMovableDragEnd(
-  a: PostitAnnotation | StampAnnotation,
+  a: MovableAnnotation,
   e: KonvaEventObject<DragEvent>,
 ) {
-  const p = plan.value;
-  const idx = comparePins.value.findIndex((x) => x.ref === a.pinRef);
-  if (!p || idx === -1) return;
-  const colX = idx * (COL_WIDTH + COL_GAP);
   const node = e.target;
-  const band = nearestBand(node.y());
-  const bandY = band ? band.y : 0;
-  const bandH = band ? band.height : p.height;
-  annotations.value = annotations.value.map((x) =>
-    x.id === a.id
-      ? {
-          ...x,
-          bandKey: band?.key ?? null,
-          xPct: (node.x() - colX) / COL_WIDTH,
-          yPct: (node.y() - bandY) / bandH,
-        }
-      : x,
-  );
-  refreshSelectedBounds();
+  const band = resolveDragBand(a.pinRef, node.y());
+  if (!band) return;
+  applyDragUpdate<MovableAnnotation>(a.id, {
+    bandKey: band.bandKey,
+    ...bandPct({ x: node.x(), y: node.y() }, band),
+  });
 }
 
 // -- Selection: bounds come straight from the Konva node's own
@@ -2059,204 +2081,6 @@ watch(selectedAnnotationId, (id) => {
   });
 });
 
-// -- Eraser: drag across shapes to delete every one the pointer touches in
-// one gesture, using Konva's own hit-graph (stage.getIntersection) rather
-// than re-deriving hit areas by hand -- more accurate than the old manual
-// math, and it's what made "just click through everything you don't want"
-// finally faster than reset-everything or undo-repeatedly.
-const erasedThisGesture = new Set<string>();
-let eraserGestureStarted = false;
-let isErasing = false;
-const eraserCursorPt = ref<{ x: number; y: number } | null>(null);
-const eraserCursorConfig = computed(() =>
-  activeTool.value === "eraser" && eraserCursorPt.value
-    ? {
-        x: eraserCursorPt.value.x,
-        y: eraserCursorPt.value.y,
-        radius: 10,
-        stroke: "#d55e00",
-        strokeWidth: 1.2,
-        dash: [3, 2],
-        fill: "rgba(213,94,0,0.12)",
-      }
-    : null,
-);
-function eraseAt(pos: { x: number; y: number }) {
-  const stage = stageRef.value?.getStage();
-
-  if (stage) {
-    let node: Konva.Node | null = stage.getIntersection(pos);
-    while (node && !node.id() && node !== stage) node = node.getParent();
-    const id = node?.id();
-    if (id && !erasedThisGesture.has(id)) {
-      if (!eraserGestureStarted) {
-        pushHistory();
-        eraserGestureStarted = true;
-      }
-      erasedThisGesture.add(id);
-      annotations.value = annotations.value.filter((a) => a.id !== id);
-      if (selectedAnnotationId.value === id) {
-        selectedAnnotationId.value = null;
-        selectedBounds.value = null;
-      }
-    }
-  }
-
-  // Row highlights live on the static content canvas, not as Konva shapes
-  // (see highlightedKeys/renderContent), so the eraser needs its own,
-  // separate check here to reach them -- without this, dragging the eraser
-  // straight through a highlighted row did nothing, since there was no
-  // Konva node there for stage.getIntersection to find.
-  const band = bandAt(pos.y);
-  const gestureKey = band ? `highlight:${band.key}` : null;
-  if (
-    band &&
-    gestureKey &&
-    highlightedKeys.value.has(band.key) &&
-    !erasedThisGesture.has(gestureKey)
-  ) {
-    if (!eraserGestureStarted) {
-      pushHistory();
-      eraserGestureStarted = true;
-    }
-    erasedThisGesture.add(gestureKey);
-    const next = new Map(highlightedKeys.value);
-    next.delete(band.key);
-    highlightedKeys.value = next;
-  }
-}
-
-// -- In-progress drawing previews (pen stroke, frame/arrow drag, highlight
-// hover) -- plain refs feeding straight into the Konva preview shapes in the
-// template, replacing the old manual per-frame canvas redraw.
-const hoverBand = ref<CompareRowBand | null>(null);
-const activePenPoints = ref<{ x: number; y: number }[] | null>(null);
-let dragStart: { x: number; y: number } | null = null;
-const previewShape = ref<{
-  type: "frame" | "arrow" | "underline";
-  start: { x: number; y: number };
-  end: { x: number; y: number };
-} | null>(null);
-
-const activePenDotConfig = computed(() => {
-  const p = activePenPoints.value?.[0];
-  return p
-    ? {
-        x: p.x,
-        y: p.y,
-        radius: PEN_WIDTH / 2,
-        fill: activeColor.value,
-        opacity: 0.55,
-      }
-    : null;
-});
-const activePenPreviewConfig = computed(() => {
-  if (!activePenPoints.value || activePenPoints.value.length < 2) return null;
-  return {
-    points: activePenPoints.value.flatMap((p) => [p.x, p.y]),
-    stroke: activeColor.value,
-    strokeWidth: PEN_WIDTH,
-    opacity: 0.55,
-    lineCap: "round",
-    lineJoin: "round",
-  };
-});
-const previewFrameConfig = computed(() => {
-  if (!previewShape.value || previewShape.value.type !== "frame") return null;
-  const { start, end } = previewShape.value;
-  const x = Math.min(start.x, end.x);
-  const y = Math.min(start.y, end.y);
-  const w = Math.abs(end.x - start.x);
-  const h = Math.abs(end.y - start.y);
-  return {
-    x: x + w / 2,
-    y: y + h / 2,
-    radiusX: Math.max(4, w / 2),
-    radiusY: Math.max(4, h / 2),
-    stroke: activeColor.value,
-    strokeWidth: 2,
-    dash: [4, 3],
-  };
-});
-const previewArrowConfig = computed(() => {
-  if (!previewShape.value || previewShape.value.type !== "arrow") return null;
-  const { start, end } = previewShape.value;
-  return {
-    points: [start.x, start.y, end.x, end.y],
-    stroke: activeColor.value,
-    strokeWidth: 2,
-    dash: [4, 3],
-  };
-});
-// Y is locked to the drag's start point (see onStageMouseMove) so this
-// always previews as a straight horizontal underline, never a diagonal.
-const previewUnderlineConfig = computed(() => {
-  if (!previewShape.value || previewShape.value.type !== "underline")
-    return null;
-  const { start, end } = previewShape.value;
-  return {
-    points: [start.x, start.y, end.x, start.y],
-    stroke: activeColor.value,
-    strokeWidth: 3,
-    dash: [4, 3],
-    lineCap: "round",
-  };
-});
-const hoverBandConfig = computed(() => {
-  if (activeTool.value !== "highlight" || !hoverBand.value || !plan.value)
-    return null;
-  return {
-    x: 4,
-    y: hoverBand.value.y - 3,
-    width: plan.value.width - 8,
-    height: hoverBand.value.height + 3,
-    stroke: activeColor.value,
-    strokeWidth: 1.5,
-    dash: [4, 3],
-    cornerRadius: 4,
-  };
-});
-
-// Ghost preview of where a new post-it would land, shown while hovering
-// with the Post-it tool armed -- resolves the exact same snapped
-// pin/row-band position the actual click handler below will use, so this is
-// a true preview (not just "wherever the mouse happens to be").
-const hoverPostitPt = ref<{ x: number; y: number } | null>(null);
-const postitPreviewConfig = computed(() => {
-  // Hidden while a note is actively being written -- the real (opaque)
-  // editing box already sits right there, showing the translucent ghost
-  // underneath it too would just look like a rendering glitch.
-  if (
-    activeTool.value !== "postit" ||
-    editingPostit.value ||
-    !hoverPostitPt.value ||
-    !plan.value
-  )
-    return null;
-  const pinRef = pinRefAt(hoverPostitPt.value.x);
-  const pct = pinRef ? toBandPct(pinRef, hoverPostitPt.value) : null;
-  if (!pinRef || !pct) return null;
-  const anchor = resolveAnchor(
-    comparePins.value,
-    plan.value,
-    pinRef,
-    pct.bandKey,
-  );
-  if (!anchor) return null;
-  return {
-    x: anchor.x + pct.xPct * anchor.w,
-    y: anchor.y + pct.yPct * anchor.h,
-    width: POSTIT_W,
-    height: postitHeight(measureCtx, "", POSTIT_W),
-    fill: activeColor.value,
-    opacity: 0.3,
-    stroke: activeColor.value,
-    strokeWidth: 1.5,
-    dash: [3, 2],
-    cornerRadius: 3,
-  };
-});
-
 // Editing state for a post-it's text box -- shared between "placing a brand
 // new note" (postit tool click) and "re-editing an existing one" (pencil
 // icon / double-click), distinguished by editingAnnotationId: null means
@@ -2307,8 +2131,9 @@ function startEditPostit(ann: PostitAnnotation) {
   // Commits whatever OTHER note might already be open first -- without this,
   // double-clicking a second postit (or its pencil icon) while a first one
   // was still being written silently discarded the first one's text, the
-  // same class of bug the general stage-mousedown guard below fixes for
-  // "click anywhere else".
+  // same class of bug the general stage-mousedown guard (see
+  // useCompareStageGestures' onStageMouseDown) fixes for "click anywhere
+  // else".
   if (editingPostit.value && editingAnnotationId !== ann.id) commitPostit();
   editingAnnotationId = ann.id;
   editingPostit.value = {
@@ -2384,288 +2209,208 @@ function cancelPostit() {
   editingAnnotationId = null;
 }
 
-// ---------------------------------------------------------------------------
-// Konva stage-level gestures -- pen/frame/arrow/postit/stamp/eraser/highlight
-// all start from a stage "mousedown" (drawing a NEW thing), unlike Pointer's
-// per-shape drag/click (moving/selecting an EXISTING one) handled above.
-// ---------------------------------------------------------------------------
-
-function stagePointerPos(
-  e: KonvaEventObject<MouseEvent>,
-): { x: number; y: number } | null {
-  const stage = e.target.getStage();
-  return stage ? stage.getPointerPosition() : null;
+// Builds a brand-new postit draft at a resolved pin/band position -- called
+// from useCompareStageGestures' onStageMouseDown once it's resolved WHERE
+// the postit tool's click landed. Stays here rather than in that composable
+// since it's really just another way to reach the editingPostit/
+// editingAnnotationId state startEditPostit and commitPostitInternal above
+// already own.
+function beginPostitDraft(
+  pinRef: string,
+  bandKey: string | null,
+  xPct: number,
+  yPct: number,
+) {
+  editingAnnotationId = null;
+  editingPostit.value = {
+    pinRef,
+    bandKey,
+    xPct,
+    yPct,
+    text: "",
+    color: activeColor.value,
+    width: POSTIT_W,
+    height: POSTIT_MIN_H,
+  };
+  nextTick(() =>
+    (postitInputEl.value?.$el as HTMLTextAreaElement | undefined)?.focus(),
+  );
 }
 
-function onStageMouseDown(e: KonvaEventObject<MouseEvent>) {
-  e.evt.preventDefault();
-  // A postit still being written gets saved (or discarded if left blank) the
-  // moment you click anywhere else, no matter what that click was for --
-  // this is what actually fixes "clicking elsewhere emptied what I wrote":
-  // previously a fresh click while the postit tool was still active
-  // overwrote the in-progress note with a new blank one before it ever had a
-  // chance to save.
-  if (editingPostit.value) {
-    commitPostitInternal(false);
-    return;
-  }
-  if (activeTool.value === "pan") return;
-  const pos = stagePointerPos(e);
-  if (!pos) return;
+// -- Konva stage-level pointer plumbing: pen/frame/arrow/postit/stamp/
+// eraser/highlight all start from a stage "mousedown" (drawing a NEW
+// thing), unlike Pointer's per-shape drag/click (moving/selecting an
+// EXISTING one, handled above) -- see composables/useCompareStageGestures.ts.
+const {
+  hoverBand,
+  activePenPoints,
+  previewShape,
+  hoverPostitPt,
+  eraserCursorPt,
+  onStageMouseDown,
+  onStageMouseMove,
+  onStageMouseUp,
+  onStageMouseLeave,
+  onStageClick,
+  reset: resetStageGestures,
+} = useCompareStageGestures({
+  plan,
+  activeTool,
+  activeColor,
+  activeStampKind,
+  annotations,
+  highlightedKeys,
+  selectedAnnotationId,
+  selectedBounds,
+  editingPostit,
+  commitPostitInternal,
+  beginPostitDraft,
+  getStage: () => stageRef.value?.getStage(),
+  bandAt,
+  nearestBand,
+  pinRefAt,
+  pinIndexAt,
+  toBandPct,
+  pushHistory,
+  nextAnnotationId,
+  selectNewlyPlaced,
+});
 
-  if (activeTool.value === "eraser") {
-    erasedThisGesture.clear();
-    eraserGestureStarted = false;
-    isErasing = true;
-    eraserCursorPt.value = pos;
-    eraseAt(pos);
-    return;
-  }
-  if (activeTool.value === "pen") {
-    activePenPoints.value = [pos];
-    return;
-  }
-  if (
-    activeTool.value === "frame" ||
-    activeTool.value === "arrow" ||
-    activeTool.value === "underline"
-  ) {
-    dragStart = pos;
-    previewShape.value = { type: activeTool.value, start: pos, end: pos };
-    return;
-  }
-  if (activeTool.value === "postit") {
-    const pinRef = pinRefAt(pos.x);
-    const pct = pinRef ? toBandPct(pinRef, pos) : null;
-    if (!pinRef || !pct) return;
-    editingAnnotationId = null;
-    editingPostit.value = {
-      pinRef,
-      bandKey: pct.bandKey,
-      xPct: pct.xPct,
-      yPct: pct.yPct,
-      text: "",
-      color: activeColor.value,
-      width: POSTIT_W,
-      height: POSTIT_MIN_H,
-    };
-    nextTick(() =>
-      (postitInputEl.value?.$el as HTMLTextAreaElement | undefined)?.focus(),
-    );
-    return;
-  }
-  if (activeTool.value === "stamp") {
-    const pinRef = pinRefAt(pos.x);
-    const pct = pinRef ? toBandPct(pinRef, pos) : null;
-    if (!pinRef || !pct) return;
-    const id = nextAnnotationId();
-    pushHistory();
-    annotations.value = [
-      ...annotations.value,
-      {
-        id,
-        type: "stamp",
-        pinRef,
-        bandKey: pct.bandKey,
-        kind: activeStampKind.value,
-        color: STAMP_COLORS[activeStampKind.value],
-        xPct: pct.xPct,
-        yPct: pct.yPct,
-      },
-    ];
-    selectNewlyPlaced(id);
-  }
-}
-
-function onStageMouseMove(e: KonvaEventObject<MouseEvent>) {
-  const pos = stagePointerPos(e);
-  if (!pos) return;
-
-  if (activeTool.value === "eraser") {
-    eraserCursorPt.value = pos;
-    if (isErasing) eraseAt(pos);
-    return;
-  }
-  if (activeTool.value === "highlight") {
-    hoverBand.value = bandAt(pos.y);
-    return;
-  }
-  if (activeTool.value === "postit") {
-    hoverPostitPt.value = pos;
-    return;
-  }
-  if (activeTool.value === "pen" && activePenPoints.value) {
-    activePenPoints.value = [...activePenPoints.value, pos];
-    return;
-  }
-  if (activeTool.value === "underline" && dragStart) {
-    // Y locked to the drag's start -- an underline is always horizontal,
-    // never a diagonal like the arrow it otherwise shares its drag gesture
-    // with (see previewUnderlineConfig).
-    previewShape.value = {
-      type: "underline",
-      start: dragStart,
-      end: { x: pos.x, y: dragStart.y },
-    };
-    return;
-  }
-  if (
-    (activeTool.value === "frame" || activeTool.value === "arrow") &&
-    dragStart
-  ) {
-    previewShape.value = { type: activeTool.value, start: dragStart, end: pos };
-  }
-}
-
-function onStageMouseUp() {
-  isErasing = false;
-  if (activeTool.value === "pen" && activePenPoints.value) {
-    const points = activePenPoints.value;
-    activePenPoints.value = null;
-    // A plain click (no drag -- points never grew past the initial
-    // mousedown position) used to still commit a zero-length, invisible
-    // stroke that then forced a switch to the Pointer tool for nothing
-    // visible to select -- the "bug" reported when just tapping a point.
-    // Requiring a real drag fixes that. Pen also deliberately does NOT call
-    // selectNewlyPlaced like every other tool: drawing is often a sequence
-    // of several strokes in a row, and forcing a switch to Pointer after
-    // each one meant re-arming the Pen tool by hand before every next mark.
-    if (points.length > 1) {
-      const id = nextAnnotationId();
-      pushHistory();
-      annotations.value = [
-        ...annotations.value,
-        { id, type: "pen", color: activeColor.value, points },
-      ];
-    }
-    return;
-  }
-  if (
-    (activeTool.value === "frame" ||
-      activeTool.value === "arrow" ||
-      activeTool.value === "underline") &&
-    dragStart &&
-    previewShape.value &&
-    plan.value
-  ) {
-    const { start, end } = previewShape.value;
-    const pinRef = pinRefAt((start.x + end.x) / 2);
-    const idx = pinIndexAt((start.x + end.x) / 2);
-    const colX = idx * (COL_WIDTH + COL_GAP);
-    // ONE shared band for both endpoints (based on the drag's midpoint) --
-    // keeps the shape's own geometry internally consistent even if start/end
-    // technically sit in different bands (e.g. a frame drawn slightly across
-    // a row boundary).
-    const band = nearestBand((start.y + end.y) / 2);
-    const bandY = band ? band.y : 0;
-    const bandH = band ? band.height : plan.value.height;
-    const startPct = {
-      xPct: (start.x - colX) / COL_WIDTH,
-      yPct: (start.y - bandY) / bandH,
-    };
-    const endPct = {
-      xPct: (end.x - colX) / COL_WIDTH,
-      yPct: (end.y - bandY) / bandH,
-    };
-    if (pinRef) {
-      const id = nextAnnotationId();
-      pushHistory();
-      if (previewShape.value.type === "frame") {
-        annotations.value = [
-          ...annotations.value,
-          {
-            id,
-            type: "frame",
-            color: activeColor.value,
-            pinRef,
-            bandKey: band?.key ?? null,
-            xPct: Math.min(startPct.xPct, endPct.xPct),
-            yPct: Math.min(startPct.yPct, endPct.yPct),
-            wPct: Math.abs(endPct.xPct - startPct.xPct) || 0.1,
-            hPct: Math.abs(endPct.yPct - startPct.yPct) || 0.03,
-          },
-        ];
-      } else if (previewShape.value.type === "arrow") {
-        annotations.value = [
-          ...annotations.value,
-          {
-            id,
-            type: "arrow",
-            color: activeColor.value,
-            pinRef,
-            bandKey: band?.key ?? null,
-            x1Pct: startPct.xPct,
-            y1Pct: startPct.yPct,
-            x2Pct: endPct.xPct,
-            y2Pct: endPct.yPct,
-          },
-        ];
-      } else {
-        // A plain click (no real drag) still gets a visible, usable
-        // underline instead of a zero-length, invisible one -- same "give a
-        // degenerate gesture a sane minimum size" idea as the frame's own
-        // `|| 0.1` above.
-        const x1Pct = Math.min(startPct.xPct, endPct.xPct);
-        const x2Pct =
-          Math.abs(endPct.xPct - startPct.xPct) < 0.02
-            ? x1Pct + 0.12
-            : Math.max(startPct.xPct, endPct.xPct);
-        annotations.value = [
-          ...annotations.value,
-          {
-            id,
-            type: "underline",
-            color: activeColor.value,
-            pinRef,
-            bandKey: band?.key ?? null,
-            x1Pct,
-            x2Pct,
-            yPct: startPct.yPct,
-          },
-        ];
+// -- In-progress drawing preview Konva configs -- read the gesture state
+// above straight out of useCompareStageGestures' return, feeding the
+// preview shapes in the template (replacing the old manual per-frame canvas
+// redraw).
+const eraserCursorConfig = computed(() =>
+  activeTool.value === "eraser" && eraserCursorPt.value
+    ? {
+        x: eraserCursorPt.value.x,
+        y: eraserCursorPt.value.y,
+        radius: 10,
+        stroke: "#d55e00",
+        strokeWidth: 1.2,
+        dash: [3, 2],
+        fill: "rgba(213,94,0,0.12)",
       }
-      selectNewlyPlaced(id);
-    }
-    dragStart = null;
-    previewShape.value = null;
-  }
-}
-
-function onStageMouseLeave() {
-  onStageMouseUp();
-  eraserCursorPt.value = null;
-  activePenPoints.value = null;
-  dragStart = null;
-  previewShape.value = null;
-  hoverBand.value = null;
-  hoverPostitPt.value = null;
-}
-
-function onStageClick(e: KonvaEventObject<MouseEvent>) {
-  const stage = e.target.getStage();
-  if (activeTool.value === "pointer") {
-    if (e.target === stage) {
-      selectedAnnotationId.value = null;
-      selectedBounds.value = null;
-    }
-    return;
-  }
-  if (activeTool.value !== "highlight") return;
-  const pos = stagePointerPos(e);
-  const band = pos ? bandAt(pos.y) : null;
-  if (!band) return;
-  pushHistory();
-  const next = new Map(highlightedKeys.value);
-  const current = next.get(band.key);
-  // Not highlighted yet -> highlight it in the active color. Already
-  // highlighted in a DIFFERENT color -> recolor it (lets you fix a color
-  // without erasing + redrawing first). Already highlighted in the SAME
-  // color you've got selected -> toggle it off, same as before.
-  if (current === undefined || current !== activeColor.value)
-    next.set(band.key, activeColor.value);
-  else next.delete(band.key);
-  highlightedKeys.value = next;
-}
+    : null,
+);
+const activePenDotConfig = computed(() => {
+  const p = activePenPoints.value?.[0];
+  return p
+    ? {
+        x: p.x,
+        y: p.y,
+        radius: PEN_WIDTH / 2,
+        fill: activeColor.value,
+        opacity: 0.55,
+      }
+    : null;
+});
+const activePenPreviewConfig = computed(() => {
+  if (!activePenPoints.value || activePenPoints.value.length < 2) return null;
+  return {
+    points: activePenPoints.value.flatMap((p) => [p.x, p.y]),
+    stroke: activeColor.value,
+    strokeWidth: PEN_WIDTH,
+    opacity: 0.55,
+    lineCap: "round",
+    lineJoin: "round",
+  };
+});
+const previewFrameConfig = computed(() => {
+  if (!previewShape.value || previewShape.value.type !== "frame") return null;
+  const { start, end } = previewShape.value;
+  const x = Math.min(start.x, end.x);
+  const y = Math.min(start.y, end.y);
+  const w = Math.abs(end.x - start.x);
+  const h = Math.abs(end.y - start.y);
+  return {
+    x: x + w / 2,
+    y: y + h / 2,
+    radiusX: Math.max(4, w / 2),
+    radiusY: Math.max(4, h / 2),
+    stroke: activeColor.value,
+    strokeWidth: 2,
+    dash: [4, 3],
+  };
+});
+const previewArrowConfig = computed(() => {
+  if (!previewShape.value || previewShape.value.type !== "arrow") return null;
+  const { start, end } = previewShape.value;
+  return {
+    points: [start.x, start.y, end.x, end.y],
+    stroke: activeColor.value,
+    strokeWidth: 2,
+    dash: [4, 3],
+  };
+});
+// Y is locked to the drag's start point (see useCompareStageGestures'
+// onStageMouseMove) so this always previews as a straight horizontal
+// underline, never a diagonal.
+const previewUnderlineConfig = computed(() => {
+  if (!previewShape.value || previewShape.value.type !== "underline")
+    return null;
+  const { start, end } = previewShape.value;
+  return {
+    points: [start.x, start.y, end.x, start.y],
+    stroke: activeColor.value,
+    strokeWidth: 3,
+    dash: [4, 3],
+    lineCap: "round",
+  };
+});
+const hoverBandConfig = computed(() => {
+  if (activeTool.value !== "highlight" || !hoverBand.value || !plan.value)
+    return null;
+  return {
+    x: 4,
+    y: hoverBand.value.y - 3,
+    width: plan.value.width - 8,
+    height: hoverBand.value.height + 3,
+    stroke: activeColor.value,
+    strokeWidth: 1.5,
+    dash: [4, 3],
+    cornerRadius: 4,
+  };
+});
+// Ghost preview of where a new post-it would land, shown while hovering
+// with the Post-it tool armed -- resolves the exact same snapped
+// pin/row-band position the actual click handler (onStageMouseDown, above)
+// will use, so this is a true preview (not just "wherever the mouse happens
+// to be").
+const postitPreviewConfig = computed(() => {
+  // Hidden while a note is actively being written -- the real (opaque)
+  // editing box already sits right there, showing the translucent ghost
+  // underneath it too would just look like a rendering glitch.
+  if (
+    activeTool.value !== "postit" ||
+    editingPostit.value ||
+    !hoverPostitPt.value ||
+    !plan.value
+  )
+    return null;
+  const pinRef = pinRefAt(hoverPostitPt.value.x);
+  const pct = pinRef ? toBandPct(pinRef, hoverPostitPt.value) : null;
+  if (!pinRef || !pct) return null;
+  const anchor = resolveAnchor(
+    comparePins.value,
+    plan.value,
+    pinRef,
+    pct.bandKey,
+  );
+  if (!anchor) return null;
+  return {
+    x: anchor.x + pct.xPct * anchor.w,
+    y: anchor.y + pct.yPct * anchor.h,
+    width: POSTIT_W,
+    height: postitHeight(measureCtx, "", POSTIT_W),
+    fill: activeColor.value,
+    opacity: 0.3,
+    stroke: activeColor.value,
+    strokeWidth: 1.5,
+    dash: [3, 2],
+    cornerRadius: 3,
+  };
+});
 
 function onKeydown(e: KeyboardEvent) {
   const target = e.target as HTMLElement | null;
@@ -2752,9 +2497,7 @@ watch(open, (isOpen) => {
   annotations.value = [];
   selectedAnnotationId.value = null;
   selectedBounds.value = null;
-  activePenPoints.value = null;
-  dragStart = null;
-  previewShape.value = null;
+  resetStageGestures();
   editingPostit.value = null;
   editingAnnotationId = null;
   resetHistory();

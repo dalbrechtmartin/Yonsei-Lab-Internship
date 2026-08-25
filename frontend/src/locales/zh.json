@@ -3,7 +3,8 @@
     "title": "λLens"
   },
   "footer": {
-    "copyright": "© {year} λLens，Yonsei Photonics Lab。保留所有权利。"
+    "copyright": "© {year} λLens，Yonsei Photonics Lab。保留所有权利。",
+    "play": "玩 Photon Dash"
   },
   "nav": {
     "home": "主页",
@@ -56,6 +57,10 @@
         "title": "从 PDF 中提取数据",
         "description": "拖放 PDF 文件以生成 Excel 文件。用时几分钟，取决于论文数量。"
       }
+    },
+    "play": {
+      "title": "Photon Dash",
+      "back": "返回主页"
     }
   },
   "actions": {
@@ -78,9 +83,28 @@
     "dismiss": "关闭消息"
   },
   "extraction": {
+    "stepper": {
+      "deposer": "上传",
+      "extraire": "提取",
+      "verifier": "核对",
+      "exporter": "导出"
+    },
     "dropzone": {
       "title": "把 PDF 论文拖放在这里",
       "subtitle": "或点击浏览（最多 10 个文件）"
+    },
+    "drop": {
+      "removeFileAria": "移除 {filename}",
+      "resuming": "正在恢复进行中的提取…",
+      "stagedCount": "已选择 {count} 个文件",
+      "etaEstimate": "预计约 {eta}",
+      "fileEta": "约 {eta}",
+      "pages": "{count} 页",
+      "maxReached": "已达上限",
+      "addFile": "添加",
+      "empty": "尚未选择文件。",
+      "launch": "开始提取",
+      "resumedToast": "已恢复正在进行的提取。"
     },
     "processing": "正在提取 {count} 篇论文...",
     "success": "提取完成，Excel 文件已保存。",
@@ -125,9 +149,177 @@
         "failed": "失败",
         "outOfDomain": "不相关"
       },
-      "heading": "正在提取论文数据…",
-      "overall": "已处理 {done} / {total} 个文件",
       "etaRemaining": "约剩 {eta}"
+    },
+    "running": {
+      "heading": "正在提取 · {done} / {total} 个文件",
+      "batch": "批次",
+      "nextFile": {
+        "label": "下一个"
+      },
+      "journal": {
+        "title": "日志",
+        "warnings": "{count} 条警告",
+        "empty": "暂无事件。"
+      }
+    },
+    "log": {
+      "fileProcessing": "{filename}：处理中",
+      "fileDone": "{filename}：已提取 {count} 行",
+      "fileFailed": "{filename}：失败",
+      "noticeStarted": "{count} 个文件已达到配额，已安排重试。",
+      "noticeCleared": "已恢复正常处理。"
+    },
+    "summary": {
+      "heading": "提取完成",
+      "subheading": "即将进入核对。",
+      "stats": {
+        "files": "已处理 {files} 个文件 · {records} 行",
+        "warnings": "{count} 条警告"
+      },
+      "cta": "立即核对"
+    },
+    "review": {
+      "rowOf": "第 {current} / {total} 行",
+      "continueToExport": "继续前往导出",
+      "empty": "没有可显示的行。",
+      "flaggedAria": "待确认行",
+      "tabs": {
+        "all": "全部 · {count}",
+        "toConfirm": "待确认 · {count}",
+        "excluded": "已排除 · {count}"
+      },
+      "table": {
+        "columns": {
+          "ref": "参考",
+          "wavelength": "λ (nm)",
+          "fom": "FOM",
+          "fwhm": "FWHM",
+          "q": "Q",
+          "origin": "来源"
+        }
+      },
+      "callout": {
+        "evidenceLabel": "引用：",
+        "locationLabel": "位置：",
+        "sourceOf": "来源 {current}/{total}"
+      },
+      "actions": {
+        "validate": "通过",
+        "correct": "修正",
+        "exclude": "排除",
+        "previous": "上一行",
+        "next": "下一行",
+        "shortcuts": {
+          "validate": "(V)",
+          "next": "⏎"
+        }
+      },
+      "edit": {
+        "title": "修正该行",
+        "moreFields": "更多字段",
+        "save": "保存",
+        "cancel": "取消",
+        "fields": {
+          "ref": "参考",
+          "title": "标题",
+          "shortTitle": "简短标题",
+          "modeId": "模式 ID",
+          "modeDescription": "模式说明",
+          "materialClass": "材料类别",
+          "baseMaterials": "基础材料",
+          "layerStructure": "层结构",
+          "origin": "来源",
+          "domain": "领域",
+          "resonanceWavelengthNm": "共振波长 (nm)",
+          "spectralRange": "光谱范围",
+          "fomRiuInv": "FOM (RIU^-1)",
+          "definition": "定义",
+          "sensitivityNmPerRiu": "灵敏度 (nm/RIU)",
+          "fwhmNm": "FWHM (nm)",
+          "qFactor": "Q 因子",
+          "notes": "备注"
+        }
+      },
+      "reviewedBy": {
+        "you": "我 · {time}",
+        "ai": "AI"
+      },
+      "pdf": {
+        "pageOf": "第 {current} / {total} 页",
+        "prevPage": "上一页",
+        "nextPage": "下一页",
+        "zoomOut": "缩小",
+        "zoomIn": "放大"
+      }
+    },
+    "export": {
+      "preview": "预览 · {count} 行",
+      "reviewedByLegend": "灰色 = 已排除，保留以供追溯",
+      "reviewedByColumn": "核对人",
+      "summaryLine": "{ready} 行就绪 · {excluded} 行已排除 · {confirmed} 行已确认",
+      "visualizeError": "无法将导出结果加载到可视化界面。"
+    },
+    "minigame": {
+      "eyebrow": "加载中的小游戏",
+      "title": "Photon Dash",
+      "startCta": "点击或按空格键开始",
+      "helpAria": "玩法说明",
+      "closeAria": "关闭",
+      "teaser": "边等边玩",
+      "fold": "收起",
+      "jobDone": {
+        "message": "提取已完成。要继续完成这局游戏吗？"
+      },
+      "paused": {
+        "eyebrow": "已暂停",
+        "title": "游戏已暂停",
+        "resume": "点击此处继续"
+      },
+      "rules": {
+        "title": "玩法说明",
+        "intro": "躲开噪声、基底和低 FOM 数据。收集 Q 和 FOM 来提高分数。",
+        "powerups": "护盾可抵挡一次碰撞并可叠加，叠满 3 个会变成超级护盾。双重跳跃可在空中额外跳一次，持续 10 秒，跳入空中虚线圆圈可获得加分。金色超级护盾可摧毁障碍，持续 10 秒，还能得分。",
+        "floating": "部分障碍悬浮在空中，请贴地跑动或掌握跳跃时机来躲避。"
+      },
+      "legend": {
+        "fom": "FOM",
+        "q": "Q",
+        "shield": "护盾",
+        "double": "双重跳跃",
+        "super": "超级护盾"
+      },
+      "hud": {
+        "fom": "FOM",
+        "best": "最佳",
+        "soundOn": "声音开",
+        "soundOff": "声音关",
+        "shield": "护盾 ×{count}",
+        "superShield": "超级护盾",
+        "doubleJump": "双重跳跃中"
+      },
+      "gameOver": {
+        "eyebrow": "检测到碰撞",
+        "title": "Game over",
+        "scoreLabel": "总 FOM",
+        "namePlaceholder": "你的名字（用于证书）",
+        "download": "下载证书",
+        "replayHint": "点击外部重新开始"
+      },
+      "tiers": {
+        "0": "实验室新人",
+        "1": "光子侦察员",
+        "2": "共振工程师",
+        "3": "Q 因子大师",
+        "4": "FOM 传奇"
+      },
+      "certificate": {
+        "heading": "Photon Dash 成绩证书",
+        "certifies": "兹证明",
+        "achieved": "于 {date} 达到 FOM {score}",
+        "tiersHeading": "Photon Dash 等级",
+        "anonymous": "匿名研究者"
+      }
     }
   },
   "guide": {
@@ -145,26 +337,32 @@
       "cover": "封面",
       "intro": "简介",
       "toc": "目录",
+      "toc2": "目录（2/2）",
       "mode1Import": "1. 导入数据集",
-      "mode1Controls": "2. 坐标轴与显示",
-      "mode1Filters": "3. 筛选",
-      "mode1Reading": "4. 读取图表",
-      "mode1Compare": "5. 比较分组",
-      "mode1DataTable": "6. 管理数据点",
-      "mode1AddPoint1": "7. 添加数据点：基本信息",
-      "mode1AddPoint2": "8. 添加数据点：结构与备注",
-      "mode1AddPoint3": "9. 添加数据点：结果",
-      "mode1Annotate": "10. 固定与注释",
-      "mode1ComparePins": "11. 比较固定点",
-      "mode1ExportChart": "12. 导出图表",
-      "mode1ExportPin": "13. 导出固定点",
-      "mode2": "模式二（PDF 提取）",
+      "mode1ControlsChart": "2. 图表设置",
+      "mode1ControlsDisplay": "3. 显示设置",
+      "mode1Filters": "4. 筛选",
+      "mode1Reading": "5. 读取图表",
+      "mode1Compare": "6. 比较分组",
+      "mode1DataTable": "7. 管理数据点",
+      "mode1AddPoint1": "8. 添加数据点：基本信息",
+      "mode1AddPoint2": "9. 添加数据点：结构与备注",
+      "mode1AddPoint3": "10. 添加数据点：结果",
+      "mode1Annotate": "11. 固定与注释",
+      "mode1ComparePins": "12. 比较固定点",
+      "mode1ExportChart": "13. 导出图表",
+      "mode1ExportPin": "14. 导出固定点",
+      "mode2Drop": "1. 上传 PDF",
+      "mode2Running": "2. 查看提取进度",
+      "mode2Review": "3. 核对一条记录",
+      "mode2Correct": "修正一条标记的记录",
+      "mode2Export": "4. 导出数据",
       "about": "关于作者"
     },
     "intro": {
       "title": "为什么选择 λLens？",
       "abstractBody": "λLens 加快了集成光子传感器的文献综述速度。手动比对十几篇论文，意味着为同样的 FOM 数值（波长、灵敏度、Q 因子、FWHM）反复整理表格、复制粘贴，还容易抄错数据。λLens 将 PDF 提取与可视化都自动化：从一个论文文件夹到一张可导出的图表，只需几分钟，而不是几天。",
-      "guideBody": "本指南介绍今天就可直接使用的模式一（Excel 转图表可视化）。模式二（PDF 提取）将在稳定后加入。",
+      "guideBody": "本指南完整介绍这两种模式：模式一（可视化）与模式二（PDF 提取）。",
       "contextBody": "λLens 开发于延世大学 BPEL，与下方介绍的国际光学与光子学社区紧密相连。",
       "diagram": {
         "folder": "论文文件夹",
@@ -178,11 +376,13 @@
     },
     "toc": {
       "title": "目录",
-      "hint": "点击任意条目即可直接跳转。",
+      "title2": "目录（续）",
+      "hint": "点击任意条目即可跳转。",
       "desc": {
         "intro": "一眼看懂 λLens。",
         "mode1Import": "导入 Excel 或 CSV 文件。",
-        "mode1Controls": "选择坐标轴，调整显示。",
+        "mode1ControlsChart": "选择坐标轴，命名图表。",
+        "mode1ControlsDisplay": "坐标、趋势线、图例等设置。",
         "mode1Filters": "不改动文件，缩小数据范围。",
         "mode1Reading": "读懂图上的每一个点。",
         "mode1Compare": "按类别分组比较。",
@@ -194,7 +394,11 @@
         "mode1ComparePins": "并排对比，附带标注。",
         "mode1ExportChart": "筛选后的数据与图表图片。",
         "mode1ExportPin": "单独导出一个置顶点。",
-        "mode2": "应用中已可使用，尚无详细文档。"
+        "mode2Drop": "上传 PDF 并选择模型。",
+        "mode2Running": "实时查看这批任务的处理过程。",
+        "mode2Review": "将标记的数值与来源核对。",
+        "mode2Correct": "手动修正一个数值。",
+        "mode2Export": "保存经过校验的文件。"
       }
     },
     "mode1": {
@@ -217,7 +421,7 @@
         "title": "1. 导入数据集",
         "overviewBody": "加载文件后，工作区分为三部分：左侧控制面板（坐标轴、显示、筛选）、中间的图表，以及用于比较分组和注释的右侧面板。",
         "body": "将 Excel 或 CSV 文件拖放到下方区域，或点击选择文件。",
-        "figure1Caption": "图 1：导入区域（.xlsx、.xls、.csv，最大 10 MB）。",
+        "figure1Caption": "图 1：导入区域（.xlsx、.xls、.csv）。",
         "sampleDataLink": "↓ 还没有数据？下载本指南使用的示例数据集（.csv）。",
         "figure2Caption": "图 2：工作区工具栏，文件加载后。",
         "toolbar": {
@@ -236,11 +440,10 @@
         },
         "aiNote": "格式不符的列会在加载前自动经过 AI 转换。请检查结果，部分字段可能缺失或措辞不同。"
       },
-      "controls": {
-        "title": "2. 坐标轴与显示",
-        "body": "图表区域决定绘制内容，显示区域决定绘制方式。点击区域标题即可展开。",
-        "figureChartCaption": "图 3：图表区域。",
-        "figureDisplayCaption": "图 4：显示区域。",
+      "controlsChart": {
+        "title": "2. 图表设置",
+        "body": "图表区域决定绘制内容：一个可选标题，然后是 Y 轴和 X 轴。点击区域标题即可展开。",
+        "figureCaption": "图 3：图表区域。",
         "chart": {
           "title": {
             "label": "图表标题",
@@ -248,17 +451,26 @@
           },
           "axes": {
             "label": "Y 轴 / X 轴",
-            "body": "可以是数值型也可以是分类型。链条图标用于锁定（阻止选择同一列两次）或解锁两轴；⇅ 图标用于互换两轴。"
+            "body": "可以是数值型也可以是分类型；点击一行即可打开列选择器。链条图标用于锁定（阻止选择同一列两次）或解锁两轴；⇅ 图标用于互换两轴。"
+          },
+          "picker": {
+            "label": "列选择器",
+            "body": "数值型和分类型两个标签页，以及每一列符合条件的列（此处为 Y 轴打开）。点击其中一列即可将其绘制到该轴上。"
           }
-        },
+        }
+      },
+      "controlsDisplay": {
+        "title": "3. 显示设置",
+        "body": "显示区域决定图表的绘制方式：坐标、趋势线、图例等。点击区域标题即可展开。",
+        "figureCaption": "图 4：显示区域。",
         "display": {
           "scale": {
             "label": "坐标",
-            "body": "在对数和线性之间切换 Y 轴。对数能让跨数量级的值保持可读。"
+            "body": "在对数和线性之间切换 Y 轴。对数能让跨数量级的值保持可读。若 Y 轴不是数值型则禁用。"
           },
           "trendLine": {
             "label": "趋势线",
-            "body": "为数据点拟合曲线，下拉菜单可选择形状。"
+            "body": "为数据点拟合曲线，下拉菜单可选择曲线类型。除非两轴都是数值型，否则禁用。"
           },
           "pareto": {
             "label": "帕累托前沿",
@@ -266,22 +478,22 @@
           },
           "legend": {
             "label": "显示图例",
-            "body": "将分组颜色绘制在图表本身，导出 PNG 时一并包含。"
+            "body": "将分组颜色绘制在图表本身，并会包含在 PNG 导出中。"
           },
           "median": {
             "label": "中位线",
-            "body": "在当前 Y 轴中位数位置绘制虚线。"
+            "body": "在当前 Y 轴中位数位置绘制虚线。若 Y 轴不是数值型则禁用。"
           },
           "pointSize": {
             "label": "点大小",
-            "body": "「按测量值调整大小」按所选列调整点大小，滑块设置最大大小。"
+            "body": "「按测量值调整大小」按所选列调整点大小，滑块设置最大大小；关闭时，同一滑块为所有点设置统一大小。"
           }
         }
       },
       "filters": {
-        "title": "3. 筛选",
-        "body": "筛选在不改变原始文件的情况下缩小数据范围。每个类别是一个下拉菜单：点击勾选或取消勾选值。摘要栏始终显示当前生效的筛选。只有表格含有对应列时，类别才会出现。",
-        "figureCaption": "图 5：筛选区域，完全展开。",
+        "title": "4. 筛选",
+        "body": "筛选在不改变原始文件的情况下缩小数据范围。每个类别是一个下拉菜单：点击勾选或取消勾选值。摘要栏始终显示当前生效的筛选。只有表格含有对应列时类别才会出现，「隐藏待复核」也只有在至少一行被标记时才会出现。",
+        "figureCaption": "图 5：筛选区域已展开。",
         "note": "材料等级和基础材料是复合筛选：像「Dielectric;Semiconductor」这样的单元格会计入其列出的每个值。上方的排除模式决定部分值被勾选时的处理方式：宽松（默认）下只要一个值被勾选就保留该行；严格模式下需要全部值都被勾选。",
         "marks": {
           "needsReview": {
@@ -302,7 +514,7 @@
           },
           "baseMaterials": {
             "label": "基础材料",
-            "body": "按具体材料（Si、SiN、Ta2O5 等）筛选，处理方式与材料等级相同。"
+            "body": "按具体材料（Si、Si3N4、Ta2O5 等）筛选，处理方式与材料等级相同。"
           },
           "exclusionMode": {
             "label": "排除模式",
@@ -311,7 +523,7 @@
         }
       },
       "reading": {
-        "title": "4. 读取图表",
+        "title": "5. 读取图表",
         "body": "每个点代表一条记录。颜色遵循“分组/着色依据”列，此处为 Origin。",
         "figure4Caption": "图 6：FOM 与共振波长，对数坐标，按 Origin 着色，按 Sensitivity 调整大小。",
         "marks": {
@@ -321,7 +533,7 @@
           },
           "legend": {
             "label": "图例",
-            "body": "每个分组对应一种颜色，点击图例项可单独显示该系列。"
+            "body": "每个分组对应一种颜色的固定说明（突出显示某个分组要在下一页的分组卡片上操作）。"
           },
           "pointSize": {
             "label": "点大小",
@@ -355,13 +567,13 @@
           },
           "rightClick": {
             "label": "右键点击",
-            "body": "打开与「数据点」列表中该行相同的编辑/重置/固定/隐藏/删除菜单。"
+            "body": "打开与「数据点」列表中该行相同的编辑/重置（已编辑时）/固定/隐藏/删除菜单。"
           }
         },
         "flaggedNote": "虚线边框表示该数值来自模型自身也不确定的 AI 提取结果。模式一从不会自行验证或丢弃记录，此边框只说明还没有人复核。复核将在未来的模式二验证界面完成，现在检查与否只是选择。"
       },
       "compare": {
-        "title": "5. 比较分组",
+        "title": "6. 比较分组",
         "body": "比较分组面板汇总“分组/着色依据”列（此处为 Origin），统计数据始终与图表一致。分组较多时会出现搜索框和「显示更多」链接，让列表保持易于浏览。",
         "figureCaption": "图 7：分组比较面板，EXP 与 SIM。",
         "marks": {
@@ -375,14 +587,14 @@
           },
           "groupDetails": {
             "label": "分组详情",
-            "body": "点击箭头展开该分组的数量、平均值、中位数和 σ。"
+            "body": "点击箭头展开该分组的平均值、中位数和 σ。分组名称旁的数量始终可见。"
           }
         },
-        "note": "只有分组至少有 3 个点时才显示平均值、中位数和 σ，低于此数量则不是真正的分布。",
-        "mergeNote": "按复合列（材料等级、基础材料）分组时会出现「合并多类别数据点」开关，默认开启。开关前后的对比图见第 16 页图 16-17。"
+        "note": "只有分组至少有 3 个点时才显示平均值、中位数和 σ，低于此数量，平均值/中位数/σ 就无法反映真实分布。",
+        "mergeNote": "按复合列（材料等级、基础材料）分组时会出现「合并多类别数据点」开关（默认关闭）。开关前后的对比图见第 18 页图 16-17。"
       },
       "dataTable": {
-        "title": "6. 管理数据点",
+        "title": "7. 管理数据点",
         "body": "「数据点」标签页按参考编号分组，列出当前绘制的每条记录。可以搜索、排序，并对任意点执行隐藏、编辑、固定或删除操作。",
         "figureCaption": "图 8：数据点标签页，R6/SIM 已隐藏，R3/EXP 与 R1/SIM 已固定。",
         "marks": {
@@ -402,20 +614,19 @@
         "actionsTitle": "行操作",
         "actions": {
           "click": "点击一行，或其眼睛图标，可隐藏/显示该行。固定期间禁用，需先取消固定。",
-          "menu": "⋯ 菜单或右键点击：编辑、重置（已编辑时）、固定/取消固定、永久删除（本次会话内不可撤销）。"
+          "menu": "⋯ 菜单或右键点击：编辑、重置（已编辑时）、固定/取消固定、删除（本次会话内不可撤销）。右键点击分组自己的表头会打开该组的专属菜单：固定、隐藏或仅显示这些点。"
         },
         "note": "将鼠标悬停在某一行上，可在图表中预览该点；隐藏的行会以淡色虚线轮廓预览其重新出现的位置。编辑任意点（无论手动添加还是来自文档）都会将其标记为「已编辑」。"
       },
       "addPoint1": {
-        "title": "7. 手动添加数据点",
+        "title": "8. 手动添加数据点",
         "body": "在「数据点」标签页点击「添加数据」，会打开一个 4 步向导，让你把自己的传感器设计（无论测量还是仿真）与文献数据一起绘制出来。它不会改动导入的文件，但会出现在导出结果中。",
         "stepperCaption": "图 9：步骤指示器。只有当前步骤会被突出显示，其余步骤并非「完成/未完成」的进度条。",
+        "footerCaption": "「上一步」「下一步」，以及（仅第 1 步）「不填更多信息，直接保存」始终显示在 4 个步骤共用的底栏中；第 4 步时按钮改为「保存」。",
         "essentialsTitle": "第 1 步：基本信息",
-        "essentialsBody": "名称、当前图表的坐标轴数值（始终必填，以便放置该点）、Domain、Origin，以及标记形状。",
-        "figureEssentialsCaption": "图 10：基本信息，共 4 步中的第 1 步。",
+        "essentialsBody": "先填写名称和当前图表的坐标轴数值（始终必填，以便放置该点），再可选填写 Domain、Origin 和标记形状。",
         "metricsTitle": "第 2 步：指标",
         "metricsBody": "仅显示此数据集实际拥有的测量列。一旦同时填写了 Resonance Wavelength 和 FWHM，Q-factor 会立即自动计算。",
-        "figureMetricsCaption": "图 11：指标，共 4 步中的第 2 步，Q-factor 已自动计算。",
         "marks": {
           "label": {
             "label": "传感器名称",
@@ -423,7 +634,7 @@
           },
           "axes": {
             "label": "坐标轴数值",
-            "body": "必填：当前绘制的 Y 轴和 X 轴列。本页其余字段均为可选。"
+            "body": "必填：当前绘制的 Y 轴和 X 轴列。本步骤其余字段均为可选。"
           },
           "domainOrigin": {
             "label": "Domain 与 Origin",
@@ -444,31 +655,31 @@
         }
       },
       "addPoint2": {
-        "title": "8. 结构与备注",
+        "title": "9. 结构与备注",
         "body": "第 3 步构建传感器的材料与层叠结构，第 4 步用于填写自由备注，可选填。",
         "structureTitle": "第 3 步：结构与材料",
         "structureBody": "锁定级联：Base Materials，然后 Material Class（自动建议），然后 Layer Structure。每一级都要等上一级有值才解锁。",
         "figureStructureCaption": "图 12：结构与材料，共 4 步中的第 3 步。",
         "finishTitle": "第 4 步：完成",
         "finishBody": "该点的自由备注，可选填。",
-        "converterCaption": "一个用于手动换算的速查计算器（µm/pm → nm），方便把论文中的数值换算后填入。",
+        "converterCaption": "一个用于手动换算的速查计算器（µm/pm → nm，或 µm/RIU → nm/RIU），方便把论文中的数值换算后填入。",
         "marks": {
           "baseMaterials": {
-            "label": "1. Base Materials",
+            "label": "Base Materials",
             "body": "搜索或添加一个值：该点的实际组成材料。"
           },
           "materialClass": {
-            "label": "2. Material Class",
+            "label": "Material Class",
             "body": "根据数据集中这些材料的常见搭配预先勾选。手动修改后会停止自动建议。"
           },
           "layerStructure": {
-            "label": "3. Layer Structure",
-            "body": "拖动可调整顺序，以 nm 为单位设置厚度，并可为周期性堆叠设置重复次数。预览会随之实时更新。"
+            "label": "Layer Structure",
+            "body": "选择每一层的材料，拖动可调整顺序，以 nm 为单位设置厚度，并可为周期性堆叠设置重复次数。预览会随之实时更新。"
           }
         }
       },
       "addPoint3": {
-        "title": "9. 图表上的结果",
+        "title": "10. 图表上的结果",
         "body": "保存后，该点会立即出现在图表上：一个带金色描边的菱形，落点处会有短暂的脉冲光圈。",
         "figureCaption": "图 13：图表上新增的数据点，单独标记并单独计数。",
         "marks": {
@@ -478,17 +689,15 @@
           },
           "newPoint": {
             "label": "新增的点",
-            "body": "带金色描边的菱形，配合短暂的脉冲光圈，方便在散点图上一眼找到。"
+            "body": "一个带金色描边的菱形，刚添加时会出现短暂的脉冲光圈，方便在散点图上一眼找到。"
           }
         },
         "note": "数据点标签页中的开关决定手动添加的点是否计入中位数、趋势线和帕累托前沿。"
       },
       "annotate": {
-        "title": "10. 固定与注释",
+        "title": "11. 固定与注释",
         "body": "点击图表上的点即可将其以卡片形式固定于此，一种仅在当前会话保留的轻量书签，便于比较特定记录。点击卡片标题即可展开。",
         "figureCaption": "图 14：注释面板。",
-        "expandTitle": "展开卡片后可以看到什么",
-        "expandIntro": "展开卡片会显示另外四个部分（见第 17 页图 18）：",
         "marks": {
           "sort": {
             "label": "排序",
@@ -500,7 +709,7 @@
           },
           "compareSelect": {
             "label": "比较选择",
-            "body": "勾选卡片以选中，或使用「全选/取消全选」。固定卡片也会自动将其选中（最多 6 个），然后「比较 (N)」会打开并排导出。"
+            "body": "勾选卡片以选中，或使用「全选/取消全选」。固定卡片也会自动将其选中（最多 6 个），然后「比较 (N)」会打开并排比较的视图。"
           },
           "card": {
             "label": "固定的卡片",
@@ -508,7 +717,7 @@
           },
           "siblings": {
             "label": "固定该论文的其他行",
-            "body": "只要还有未固定的记录，就会出现的一键快捷方式。"
+            "body": "只要还有该论文未固定的记录就会出现，点击一次即可全部固定。"
           },
           "layerStructure": {
             "label": "层结构",
@@ -516,7 +725,7 @@
           },
           "metrics": {
             "label": "Metrics",
-            "body": "标题中未显示的测量值。点击放大图标可打开可导出 PNG 的大图。"
+            "body": "标题中未显示的测量值。与层结构相同的放大导出 PNG 快捷方式。"
           },
           "notes": {
             "label": "Notes",
@@ -525,9 +734,10 @@
         }
       },
       "comparePins": {
-        "title": "11. 比较固定点",
+        "title": "12. 比较固定点",
         "body": "选择两张或以上固定卡片（最多 6 张）会激活「比较 (N)」按钮，并排显示所选点。标题会根据已固定的参考编号自动填充，也可自行编辑。",
-        "figureCaption": "图 15：比较第 14 页固定的两个点。",
+        "figureCaption": "图 15：比较第 16 页固定的两个点。",
+        "labelColon": "{label}：",
         "sections": {
           "origin": "该记录是测量（EXP）还是仿真（SIM）。",
           "mode": "Mode ID，以及（如有）其描述。",
@@ -535,9 +745,9 @@
           "metrics": "每一个绘制或记录的数值。",
           "notes": "附加在该点上的自由文本备注。"
         },
-        "note": "预览右下角的缩放、拖动列上方的 ⇄ 手柄以与另一列交换顺序，以及点击标题即可重命名，都是预览的一部分。「下载对比图片」可将结果导出为 PNG。",
+        "note": "预览右下角的缩放、拖动列上方的 ⇄ 手柄以与另一列交换顺序，以及点击标题即可重命名，都是预览的一部分。「下载对比 PNG」可将结果导出为 PNG。",
         "markupTitle": "在对比图上标注",
-        "markupBody": "导出前可自由标注预览图：绘图、框选、箭头、下划线、便利贴和图章，每种都可以选择颜色。",
+        "markupBody": "导出前可自由标注预览图：绘图、框选、箭头、下划线、便利贴可各自选择颜色，图章则为固定颜色。",
         "markupMarks": {
           "tools": {
             "label": "工具栏",
@@ -556,7 +766,7 @@
         }
       },
       "exportChart": {
-        "title": "12. 导出图表",
+        "title": "13. 导出图表",
         "body": "筛选后的数据集可导出为表格，配置好的图表可导出为图片。",
         "chartCaption": "图 16：按材料等级分组，合并开启。",
         "chartCaption2": "图 17：按基础材料分组，合并关闭。",
@@ -565,11 +775,11 @@
         "formats": {
           "csv": "将筛选后的行导出为 CSV 文件。",
           "xlsx": "将筛选后的行导出为 Excel 工作簿。",
-          "png": "与屏幕显示完全一致的图表，包括标题、图例及叠加层。"
+          "png": "将与屏幕显示完全一致的图表（含标题、图例及叠加层）导出为 PNG 图片。"
         }
       },
       "exportPin": {
-        "title": "13. 导出固定点",
+        "title": "14. 导出固定点",
         "body": "固定点的详情也可单独导出，提供三种详细程度：合并所有字段的图片，或仅包含层结构的图片。",
         "pinExportCaption": "图 18：所有字段合并为一张 PNG。",
         "metricsExportCaption": "图 19：仅数值测量结果，不含结构或备注。",
@@ -579,59 +789,127 @@
         "pinFormats": {
           "note": "将备注文本导出为独立的 .txt 文件。",
           "fields": "将指标（或层结构）导出为小型独立 PNG。",
-          "all": "将 Mode、结构、指标和备注合并导出为一张 PNG。"
+          "all": "将 Origin、Mode、结构、指标和备注合并导出为一张 PNG。"
+        }
+      },
+      "mode2Drop": {
+        "title": "1. 上传 PDF",
+        "body": "最多上传 10 篇 PDF 论文，并选择用于分析的 Gemini 模型。",
+        "marks": {
+          "files": {
+            "label": "已上传的文件",
+            "body": "每张卡片显示页数、大小和大致耗时。拖动卡片可调整处理顺序。"
+          },
+          "model": {
+            "label": "模型",
+            "body": "默认选项会先尝试性能最强的模型。配额用尽时自动切换到备用模型。"
+          },
+          "launch": {
+            "label": "开始",
+            "body": "启动这批任务（文件此时才会真正上传，而不是拖入时）。至少上传一个文件前保持不可点击。"
+          }
+        }
+      },
+      "mode2Running": {
+        "title": "2. 查看提取进度",
+        "body": "文件按顺序逐个处理。顶部显示整体进度，日志记录每一个事件。",
+        "marks": {
+          "header": {
+            "label": "进度",
+            "body": "整体进度和大致剩余时间，每秒刷新一次。将鼠标悬停在下方文件图标上可查看名称与状态。"
+          },
+          "notice": {
+            "label": "配额提醒",
+            "body": "Gemini 的免费配额有时会在处理过程中用尽。受影响的文件会自动重试，不会丢失任何数据。"
+          },
+          "files": {
+            "label": "当前与下一个文件",
+            "body": "正在处理的文件，以及排在后面等待处理的文件。"
+          },
+          "log": {
+            "label": "日志",
+            "body": "记录每个文件开始、完成或等待重试的时间。"
+          },
+          "game": {
+            "label": "内嵌小游戏 / PDF 预览",
+            "body": "Photon Dash 默认就在这里以折叠状态启动（应用页脚里一个不起眼的手柄图标可以随时单独打开同一个游戏，与提取无关）。折叠时，这个位置会改为显示当前正在分析的文件的实时预览。"
+          }
+        }
+      },
+      "mode2Review": {
+        "title": "3. 核对一条记录",
+        "body": "提取完成后，每个提议的数值都会连同其来源论文一起列出。模型不确定的行会被标记，需要再次确认。",
+        "pdfCaption": "这是简化示意图。实际的查看器会显示你的 PDF 页面，并自动定位、高亮引用的段落。",
+        "note": "这里没有强制的「完成」状态：无论是否已核对每一行被标记的记录，「继续导出」按钮都可以随时前进。查看提取进度与核对一条记录之间的简短汇总画面，会说明有多少条记录需要留意。",
+        "marks": {
+          "table": {
+            "label": "行与标签",
+            "body": "可按全部、待确认或已排除筛选。点击某一行即可查看详情。"
+          },
+          "callout": {
+            "label": "依据",
+            "body": "模型引用的原文，以及它的出处。点击位置可让查看器跳转到那里。"
+          },
+          "actions": {
+            "label": "做出决定",
+            "body": "对选中的行执行批准、修正或排除，然后前往下一行。"
+          },
+          "pdf": {
+            "label": "来源页面",
+            "body": "所选行对应的引用页面，自动滚动到引用段落。"
+          }
+        }
+      },
+      "mode2Correct": {
+        "title": "修正一条标记的记录",
+        "body": "修正一行会打开该行的可编辑表单，入口是核对表格自身的「修正」操作。表格中已显示的字段排在最前面，其余字段收在「更多字段」里。这一步不会推进上方的步骤指示器：修正属于核对一条记录这一步的一部分，而不是单独一步。",
+        "note": "只有这些字段可以手动修改。Evidence、Location、Review status 始终由模型生成，不可编辑。",
+        "marks": {
+          "primary": {
+            "label": "主要字段",
+            "body": "审核表格中已经显示的数值，以及表格中没有的材料等级、基础材料和备注。"
+          },
+          "more": {
+            "label": "更多字段",
+            "body": "标题、结构、定义等其余内容，默认收起。"
+          },
+          "save": {
+            "label": "保存 / 取消",
+            "body": "保存会记录修正内容并将该行标记为已批准；取消会放弃修改并返回核对表格。"
+          }
+        }
+      },
+      "mode2Export": {
+        "title": "4. 导出数据",
+        "body": "保存前的最后预览。已排除的行仍保持可见，并加上删除线，以便追溯。",
+        "note": "在有人批准、修正或排除某一行之前，「核对人」列会显示 AI。之后会记录是谁、在何时核对的。",
+        "marks": {
+          "legend": {
+            "label": "总行数",
+            "body": "导出中总共会包含多少行，以及下方灰色行的含义。"
+          },
+          "table": {
+            "label": "预览",
+            "body": "所有提取的行，包括已排除的，均按导出时的样子显示。此导出不含 Q-factor，但包含「核对人」（AI，或人工核对的时间与身份）。"
+          },
+          "save": {
+            "label": "准备导出",
+            "body": "已就绪、已排除、已确认的行数。为文件命名，选择 .xlsx 或 .csv，然后保存。"
+          }
         }
       }
     },
     "mode2": {
       "eyebrow": "模式二",
       "title": "PDF 提取与校验",
-      "status": {
-        "title": "已可使用，尚无详细文档",
-        "body": "模式二现已可以在 λLens 中使用。本指南目前只做了简要介绍。审核与验证界面仍在完善中。"
-      },
+      "partIntro": "接下来的页面将逐步介绍 PDF 提取流程：从第一次上传论文，到导出经过校验的数据。",
       "divider": {
         "flow": {
-          "upload": "上传 PDF",
+          "drop": "上传 PDF",
           "extract": "AI 提取",
-          "review": "人工审核"
-        },
-        "caption": "导入与提取已经可用。人工审核仍在设计中。"
-      },
-      "today": {
-        "title": "今天",
-        "body": "上传一个或多个 PDF，选择模型，即可获得 Excel 或 CSV 文件。目前还没有审核界面，提取的数值尚未逐页核对。",
-        "flow": {
-          "upload": "上传 PDF",
-          "model": "选择模型",
-          "progress": "实时进度",
-          "export": "导出（.xlsx/.csv）"
+          "review": "人工审核",
+          "export": "导出"
         }
-      },
-      "preview": {
-        "title": "即将推出的内容",
-        "intro": "让这个流程更可靠的计划改进：",
-        "rules": {
-          "title": "AI 提取规则",
-          "items": {
-            "scope": "仅提取波长域记录。每对 EXP/SIM 数据归入同一个 Mode ID。",
-            "vocab": "材料等级取自固定词汇表。玻璃等惰性基底不会出现在 Layer Structure 中。",
-            "periodic": "周期性堆叠（例如 10 周期布拉格反射镜）会归并为一个「(A/B) x10」记号，而不是逐层列出。"
-          }
-        },
-        "columns": {
-          "title": "提取的列",
-          "body": "参考编号、标题、Mode ID/描述、材料等级、基础材料、Layer Structure、Origin、Domain、共振波长、FOM、灵敏度、FWHM、Q-factor，以及每个数值的原文与页码/图表位置。"
-        },
-        "validation": {
-          "title": "人工校验",
-          "body": "分屏视图会将每个待定数值与来源页面并排显示，供批准、编辑或排除。"
-        }
-      },
-      "wireframe": {
-        "title": "审核界面的预期样式",
-        "badge": "理论构想",
-        "caption": "计划中分屏审核界面的早期线框图，布局与文案仅供示意，正式发布前可能变化。"
       }
     },
     "about": {
@@ -735,6 +1013,8 @@
     "reviewWarning": "{count} 项待审核",
     "manualCount": "{count} 个手动添加",
     "manualHint": "带金色边框的菱形标记是您手动添加的点，并非来自文档。",
+    "missingAxisCount": "{count} 项未绘制",
+    "missingAxisHint": "这些行没有所选 X 轴或 Y 轴的值，无法显示在图表上。换一个轴即可看到它们。",
     "workspace": {
       "title": "分析工作区",
       "pinHint": "点击一个点以将其固定为注释",
