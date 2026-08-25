@@ -267,7 +267,7 @@ async def get_file_page_image(job_id: str, file_id: str, page_number: int):
 _EVIDENCE_CHUNK_WORDS = 6
 
 
-def _find_evidence_rects(page: "fitz.Page", text: str) -> list["fitz.Rect"]:
+def _find_evidence_rects(page: fitz.Page, text: str) -> list[fitz.Rect]:
     """Locates a record's quoted `Evidence` text on its source page via
     PyMuPDF's real text-layer search -- not an LLM-guessed bounding box (the
     inaccuracy that made pixel-exact highlighting out of scope earlier),
@@ -286,7 +286,7 @@ def _find_evidence_rects(page: "fitz.Page", text: str) -> list["fitz.Rect"]:
     # chunk still lights up, covering most of the passage instead of
     # collapsing to a single short leading fragment.
     words = needle.split(" ")
-    rects: list["fitz.Rect"] = []
+    rects: list[fitz.Rect] = []
     for i in range(0, len(words), _EVIDENCE_CHUNK_WORDS):
         chunk = " ".join(words[i : i + _EVIDENCE_CHUNK_WORDS])
         rects.extend(page.search_for(chunk))
