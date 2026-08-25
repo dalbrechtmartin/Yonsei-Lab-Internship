@@ -350,13 +350,17 @@
       "mode1ComparePins": "11. Comparer des points épinglés",
       "mode1ExportChart": "12. Exporter le graphique",
       "mode1ExportPin": "13. Exporter un point",
-      "mode2": "Mode 2 (extraction PDF)",
+      "mode2Drop": "1. Déposer vos PDF",
+      "mode2Running": "2. Suivre l'extraction",
+      "mode2Review": "3. Vérifier une fiche",
+      "mode2Correct": "4. Corriger une fiche",
+      "mode2Export": "5. Exporter vos données",
       "about": "À propos de l'auteure"
     },
     "intro": {
       "title": "Pourquoi λLens ?",
       "abstractBody": "λLens accélère la revue de littérature sur les capteurs photoniques intégrés. Comparer une dizaine d'articles à la main, c'est autant de tableurs, de copier-coller et d'erreurs de saisie pour les mêmes valeurs de FOM (longueur d'onde, sensibilité, facteur Q, FWHM). λLens automatise l'extraction PDF puis la visualisation : d'un dossier d'articles à un graphique exportable en quelques minutes, plutôt qu'en plusieurs jours.",
-      "guideBody": "Ce guide couvre le Mode 1 (visualisation Excel-to-Plot), entièrement disponible aujourd'hui. Le Mode 2 (extraction PDF) sera ajouté une fois stabilisé.",
+      "guideBody": "Ce guide couvre les deux modes de bout en bout : le Mode 1 (visualisation) et le Mode 2 (extraction PDF).",
       "contextBody": "λLens a été développé au BPEL, à l'Université Yonsei, au sein de la communauté internationale de l'optique et de la photonique présentée ci-dessous.",
       "diagram": {
         "folder": "Dossier PDF",
@@ -386,7 +390,11 @@
         "mode1ComparePins": "Comparaison côte à côte, annotée.",
         "mode1ExportChart": "Données filtrées et graphique en image.",
         "mode1ExportPin": "Un point épinglé, exporté seul.",
-        "mode2": "Accessible dans l'application, pas encore documenté en détail."
+        "mode2Drop": "Déposez vos PDF et choisissez un modèle.",
+        "mode2Running": "Suivez le traitement du lot en direct.",
+        "mode2Review": "Vérifiez une valeur signalée face à sa source.",
+        "mode2Correct": "Corrigez une valeur à la main.",
+        "mode2Export": "Enregistrez un fichier validé."
       }
     },
     "mode1": {
@@ -773,57 +781,121 @@
           "fields": "l'encart Métriques (ou Structure de couches) en petite image PNG autonome.",
           "all": "tout le contenu de la carte (Mode, structure, métriques, note) en une seule image PNG."
         }
+      },
+      "mode2Drop": {
+        "title": "1. Déposer vos PDF",
+        "body": "Déposez jusqu'à 10 PDF et choisissez le modèle Gemini qui les analyse.",
+        "marks": {
+          "files": {
+            "label": "Fichiers déposés",
+            "body": "Nombre de pages, taille et estimation de durée. Glissez une carte pour réordonner le lot."
+          },
+          "model": {
+            "label": "Modèle",
+            "body": "Par défaut essaie d'abord le modèle le plus puissant. Il bascule automatiquement si le quota est atteint."
+          },
+          "launch": {
+            "label": "Lancer",
+            "body": "Démarre le lot. Les fichiers ne sont envoyés qu'à ce moment, pas au dépôt."
+          }
+        }
+      },
+      "mode2Running": {
+        "title": "2. Suivre l'extraction",
+        "body": "Les fichiers sont traités un par un. L'en-tête suit la progression globale et le journal note chaque événement.",
+        "easterEgg": "Astuce : une petite icône manette se cache dans le pied de page. Elle ouvre Photon Dash, un mini-jeu pour patienter pendant l'extraction.",
+        "marks": {
+          "header": {
+            "label": "Progression",
+            "body": "Progression globale et temps restant estimé, actualisés chaque seconde."
+          },
+          "notice": {
+            "label": "Alerte de quota",
+            "body": "Le quota gratuit de Gemini peut être atteint en cours de lot. Le fichier concerné relance automatiquement. Rien n'est perdu."
+          },
+          "files": {
+            "label": "Fichier en cours et suivant",
+            "body": "Le fichier analysé en ce moment, et celui qui attend son tour."
+          },
+          "log": {
+            "label": "Journal",
+            "body": "Un historique horodaté de chaque fichier qui démarre, termine, ou attend une relance."
+          }
+        }
+      },
+      "mode2Review": {
+        "title": "3. Vérifier une fiche",
+        "body": "Une fois l'extraction terminée, chaque valeur proposée s'affiche avec son article source. Une ligne dont le modèle n'est pas sûr est signalée pour un second regard.",
+        "pdfCaption": "Représentation simplifiée. Le vrai visualiseur affiche votre page PDF avec le passage cité automatiquement surligné.",
+        "marks": {
+          "table": {
+            "label": "Lignes et onglets",
+            "body": "Filtrez par Toutes, À confirmer, ou Exclues. Cliquez une ligne pour l'examiner."
+          },
+          "callout": {
+            "label": "Preuve",
+            "body": "La citation exacte du modèle, et où il l'a trouvée. Cliquez un emplacement pour y amener le visualiseur."
+          },
+          "actions": {
+            "label": "Décider",
+            "body": "Approuvez, corrigez, ou excluez la ligne sélectionnée, puis passez à la suivante."
+          },
+          "pdf": {
+            "label": "Page source",
+            "body": "La page citée, avec le passage cité surligné pour vérification rapide."
+          }
+        }
+      },
+      "mode2Correct": {
+        "title": "4. Corriger une fiche",
+        "body": "Corriger ouvre un formulaire modifiable pour la ligne signalée. Les champs déjà visibles dans le tableau viennent en premier. Le reste se cache derrière « Plus de champs ».",
+        "note": "Seuls ces champs sont modifiables à la main. Evidence, Location, Review status et le journal de réconciliation restent générés par le modèle.",
+        "marks": {
+          "primary": {
+            "label": "Champs principaux",
+            "body": "Les valeurs déjà visibles dans le tableau de relecture."
+          },
+          "more": {
+            "label": "Plus de champs",
+            "body": "Le reste de la fiche : titre, structure et définitions, masqué par défaut."
+          },
+          "save": {
+            "label": "Enregistrer",
+            "body": "Enregistre la correction et approuve la ligne."
+          }
+        }
+      },
+      "mode2Export": {
+        "title": "5. Exporter vos données",
+        "body": "Un dernier aperçu avant l'enregistrement. Les lignes exclues restent visibles, barrées, pour la traçabilité.",
+        "note": "La colonne « Vérifié par » affiche IA tant qu'aucun humain n'a validé, corrigé ou exclu la ligne. Elle indique ensuite qui et quand.",
+        "marks": {
+          "legend": {
+            "label": "Résumé",
+            "body": "Le nombre de lignes prêtes, et ce que signifient les lignes grisées ci-dessous."
+          },
+          "table": {
+            "label": "Aperçu",
+            "body": "Chaque ligne extraite, y compris les exclues, telle qu'elle sera exportée."
+          },
+          "save": {
+            "label": "Enregistrer",
+            "body": "Nommez le fichier, choisissez .xlsx ou .csv, puis enregistrez."
+          }
+        }
       }
     },
     "mode2": {
       "eyebrow": "Mode 2",
       "title": "Extraction PDF et validation",
-      "status": {
-        "title": "Accessible, pas encore documenté en détail",
-        "body": "Le Mode 2 est utilisable dès aujourd'hui dans λLens. Ce guide n'en couvre pour l'instant que les grandes lignes. L'écran de relecture et de validation est encore en cours de perfectionnement."
-      },
+      "partIntro": "Les pages suivantes présentent l'extraction PDF étape par étape, du premier dépôt jusqu'à l'export validé.",
       "divider": {
         "flow": {
-          "upload": "Importer des PDF",
+          "drop": "Déposer des PDF",
           "extract": "Extraction IA",
-          "review": "Relecture humaine"
-        },
-        "caption": "Import et extraction fonctionnent déjà. La relecture humaine est encore en conception."
-      },
-      "today": {
-        "title": "Aujourd'hui",
-        "body": "Déposez un ou plusieurs PDF, choisissez un modèle, et récupérez un fichier Excel ou CSV. Pas encore d'écran de relecture : les valeurs extraites ne sont pas vérifiées page par page.",
-        "flow": {
-          "upload": "Déposer des PDF",
-          "model": "Choisir un modèle",
-          "progress": "Suivi en direct",
-          "export": "Exporter (.xlsx/.csv)"
+          "review": "Relecture humaine",
+          "export": "Exporter"
         }
-      },
-      "preview": {
-        "title": "À venir",
-        "intro": "Les prochaines améliorations, pour fiabiliser ce flux :",
-        "rules": {
-          "title": "Règles d'extraction par IA",
-          "items": {
-            "scope": "Uniquement les enregistrements en longueur d'onde. Un seul Mode ID par paire EXP/SIM.",
-            "vocab": "Classe de matériau tirée d'un vocabulaire fixe. Les substrats inertes comme le verre restent hors de Layer Structure.",
-            "periodic": "Une pile périodique (un miroir de Bragg à 10 périodes, par exemple) devient une seule notation « (A/B) x10 », pas une liste couche par couche."
-          }
-        },
-        "columns": {
-          "title": "Colonnes extraites",
-          "body": "Référence, titre, Mode ID/description, Classe de matériau, Matériaux de base, Layer Structure, Origine, Domaine, longueur d'onde, FOM, sensibilité, FWHM, facteur Q, plus le texte source et sa localisation (page/figure)."
-        },
-        "validation": {
-          "title": "Validation humaine",
-          "body": "Un écran partagé affichera chaque valeur proposée à côté de sa page source, pour l'approuver, la modifier ou l'exclure."
-        }
-      },
-      "wireframe": {
-        "title": "Aperçu de l'écran de révision",
-        "badge": "Théorique",
-        "caption": "Ébauche non stylisée de l'écran partagé envisagé. Mise en page et texte sont illustratifs et évolueront."
       }
     },
     "about": {

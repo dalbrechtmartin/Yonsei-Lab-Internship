@@ -21,10 +21,18 @@
           {{ t("guide.mode1.eyebrow") }} — {{ t("guide.mode1.title") }}
         </div>
         <div
+          v-if="
+            entry.group === 'mode2' && entries[idx - 1]?.group !== 'mode2'
+          "
+          class="flex items-center gap-2 border-b border-border bg-primary/[0.07] px-4 py-1.5 text-xs font-semibold tracking-[0.2em] text-primary uppercase"
+        >
+          {{ t("guide.mode2.eyebrow") }} — {{ t("guide.mode2.title") }}
+        </div>
+        <div
           class="guide-toc-row group flex items-center gap-3 px-4 py-2"
           :class="[
             idx % 2 === 1 ? 'bg-muted/25' : 'bg-white',
-            entry.group === 'mode1' ? 'pl-9' : '',
+            entry.group === 'mode1' || entry.group === 'mode2' ? 'pl-9' : '',
             idx > 0 ? 'border-t border-border/70' : '',
           ]"
           :data-toc-target="entry.page"
@@ -75,7 +83,7 @@ defineProps<{
     desc: string;
     page: number;
     icon: Component;
-    group: "front" | "mode1" | "back";
+    group: "front" | "mode1" | "mode2" | "back";
   }[];
 }>();
 

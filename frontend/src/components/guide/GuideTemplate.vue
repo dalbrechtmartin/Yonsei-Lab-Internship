@@ -174,12 +174,48 @@
       :app-version="appVersion"
       :page="PAGE_MODE2_DIVIDER"
       :total-pages="TOTAL_PAGES"
+      :entries="mode2TocEntries"
+      :first-page="PAGE_MODE2_DROP"
     />
 
-    <GuidePageMode2Today
+    <GuidePageMode2Drop
+      ref="pageMode2DropRef"
       :app-version="appVersion"
-      :page="PAGE_MODE2"
+      :page="PAGE_MODE2_DROP"
       :total-pages="TOTAL_PAGES"
+      :drop-marks="mode2DropMarks"
+    />
+
+    <GuidePageMode2Running
+      ref="pageMode2RunningRef"
+      :app-version="appVersion"
+      :page="PAGE_MODE2_RUNNING"
+      :total-pages="TOTAL_PAGES"
+      :running-marks="mode2RunningMarks"
+    />
+
+    <GuidePageMode2Review
+      ref="pageMode2ReviewRef"
+      :app-version="appVersion"
+      :page="PAGE_MODE2_REVIEW"
+      :total-pages="TOTAL_PAGES"
+      :review-marks="mode2ReviewMarks"
+    />
+
+    <GuidePageMode2Correct
+      ref="pageMode2CorrectRef"
+      :app-version="appVersion"
+      :page="PAGE_MODE2_CORRECT"
+      :total-pages="TOTAL_PAGES"
+      :correct-marks="mode2CorrectMarks"
+    />
+
+    <GuidePageMode2Export
+      ref="pageMode2ExportRef"
+      :app-version="appVersion"
+      :page="PAGE_MODE2_EXPORT"
+      :total-pages="TOTAL_PAGES"
+      :export-marks="mode2ExportMarks"
     />
 
     <GuidePageAbout />
@@ -241,8 +277,9 @@
 import { computed, nextTick, ref, useTemplateRef } from "vue";
 import { useI18n } from "vue-i18n";
 import {
+  Activity,
+  ClipboardCheck,
   Columns3,
-  Cpu,
   Diamond,
   Download,
   FileImage,
@@ -250,6 +287,7 @@ import {
   Info,
   Layers,
   LineChart,
+  Pencil,
   Pin,
   PlusCircle,
   SlidersHorizontal,
@@ -287,7 +325,11 @@ import GuidePageComparePins from "./GuidePageComparePins.vue";
 import GuidePageExportChart from "./GuidePageExportChart.vue";
 import GuidePageExportPin from "./GuidePageExportPin.vue";
 import GuidePageMode2Divider from "./GuidePageMode2Divider.vue";
-import GuidePageMode2Today from "./GuidePageMode2Today.vue";
+import GuidePageMode2Drop from "./GuidePageMode2Drop.vue";
+import GuidePageMode2Running from "./GuidePageMode2Running.vue";
+import GuidePageMode2Review from "./GuidePageMode2Review.vue";
+import GuidePageMode2Correct from "./GuidePageMode2Correct.vue";
+import GuidePageMode2Export from "./GuidePageMode2Export.vue";
 import GuidePageAbout from "./GuidePageAbout.vue";
 import {
   sampleColumns,
@@ -336,12 +378,16 @@ const PAGE_MODE1_COMPARE_PINS = 15;
 const PAGE_MODE1_EXPORT_CHART = 16;
 const PAGE_MODE1_EXPORT_PIN = 17;
 const PAGE_MODE2_DIVIDER = 18;
-const PAGE_MODE2 = 19;
-// Page 20 (About the author) is a colophon: it gets its own PDF bookmark
+const PAGE_MODE2_DROP = 19;
+const PAGE_MODE2_RUNNING = 20;
+const PAGE_MODE2_REVIEW = 21;
+const PAGE_MODE2_CORRECT = 22;
+const PAGE_MODE2_EXPORT = 23;
+// Page 24 (About the author) is a colophon: it gets its own PDF bookmark
 // (data-outline-title, like every other page) but no GuideFooter/page
 // number and no tocEntries listing, matching a book colophon's usual quiet,
 // unlisted convention -- so it has no PAGE_ constant of its own here.
-const TOTAL_PAGES = 20;
+const TOTAL_PAGES = 24;
 
 // Every outline label follows "<Mode N> — <rest>" in all four locales
 // (checked en/fr/ko/zh -- always the same em-dash separator), so the
@@ -454,11 +500,39 @@ const tocEntries = computed(() => [
     group: "mode1" as const,
   },
   {
-    label: tocLabel(t("guide.outline.mode2")),
-    desc: t("guide.toc.desc.mode2"),
-    page: PAGE_MODE2,
-    icon: Cpu,
-    group: "back" as const,
+    label: tocLabel(t("guide.outline.mode2Drop")),
+    desc: t("guide.toc.desc.mode2Drop"),
+    page: PAGE_MODE2_DROP,
+    icon: Upload,
+    group: "mode2" as const,
+  },
+  {
+    label: tocLabel(t("guide.outline.mode2Running")),
+    desc: t("guide.toc.desc.mode2Running"),
+    page: PAGE_MODE2_RUNNING,
+    icon: Activity,
+    group: "mode2" as const,
+  },
+  {
+    label: tocLabel(t("guide.outline.mode2Review")),
+    desc: t("guide.toc.desc.mode2Review"),
+    page: PAGE_MODE2_REVIEW,
+    icon: ClipboardCheck,
+    group: "mode2" as const,
+  },
+  {
+    label: tocLabel(t("guide.outline.mode2Correct")),
+    desc: t("guide.toc.desc.mode2Correct"),
+    page: PAGE_MODE2_CORRECT,
+    icon: Pencil,
+    group: "mode2" as const,
+  },
+  {
+    label: tocLabel(t("guide.outline.mode2Export")),
+    desc: t("guide.toc.desc.mode2Export"),
+    page: PAGE_MODE2_EXPORT,
+    icon: Download,
+    group: "mode2" as const,
   },
 ]);
 
@@ -467,6 +541,10 @@ const tocEntries = computed(() => [
 // automatically if a Mode 1 step is ever added, renamed or reordered.
 const mode1TocEntries = computed(() =>
   tocEntries.value.filter((e) => e.group === "mode1"),
+);
+// Same idea for Mode 2's own divider page.
+const mode2TocEntries = computed(() =>
+  tocEntries.value.filter((e) => e.group === "mode2"),
 );
 
 // Guide-only: page 17's "full point export" example -- a genuine render of
@@ -537,6 +615,20 @@ const pageAnnotateRef =
 const pageComparePinsRef = useTemplateRef<
   InstanceType<typeof GuidePageComparePins>
 >("pageComparePinsRef");
+const pageMode2DropRef =
+  useTemplateRef<InstanceType<typeof GuidePageMode2Drop>>("pageMode2DropRef");
+const pageMode2RunningRef = useTemplateRef<
+  InstanceType<typeof GuidePageMode2Running>
+>("pageMode2RunningRef");
+const pageMode2ReviewRef = useTemplateRef<
+  InstanceType<typeof GuidePageMode2Review>
+>("pageMode2ReviewRef");
+const pageMode2CorrectRef = useTemplateRef<
+  InstanceType<typeof GuidePageMode2Correct>
+>("pageMode2CorrectRef");
+const pageMode2ExportRef = useTemplateRef<
+  InstanceType<typeof GuidePageMode2Export>
+>("pageMode2ExportRef");
 
 // See the point-size-legend "peephole" patch's own template comment (in
 // GuidePageReading.vue) for why these exist -- readingChartFullRect is the
@@ -559,6 +651,11 @@ const addPoint3Marks = ref<GuideMark[]>([]);
 const annotationMarks = ref<GuideMark[]>([]);
 const comparePinsTopMarks = ref<GuideMark[]>([]);
 const comparePinsMarks = ref<GuideMark[]>([]);
+const mode2DropMarks = ref<GuideMark[]>([]);
+const mode2RunningMarks = ref<GuideMark[]>([]);
+const mode2ReviewMarks = ref<GuideMark[]>([]);
+const mode2CorrectMarks = ref<GuideMark[]>([]);
+const mode2ExportMarks = ref<GuideMark[]>([]);
 // Badges are real DOM (measured the normal way, via FomChart's exposed
 // getBadgesRow); the legend and median line are pixels ECharts draws
 // straight onto its canvas, so FomChart exposes their live layout instead
@@ -635,6 +732,11 @@ async function captureGuideArtifacts() {
     comparePinsTopMarks,
     comparePinsMarks,
     readingMarks,
+    mode2DropMarks,
+    mode2RunningMarks,
+    mode2ReviewMarks,
+    mode2CorrectMarks,
+    mode2ExportMarks,
   ]) {
     marks.value = [];
   }
@@ -1125,6 +1227,86 @@ async function captureGuideArtifacts() {
   // Page 16's chart image exports -- see the hidden generator FomChart instances' exposed getPngDataUrl.
   exportChartPngUrl.value = exportChartGenRef.value?.getPngDataUrl() ?? null;
   exportChartPngUrl2.value = exportChartGenRef2.value?.getPngDataUrl() ?? null;
+
+  // Page 19 (Mode 2 -- drop step): staged files grid, model selector,
+  // launch block, in the same left-to-right/top-to-bottom order the real
+  // screen lays them out.
+  const dropStepWrap = pageMode2DropRef.value?.dropStepWrap;
+  if (dropStepWrap) {
+    const c = dropStepWrap;
+    const filesWrap = pageMode2DropRef.value?.dropFilesWrap;
+    const modelWrap = pageMode2DropRef.value?.dropModelWrap;
+    const launchWrap = pageMode2DropRef.value?.dropLaunchWrap;
+    push(mode2DropMarks, filesWrap ? markRect(c, filesWrap, 4) : null);
+    push(mode2DropMarks, modelWrap ? markRect(c, modelWrap, 4) : null);
+    push(mode2DropMarks, launchWrap ? markRect(c, launchWrap, 4) : null);
+  }
+
+  // Page 20 (Mode 2 -- running step): progress header, batch strip +
+  // quota notice, current/next file cards, event log.
+  const runningWrap = pageMode2RunningRef.value?.runningWrap;
+  if (runningWrap) {
+    const c = runningWrap;
+    const headerWrap = pageMode2RunningRef.value?.runningHeaderWrap;
+    const stripWrap = pageMode2RunningRef.value?.runningStripWrap;
+    const filesWrap = pageMode2RunningRef.value?.runningFilesWrap;
+    const logWrap = pageMode2RunningRef.value?.runningLogWrap;
+    push(mode2RunningMarks, headerWrap ? markRect(c, headerWrap, 4) : null);
+    push(mode2RunningMarks, stripWrap ? markRect(c, stripWrap, 4) : null);
+    push(mode2RunningMarks, filesWrap ? markRect(c, filesWrap, 4) : null);
+    push(mode2RunningMarks, logWrap ? markRect(c, logWrap, 4) : null);
+  }
+
+  // Page 21 (Mode 2 -- review a record): tabs+table, evidence callout,
+  // action row, and the (hand-mocked) PDF viewer, one ring each.
+  const reviewWrap = pageMode2ReviewRef.value?.reviewWrap;
+  if (reviewWrap) {
+    const c = reviewWrap;
+    const tableWrap = pageMode2ReviewRef.value?.reviewTableWrap;
+    const calloutWrap = pageMode2ReviewRef.value?.reviewCalloutWrap;
+    const actionsWrap = pageMode2ReviewRef.value?.reviewActionsWrap;
+    const pdfWrap = pageMode2ReviewRef.value?.reviewPdfWrap;
+    push(mode2ReviewMarks, tableWrap ? markRect(c, tableWrap, 4) : null);
+    push(mode2ReviewMarks, calloutWrap ? markRect(c, calloutWrap, 4) : null);
+    push(mode2ReviewMarks, actionsWrap ? markRect(c, actionsWrap, 4) : null);
+    push(mode2ReviewMarks, pdfWrap ? markRect(c, pdfWrap, 4) : null);
+  }
+
+  // Page 22 (Mode 2 -- correct a record): the primary fields grid, the
+  // "More fields" disclosure (opened above, see the openSection call), and
+  // the Save/Cancel row -- ExtractionReviewEditPanel exposes no refs of its
+  // own (it's mounted as-is, not hand-assembled), so these are found the
+  // same way Compare Groups' own detail tile grid is: a plain selector on
+  // its real rendered DOM.
+  const editPanelWrap = pageMode2CorrectRef.value?.editPanelWrap;
+  if (editPanelWrap) {
+    const c = editPanelWrap;
+    const primaryGrid = c.querySelector(".grid.grid-cols-2") as HTMLElement | null;
+    push(mode2CorrectMarks, primaryGrid ? markRect(c, primaryGrid, 4) : null);
+    const moreBtn = findByText(c, "button", t("extraction.review.edit.moreFields"));
+    const moreSection = moreBtn?.parentElement as HTMLElement | null;
+    push(mode2CorrectMarks, moreSection ? markRect(c, moreSection, 4) : null);
+    const saveRow = c.querySelector(".mt-auto.flex") as HTMLElement | null;
+    push(mode2CorrectMarks, saveRow ? markRect(c, saveRow, 4) : null);
+  }
+
+  // Page 23 (Mode 2 -- export): the preview badge + reviewed-by legend
+  // row, the records table, and the summary/save footer --
+  // ExtractionExportStep is mounted whole (no network call fires until a
+  // real click), so these are found the same way, via real translated
+  // text already unique on this page.
+  const exportStepWrap = pageMode2ExportRef.value?.exportStepWrap;
+  if (exportStepWrap) {
+    const c = exportStepWrap;
+    const legendSpan = findByText(c, "span", t("extraction.export.reviewedByLegend"));
+    const legendRow = legendSpan?.parentElement as HTMLElement | null;
+    push(mode2ExportMarks, legendRow ? markRect(c, legendRow, 4) : null);
+    const table = legendRow?.nextElementSibling as HTMLElement | null;
+    push(mode2ExportMarks, table ? markRect(c, table, 4) : null);
+    const readyP = findByText(c, "p", t("extraction.ready.heading"));
+    const footer = readyP?.parentElement?.parentElement as HTMLElement | null;
+    push(mode2ExportMarks, footer ? markRect(c, footer, 4) : null);
+  }
 }
 
 // See composables/useGuideCaptureReadiness.ts.

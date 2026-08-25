@@ -350,13 +350,17 @@
       "mode1ComparePins": "11. Compare pinned points",
       "mode1ExportChart": "12. Export the chart",
       "mode1ExportPin": "13. Export a pinned point",
-      "mode2": "Mode 2 (PDF extraction)",
+      "mode2Drop": "1. Drop your PDFs",
+      "mode2Running": "2. Follow the extraction",
+      "mode2Review": "3. Review a record",
+      "mode2Correct": "4. Correct a record",
+      "mode2Export": "5. Export your data",
       "about": "About the author"
     },
     "intro": {
       "title": "Why λLens?",
       "abstractBody": "λLens speeds up literature reviews on integrated photonic sensors. Comparing a dozen papers by hand means as many spreadsheets, copy-pastes, and transcription slips for the same FOM values (wavelength, sensitivity, Q-factor, FWHM). λLens automates PDF extraction, then visualization: from a folder of papers to an exportable chart in minutes, not days.",
-      "guideBody": "This guide covers Mode 1 (Excel-to-Plot visualization), fully available today. Mode 2 (PDF extraction) will be added once it stabilizes.",
+      "guideBody": "This guide covers both modes end to end: Mode 1 (visualization) and Mode 2 (PDF extraction).",
       "contextBody": "λLens was built at Yonsei University's BPEL, within the international optics and photonics community introduced below.",
       "diagram": {
         "folder": "Paper folder",
@@ -386,7 +390,11 @@
         "mode1ComparePins": "Side-by-side, annotated comparison.",
         "mode1ExportChart": "Filtered data and chart as an image.",
         "mode1ExportPin": "One pinned point, exported alone.",
-        "mode2": "Available in the app, not yet documented in detail."
+        "mode2Drop": "Stage your PDFs and pick a model.",
+        "mode2Running": "Watch the batch process live.",
+        "mode2Review": "Check a flagged value against its source.",
+        "mode2Correct": "Fix a value by hand.",
+        "mode2Export": "Save a validated file."
       }
     },
     "mode1": {
@@ -773,57 +781,121 @@
           "fields": "the Metrics box (or Layer Structure) as a small standalone PNG.",
           "all": "everything on the card (Mode, structure, metrics, note) as one PNG."
         }
+      },
+      "mode2Drop": {
+        "title": "1. Drop your PDFs",
+        "body": "Drop up to 10 PDF papers and pick which Gemini model analyzes them.",
+        "marks": {
+          "files": {
+            "label": "Staged files",
+            "body": "Page count, size and a rough time estimate. Drag a card to reorder the batch."
+          },
+          "model": {
+            "label": "Model",
+            "body": "Default tries the strongest model first. It falls back automatically if the quota runs out."
+          },
+          "launch": {
+            "label": "Launch",
+            "body": "Starts the batch. Files upload only now, not when you dropped them."
+          }
+        }
+      },
+      "mode2Running": {
+        "title": "2. Follow the extraction",
+        "body": "Files process one at a time. The header tracks overall progress and the journal logs every event.",
+        "easterEgg": "Tip: a small gamepad icon sits quietly in the footer. It opens Photon Dash, a short game you can play while extraction runs.",
+        "marks": {
+          "header": {
+            "label": "Progress",
+            "body": "Overall progress and a rough time remaining, refreshed every second."
+          },
+          "notice": {
+            "label": "Quota notice",
+            "body": "Gemini's free quota can run out mid-batch. The held file retries automatically and nothing is lost."
+          },
+          "files": {
+            "label": "Current & next file",
+            "body": "The file being analyzed now, and the one queued next."
+          },
+          "log": {
+            "label": "Journal",
+            "body": "A timestamped log of every file starting, finishing, or waiting for retry."
+          }
+        }
+      },
+      "mode2Review": {
+        "title": "3. Review a record",
+        "body": "Once extraction finishes, every proposed value is listed with its source paper. A row the model isn't sure about is flagged for a second look.",
+        "pdfCaption": "Simplified stand-in. The real viewer shows your PDF page with the cited passage highlighted automatically.",
+        "marks": {
+          "table": {
+            "label": "Rows & tabs",
+            "body": "Filter by All, To confirm, or Excluded. Click a row to inspect it."
+          },
+          "callout": {
+            "label": "Evidence",
+            "body": "The exact quote the model cites, and where it found it. Click a location to jump the viewer there."
+          },
+          "actions": {
+            "label": "Decide",
+            "body": "Approve, correct, or exclude the selected row, then move to the next one."
+          },
+          "pdf": {
+            "label": "Source page",
+            "body": "The cited page, with the quoted passage highlighted for a quick check."
+          }
+        }
+      },
+      "mode2Correct": {
+        "title": "4. Correct a record",
+        "body": "Correcting opens an editable form for the flagged row. The fields already shown in the table come first. Everything else sits behind \"More fields\".",
+        "note": "Only these fields can be edited by hand. Evidence, Location, Review status and the reconciliation log stay machine authored.",
+        "marks": {
+          "primary": {
+            "label": "Core fields",
+            "body": "The values already visible in the review table."
+          },
+          "more": {
+            "label": "More fields",
+            "body": "The rest of the record: title, structure and definitions, tucked away by default."
+          },
+          "save": {
+            "label": "Save",
+            "body": "Saves the correction and marks the row approved."
+          }
+        }
+      },
+      "mode2Export": {
+        "title": "5. Export your data",
+        "body": "A last preview before saving. Excluded rows stay visible, struck through, for traceability.",
+        "note": "Reviewed by shows AI until a human validates, corrects or excludes a row. Then it records who and when.",
+        "marks": {
+          "legend": {
+            "label": "Summary",
+            "body": "How many rows are ready, and what the grayed out rows below mean."
+          },
+          "table": {
+            "label": "Preview",
+            "body": "Every extracted row, including excluded ones, exactly as it will be exported."
+          },
+          "save": {
+            "label": "Save",
+            "body": "Name the file, pick .xlsx or .csv, and save it."
+          }
+        }
       }
     },
     "mode2": {
       "eyebrow": "Mode 2",
       "title": "PDF extraction & validation",
-      "status": {
-        "title": "Available, not yet documented in detail",
-        "body": "Mode 2 is usable today in λLens. This guide only covers it in broad strokes for now. The review and validation screen is still being refined."
-      },
+      "partIntro": "The following pages walk through PDF extraction step by step, from your first drop to a validated export.",
       "divider": {
         "flow": {
-          "upload": "Upload PDFs",
+          "drop": "Drop PDFs",
           "extract": "AI extraction",
-          "review": "Human review"
-        },
-        "caption": "Import and extraction already work. Human review is still being designed."
-      },
-      "today": {
-        "title": "Today",
-        "body": "Drop in one or more PDFs, pick a model, and get back an Excel or CSV file. No review screen yet: extracted values aren't checked page by page.",
-        "flow": {
-          "upload": "Drop PDFs",
-          "model": "Pick a model",
-          "progress": "Live progress",
-          "export": "Export (.xlsx/.csv)"
+          "review": "Human review",
+          "export": "Export"
         }
-      },
-      "preview": {
-        "title": "What's coming",
-        "intro": "Planned improvements to make this workflow more reliable:",
-        "rules": {
-          "title": "AI extraction rules",
-          "items": {
-            "scope": "Wavelength-domain records only. One Mode ID per EXP/SIM pair.",
-            "vocab": "Material Class from a fixed vocabulary. Inert substrates like glass stay out of Layer Structure.",
-            "periodic": "A periodic stack (a 10-period Bragg mirror, say) becomes one \"(A/B) x10\" notation, not a layer-by-layer list."
-          }
-        },
-        "columns": {
-          "title": "Extracted columns",
-          "body": "Reference, title, Mode ID/description, Material Class, Base Materials, Layer Structure, Origin, Domain, Resonance Wavelength, FOM, Sensitivity, FWHM, Q-factor, plus the source text and its page/figure location."
-        },
-        "validation": {
-          "title": "Human validation",
-          "body": "A split-screen view will show each proposed value next to its source page, to approve, edit or exclude it."
-        }
-      },
-      "wireframe": {
-        "title": "What the review screen might look like",
-        "badge": "Theoretical",
-        "caption": "An early, unstyled wireframe of the planned split-screen review. Layout and copy are illustrative and will change."
       }
     },
     "about": {
