@@ -52,6 +52,13 @@
       :entries="tocEntries"
     />
 
+    <GuidePageToc2
+      :app-version="appVersion"
+      :page="PAGE_TOC2"
+      :total-pages="TOTAL_PAGES"
+      :entries="mode2TocEntries"
+    />
+
     <GuidePageMode1Divider
       :app-version="appVersion"
       :page="PAGE_MODE1_DIVIDER"
@@ -68,12 +75,19 @@
       :toolbar-marks="toolbarMarks"
     />
 
-    <GuidePageControls
-      ref="pageControlsRef"
+    <GuidePageControlsChart
+      ref="pageControlsChartRef"
       :app-version="appVersion"
-      :page="PAGE_MODE1_CONTROLS"
+      :page="PAGE_MODE1_CONTROLS_CHART"
       :total-pages="TOTAL_PAGES"
       :chart-marks="chartMarks"
+    />
+
+    <GuidePageControlsDisplay
+      ref="pageControlsDisplayRef"
+      :app-version="appVersion"
+      :page="PAGE_MODE1_CONTROLS_DISPLAY"
+      :total-pages="TOTAL_PAGES"
       :display-marks="displayMarks"
     />
 
@@ -290,6 +304,7 @@ import {
   Pencil,
   Pin,
   PlusCircle,
+  Settings2,
   SlidersHorizontal,
   Table2,
   Upload,
@@ -310,9 +325,11 @@ import { useGuideCaptureReadiness } from "@/composables/useGuideCaptureReadiness
 import GuidePageCover from "./GuidePageCover.vue";
 import GuidePageIntro from "./GuidePageIntro.vue";
 import GuidePageToc from "./GuidePageToc.vue";
+import GuidePageToc2 from "./GuidePageToc2.vue";
 import GuidePageMode1Divider from "./GuidePageMode1Divider.vue";
 import GuidePageImport from "./GuidePageImport.vue";
-import GuidePageControls from "./GuidePageControls.vue";
+import GuidePageControlsChart from "./GuidePageControlsChart.vue";
+import GuidePageControlsDisplay from "./GuidePageControlsDisplay.vue";
 import GuidePageFilters from "./GuidePageFilters.vue";
 import GuidePageReading from "./GuidePageReading.vue";
 import GuidePageCompareGroups from "./GuidePageCompareGroups.vue";
@@ -363,31 +380,42 @@ const rootEl = useTemplateRef<HTMLDivElement>("rootEl");
 // resolved into real PDF link annotations by pdfExport.ts).
 const PAGE_INTRO = 2;
 const PAGE_TOC = 3;
-const PAGE_MODE1_DIVIDER = 4;
-const PAGE_MODE1_IMPORT = 5;
-const PAGE_MODE1_CONTROLS = 6;
-const PAGE_MODE1_FILTERS = 7;
-const PAGE_MODE1_READING = 8;
-const PAGE_MODE1_COMPARE = 9;
-const PAGE_MODE1_DATATABLE = 10;
-const PAGE_MODE1_ADDPOINT1 = 11;
-const PAGE_MODE1_ADDPOINT2 = 12;
-const PAGE_MODE1_ADDPOINT3 = 13;
-const PAGE_MODE1_ANNOTATE = 14;
-const PAGE_MODE1_COMPARE_PINS = 15;
-const PAGE_MODE1_EXPORT_CHART = 16;
-const PAGE_MODE1_EXPORT_PIN = 17;
-const PAGE_MODE2_DIVIDER = 18;
-const PAGE_MODE2_DROP = 19;
-const PAGE_MODE2_RUNNING = 20;
-const PAGE_MODE2_REVIEW = 21;
-const PAGE_MODE2_CORRECT = 22;
-const PAGE_MODE2_EXPORT = 23;
-// Page 24 (About the author) is a colophon: it gets its own PDF bookmark
+// The table of contents spans two pages -- 19 entries split 15/5 across two
+// side-by-side columns looked visibly lopsided, so it's back to one full-
+// width list per page (Mode 1 here, Mode 2 on PAGE_TOC2) like every other
+// list page in the guide.
+const PAGE_TOC2 = 4;
+const PAGE_MODE1_DIVIDER = 5;
+const PAGE_MODE1_IMPORT = 6;
+const PAGE_MODE1_CONTROLS_CHART = 7;
+const PAGE_MODE1_CONTROLS_DISPLAY = 8;
+const PAGE_MODE1_FILTERS = 9;
+const PAGE_MODE1_READING = 10;
+const PAGE_MODE1_COMPARE = 11;
+const PAGE_MODE1_DATATABLE = 12;
+const PAGE_MODE1_ADDPOINT1 = 13;
+const PAGE_MODE1_ADDPOINT2 = 14;
+const PAGE_MODE1_ADDPOINT3 = 15;
+const PAGE_MODE1_ANNOTATE = 16;
+const PAGE_MODE1_COMPARE_PINS = 17;
+const PAGE_MODE1_EXPORT_CHART = 18;
+const PAGE_MODE1_EXPORT_PIN = 19;
+const PAGE_MODE2_DIVIDER = 20;
+const PAGE_MODE2_DROP = 21;
+const PAGE_MODE2_RUNNING = 22;
+const PAGE_MODE2_REVIEW = 23;
+// PAGE_MODE2_CORRECT (24) has no numbered "step" of its own -- correcting a
+// row is an inline mode of the Review step, not a distinct wizard stage the
+// real ExtractionStepper ever shows (see guide.outline.mode2Correct's own
+// unnumbered label) -- but it's still a real page with its own PDF bookmark,
+// footer and TOC entry, so it keeps a PAGE_ constant like every other page.
+const PAGE_MODE2_CORRECT = 24;
+const PAGE_MODE2_EXPORT = 25;
+// Page 26 (About the author) is a colophon: it gets its own PDF bookmark
 // (data-outline-title, like every other page) but no GuideFooter/page
 // number and no tocEntries listing, matching a book colophon's usual quiet,
 // unlisted convention -- so it has no PAGE_ constant of its own here.
-const TOTAL_PAGES = 24;
+const TOTAL_PAGES = 26;
 
 // Every outline label follows "<Mode N> — <rest>" in all four locales
 // (checked en/fr/ko/zh -- always the same em-dash separator), so the
@@ -416,9 +444,16 @@ const tocEntries = computed(() => [
     group: "mode1" as const,
   },
   {
-    label: tocLabel(t("guide.outline.mode1Controls")),
-    desc: t("guide.toc.desc.mode1Controls"),
-    page: PAGE_MODE1_CONTROLS,
+    label: tocLabel(t("guide.outline.mode1ControlsChart")),
+    desc: t("guide.toc.desc.mode1ControlsChart"),
+    page: PAGE_MODE1_CONTROLS_CHART,
+    icon: Settings2,
+    group: "mode1" as const,
+  },
+  {
+    label: tocLabel(t("guide.outline.mode1ControlsDisplay")),
+    desc: t("guide.toc.desc.mode1ControlsDisplay"),
+    page: PAGE_MODE1_CONTROLS_DISPLAY,
     icon: SlidersHorizontal,
     group: "mode1" as const,
   },
@@ -589,8 +624,12 @@ const exportChartPngUrl2 = ref<string | null>(null);
 // -----------------------------------------------------------------------
 const pageImportRef =
   useTemplateRef<InstanceType<typeof GuidePageImport>>("pageImportRef");
-const pageControlsRef =
-  useTemplateRef<InstanceType<typeof GuidePageControls>>("pageControlsRef");
+const pageControlsChartRef = useTemplateRef<
+  InstanceType<typeof GuidePageControlsChart>
+>("pageControlsChartRef");
+const pageControlsDisplayRef = useTemplateRef<
+  InstanceType<typeof GuidePageControlsDisplay>
+>("pageControlsDisplayRef");
 const pageFiltersRef =
   useTemplateRef<InstanceType<typeof GuidePageFilters>>("pageFiltersRef");
 const pageReadingRef =
@@ -706,13 +745,30 @@ async function captureGuideArtifacts() {
   await nextTick();
 
   openSection(
-    pageControlsRef.value?.displayControlsWrap ?? null,
+    pageControlsDisplayRef.value?.displayControlsWrap ?? null,
     t("fomcharts.sections.display"),
   );
   openSection(
     pageFiltersRef.value?.filtersWrap ?? null,
     t("fomcharts.sections.filters"),
   );
+  // Also open the Y-axis column picker -- the actual mechanism for changing
+  // an axis, otherwise never shown (see the Chart page's own body text,
+  // which now describes clicking a row to open it). Guarded by
+  // aria-expanded so a later locale-switch re-run of this whole function
+  // doesn't toggle it back closed.
+  const chartControlsWrapForOpen = pageControlsChartRef.value?.chartControlsWrap;
+  if (chartControlsWrapForOpen) {
+    const yAxisBtn = findByAttr(
+      chartControlsWrapForOpen,
+      "button",
+      "aria-label",
+      t("fomcharts.controls.editAxis", { axis: t("fomcharts.controls.yAxis") }),
+    );
+    if (yAxisBtn && yAxisBtn.getAttribute("aria-expanded") !== "true") {
+      yAxisBtn.click();
+    }
+  }
   await nextTick();
   await settle();
 
@@ -765,7 +821,7 @@ async function captureGuideArtifacts() {
   // so they're found by attribute rather than markLabel's text search, and
   // boxed together with the link/swap column via markUnion since all four
   // controls sit inside one bordered block.
-  const chartControlsWrap = pageControlsRef.value?.chartControlsWrap;
+  const chartControlsWrap = pageControlsChartRef.value?.chartControlsWrap;
   if (chartControlsWrap) {
     const c = chartControlsWrap;
     push(chartMarks, markLabel(c, t("fomcharts.controls.title")));
@@ -788,6 +844,15 @@ async function captureGuideArtifacts() {
       t("fomcharts.controls.swapAxes"),
     );
     push(chartMarks, markUnion(c, [yBtn, xBtn, swapBtn]));
+    // The Y-axis picker opened above (see the openSection-style click near
+    // the top of this function) -- AxisSelector's own collapsible panel is
+    // its button column's next (and only other) sibling within its root.
+    const axisSelectorRoot = yBtn?.parentElement?.parentElement?.parentElement;
+    const pickerPanel = axisSelectorRoot?.lastElementChild as
+      | HTMLElement
+      | null
+      | undefined;
+    push(chartMarks, pickerPanel ? markRect(c, pickerPanel, 4) : null);
   }
 
   // Display section: scale / trend line / pareto / legend / median / point
@@ -797,9 +862,8 @@ async function captureGuideArtifacts() {
   // text rather than getting a separate ring. Point size similarly rings
   // its WHOLE block (the size-by-value toggle, the measurement picker, and
   // the slider together, all one shared wrapper) as a single numbered
-  // callout instead of three -- this fixed-height A4 page has no room for
-  // that many extra rows.
-  const displayControlsWrap = pageControlsRef.value?.displayControlsWrap;
+  // callout instead of three, since they're one coherent control group.
+  const displayControlsWrap = pageControlsDisplayRef.value?.displayControlsWrap;
   if (displayControlsWrap) {
     const c = displayControlsWrap;
     [
@@ -1243,7 +1307,8 @@ async function captureGuideArtifacts() {
   }
 
   // Page 20 (Mode 2 -- running step): progress header, batch strip +
-  // quota notice, current/next file cards, event log.
+  // quota notice, current/next file cards, event log, docked minigame/PDF
+  // preview column.
   const runningWrap = pageMode2RunningRef.value?.runningWrap;
   if (runningWrap) {
     const c = runningWrap;
@@ -1251,10 +1316,12 @@ async function captureGuideArtifacts() {
     const stripWrap = pageMode2RunningRef.value?.runningStripWrap;
     const filesWrap = pageMode2RunningRef.value?.runningFilesWrap;
     const logWrap = pageMode2RunningRef.value?.runningLogWrap;
+    const gameWrap = pageMode2RunningRef.value?.runningGameWrap;
     push(mode2RunningMarks, headerWrap ? markRect(c, headerWrap, 4) : null);
     push(mode2RunningMarks, stripWrap ? markRect(c, stripWrap, 4) : null);
     push(mode2RunningMarks, filesWrap ? markRect(c, filesWrap, 4) : null);
     push(mode2RunningMarks, logWrap ? markRect(c, logWrap, 4) : null);
+    push(mode2RunningMarks, gameWrap ? markRect(c, gameWrap, 4) : null);
   }
 
   // Page 21 (Mode 2 -- review a record): tabs+table, evidence callout,

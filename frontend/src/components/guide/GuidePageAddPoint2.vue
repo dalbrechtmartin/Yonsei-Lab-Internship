@@ -29,77 +29,70 @@
         <div
           v-if="addPointBaseMaterialsField"
           ref="addPointNode1Wrap"
-          class="flex gap-2"
+          class="min-w-0"
         >
-          <span
-            class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-[10.5px] font-bold text-primary-foreground"
-            >1</span
-          >
-          <div class="min-w-0 flex-1">
-            <p class="mb-1 text-[11px] font-bold text-ink">
-              {{ addPointFieldLabel(addPointBaseMaterialsField) }}
-            </p>
-            <MaterialsTagsField
-              v-model="addPointTags[addPointBaseMaterialsField.column]"
-              :options="addPointBaseMaterialsOptions"
-              :placeholder="t('fomcharts.addPoint.tagsPlaceholder')"
-            />
-          </div>
+          <p class="mb-1 text-[11px] font-bold text-ink">
+            {{ addPointFieldLabel(addPointBaseMaterialsField) }}
+          </p>
+          <MaterialsTagsField
+            v-model="addPointTags[addPointBaseMaterialsField.column]"
+            :options="addPointBaseMaterialsOptions"
+            :placeholder="t('fomcharts.addPoint.tagsPlaceholder')"
+          />
         </div>
 
         <div
           v-if="addPointMaterialClassField"
           ref="addPointNode2Wrap"
-          class="flex gap-2"
+          class="min-w-0"
         >
-          <span
-            class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-[10.5px] font-bold text-primary-foreground"
-            >2</span
-          >
-          <div class="min-w-0 flex-1">
-            <p class="mb-0.5 text-[11px] font-bold text-ink">
-              {{ addPointFieldLabel(addPointMaterialClassField) }}
-            </p>
-            <p class="mb-0.5 text-[10px] text-muted-foreground">
-              {{ t("fomcharts.addPoint.materialClassSuggestedHint") }}
-            </p>
-            <MaterialsTagsField
-              v-model="addPointTags[addPointMaterialClassField.column]"
-              :options="addPointMaterialClassField.options ?? []"
-              :placeholder="t('fomcharts.addPoint.tagsPlaceholder')"
-              :option-hints="addPointMaterialClassHints"
-            />
-          </div>
+          <p class="mb-0.5 text-[11px] font-bold text-ink">
+            {{ addPointFieldLabel(addPointMaterialClassField) }}
+          </p>
+          <p class="mb-0.5 text-[10px] text-muted-foreground">
+            {{ t("fomcharts.addPoint.materialClassSuggestedHint") }}
+          </p>
+          <MaterialsTagsField
+            v-model="addPointTags[addPointMaterialClassField.column]"
+            :options="addPointMaterialClassField.options ?? []"
+            :placeholder="t('fomcharts.addPoint.tagsPlaceholder')"
+            :option-hints="addPointMaterialClassHints"
+          />
         </div>
       </div>
 
       <div
         v-if="addPointLayerField"
         ref="addPointNode3Wrap"
-        class="mt-1.5 flex gap-2 border-t border-secondary/10 pt-1.5"
+        class="mt-1.5 border-t border-secondary/10 pt-1.5"
       >
-        <span
-          class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-[10.5px] font-bold text-primary-foreground"
-          >3</span
-        >
-        <div class="min-w-0 flex-1">
-          <p class="mb-1 text-[11px] font-bold text-ink">
-            {{ addPointFieldLabel(addPointLayerField) }}
-          </p>
-          <LayerStructureField
-            v-model="addPointLayers"
-            :material-options="
-              addPointTags[addPointBaseMaterialsField?.column ?? ''] ?? []
-            "
-          />
-        </div>
+        <p class="mb-1 text-[11px] font-bold text-ink">
+          {{ addPointFieldLabel(addPointLayerField) }}
+        </p>
+        <LayerStructureField
+          v-model="addPointLayers"
+          :material-options="
+            addPointTags[addPointBaseMaterialsField?.column ?? ''] ?? []
+          "
+        />
       </div>
 
+      <!-- Node 1/2 sit side by side in the grid above -- "top" keeps their
+           badges from floating into the neighboring column, same fix as the
+           toolbar figure on the Import page. Node 3 spans the full width
+           below with nothing to its right, so it keeps the default. -->
       <GuideMarkRing
-        v-for="(m, i) in addPoint2Marks"
-        :key="i"
+        v-for="(m, i) in addPoint2Marks.slice(0, 2)"
+        :key="`top-${i}`"
         :mark="m"
         :number="i + 1"
+        side="top"
+      />
+      <GuideMarkRing
+        v-for="(m, i) in addPoint2Marks.slice(2)"
+        :key="`right-${i}`"
+        :mark="m"
+        :number="i + 3"
       />
     </div>
     <p class="mt-1 text-[11px] leading-snug text-secondary">

@@ -22,7 +22,7 @@
       <ExtractionStepper :steps="extractionStepperSteps" :current-step="3" :furthest-step="3" />
     </div>
 
-    <div ref="reviewWrap" class="relative flex flex-1 items-stretch gap-3">
+    <div ref="reviewWrap" class="relative flex flex-1 items-stretch gap-10">
       <div class="flex min-w-0 flex-1 flex-col gap-1.5">
         <div ref="reviewTableWrap" class="guide-callout-region flex flex-col gap-1.5">
           <ExtractionReviewTabs model-value="all" :counts="reviewCounts" />

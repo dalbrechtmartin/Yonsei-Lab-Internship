@@ -8,58 +8,20 @@
 
     <h2 class="mb-2 text-xl font-semibold">{{ t("guide.toc.title") }}</h2>
 
-    <div
-      class="flex flex-col overflow-hidden rounded-2xl border border-border"
-    >
-      <template v-for="(entry, idx) in entries" :key="entry.page">
-        <div
-          v-if="
-            entry.group === 'mode1' && entries[idx - 1]?.group !== 'mode1'
-          "
-          class="flex items-center gap-2 border-b border-border bg-primary/[0.07] px-4 py-1.5 text-xs font-semibold tracking-[0.2em] text-primary uppercase"
-        >
-          {{ t("guide.mode1.eyebrow") }} — {{ t("guide.mode1.title") }}
-        </div>
-        <div
-          v-if="
-            entry.group === 'mode2' && entries[idx - 1]?.group !== 'mode2'
-          "
-          class="flex items-center gap-2 border-b border-border bg-primary/[0.07] px-4 py-1.5 text-xs font-semibold tracking-[0.2em] text-primary uppercase"
-        >
-          {{ t("guide.mode2.eyebrow") }} — {{ t("guide.mode2.title") }}
-        </div>
-        <div
-          class="guide-toc-row group flex items-center gap-3 px-4 py-2"
-          :class="[
-            idx % 2 === 1 ? 'bg-muted/25' : 'bg-white',
-            entry.group === 'mode1' || entry.group === 'mode2' ? 'pl-9' : '',
-            idx > 0 ? 'border-t border-border/70' : '',
-          ]"
-          :data-toc-target="entry.page"
-        >
-          <span
-            class="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"
+    <div class="min-h-0 flex-1">
+      <div
+        class="flex flex-col overflow-hidden rounded-2xl border border-border bg-white"
+      >
+        <template v-for="(entry, idx) in entries" :key="entry.page">
+          <div
+            v-if="entry.group === 'mode1' && entries[idx - 1]?.group !== 'mode1'"
+            class="flex items-center gap-2 border-b border-border bg-primary/[0.07] px-4 py-1.5 text-xs font-semibold tracking-[0.2em] text-primary uppercase"
           >
-            <component :is="entry.icon" class="size-3.5" />
-          </span>
-          <span class="min-w-0 flex-1">
-            <span class="block text-sm font-medium text-ink">{{
-              entry.label
-            }}</span>
-            <span class="block truncate text-[11px] text-secondary">{{
-              entry.desc
-            }}</span>
-          </span>
-          <span
-            class="h-0 w-6 flex-none -translate-y-1 border-b border-dotted border-secondary/50"
-          />
-          <span
-            class="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary font-mono text-[11px] font-semibold text-white"
-          >
-            {{ entry.page }}
-          </span>
-        </div>
-      </template>
+            {{ t("guide.mode1.eyebrow") }} — {{ t("guide.mode1.title") }}
+          </div>
+          <GuideTocRow :entry="entry" :idx="idx" />
+        </template>
+      </div>
     </div>
 
     <p class="mt-2 text-xs text-secondary">{{ t("guide.toc.hint") }}</p>
@@ -69,12 +31,14 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 import type { Component } from "vue";
 import GuideHeader from "./GuideHeader.vue";
 import GuideFooter from "./GuideFooter.vue";
+import GuideTocRow from "./GuideTocRow.vue";
 
-defineProps<{
+const props = defineProps<{
   appVersion: string;
   page: number;
   totalPages: number;
@@ -88,4 +52,14 @@ defineProps<{
 }>();
 
 const { t } = useI18n();
+
+// Split across two pages (this one plus GuidePageToc2.vue) rather than
+// squeezed into two side-by-side columns -- 19 entries at 15 vs. 5 made for
+// a visibly lopsided, cramped-looking split. This page covers Mode 1 (whose
+// 14 entries plus the Introduction still comfortably fit one page); Mode 2's
+// 5 entries get their own page next. Front matter (just the Introduction)
+// leads the list since it has no group header of its own to sit under.
+const entries = computed(() =>
+  props.entries.filter((e) => e.group === "front" || e.group === "mode1"),
+);
 </script>

@@ -22,27 +22,81 @@
       <ExtractionStepper :steps="extractionStepperSteps" :current-step="2" :furthest-step="2" />
     </div>
 
-    <div ref="runningWrap" class="relative flex flex-col gap-3">
-      <div ref="runningHeaderWrap" class="guide-callout-region overflow-hidden p-0!">
-        <ExtractionProgressHeader :job="runningJob" />
+    <div ref="runningWrap" class="relative flex items-start gap-3">
+      <div class="flex min-w-0 flex-[1.1] flex-col gap-2">
+        <div ref="runningHeaderWrap" class="guide-callout-region overflow-hidden p-0!">
+          <ExtractionProgressHeader :job="runningJob" />
+        </div>
+
+        <div ref="runningStripWrap" class="guide-callout-region flex flex-col gap-2.5">
+          <ExtractionFileIconStrip :job="runningJob" />
+          <ExtractionNoticeBanner :job="runningJob" />
+        </div>
+
+        <div ref="runningFilesWrap" class="guide-callout-region flex flex-col gap-2">
+          <ExtractionCurrentFileCard :job="runningJob" />
+          <ExtractionNextFileCard :file="nextFile" />
+        </div>
+
+        <div ref="runningLogWrap" class="guide-callout-region">
+          <ExtractionEventLog
+            class="h-32"
+            :entries="runningLogEntries"
+            :warning-count="runningWarningCount"
+          />
+        </div>
       </div>
 
-      <div ref="runningStripWrap" class="guide-callout-region flex flex-col gap-2.5">
-        <ExtractionFileIconStrip :job="runningJob" />
-        <ExtractionNoticeBanner :job="runningJob" />
-      </div>
+      <div ref="runningGameWrap" class="flex min-w-0 flex-[1.15] flex-col gap-3">
+        <!-- Hand-copied from PhotonDashGame's own collapsed/folded toggle
+             button (same real icon/classes, see PhotonDashGame.vue) --
+             folded by default, same convention as the toolbar mock on the
+             Import page for a real control this guide can't cleanly mount
+             (the game canvas itself isn't meaningful as a static image). -->
+        <div class="guide-callout-region p-0!">
+          <div
+            class="flex w-full items-center gap-3 rounded-2xl border border-secondary/15 bg-card/80 px-4 py-3 text-left shadow-sm"
+          >
+            <span
+              class="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"
+            >
+              <Gamepad2 class="size-4" />
+            </span>
+            <span class="min-w-0 flex-1 text-sm font-semibold text-ink">{{
+              t("extraction.minigame.title")
+            }}</span>
+            <span
+              class="flex shrink-0 items-center gap-1 text-xs font-medium text-secondary"
+            >
+              {{ t("extraction.minigame.teaser") }}
+              <ChevronRight class="size-3.5" />
+            </span>
+          </div>
+        </div>
 
-      <div ref="runningFilesWrap" class="guide-callout-region flex flex-col gap-2">
-        <ExtractionCurrentFileCard :job="runningJob" />
-        <ExtractionNextFileCard :file="nextFile" />
-      </div>
-
-      <div ref="runningLogWrap" class="guide-callout-region">
-        <ExtractionEventLog
-          class="h-32"
-          :entries="runningLogEntries"
-          :warning-count="runningWarningCount"
-        />
+        <!-- Folded state's own vacated spot: a live PDF preview of whichever
+             file is currently being analyzed (ExtractionPdfViewer), which
+             needs a live backend this static guide doesn't have -- same
+             honest stand-in convention as the Review page's own PDF-viewer
+             mock (see its own template comment). -->
+        <div
+          class="guide-callout-region flex h-72 flex-col overflow-hidden p-0!"
+        >
+          <div
+            class="flex shrink-0 items-center gap-1.5 border-b border-secondary/10 px-3 py-2"
+          >
+            <span class="min-w-0 flex-1 truncate text-[12px] font-medium text-ink">{{
+              currentFile?.filename ?? runningJob.files[0].filename
+            }}</span>
+          </div>
+          <div class="flex flex-1 flex-col gap-1.5 bg-secondary/4 p-3">
+            <div class="mb-1 h-1.5 w-2/3 rounded-full bg-secondary/20" />
+            <div class="mb-1 h-1.5 w-full rounded-full bg-secondary/15" />
+            <div class="mb-1 h-1.5 w-5/6 rounded-full bg-secondary/15" />
+            <div class="mb-1 h-1.5 w-full rounded-full bg-secondary/15" />
+            <div class="h-1.5 w-4/5 rounded-full bg-secondary/15" />
+          </div>
+        </div>
       </div>
 
       <GuideMarkRing
@@ -72,15 +126,12 @@
           label: t('guide.steps.mode2Running.marks.log.label'),
           body: t('guide.steps.mode2Running.marks.log.body'),
         },
+        {
+          label: t('guide.steps.mode2Running.marks.game.label'),
+          body: t('guide.steps.mode2Running.marks.game.body'),
+        },
       ]"
     />
-
-    <div class="mt-3 flex items-center gap-2.5 rounded-xl border border-border bg-muted/20 px-4 py-2.5">
-      <Gamepad2 class="size-4 shrink-0 text-primary" />
-      <p class="text-xs leading-snug text-ink">
-        {{ t("guide.steps.mode2Running.easterEgg") }}
-      </p>
-    </div>
 
     <GuideFooter :page="page" :total-pages="totalPages" />
   </section>
@@ -89,7 +140,7 @@
 <script setup lang="ts">
 import { toRef, useTemplateRef } from "vue";
 import { useI18n } from "vue-i18n";
-import { Gamepad2 } from "@lucide/vue";
+import { ChevronRight, Gamepad2 } from "@lucide/vue";
 import ExtractionStepper from "@/components/extraction/ExtractionStepper.vue";
 import ExtractionProgressHeader from "@/components/extraction/ExtractionProgressHeader.vue";
 import ExtractionFileIconStrip from "@/components/extraction/ExtractionFileIconStrip.vue";
@@ -120,13 +171,14 @@ defineProps<{
 const { t } = useI18n();
 
 const jobRef = toRef(() => runningJob);
-const { nextFile } = useExtractionProgressDisplay(jobRef);
+const { nextFile, currentFile } = useExtractionProgressDisplay(jobRef);
 
 const runningWrap = useTemplateRef<HTMLDivElement>("runningWrap");
 const runningHeaderWrap = useTemplateRef<HTMLDivElement>("runningHeaderWrap");
 const runningStripWrap = useTemplateRef<HTMLDivElement>("runningStripWrap");
 const runningFilesWrap = useTemplateRef<HTMLDivElement>("runningFilesWrap");
 const runningLogWrap = useTemplateRef<HTMLDivElement>("runningLogWrap");
+const runningGameWrap = useTemplateRef<HTMLDivElement>("runningGameWrap");
 
 defineExpose({
   runningWrap,
@@ -134,5 +186,6 @@ defineExpose({
   runningStripWrap,
   runningFilesWrap,
   runningLogWrap,
+  runningGameWrap,
 });
 </script>

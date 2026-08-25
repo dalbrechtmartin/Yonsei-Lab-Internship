@@ -167,6 +167,27 @@
           </div>
         </div>
 
+        <!-- Hand-copied from AddPointDialog's own persistent footer (same
+             real Button component and i18n labels) -- step 1's own state:
+             no Back button yet, just the discreet "save without more
+             details" escape hatch and Next. See footerCaption below. -->
+        <div
+          class="mt-4 flex items-center justify-between gap-2 border-t border-secondary/10 pt-3"
+        >
+          <span
+            class="text-[11px] font-medium text-muted-foreground underline decoration-dotted underline-offset-2"
+          >
+            {{ t("fomcharts.addPoint.saveWithoutDetails") }}
+          </span>
+          <Button
+            type="button"
+            size="sm"
+            class="bg-primary px-4 font-semibold text-primary-foreground hover:bg-primary/90"
+          >
+            {{ t("fomcharts.addPoint.next") }}
+          </Button>
+        </div>
+
         <GuideMarkRing
           v-for="(m, i) in addPoint1Marks"
           :key="i"
@@ -180,6 +201,11 @@
       class="mx-auto mt-1.5 max-w-120 text-center text-[11px] leading-snug text-secondary"
     >
       {{ t("guide.steps.addPoint1.stepperCaption") }}
+    </p>
+    <p
+      class="mx-auto mt-0.5 max-w-120 text-center text-[11px] leading-snug text-secondary"
+    >
+      {{ t("guide.steps.addPoint1.footerCaption") }}
     </p>
 
     <GuideMarkLegend
@@ -222,6 +248,7 @@ import { useTemplateRef } from "vue";
 import { useI18n } from "vue-i18n";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import AddPointField from "@/components/visualization/AddPointField.vue";
 import PointShapeField from "@/components/visualization/PointShapeField.vue";

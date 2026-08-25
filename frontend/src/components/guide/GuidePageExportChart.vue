@@ -91,7 +91,7 @@
             ><FileText class="size-4"
           /></span>
           <div class="min-w-0">
-            <p class="font-mono text-xs font-semibold text-ink">
+            <p class="text-xs font-semibold text-ink">
               {{ t("fomcharts.export.csv") }}
             </p>
             <p class="text-[10.5px] leading-snug text-secondary">
@@ -107,7 +107,7 @@
             ><FileSpreadsheet class="size-4"
           /></span>
           <div class="min-w-0">
-            <p class="font-mono text-xs font-semibold text-ink">
+            <p class="text-xs font-semibold text-ink">
               {{ t("fomcharts.export.xlsx") }}
             </p>
             <p class="text-[10.5px] leading-snug text-secondary">
@@ -123,7 +123,7 @@
             ><FileImage class="size-4"
           /></span>
           <div class="min-w-0">
-            <p class="font-mono text-xs font-semibold text-ink">
+            <p class="text-xs font-semibold text-ink">
               {{ t("fomcharts.export.png") }}
             </p>
             <p class="text-[10.5px] leading-snug text-secondary">

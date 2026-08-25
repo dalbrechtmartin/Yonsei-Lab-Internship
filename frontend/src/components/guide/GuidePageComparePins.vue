@@ -119,41 +119,51 @@
         <div class="flex flex-col gap-1.5 text-xs">
           <p class="flex gap-1.5">
             <Check class="mt-0.5 size-3 shrink-0 text-primary" /><span
-              ><strong class="text-primary"
-                >{{ t("fomcharts.compare.origin") }} :</strong
-              >
+              ><strong class="text-primary">{{
+                t("guide.steps.comparePins.labelColon", {
+                  label: t("fomcharts.compare.origin"),
+                })
+              }}</strong>
               {{ t("guide.steps.comparePins.sections.origin") }}</span
             >
           </p>
           <p class="flex gap-1.5">
             <Check class="mt-0.5 size-3 shrink-0 text-primary" /><span
-              ><strong class="text-primary"
-                >{{ t("fomcharts.annotations.mode") }} :</strong
-              >
+              ><strong class="text-primary">{{
+                t("guide.steps.comparePins.labelColon", {
+                  label: t("fomcharts.annotations.mode"),
+                })
+              }}</strong>
               {{ t("guide.steps.comparePins.sections.mode") }}</span
             >
           </p>
           <p class="flex gap-1.5">
             <Check class="mt-0.5 size-3 shrink-0 text-primary" /><span
-              ><strong class="text-primary"
-                >{{ t("fomcharts.annotations.layerStructure") }} :</strong
-              >
+              ><strong class="text-primary">{{
+                t("guide.steps.comparePins.labelColon", {
+                  label: t("fomcharts.annotations.layerStructure"),
+                })
+              }}</strong>
               {{ t("guide.steps.comparePins.sections.structure") }}</span
             >
           </p>
           <p class="flex gap-1.5">
             <Check class="mt-0.5 size-3 shrink-0 text-primary" /><span
-              ><strong class="text-primary"
-                >{{ t("fomcharts.annotations.metrics") }} :</strong
-              >
+              ><strong class="text-primary">{{
+                t("guide.steps.comparePins.labelColon", {
+                  label: t("fomcharts.annotations.metrics"),
+                })
+              }}</strong>
               {{ t("guide.steps.comparePins.sections.metrics") }}</span
             >
           </p>
           <p class="flex gap-1.5">
             <Check class="mt-0.5 size-3 shrink-0 text-primary" /><span
-              ><strong class="text-primary"
-                >{{ t("fomcharts.annotations.notes") }} :</strong
-              >
+              ><strong class="text-primary">{{
+                t("guide.steps.comparePins.labelColon", {
+                  label: t("fomcharts.annotations.notes"),
+                })
+              }}</strong>
               {{ t("guide.steps.comparePins.sections.notes") }}</span
             >
           </p>

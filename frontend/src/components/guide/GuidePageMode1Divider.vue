@@ -51,7 +51,7 @@
           >
             {{ entry.page - firstPage + 1 }}
           </span>
-          {{ entry.label }}
+          {{ stripNumber(entry.label) }}
         </li>
       </ul>
     </div>
@@ -79,6 +79,17 @@ const { t } = useI18n();
 const outlineTitle = computed(
   () => `${t("guide.mode1.eyebrow")} — ${t("guide.mode1.title")}`,
 );
+
+// This list already draws its own positional badge (1..N within this
+// section) next to each label -- the label itself still carries the guide's
+// own step numeral (see guide.outline.mode1Xxx), which would otherwise
+// double up right next to it (badge "1" beside text "1. Import your
+// dataset"). Stripped here only, the same way GuideTemplate's own
+// tocLabel() strips a different leading pattern (an em-dash section name)
+// for a different display context.
+function stripNumber(label: string): string {
+  return label.replace(/^\d+\.\s*/, "");
+}
 
 const mode1FlowSteps = computed(() => [
   { label: t("guide.mode1.flow.import"), icon: Upload },

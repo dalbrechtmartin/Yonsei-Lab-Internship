@@ -52,7 +52,7 @@
           >
             {{ entry.page - firstPage + 1 }}
           </span>
-          {{ entry.label }}
+          {{ stripNumber(entry.label) }}
         </li>
       </ul>
     </div>
@@ -80,6 +80,14 @@ const { t } = useI18n();
 const outlineTitle = computed(
   () => `${t("guide.mode2.eyebrow")} — ${t("guide.mode2.title")}`,
 );
+
+// See GuidePageMode1Divider.vue's own copy of this helper for why it's
+// needed: this list's positional badge would otherwise double up with the
+// step numeral the label itself already carries (Correct has no such
+// numeral -- see guide.outline.mode2Correct -- so it's simply left as-is).
+function stripNumber(label: string): string {
+  return label.replace(/^\d+\.\s*/, "");
+}
 
 // Every step here is real and usable end to end today -- unlike the old
 // divider, none is styled as "still being designed" anymore.
