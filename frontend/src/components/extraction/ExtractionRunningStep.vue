@@ -35,8 +35,8 @@
           :job-id="job.jobId"
           :file-id="currentFile.id"
           :filename="currentFile.filename"
-          :location="null"
-          :evidence="null"
+          :sources="[]"
+          :active-source-index="0"
           :get-page-count="getPageCount"
         />
       </div>

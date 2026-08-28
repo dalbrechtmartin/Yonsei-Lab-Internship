@@ -702,19 +702,41 @@ export const apiService = {
     return `${API_URL}jobs/${jobId}/files/${fileId}/pages/${pageNumber}`;
   },
 
-  /** Locates a record's quoted Evidence text on its source page via the
-   * PDF's real text layer, so the reviewer can jump straight to it instead
-   * of hunting for it manually. `matches` (possibly empty, when the quote
-   * doesn't appear verbatim) are in PDF point space, independent of render
-   * DPI and zoom -- divide by pageWidth/pageHeight to get percentages. */
-  async getEvidenceMatches(
+  /** Locates every one of a record's quoted Evidence fragments on a single
+   * page via the PDF's real text layer, in one round trip -- so the
+   * reviewer's own multiple citations can all be shown at once (a light
+   * tint for "a citation lives here", an accent for whichever one is
+   * currently selected) without one query per source racing another.
+   * `quotes` is positional: `matchesByQuery[i]` is the rect list for
+   * `quotes[i]` (possibly empty, when that quote doesn't appear verbatim).
+   * Rects are in PDF point space, independent of render DPI and zoom --
+   * divide by pageWidth/pageHeight to get percentages.
+   *
+   * `focusValues`, when given, is a same-length parallel array -- a
+   * non-null `focusValues[i]` additionally pinpoints that one value's own
+   * location within `quotes[i]`'s own passage (e.g. "2877" within a
+   * sentence that also reports the wavelength and sensitivity), so a
+   * per-field "jump to source" click can highlight just that number instead
+   * of the whole shared sentence. `focusByQuery[i]` is empty when no focus
+   * was given for that quote or none was found -- the caller should fall
+   * back to `matchesByQuery[i]` in that case, never treat it as an error. */
+  async getEvidencePageMatches(
     jobId: string,
     fileId: string,
     pageNumber: number,
-    evidence: string,
-  ): Promise<{ pageWidth: number; pageHeight: number; matches: number[][] }> {
+    quotes: string[],
+    focusValues?: (string | null)[],
+  ): Promise<{
+    pageWidth: number;
+    pageHeight: number;
+    matchesByQuery: number[][][];
+    focusByQuery: number[][][];
+  }> {
+    const params = new URLSearchParams();
+    quotes.forEach((q) => params.append("q", q));
+    (focusValues ?? quotes.map(() => "")).forEach((f) => params.append("focus", f ?? ""));
     const response = await fetch(
-      `${API_URL}jobs/${jobId}/files/${fileId}/pages/${pageNumber}/evidence-matches?q=${encodeURIComponent(evidence)}`,
+      `${API_URL}jobs/${jobId}/files/${fileId}/pages/${pageNumber}/evidence-matches?${params.toString()}`,
     );
     if (!response.ok)
       throw new Error("Server error while searching for the evidence text.");
@@ -722,15 +744,16 @@ export const apiService = {
     return {
       pageWidth: body.page_width,
       pageHeight: body.page_height,
-      matches: body.matches ?? [],
+      matchesByQuery: body.matches_by_query ?? [],
+      focusByQuery: body.focus_by_query ?? [],
     };
   },
 
   /** Document-wide, literal text search (the review viewer's Ctrl+F) --
-   * unlike getEvidenceMatches (one page, word-chunk fallback for a
-   * paraphrased citation), this only ever returns exact matches of what
-   * the reviewer typed, across every page. Only pages with a hit come
-   * back. `matches` are in PDF point space, same as getEvidenceMatches. */
+   * unlike getEvidencePageMatches (word-chunk fallback for a paraphrased
+   * citation), this only ever returns exact matches of what the reviewer
+   * typed, across every page. Only pages with a hit come back. `matches`
+   * are in PDF point space, same as getEvidencePageMatches. */
   async searchDocument(
     jobId: string,
     fileId: string,

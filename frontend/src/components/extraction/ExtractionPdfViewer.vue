@@ -130,11 +130,7 @@
           v-for="(box, i) in matchBoxes"
           :key="i"
           class="pointer-events-none absolute rounded-sm"
-          :class="
-            box.current
-              ? 'bg-amber-400/55 ring-2 ring-amber-600'
-              : 'bg-amber-400/30 ring-1 ring-amber-500/60'
-          "
+          :class="boxClass(box.variant)"
           :style="{
             left: box.left + '%',
             top: box.top + '%',
@@ -163,7 +159,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { apiService } from "@/services/api";
-import { parsePageNumber } from "@/utils/parseLocation";
+import { parsePageNumber, type EvidenceSource } from "@/utils/parseLocation";
 
 const { t } = useI18n();
 
@@ -171,11 +167,28 @@ const props = defineProps<{
   jobId: string;
   fileId: string;
   filename: string;
-  location: string | null;
-  /** The record's cited passage -- searched for in the page's real text
-   * layer (see apiService.getEvidenceMatches) so the viewer can highlight
-   * and auto-scroll to it instead of just naming it. */
-  evidence: string | null;
+  /** Every evidence source for the record currently under review, on any
+   * page -- NOT pre-filtered to the page on screen (this component does
+   * that itself, see onPageSources) and NOT pre-resolved to "the active
+   * one" (see activeSourceIndex). Rendering all of them (lightly tinted)
+   * plus the active one (accented) is what fixed the old "clicking a
+   * different source doesn't seem to do anything" report -- with only one
+   * resolved source ever reaching this component, two citations sharing a
+   * page looked identical regardless of which was actually selected. */
+  sources: EvidenceSource[];
+  /** Index into `sources` the reviewer most recently selected (e.g. by
+   * clicking a "Source N" chip) -- drives which on-page rectangle(s) get
+   * the accent tint, and which page the viewer jumps to. */
+  activeSourceIndex: number;
+  /** The specific field value (as text) a per-field "jump to source" click
+   * asked to be pinpointed within the active source's own passage -- null
+   * for a plain source selection (a "Source N" pill, the Provenance list's
+   * own Location link), which shows the whole passage same as before this
+   * existed. See onPageSources/loadEvidenceMatches below for how this
+   * narrows the highlight instead of replacing it -- a value that can't be
+   * found within the passage just falls back to the full-quote highlight,
+   * never an empty or wrong one. */
+  focusValue?: string | null;
   /** Memoized per file by the caller (see useExtractionRecords.getPageCount)
    * so switching between records in the same file doesn't re-fetch. */
   getPageCount: (fileId: string) => Promise<number>;
@@ -188,7 +201,13 @@ const props = defineProps<{
 const ZOOM_STEPS = [70, 85, 100, 125, 150, 175, 200];
 const zoomIndex = ref(2);
 
-const pageNumber = ref(parsePageNumber(props.location));
+// The active source's own Location -- NOT props.sources[0] -- decides which
+// page the viewer opens to, mirroring what used to be the parent-resolved
+// `location` prop.
+const activeSourceLocation = computed(
+  () => props.sources[props.activeSourceIndex]?.location ?? null,
+);
+const pageNumber = ref(parsePageNumber(activeSourceLocation.value));
 const totalPages = ref<number | null>(null);
 const pageLabels = ref<(string | null)[] | null>(null);
 
@@ -228,24 +247,28 @@ watch(
   { immediate: true },
 );
 
-// A newly-selected record (even within the same file) resets the page to
-// wherever its own Location points -- the researcher is looking at a
-// different value, not still reading the previous one's page. Also fires
-// on a bare file switch with no location change (e.g. the extraction
-// running step's live preview, which never sets `location`) -- otherwise
-// the viewer would keep whatever page number the previous file was on,
-// which may not even exist in the new one.
+// A newly-selected record (even within the same file), or clicking a
+// different source chip whose own citation lands on another page, resets
+// the page to wherever that source's Location points. Also fires on a bare
+// file switch with no source data (e.g. the extraction running step's live
+// preview, which never sets `sources`) -- otherwise the viewer would keep
+// whatever page number the previous file was on, which may not even exist
+// in the new one.
 watch(
-  [() => props.fileId, () => props.location],
+  [() => props.fileId, activeSourceLocation],
   () => {
-    pageNumber.value = parsePageNumber(props.location);
+    pageNumber.value = parsePageNumber(activeSourceLocation.value);
   },
 );
 
 const scrollContainerEl = ref<HTMLElement | null>(null);
 const imgEl = ref<HTMLImageElement | null>(null);
 const imgLoaded = ref(false);
-const evidenceMatches = ref<{ pageWidth: number; pageHeight: number; matches: number[][] } | null>(null);
+const evidenceMatches = ref<{
+  pageWidth: number;
+  pageHeight: number;
+  bySource: { sourceIndex: number; matches: number[][]; focus: number[][] }[];
+} | null>(null);
 
 // -- Ctrl+F document search -------------------------------------------
 // While open, this owns the highlight/scroll behavior entirely (see
@@ -333,9 +356,8 @@ watch([searchResults, searchMatchIndex], () => {
   }
 });
 
-// This page's own slice of the multi-page search results, in the same
-// {pageWidth, pageHeight, matches} shape evidenceMatches already uses --
-// letting matchBoxes/activeHighlight treat both sources identically.
+// This page's own slice of the multi-page search results -- matchBoxes
+// reads this directly while search is open.
 const currentPageSearchMatches = computed(() => {
   const result = searchResults.value.find((r) => r.page === pageNumber.value);
   return result
@@ -343,37 +365,129 @@ const currentPageSearchMatches = computed(() => {
     : null;
 });
 
-const activeHighlight = computed(() =>
-  searchOpen.value ? currentPageSearchMatches.value : evidenceMatches.value,
-);
-
-const matchBoxes = computed(() => {
-  const result = activeHighlight.value;
-  if (!result || !result.matches.length) return [];
-  const currentLocalIndex =
-    searchOpen.value && currentMatch.value?.page === pageNumber.value
-      ? currentMatch.value.localIndex
-      : null;
-  return result.matches.map(([x0, y0, x1, y1], i) => ({
+// Three-tone highlight model: every on-page source gets a light "a citation
+// lives here" tint, the one the reviewer actually selected gets a stronger
+// accent on top, and -- when a per-field click asked for it (see focusValue)
+// -- that field's own pinpointed value gets the strongest accent of all, on
+// top of everything else. Ctrl+F search (amber, two intensities) and
+// evidence mode never render at once, same mutual-exclusion as before this
+// feature existed.
+type MatchBoxVariant =
+  | "search-current"
+  | "search-other"
+  | "evidence-active"
+  | "evidence-other"
+  | "evidence-focus";
+const matchBoxes = computed<
+  { left: number; top: number; width: number; height: number; variant: MatchBoxVariant }[]
+>(() => {
+  if (searchOpen.value) {
+    const result = currentPageSearchMatches.value;
+    if (!result || !result.matches.length) return [];
+    const currentLocalIndex = currentMatch.value?.page === pageNumber.value ? currentMatch.value.localIndex : null;
+    return result.matches.map(([x0, y0, x1, y1], i) => ({
+      left: (x0 / result.pageWidth) * 100,
+      top: (y0 / result.pageHeight) * 100,
+      width: ((x1 - x0) / result.pageWidth) * 100,
+      height: ((y1 - y0) / result.pageHeight) * 100,
+      variant: i === currentLocalIndex ? "search-current" : "search-other",
+    }));
+  }
+  const result = evidenceMatches.value;
+  if (!result) return [];
+  const toBox = (variant: MatchBoxVariant) => ([x0, y0, x1, y1]: number[]) => ({
     left: (x0 / result.pageWidth) * 100,
     top: (y0 / result.pageHeight) * 100,
     width: ((x1 - x0) / result.pageWidth) * 100,
     height: ((y1 - y0) / result.pageHeight) * 100,
-    current: i === currentLocalIndex,
-  }));
+    variant,
+  });
+  const boxes = result.bySource.flatMap((entry) => [
+    ...entry.matches.map(
+      toBox(entry.sourceIndex === props.activeSourceIndex ? "evidence-active" : "evidence-other"),
+    ),
+    ...entry.focus.map(toBox("evidence-focus")),
+  ]);
+  // Draw "other" sources first, the active whole-passage highlight next, the
+  // pinpointed value last -- so each paints on top of the last when boxes
+  // happen to overlap.
+  return [
+    ...boxes.filter((b) => b.variant === "evidence-other"),
+    ...boxes.filter((b) => b.variant === "evidence-active"),
+    ...boxes.filter((b) => b.variant === "evidence-focus"),
+  ];
 });
 
+function boxClass(variant: MatchBoxVariant): string {
+  switch (variant) {
+    case "search-current":
+      return "bg-amber-400/55 ring-2 ring-amber-600";
+    case "search-other":
+      return "bg-amber-400/30 ring-1 ring-amber-500/60";
+    case "evidence-active":
+      return "bg-primary/25 ring-2 ring-primary/80";
+    case "evidence-other":
+      return "bg-amber-400/25 ring-1 ring-amber-500/50";
+    case "evidence-focus":
+      return "bg-emerald-400/45 ring-2 ring-emerald-600";
+  }
+}
+
+// What scrollToBoxIndex should center on once evidence data loads: the
+// pinpointed value if one was found (see focusValue), else the first (only,
+// in practice) active-source box -- graceful fallback, never worse than the
+// whole-passage highlight this replaces.
+const firstActiveBoxIndex = computed(() => {
+  const focusIdx = matchBoxes.value.findIndex((b) => b.variant === "evidence-focus");
+  if (focusIdx !== -1) return focusIdx;
+  const idx = matchBoxes.value.findIndex((b) => b.variant === "evidence-active");
+  return idx === -1 ? 0 : idx;
+});
+
+// Only sources whose own Location resolves to the page currently on screen
+// -- a source elsewhere in the document has nothing to show here and would
+// just waste a query.
+const onPageSources = computed(() =>
+  props.sources
+    .map((s, i) => ({ quote: s.quote, location: s.location, sourceIndex: i }))
+    .filter((s) => parsePageNumber(s.location) === pageNumber.value),
+);
+
+// Stable by VALUE (not array identity) -- so the fetch watch below only
+// refires when a quote/location actually changed text, not on every new
+// array reference the parent's own computed happens to produce.
+const sourcesKey = computed(() => props.sources.map((s) => `${s.location}::${s.quote}`).join("␞"));
+
+// Guards against a slower fetch (e.g. one quote falling back to the
+// backend's word-chunk search) resolving AFTER a faster, more recent one
+// and clobbering it -- there was no such guard before, which was the root
+// cause of "clicking a different source sometimes shows the wrong one."
+let evidenceFetchGeneration = 0;
+
 async function loadEvidenceMatches() {
+  const generation = ++evidenceFetchGeneration;
+  const pending = onPageSources.value;
   evidenceMatches.value = null;
-  if (!props.evidence) return;
+  if (!pending.length) return;
   try {
-    evidenceMatches.value = await apiService.getEvidenceMatches(
+    const result = await apiService.getEvidencePageMatches(
       props.jobId,
       props.fileId,
       pageNumber.value,
-      props.evidence,
+      pending.map((s) => s.quote),
+      pending.map((s) => (s.sourceIndex === props.activeSourceIndex ? props.focusValue ?? null : null)),
     );
-    if (!searchOpen.value) scrollToBoxIndex(0);
+    if (generation !== evidenceFetchGeneration) return; // superseded by a newer fetch
+    evidenceMatches.value = {
+      pageWidth: result.pageWidth,
+      pageHeight: result.pageHeight,
+      bySource: pending.map((s, idx) => ({
+        sourceIndex: s.sourceIndex,
+        matches: result.matchesByQuery[idx] ?? [],
+        focus: result.focusByQuery[idx] ?? [],
+      })),
+    };
+    if (!searchOpen.value) scrollToBoxIndex(firstActiveBoxIndex.value);
   } catch (error) {
     console.error("Failed to search for the evidence text:", error);
   }
@@ -384,7 +498,7 @@ function handleImageLoad() {
   if (searchOpen.value) {
     if (currentMatch.value?.page === pageNumber.value) scrollToBoxIndex(currentMatch.value.localIndex);
   } else {
-    scrollToBoxIndex(0);
+    scrollToBoxIndex(firstActiveBoxIndex.value);
   }
 }
 
@@ -403,13 +517,43 @@ function scrollToBoxIndex(index: number) {
   );
 }
 
+// Resets imgLoaded ONLY when the <img> is actually about to remount (a real
+// file/page change, which is what changes its `:key="pageUrl"`) -- switching
+// which SOURCE is active on the SAME page must never touch this, or
+// scrollToBoxIndex's `imgLoaded` guard permanently no-ops once the <img>'s
+// own @load never refires. This split is the fix for the reported "clicking
+// a different source does nothing": before, ANY evidence change reset
+// imgLoaded, but only a page change could ever set it back to true.
+watch([() => props.fileId, pageNumber], () => {
+  imgLoaded.value = false;
+});
+
+// Fetches whenever the page on screen changes, the sources' own text
+// changes (a record was navigated to), or the requested focus value changes
+// (a different field's source icon was clicked, possibly on the very same
+// shared passage -- see focusValue) -- but NOT on a same-page
+// activeSourceIndex change alone with an unchanged focus, since
+// onPageSources's data already covers every source on this page regardless
+// of which is active (see the activeSourceIndex watch below for that case).
 watch(
-  [() => props.fileId, pageNumber, () => props.evidence],
-  () => {
-    imgLoaded.value = false;
-    loadEvidenceMatches();
-  },
+  [() => props.fileId, pageNumber, sourcesKey, () => props.focusValue],
+  () => loadEvidenceMatches(),
   { immediate: true },
+);
+
+// Same-page source switch with NO focus change: no new fetch is needed
+// (already-loaded evidenceMatches covers every on-page source), just
+// re-center the scroll on the newly active one. A no-op via
+// scrollToBoxIndex's own guards if the fetch above is still in flight --
+// loadEvidenceMatches scrolls again once it resolves. A source switch that
+// DOES change focusValue is already handled by the watch above instead
+// (needs a real fetch to get that value's own pinpointed rect).
+watch(
+  () => props.activeSourceIndex,
+  () => {
+    if (searchOpen.value) return;
+    nextTick(() => scrollToBoxIndex(firstActiveBoxIndex.value));
+  },
 );
 
 // A zoom change resizes the image (and therefore the match overlay, since
@@ -420,7 +564,7 @@ watch(zoomIndex, () =>
     scrollToBoxIndex(
       searchOpen.value && currentMatch.value?.page === pageNumber.value
         ? currentMatch.value.localIndex
-        : 0,
+        : firstActiveBoxIndex.value,
     ),
   ),
 );

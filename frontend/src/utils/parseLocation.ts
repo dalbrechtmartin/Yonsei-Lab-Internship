@@ -94,9 +94,22 @@ export function parseEvidenceSources(
   const fieldFragments = splitFieldMapFragments(evidenceFieldMap);
   if (locations.length > 1) {
     const fieldsAligned = fieldFragments.length === locations.length;
+    // The model sometimes over-splits Evidence into more "[...]"-separated
+    // fragments than it gives Location entries for (a real observed case:
+    // 4 quotes, 3 locations, because the last quote continues describing the
+    // same passage without restating a fresh location). Rather than orphaning
+    // a trailing fragment to "" -- which parsePageNumber then silently
+    // defaults to page 1, so its own citation becomes unreachable and its
+    // "Source N" chip navigates nowhere real -- carry the LAST stated
+    // location forward. This is a safe inference (the model kept describing
+    // content without citing a new page, so it's still on the last one it
+    // named), unlike guessing which FIELDS a trailing fragment supports --
+    // `fields` still degrades to [] past the field-map's own last entry,
+    // since there's no equivalently safe assumption for that.
+    const lastLocation = locations[locations.length - 1] ?? "";
     return quotes.map((quote, i) => ({
       quote,
-      location: locations[i] ?? "",
+      location: locations[i] ?? lastLocation,
       fields: fieldsAligned ? (fieldFragments[i] ?? []) : [],
     }));
   }

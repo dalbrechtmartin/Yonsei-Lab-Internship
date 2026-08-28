@@ -7,7 +7,7 @@ from typing import Any, cast
 
 import fitz  # PyMuPDF
 import polars as pl
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response, StreamingResponse
 from pydantic import BaseModel
@@ -428,6 +428,31 @@ def _find_evidence_rects(page: fitz.Page, text: str) -> list[fitz.Rect]:
     return rects
 
 
+def _find_focus_rect(
+    page: fitz.Page, quote_rects: list[fitz.Rect], focus_text: str
+) -> list[fitz.Rect]:
+    """Pinpoints one specific field's own value within the passage it was
+    already confirmed to belong to -- e.g. clicking FOM's own source icon on
+    a sentence that reports wavelength, FOM and sensitivity together should
+    highlight just "2877", not the whole sentence. The search is clipped to
+    the quote's own bounding box on purpose: an unclipped page-wide search
+    for a bare number could just as easily land on an unrelated occurrence
+    (a page number, a different table row). No match inside that boundary is
+    a normal, silent outcome (e.g. the paper writes "2,877" but the stored
+    value is "2877") -- the caller falls back to the full-quote highlight,
+    never a wrong one."""
+    if not quote_rects:
+        return []
+    needle = " ".join(focus_text.split())
+    if not needle:
+        return []
+    clip = quote_rects[0]
+    for r in quote_rects[1:]:
+        clip |= r
+    clip = fitz.Rect(clip.x0 - 2, clip.y0 - 2, clip.x1 + 2, clip.y1 + 2)
+    return page.search_for(needle, clip=clip)
+
+
 _MIN_SEARCH_QUERY_LENGTH = 2
 
 
@@ -464,25 +489,52 @@ async def search_file_text(job_id: str, file_id: str, q: str):
 
 
 @app.get("/jobs/{job_id}/files/{file_id}/pages/{page_number}/evidence-matches")
-async def get_evidence_matches(job_id: str, file_id: str, page_number: int, q: str):
-    """So the review UI can jump straight to a record's cited passage
-    instead of making the researcher hunt for it on the page themselves.
-    Returns match rectangles in PDF point space (independent of render DPI
-    and of the frontend's zoom level) alongside the page's own point-space
-    size, so the frontend can convert to a percentage-based overlay that
-    stays correctly positioned at any zoom."""
+async def get_evidence_matches(
+    job_id: str,
+    file_id: str,
+    page_number: int,
+    q: list[str] = Query(...),
+    focus: list[str] | None = Query(None),
+):
+    """So the review UI can jump straight to a record's cited passage(s)
+    instead of making the researcher hunt for them on the page themselves.
+    Accepts one query per evidence source on this page so the reviewer's
+    citations can all be located in a single round trip (avoiding both a
+    query-per-source race and one PDF re-open per source) -- `matches_by_query[i]`
+    is the rect list for `q[i]`, in PDF point space (independent of render
+    DPI and of the frontend's zoom level), alongside the page's own
+    point-space size, so the frontend can convert to a percentage-based
+    overlay that stays correctly positioned at any zoom.
+
+    `focus` is an optional, same-length parallel list -- a non-empty
+    `focus[i]` additionally pinpoints that one value's own location within
+    `q[i]`'s own passage (see _find_focus_rect), for the "jump to this
+    field's source" affordance that shouldn't highlight the whole sentence
+    just because a click was on FOM specifically, not the sentence around
+    it. `focus_by_query[i]` is empty when no focus was requested or none was
+    found -- callers are expected to fall back to `matches_by_query[i]`."""
     job_file = _job_file_or_404(job_id, file_id)
+    focus_list = focus if focus is not None and len(focus) == len(q) else [""] * len(q)
 
     def _search() -> dict:
         with fitz.open(job_file["pdf_path"]) as doc:
             if page_number < 1 or page_number > doc.page_count:
                 raise HTTPException(status_code=404, detail="Page not found.")
             page = doc[page_number - 1]
-            rects = _find_evidence_rects(page, q)
+            matches_by_query = []
+            focus_by_query = []
+            for query, focus_text in zip(q, focus_list):
+                quote_rects = _find_evidence_rects(page, query)
+                matches_by_query.append([[r.x0, r.y0, r.x1, r.y1] for r in quote_rects])
+                focus_rects = (
+                    _find_focus_rect(page, quote_rects, focus_text) if focus_text else []
+                )
+                focus_by_query.append([[r.x0, r.y0, r.x1, r.y1] for r in focus_rects])
             return {
                 "page_width": page.rect.width,
                 "page_height": page.rect.height,
-                "matches": [[r.x0, r.y0, r.x1, r.y1] for r in rects],
+                "matches_by_query": matches_by_query,
+                "focus_by_query": focus_by_query,
             }
 
     return await asyncio.to_thread(_search)
