@@ -5,7 +5,13 @@
         <span
           class="inline-flex items-center rounded-full bg-primary px-3 py-1 text-xs font-medium text-white"
         >
-          {{ t("extraction.export.preview", { count: records.length }) }}
+          {{
+            t(
+              "extraction.export.preview",
+              { count: records.length },
+              { plural: records.length },
+            )
+          }}
         </span>
         <span
           class="ml-auto inline-flex items-center rounded-full bg-secondary/8 px-3 py-1 text-xs text-secondary"
@@ -67,11 +73,23 @@
       <div class="min-w-0 flex-1">
         <p class="text-sm font-semibold text-ink">
           {{
-            t("extraction.export.summaryLine", {
-              ready: readyCount,
-              excluded: excludedCount,
-              confirmed: confirmedCount,
-            })
+            t("extraction.export.readyCount", { ready: readyCount }, { plural: readyCount })
+          }}
+          ·
+          {{
+            t(
+              "extraction.export.excludedCount",
+              { excluded: excludedCount },
+              { plural: excludedCount },
+            )
+          }}
+          ·
+          {{
+            t(
+              "extraction.export.confirmedCount",
+              { confirmed: confirmedCount },
+              { plural: confirmedCount },
+            )
           }}
         </p>
         <p class="mt-0.5 text-xs text-secondary">

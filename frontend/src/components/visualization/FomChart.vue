@@ -32,7 +32,13 @@
                 class="flex items-center gap-1 bg-amber-500/10 text-amber-800 text-xs font-medium pl-2.5 pr-1.5 py-0.5 rounded whitespace-nowrap"
               >
                 <Diamond class="size-2.5 fill-current" />
-                {{ t("fomcharts.manualCount", { count: manualCount }) }}
+                {{
+                  t(
+                    "fomcharts.manualCount",
+                    { count: manualCount },
+                    { plural: manualCount },
+                  )
+                }}
                 <InfoTooltip
                   :text="t('fomcharts.manualHint')"
                   icon-class="text-amber-800/70 hover:text-amber-800"
@@ -42,7 +48,13 @@
                 v-if="missingAxisCount > 0"
                 class="flex items-center gap-1 bg-amber-500/10 text-amber-800 text-xs font-medium pl-2.5 pr-1.5 py-0.5 rounded whitespace-nowrap"
               >
-                {{ t("fomcharts.missingAxisCount", { count: missingAxisCount }) }}
+                {{
+                  t(
+                    "fomcharts.missingAxisCount",
+                    { count: missingAxisCount },
+                    { plural: missingAxisCount },
+                  )
+                }}
                 <InfoTooltip
                   :text="t('fomcharts.missingAxisHint')"
                   icon-class="text-amber-800/70 hover:text-amber-800"

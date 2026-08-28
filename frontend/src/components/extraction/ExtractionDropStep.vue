@@ -73,7 +73,10 @@
     <div class="h-px w-full shrink-0 bg-secondary/10 md:h-auto md:w-px" />
 
     <div class="flex flex-col gap-3 md:w-1/3 md:shrink-0">
-      <ModelSelector v-model:model-choice="modelChoiceModel" />
+      <ModelSelector
+        v-model:model-choice="modelChoiceModel"
+        :file-count="staged.length"
+      />
 
       <div class="mt-auto flex flex-col gap-2 pt-3">
         <p
@@ -86,7 +89,11 @@
         <p v-else class="text-xs text-secondary">
           {{
             stagedFiles.length
-              ? t("extraction.drop.stagedCount", { count: stagedFiles.length }) +
+              ? t(
+                  "extraction.drop.stagedCount",
+                  { count: stagedFiles.length },
+                  { plural: stagedFiles.length },
+                ) +
                 " · " +
                 t("extraction.drop.etaEstimate", { eta: etaEstimate }) +
                 (atMaxFiles ? " · " + t("extraction.drop.maxReached") : "")

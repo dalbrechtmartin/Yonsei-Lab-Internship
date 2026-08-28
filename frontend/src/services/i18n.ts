@@ -28,6 +28,17 @@ const i18n = createI18n({
   locale: detectLocale(),
   fallbackLocale: "en",
   messages: { en, fr, ko, zh },
+  // vue-i18n's built-in plural rule is English-shaped (only count === 1 is
+  // singular): wrong for French, where 0 is ALSO singular ("0 fichier", not
+  // "0 fichiers"). Korean/Chinese don't need an entry here -- neither
+  // language inflects for plural, so their locale strings never use the
+  // "|" choice syntax in the first place.
+  pluralRules: {
+    fr: (choice, choicesLength) => {
+      if (choicesLength < 2) return 0;
+      return choice > 1 ? 1 : 0;
+    },
+  },
 });
 
 export default i18n;

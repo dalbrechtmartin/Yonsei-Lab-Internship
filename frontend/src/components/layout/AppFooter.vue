@@ -1,5 +1,6 @@
 <template>
   <footer
+    ref="footerEl"
     class="relative w-full shrink-0 border-t border-secondary/15 bg-card/60 px-6 py-4 text-center text-xs text-muted-foreground"
   >
     <!-- Deliberately unlabeled and low-contrast -- this is an easter egg
@@ -19,10 +20,28 @@
 </template>
 
 <script setup lang="ts">
+import { onBeforeUnmount, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { RouterLink } from "vue-router";
 import { Gamepad2 } from "@lucide/vue";
+import { footerHeightPx } from "@/composables/useFooterHeight";
 
 const { t } = useI18n();
 const year = new Date().getFullYear();
+
+const footerEl = ref<HTMLElement | null>(null);
+let resizeObserver: ResizeObserver | null = null;
+
+onMounted(() => {
+  if (!footerEl.value) return;
+  resizeObserver = new ResizeObserver(([entry]) => {
+    footerHeightPx.value = entry.contentRect.height;
+  });
+  resizeObserver.observe(footerEl.value);
+});
+
+onBeforeUnmount(() => {
+  resizeObserver?.disconnect();
+  footerHeightPx.value = 0;
+});
 </script>

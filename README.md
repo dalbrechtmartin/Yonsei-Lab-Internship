@@ -91,7 +91,7 @@ frontend/src/
     visualization/ # FOM chart, axis/filter controls, group comparison, annotations
     layout/        # navbar, footer, tool actions bar, language selector
     shared/        # dropzone, status toast, filter chips, collapsible sections
-  composables/     # reusable reactive logic (useTransientStatus)
+  composables/     # reusable reactive logic (useToastQueue)
   lib/utils.ts     # shadcn's `cn()` class-merging helper
   locales/         # i18n message files (en, fr, ko, zh)
   router/          # route definitions
