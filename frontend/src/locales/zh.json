@@ -49,7 +49,14 @@
         "title": "可视化您的数据",
         "description": "导入 Excel 文件以查看、比较并导出您的数据。"
       },
-      "mobileBlocked": "可视化功能在移动设备上不可用，建议使用电脑以获得更好的体验。"
+      "mobileBlocked": "可视化功能在移动设备上不可用，建议使用电脑以获得更好的体验。",
+      "conversionPreview": {
+        "title": "自动转换预览",
+        "summary": "显示 {rows} 行中的 {shown} 行，转换前后对比。请检查各列是否对应正确。",
+        "before": "转换前",
+        "after": "转换后",
+        "dismiss": "关闭预览"
+      }
     },
     "extraction": {
       "batchExtraction": {
@@ -130,14 +137,14 @@
         "description": "优先尝试能力最强的模型，配额用尽后自动切换到更快的模型。",
         "warning": "受速率限制影响，批处理中使用的模型可能会变化。请查看导出文件的“Model Used”列。"
       },
-      "flash": {
-        "title": "gemini-3.5-flash",
-        "description": "准确性与速度的最佳平衡，推荐用于大多数批处理。"
+      "pinned": {
+        "description": "优先尝试此模型，配额用尽时会自动切换到其他模型。"
       },
-      "lite": {
-        "title": "gemini-3.5-flash-lite",
-        "description": "最快且最经济，但更容易出现推理错误。"
-      }
+      "group": {
+        "flash": "Flash",
+        "flashLite": "Flash Lite"
+      },
+      "recommended": "推荐"
     },
     "progress": {
       "file": {
@@ -160,21 +167,48 @@
       "journal": {
         "title": "日志",
         "warnings": "{count} 条警告",
-        "empty": "暂无事件。"
+        "empty": "暂无事件。",
+        "download": "下载日志"
       }
     },
     "log": {
       "fileProcessing": "{filename}：处理中",
       "fileDone": "{filename}：已提取 {count} 行",
-      "fileFailed": "{filename}：失败",
-      "noticeStarted": "{count} 个文件已达到配额，已安排重试。",
+      "fileFailed": {
+        "out_of_domain": "{filename}：不在目标主题范围内，已跳过",
+        "no_data": "{filename}：3 次尝试后仍无可用数据，已标记为失败",
+        "quota": "{filename}：自动重试全部用尽仍无法完成，已标记为失败",
+        "error": "{filename}：失败"
+      },
+      "runFailed": {
+        "quota": "{filename}：{model} 请求被拒绝（配额已用尽，429）。将自动重试。",
+        "unavailable": "{filename}：{model} 暂时不可用（503）。将自动重试。",
+        "error": "{filename}：{model} 尝试失败。将自动重试。"
+      },
+      "pdfRead": "{filename}：已读取 PDF（{pages} 页）",
+      "domainCheckStart": "{filename}：正在用 {model} 核对主题…",
+      "domainCheckOut": "{filename}：看起来不是光学共振传感相关内容",
+      "extractAttempt": "{filename}：正在尝试 {model}…",
+      "extractRetryQuota": "{filename}：{model} 已饱和，{seconds} 秒后重试（第 {attempt}/{maxAttempts} 次，429）",
+      "extractQuotaDay": "{filename}：{model} 已达每日配额上限（429），今日暂不使用",
+      "extractGiveUp": "{filename}：{model} 等待 {seconds} 秒后仍不可用，本次尝试放弃使用它（503）",
+      "extractSwitch": {
+        "next": "{filename}：{model} 失败，切换到 {nextModel}",
+        "exhausted": "{filename}：{model} 失败，目前已没有其他模型可用"
+      },
+      "extractRetired": "{model} 已不再可用（404），今日暂不使用",
+      "runDone": "{filename}：已用 {model} 完成第 {run}/3 次分析（{count} 行）",
+      "reconcileStart": "{filename}：正在比对 {runCount} 次分析结果…",
+      "reconcileDone": "{filename}：保留 {count} 行，其中 {flagged} 行待复核",
+      "noticeStarted": "{count} 个文件已达到配额，将在 {seconds} 秒后重试。",
       "noticeCleared": "已恢复正常处理。"
     },
     "summary": {
       "heading": "提取完成",
       "subheading": "即将进入核对。",
       "stats": {
-        "files": "已处理 {files} 个文件 · {records} 行",
+        "filesProcessed": "已处理 {files} 个文件",
+        "rowsExtracted": "已提取 {records} 行",
         "warnings": "{count} 条警告"
       },
       "cta": "立即核对"
@@ -190,8 +224,10 @@
         "excluded": "已排除 · {count}"
       },
       "table": {
+        "sortByRef": "按参考排序",
         "columns": {
           "ref": "参考",
+          "modeId": "模式 ID",
           "wavelength": "λ (nm)",
           "fom": "FOM",
           "fwhm": "FWHM",
@@ -204,20 +240,76 @@
         "locationLabel": "位置：",
         "sourceOf": "来源 {current}/{total}"
       },
+      "detail": {
+        "sections": {
+          "identification": "识别信息",
+          "measurements": "测量值",
+          "materials": "材料",
+          "provenance": "来源信息"
+        },
+        "fields": {
+          "modelUsed": "使用的模型"
+        },
+        "sources": {
+          "label": "来源",
+          "single": "查看来源",
+          "item": "来源 {n}",
+          "hint": "点击可在 PDF 中查看"
+        },
+        "jumpToSource": "跳转到{field}的来源",
+        "reconciliation": {
+          "aria": "查看详情",
+          "disagreement": "AI 多次提取结果不一致：{values}。",
+          "partialAgreement": "{total} 次提取中有 {agreed} 次结果一致。",
+          "fullDisagreement": "AI 多次提取结果均不一致（{values}），请人工核实。",
+          "rowCount": "此行仅出现在 {total} 次提取中的 {count} 次。",
+          "extraRow": "在 {total} 次提取中，仅 1 次发现此附加行。",
+          "converted": "由 {rawValue} 转换而来（{method}）。",
+          "calculated": "计算得出的值，并非直接从原文提取：{detail}"
+        },
+        "editField": "编辑{field}",
+        "rawValue": "原始值",
+        "conversionMethod": "转换方法",
+        "calculatedFields": "计算值",
+        "saveLayers": "保存层结构",
+        "recompute": {
+          "label": "重新计算灵敏度",
+          "toggle": "重新计算",
+          "formulaPlaceholder": "选择公式",
+          "gasGroup": "气体",
+          "liquidGroup": "液体",
+          "rawMagnitude": "数值（每单位 nm）",
+          "unitPlaceholder": "单位，例如 %、kPa、mg/mL",
+          "customConstant": "常数",
+          "apply": "应用",
+          "noConversion": "不转换",
+          "error": "无法用此公式转换该单位。",
+          "relationGroup": "根据定义",
+          "relationOption": "根据 FOM 和 FWHM",
+          "fomLabel": "重新计算 FOM",
+          "fwhmLabel": "重新计算 FWHM",
+          "calculate": "计算",
+          "autoFill": "根据另外两个值计算{field}"
+        },
+        "status": {
+          "editHeading": "待确认",
+          "excludeHeading": "已排除",
+          "noReason": "未记录原因。"
+        }
+      },
       "actions": {
         "validate": "通过",
-        "correct": "修正",
         "exclude": "排除",
         "previous": "上一行",
         "next": "下一行",
+        "undo": "撤销",
+        "redo": "重做",
         "shortcuts": {
           "validate": "(V)",
           "next": "⏎"
         }
       },
       "edit": {
-        "title": "修正该行",
-        "moreFields": "更多字段",
         "save": "保存",
         "cancel": "取消",
         "fields": {
@@ -238,6 +330,7 @@
           "sensitivityNmPerRiu": "灵敏度 (nm/RIU)",
           "fwhmNm": "FWHM (nm)",
           "qFactor": "Q 因子",
+          "sensingMedium": "传感介质",
           "notes": "备注"
         }
       },
@@ -247,8 +340,15 @@
       },
       "pdf": {
         "pageOf": "第 {current} / {total} 页",
+        "printedAs": "（印刷页码：{label}）",
         "prevPage": "上一页",
         "nextPage": "下一页",
+        "searchToggleAria": "在文档中搜索",
+        "searchPlaceholder": "在此文档中搜索",
+        "searchCount": "{current} / {total}",
+        "searchPrevAria": "上一个结果",
+        "searchNextAria": "下一个结果",
+        "searchCloseAria": "关闭搜索",
         "zoomOut": "缩小",
         "zoomIn": "放大"
       }
@@ -257,7 +357,9 @@
       "preview": "预览 · {count} 行",
       "reviewedByLegend": "灰色 = 已排除，保留以供追溯",
       "reviewedByColumn": "核对人",
-      "summaryLine": "{ready} 行就绪 · {excluded} 行已排除 · {confirmed} 行已确认",
+      "readyCount": "{ready} 行就绪",
+      "excludedCount": "{excluded} 行已排除",
+      "confirmedCount": "{confirmed} 行已确认",
       "visualizeError": "无法将导出结果加载到可视化界面。"
     },
     "minigame": {
@@ -862,20 +964,20 @@
       },
       "mode2Correct": {
         "title": "修正一条标记的记录",
-        "body": "修正一行会打开该行的可编辑表单，入口是核对表格自身的「修正」操作。表格中已显示的字段排在最前面，其余字段收在「更多字段」里。这一步不会推进上方的步骤指示器：修正属于核对一条记录这一步的一部分，而不是单独一步。",
-        "note": "只有这些字段可以手动修改。Evidence、Location、Review status 始终由模型生成，不可编辑。",
+        "body": "卡片上的每个字段都可以就地修正：点击其铅笔图标，修改数值，再按 Enter（或点击 ✓）确认；按 Esc（或点击 ✕）取消。无需打开单独的表单。这一步不会推进上方的步骤指示器：修正属于核对一条记录这一步的一部分，而不是单独一步。",
+        "note": "只有部分字段可以手动修改。Evidence、Location、Review status、原始值和转换方法始终由模型生成，不可编辑。",
         "marks": {
-          "primary": {
-            "label": "主要字段",
-            "body": "审核表格中已经显示的数值，以及表格中没有的材料等级、基础材料和备注。"
+          "banner": {
+            "label": "标记原因",
+            "body": "一旦记录需要核实或被排除，原因会直接显示在卡片顶部，无需打开任何内容。"
           },
-          "more": {
-            "label": "更多字段",
-            "body": "标题、结构、定义等其余内容，默认收起。"
+          "sources": {
+            "label": "来源",
+            "body": "点击一次即可直接跳转到 PDF 中对应的引用位置。"
           },
-          "save": {
-            "label": "保存 / 取消",
-            "body": "保存会记录修正内容并将该行标记为已批准；取消会放弃修改并返回核对表格。"
+          "pencil": {
+            "label": "修改字段",
+            "body": "每个字段都有自己的铅笔图标：点击、修改数值、按 Enter 确认。"
           }
         }
       },
@@ -1227,10 +1329,12 @@
       "converter": {
         "trigger": "单位换算器",
         "title": "单位换算器",
-        "hint": "此表单中的所有字段均使用标准单位（nm / nm/RIU）。请在此换算，然后将结果输入相应字段。",
+        "hint": "此表单中的所有字段均使用标准单位（nm / nm/RIU）。请在此换算，然后复制结果或直接插入相应字段。",
         "valuePlaceholder": "数值",
         "copy": "复制",
-        "copied": "已复制！"
+        "copied": "已复制！",
+        "insert": "插入到{field}",
+        "inserted": "已插入！"
       },
       "tagsPlaceholder": "搜索或添加值...",
       "addNew": "添加",

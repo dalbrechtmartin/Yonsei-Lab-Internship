@@ -56,7 +56,13 @@
         </div>
         <div ref="dropLaunchWrap" class="guide-callout-region mt-auto flex flex-col gap-2">
           <p class="text-xs text-secondary">
-            {{ t("extraction.drop.stagedCount", { count: stagedFiles.length }) }}
+            {{
+              t(
+                "extraction.drop.stagedCount",
+                { count: stagedFiles.length },
+                { plural: stagedFiles.length },
+              )
+            }}
             ·
             {{ t("extraction.drop.etaEstimate", { eta: etaEstimate }) }}
           </p>

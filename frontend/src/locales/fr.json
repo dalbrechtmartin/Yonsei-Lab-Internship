@@ -49,7 +49,14 @@
         "title": "Visualisez vos données",
         "description": "Importez un fichier Excel pour explorer, comparer et exporter vos données."
       },
-      "mobileBlocked": "La visualisation n'est pas disponible sur mobile. Utilisez un PC pour une meilleure expérience."
+      "mobileBlocked": "La visualisation n'est pas disponible sur mobile. Utilisez un PC pour une meilleure expérience.",
+      "conversionPreview": {
+        "title": "Aperçu de la conversion automatique",
+        "summary": "{shown} ligne sur {rows} affichée, avant et après. Vérifiez que les colonnes correspondent bien. | {shown} lignes sur {rows} affichées, avant et après. Vérifiez que les colonnes correspondent bien.",
+        "before": "Avant",
+        "after": "Après",
+        "dismiss": "Fermer l'aperçu"
+      }
     },
     "extraction": {
       "batchExtraction": {
@@ -96,17 +103,17 @@
     "drop": {
       "removeFileAria": "Retirer {filename}",
       "resuming": "Reprise d'une extraction en cours…",
-      "stagedCount": "{count} fichier(s) sélectionné(s)",
+      "stagedCount": "{count} fichier sélectionné | {count} fichiers sélectionnés",
       "etaEstimate": "~{eta} estimé",
       "fileEta": "~{eta}",
-      "pages": "{count} page(s)",
+      "pages": "{count} page | {count} pages",
       "maxReached": "maximum atteint",
       "addFile": "Ajouter",
       "empty": "Aucun fichier sélectionné.",
       "launch": "Lancer l'extraction",
       "resumedToast": "Reprise de votre extraction en cours."
     },
-    "processing": "Extraction de {count} article(s) en cours...",
+    "processing": "Extraction de {count} article en cours... | Extraction de {count} articles en cours...",
     "success": "Extraction terminée. Le fichier Excel a été enregistré.",
     "partialSuccess": "Certains fichiers ont été ignorés. L'export ne contient que ceux qui ont réussi.",
     "error": "Une erreur est survenue lors de l'extraction des PDF.",
@@ -117,9 +124,9 @@
       "save": "Enregistrer sous…"
     },
     "notice": {
-      "quota": "Le quota gratuit de Gemini a été atteint pour {count} fichier(s).",
-      "unavailable": "Le modèle était temporairement indisponible pour {count} fichier(s).",
-      "error": "Une erreur inattendue est survenue pour {count} fichier(s).",
+      "quota": "Le quota gratuit de Gemini a été atteint pour {count} fichier. | Le quota gratuit de Gemini a été atteint pour {count} fichiers.",
+      "unavailable": "Le modèle était temporairement indisponible pour {count} fichier. | Le modèle était temporairement indisponible pour {count} fichiers.",
+      "error": "Une erreur inattendue est survenue pour {count} fichier. | Une erreur inattendue est survenue pour {count} fichiers.",
       "retryIn": "Nouvelle tentative dans {seconds}s. Rien n'est perdu."
     },
     "modelSelector": {
@@ -130,14 +137,14 @@
         "description": "Essaie d'abord le modèle le plus performant, puis bascule vers un modèle plus rapide si le quota est atteint.",
         "warning": "Le modèle peut changer en cours de lot selon les limites de débit. Voir la colonne « Model Used » de l'export pour le détail."
       },
-      "flash": {
-        "title": "gemini-3.5-flash",
-        "description": "Le meilleur équilibre entre précision et vitesse. Recommandé pour la plupart des lots."
+      "pinned": {
+        "description": "Essaie ce modèle en priorité, puis bascule automatiquement vers un autre si le quota est atteint."
       },
-      "lite": {
-        "title": "gemini-3.5-flash-lite",
-        "description": "Le plus rapide et le moins coûteux, mais plus sujet aux erreurs de raisonnement."
-      }
+      "group": {
+        "flash": "Flash",
+        "flashLite": "Flash Lite"
+      },
+      "recommended": "Recommandé"
     },
     "progress": {
       "file": {
@@ -159,23 +166,50 @@
       },
       "journal": {
         "title": "Journal",
-        "warnings": "{count} avertissement(s)",
-        "empty": "Aucun événement pour le moment."
+        "warnings": "{count} avertissement | {count} avertissements",
+        "empty": "Aucun événement pour le moment.",
+        "download": "Télécharger le journal"
       }
     },
     "log": {
       "fileProcessing": "{filename} : traitement en cours",
-      "fileDone": "{filename} : {count} ligne(s) extraite(s)",
-      "fileFailed": "{filename} : échec",
-      "noticeStarted": "Quota atteint pour {count} fichier(s), nouvelle tentative programmée.",
+      "fileDone": "{filename} : {count} ligne extraite | {filename} : {count} lignes extraites",
+      "fileFailed": {
+        "out_of_domain": "{filename} : écarté, hors sujet",
+        "no_data": "{filename} : aucune donnée exploitable après 3 essais, marqué en échec",
+        "quota": "{filename} : toujours bloqué après toutes les tentatives automatiques, marqué en échec",
+        "error": "{filename} : échec"
+      },
+      "runFailed": {
+        "quota": "{filename} : tentative sur {model} refusée (quota atteint, 429). Nouvel essai automatique.",
+        "unavailable": "{filename} : {model} temporairement indisponible (503). Nouvel essai automatique.",
+        "error": "{filename} : tentative sur {model} échouée. Nouvel essai automatique."
+      },
+      "pdfRead": "{filename} : PDF lu ({pages} page) | {filename} : PDF lu ({pages} pages)",
+      "domainCheckStart": "{filename} : vérification du sujet avec {model}…",
+      "domainCheckOut": "{filename} : ne semble pas porter sur la détection par résonance optique",
+      "extractAttempt": "{filename} : essai avec {model}…",
+      "extractRetryQuota": "{filename} : {model} saturé, nouvel essai dans {seconds}s (tentative {attempt}/{maxAttempts}, 429)",
+      "extractQuotaDay": "{filename} : quota journalier de {model} atteint (429), mis de côté pour aujourd'hui",
+      "extractGiveUp": "{filename} : {model} toujours indisponible après {seconds}s, abandonné pour cet essai (503)",
+      "extractSwitch": {
+        "next": "{filename} : {model} a échoué, passage à {nextModel}",
+        "exhausted": "{filename} : {model} a échoué, plus aucun modèle à essayer pour l'instant"
+      },
+      "extractRetired": "{model} n'est plus disponible (404), mis de côté pour aujourd'hui",
+      "runDone": "{filename} : analyse {run}/3 terminée avec {model} ({count} ligne) | {filename} : analyse {run}/3 terminée avec {model} ({count} lignes)",
+      "reconcileStart": "{filename} : comparaison de {runCount} analyses…",
+      "reconcileDone": "{filename} : {count} ligne retenue, {flagged} à vérifier | {filename} : {count} lignes retenues, {flagged} à vérifier",
+      "noticeStarted": "Quota atteint pour {count} fichier, nouvelle tentative dans {seconds}s. | Quota atteint pour {count} fichiers, nouvelle tentative dans {seconds}s.",
       "noticeCleared": "Reprise normale du traitement."
     },
     "summary": {
       "heading": "Extraction terminée",
       "subheading": "Passage à la vérification.",
       "stats": {
-        "files": "{files} fichier(s) traité(s) · {records} ligne(s)",
-        "warnings": "{count} avertissement(s)"
+        "filesProcessed": "{files} fichier traité | {files} fichiers traités",
+        "rowsExtracted": "{records} ligne extraite | {records} lignes extraites",
+        "warnings": "{count} avertissement | {count} avertissements"
       },
       "cta": "Vérifier maintenant"
     },
@@ -190,8 +224,10 @@
         "excluded": "Exclues · {count}"
       },
       "table": {
+        "sortByRef": "Trier par référence",
         "columns": {
           "ref": "Référence",
+          "modeId": "ID du mode",
           "wavelength": "λ (nm)",
           "fom": "FOM",
           "fwhm": "FWHM",
@@ -204,20 +240,76 @@
         "locationLabel": "Emplacement :",
         "sourceOf": "Source {current} sur {total}"
       },
+      "detail": {
+        "sections": {
+          "identification": "Identification",
+          "measurements": "Mesures",
+          "materials": "Matériaux",
+          "provenance": "Provenance"
+        },
+        "fields": {
+          "modelUsed": "Modèle utilisé"
+        },
+        "sources": {
+          "label": "Sources",
+          "single": "Voir la source",
+          "item": "Source {n}",
+          "hint": "Cliquer pour voir dans le PDF"
+        },
+        "jumpToSource": "Aller à la source de {field}",
+        "reconciliation": {
+          "aria": "Voir le détail",
+          "disagreement": "Résultat différent selon les extractions IA : {values}.",
+          "partialAgreement": "Confirmé par {agreed} extraction IA sur {total}. | Confirmé par {agreed} extractions IA sur {total}.",
+          "fullDisagreement": "Aucun accord entre les extractions IA ({values}). À vérifier.",
+          "rowCount": "Cette ligne apparaît dans {count} extraction IA sur {total}. | Cette ligne apparaît dans {count} extractions IA sur {total}.",
+          "extraRow": "Ligne supplémentaire trouvée dans 1 extraction IA sur {total}.",
+          "converted": "Converti depuis {rawValue} ({method}).",
+          "calculated": "Valeur calculée, non extraite directement du texte : {detail}"
+        },
+        "editField": "Modifier {field}",
+        "rawValue": "Valeur brute",
+        "conversionMethod": "Conversion",
+        "calculatedFields": "Valeur calculée",
+        "saveLayers": "Enregistrer les couches",
+        "recompute": {
+          "label": "Recalculer la sensibilité",
+          "toggle": "Recalculer",
+          "formulaPlaceholder": "Choisir une formule",
+          "gasGroup": "Gaz",
+          "liquidGroup": "Liquide",
+          "rawMagnitude": "Valeur (nm par unité)",
+          "unitPlaceholder": "Unité, ex. %, kPa, mg/mL",
+          "customConstant": "Constante",
+          "apply": "Appliquer",
+          "noConversion": "Ne pas convertir",
+          "error": "Impossible de convertir cette unité avec cette formule.",
+          "relationGroup": "À partir de la définition",
+          "relationOption": "À partir de FOM et FWHM",
+          "fomLabel": "Recalculer le FOM",
+          "fwhmLabel": "Recalculer le FWHM",
+          "calculate": "Calculer",
+          "autoFill": "Calculer {field} à partir des deux autres valeurs"
+        },
+        "status": {
+          "editHeading": "À vérifier",
+          "excludeHeading": "Exclu",
+          "noReason": "Aucune raison enregistrée."
+        }
+      },
       "actions": {
         "validate": "Valider",
-        "correct": "Corriger",
         "exclude": "Exclure",
         "previous": "Précédent",
         "next": "Suivant",
+        "undo": "Annuler",
+        "redo": "Rétablir",
         "shortcuts": {
           "validate": "(V)",
           "next": "⏎"
         }
       },
       "edit": {
-        "title": "Corriger la ligne",
-        "moreFields": "Plus de champs",
         "save": "Enregistrer",
         "cancel": "Annuler",
         "fields": {
@@ -238,6 +330,7 @@
           "sensitivityNmPerRiu": "Sensibilité (nm/RIU)",
           "fwhmNm": "FWHM (nm)",
           "qFactor": "Facteur Q",
+          "sensingMedium": "Milieu de détection",
           "notes": "Notes"
         }
       },
@@ -247,17 +340,26 @@
       },
       "pdf": {
         "pageOf": "p. {current} / {total}",
+        "printedAs": "(imprimé : {label})",
         "prevPage": "Page précédente",
         "nextPage": "Page suivante",
+        "searchToggleAria": "Rechercher dans le document",
+        "searchPlaceholder": "Rechercher dans ce document",
+        "searchCount": "{current} / {total}",
+        "searchPrevAria": "Occurrence précédente",
+        "searchNextAria": "Occurrence suivante",
+        "searchCloseAria": "Fermer la recherche",
         "zoomOut": "Zoom arrière",
         "zoomIn": "Zoom avant"
       }
     },
     "export": {
-      "preview": "Aperçu · {count} ligne(s)",
+      "preview": "Aperçu · {count} ligne | Aperçu · {count} lignes",
       "reviewedByLegend": "Grisé = exclu, gardé en trace",
       "reviewedByColumn": "Vérifié par",
-      "summaryLine": "{ready} ligne(s) prête(s) · {excluded} exclue(s) · {confirmed} confirmée(s)",
+      "readyCount": "{ready} ligne prête | {ready} lignes prêtes",
+      "excludedCount": "{excluded} exclue | {excluded} exclues",
+      "confirmedCount": "{confirmed} confirmée | {confirmed} confirmées",
       "visualizeError": "Impossible de charger l'export dans la visualisation."
     },
     "minigame": {
@@ -684,7 +786,7 @@
         "figureCaption": "Fig. 13 : le nouveau point sur le graphique, repéré et compté à part.",
         "marks": {
           "manualCount": {
-            "label": "Ajouté(s) manuellement",
+            "label": "Ajoutés manuellement",
             "body": "compte les points ajoutés à la main, séparément des échantillons du fichier."
           },
           "newPoint": {
@@ -862,20 +964,20 @@
       },
       "mode2Correct": {
         "title": "Corriger une fiche signalée",
-        "body": "Corriger une ligne ouvre un formulaire modifiable pour elle, accessible depuis l'action « Corriger » du tableau de relecture. Les champs déjà visibles dans le tableau viennent en premier. Le reste se cache derrière « Plus de champs ». Cela ne fait pas avancer le stepper ci-dessus : corriger fait partie de l'étape Vérifier, pas d'une étape à part.",
-        "note": "Seuls ces champs sont modifiables à la main. Evidence, Location et Review status restent générés par le modèle.",
+        "body": "Chaque champ de la fiche se corrige sur place : cliquez sur son crayon, modifiez la valeur, puis validez avec Entrée (ou l'icône ✓) ; Échap (ou ✕) annule. Aucun formulaire séparé à ouvrir. Cela ne fait pas avancer le stepper ci-dessus : corriger fait partie de l'étape Vérifier, pas d'une étape à part.",
+        "note": "Seuls certains champs sont modifiables à la main. Evidence, Location, Review status, Valeur brute et Conversion restent générés par le modèle.",
         "marks": {
-          "primary": {
-            "label": "Champs principaux",
-            "body": "Les valeurs déjà visibles dans le tableau de relecture, plus Classe de matériau, Matériaux de base et Notes, qui elles ne le sont pas."
+          "banner": {
+            "label": "Raison du signalement",
+            "body": "Affichée directement en haut de la fiche dès qu'un enregistrement est à vérifier ou exclu, sans rien avoir à ouvrir."
           },
-          "more": {
-            "label": "Plus de champs",
-            "body": "Le reste de la fiche : titre, structure et définitions, masqué par défaut."
+          "sources": {
+            "label": "Sources",
+            "body": "Un clic saute directement à la citation correspondante dans le PDF."
           },
-          "save": {
-            "label": "Enregistrer / Annuler",
-            "body": "Enregistrer sauvegarde la correction et approuve la ligne ; Annuler l'abandonne et revient au tableau de relecture."
+          "pencil": {
+            "label": "Modifier un champ",
+            "body": "Chaque champ a son propre crayon : cliquez, corrigez la valeur, validez avec Entrée."
           }
         }
       },
@@ -1011,9 +1113,9 @@
     "needsReview": "⚠ Statut de révision : À modifier",
     "flaggedHint": "Contour pointillé = signalé pour révision",
     "reviewWarning": "{count} à vérifier",
-    "manualCount": "{count} ajouté(s) manuellement",
+    "manualCount": "{count} ajouté manuellement | {count} ajoutés manuellement",
     "manualHint": "Les losanges à contour doré sont vos points ajoutés manuellement. Ils ne proviennent pas d'un document.",
-    "missingAxisCount": "{count} non tracé(s)",
+    "missingAxisCount": "{count} non tracé | {count} non tracés",
     "missingAxisHint": "Ces lignes n'ont pas de valeur pour l'axe X ou Y sélectionné, elles ne peuvent pas apparaître sur le graphique. Choisissez un autre axe pour les voir.",
     "workspace": {
       "title": "Espace d'analyse",
@@ -1055,7 +1157,7 @@
       "clearAll": "Tout effacer",
       "showOnlyPinned": "Points épinglés uniquement",
       "showOnlyPinnedTooltip": "Masque tous les points sauf ceux épinglés ci-dessous. Les statistiques se limitent aussi à cette sélection.",
-      "pinSiblings": "+ Épingler {count} autre(s) point(s)",
+      "pinSiblings": "+ Épingler {count} autre point | + Épingler {count} autres points",
       "compareLabel": "Sélectionner pour comparer",
       "notePlaceholder": "Ajoutez une note...",
       "sort": {
@@ -1178,7 +1280,7 @@
       "structureIntro": "Matériaux de base → Classe de matériau → Structure des couches : chaque niveau se déverrouille dès que le précédent a une valeur.",
       "structureLocked": "Verrouillé tant que {field} n'a pas de valeur.",
       "materialClassSuggestedHint": "Suggéré à partir des matériaux choisis. Cochez ce qui s'applique, ou ajustez.",
-      "tagsSelectedCount": "{n} sélectionné(s)",
+      "tagsSelectedCount": "{n} sélectionné | {n} sélectionnés",
       "layersSummary": "{n} couches · {thickness} µm",
       "modeSectionLabel": "ID et description du mode (optionnel)",
       "materialsRemaining": "Reste à placer : {materials}",
@@ -1227,10 +1329,12 @@
       "converter": {
         "trigger": "Convertisseur",
         "title": "Convertisseur d'unités",
-        "hint": "Tous les champs sont dans leur unité canonique (nm / nm/RIU). Convertissez ici, puis recopiez le résultat dans le champ.",
+        "hint": "Tous les champs sont dans leur unité canonique (nm / nm/RIU). Convertissez ici, puis copiez le résultat ou insérez-le directement dans le champ concerné.",
         "valuePlaceholder": "Valeur",
         "copy": "Copier",
-        "copied": "Copié !"
+        "copied": "Copié !",
+        "insert": "Insérer dans {field}",
+        "inserted": "Inséré !"
       },
       "tagsPlaceholder": "Rechercher ou ajouter une valeur...",
       "addNew": "Ajouter",

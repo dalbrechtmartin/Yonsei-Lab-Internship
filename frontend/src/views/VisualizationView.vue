@@ -36,6 +36,8 @@
         v-model:open="addPointDialogOpen"
         :fields="manualPointFields"
         :materials-by-class="materialsByClassMap"
+        :wavelength-column="wavelengthColumn"
+        :sensitivity-column="sensitivityColumn"
         @submit="handleAddPointSubmit"
       />
       <AddPointDialog
@@ -43,11 +45,19 @@
         mode="edit"
         :fields="manualPointFields"
         :materials-by-class="materialsByClassMap"
+        :wavelength-column="wavelengthColumn"
+        :sensitivity-column="sensitivityColumn"
         :initial-row="editingRow"
         :initial-label="editingInitialLabel"
         :initial-notes="editingInitialNotes"
         :initial-shape="editingInitialShape"
         @submit="handleEditPointSubmit"
+      />
+
+      <ConversionPreviewCard
+        v-if="conversionPreview"
+        v-bind="conversionPreview"
+        @dismiss="conversionPreview = null"
       />
 
       <Card
@@ -289,14 +299,6 @@
         </div>
       </Card>
 
-      <StatusToast
-        :status-key="statusKey"
-        :status-class="statusClass"
-        :fade-style="statusStyle"
-        :duration-ms="ringDurationMs"
-        :token="statusToken"
-        @dismiss="dismissStatus"
-      />
     </div>
   </main>
 </template>
@@ -321,17 +323,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 import ToolActionsBar from "@/components/layout/ToolActionsBar.vue";
 import FileDropzone from "@/components/shared/FileDropzone.vue";
-import StatusToast from "@/components/shared/StatusToast.vue";
 import GraphControls from "@/components/visualization/GraphControls.vue";
 import FomChart from "@/components/visualization/FomChart.vue";
 import StatsSummaryPanel from "@/components/visualization/StatsSummaryPanel.vue";
 import AnnotationsPanel from "@/components/visualization/AnnotationsPanel.vue";
 import AddPointDialog from "@/components/visualization/AddPointDialog.vue";
 import DataPointsTable from "@/components/visualization/DataPointsTable.vue";
+import ConversionPreviewCard from "@/components/visualization/ConversionPreviewCard.vue";
 import { apiService, MultipleSheetsError } from "@/services/api";
 import { exportRowsAsExcel } from "@/utils/excelExport";
 import { exportRowsAsCsv } from "@/utils/csvExport";
-import { useTransientStatus } from "@/composables/useTransientStatus";
+import { useToastQueue } from "@/composables/useToastQueue";
 import { useAccordionPanel } from "@/composables/useAccordionPanel";
 import { useFomColumnMeta } from "@/composables/useFomColumnMeta";
 import { useManualPoints } from "@/composables/useManualPoints";
@@ -353,22 +355,23 @@ import {
   type DataRow,
 } from "@/utils/columnTypes";
 
-const STATUS_VISIBLE_MS = 5000;
-
 const { t } = useI18n();
 
-const {
-  statusKey,
-  statusClass,
-  statusStyle,
-  statusToken,
-  ringDurationMs,
-  setStatus,
-  setTransientStatus,
-  dismissStatus,
-} = useTransientStatus(STATUS_VISIBLE_MS);
+const { setStatus, setTransientStatus } = useToastQueue();
 const fomData = ref<DataRow[]>([]);
 const fomColumns = ref<string[]>([]);
+// Set right after a non-standard file gets AI-reformatted (see handleUpload)
+// so ConversionPreviewCard can show what actually changed instead of the
+// old fully-silent swap -- cleared on dismiss or the next upload.
+const CONVERSION_PREVIEW_ROWS = 3;
+interface ConversionPreview {
+  originalColumns: string[];
+  originalRows: DataRow[];
+  convertedColumns: string[];
+  convertedRows: DataRow[];
+  totalRowCount: number;
+}
+const conversionPreview = ref<ConversionPreview | null>(null);
 const dropzoneRef = ref<InstanceType<typeof FileDropzone> | null>(null);
 const fomChartRef = ref<InstanceType<typeof FomChart> | null>(null);
 
@@ -542,6 +545,8 @@ const {
 // -- see composables/useManualPoints.ts.
 const {
   manualPointFields,
+  wavelengthColumn,
+  sensitivityColumn,
   pulseTargetRef,
   removeCustomPoint,
   handleAddPointSubmit,
@@ -940,14 +945,24 @@ const handleUpload = async ([file]: File[]) => {
   // uploadExcel so the fast, non-AI path (the common case: a file already
   // in the expected shape) never pays for it.
   let converted = false;
+  conversionPreview.value = null;
   if (needsAiConversion(columns)) {
     setStatus(
       "status.converting",
       "border-amber-500/20 bg-amber-500/12 text-amber-950",
     );
+    const originalColumns = columns;
+    const originalRows = data.slice(0, CONVERSION_PREVIEW_ROWS);
     try {
       ({ columns, data } = await apiService.convertExcel(columns, data));
       converted = true;
+      conversionPreview.value = {
+        originalColumns,
+        originalRows,
+        convertedColumns: columns,
+        convertedRows: data.slice(0, CONVERSION_PREVIEW_ROWS),
+        totalRowCount: data.length,
+      };
     } catch {
       setTransientStatus(
         "status.conversionFailed",

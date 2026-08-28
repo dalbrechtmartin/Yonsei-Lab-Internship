@@ -25,10 +25,19 @@
           class="inline-flex items-center rounded-full bg-secondary/8 px-3 py-1 text-xs text-secondary"
         >
           {{
-            t("extraction.summary.stats.files", {
-              files: job.totalFiles,
-              records: recordCount,
-            })
+            t(
+              "extraction.summary.stats.filesProcessed",
+              { files: job.totalFiles },
+              { plural: job.totalFiles },
+            )
+          }}
+          ·
+          {{
+            t(
+              "extraction.summary.stats.rowsExtracted",
+              { records: recordCount },
+              { plural: recordCount },
+            )
           }}
         </span>
         <span
@@ -40,7 +49,13 @@
           v-if="warningCount > 0"
           class="inline-flex items-center rounded-full bg-amber-500/12 px-3 py-1 text-xs text-amber-700"
         >
-          {{ t("extraction.summary.stats.warnings", { count: warningCount }) }}
+          {{
+            t(
+              "extraction.summary.stats.warnings",
+              { count: warningCount },
+              { plural: warningCount },
+            )
+          }}
         </span>
       </div>
 

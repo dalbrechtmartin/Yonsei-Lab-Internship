@@ -523,8 +523,18 @@
                    whichever field needs it -- every measurement field itself
                    is always edited in its canonical unit now (see
                    AddPointField), so this replaces the old per-field unit
-                   toggle rather than sitting alongside it. -->
-                <UnitConverterPopover v-model:open="converterOpen" />
+                   toggle rather than sitting alongside it. "Insert" writes
+                   straight into `values` (see wavelengthColumn/sensitivityColumn
+                   below), the same shape AddPointField itself writes -- works
+                   regardless of which step that field is currently showing
+                   on, since a required axis field can live on step 1 while an
+                   optional one lives on step 2 (see metricFields/requiredFields). -->
+                <UnitConverterPopover
+                  v-model:open="converterOpen"
+                  :wavelength-column="props.wavelengthColumn"
+                  :sensitivity-column="props.sensitivityColumn"
+                  @insert="(column, value) => (values[column] = value)"
+                />
               </div>
               <Button
                 v-if="step < 4"
@@ -619,6 +629,15 @@ const props = withDefaults(
     initialShape?: PointShape;
     /** Which Base Materials this dataset actually pairs with each Material Class (see columnTypes.ts's materialsByClass) -- narrows the Base Materials suggestions once a class is picked. */
     materialsByClass?: Record<string, string[]>;
+    /** This dataset's actual wavelength/sensitivity column keys, resolved
+     * straight from the loaded file's columns (see useManualPoints) rather
+     * than from `fields` above -- a `fields` entry loses its labelKey when
+     * that same column is currently one of the chart's own X/Y axes (see
+     * buildManualPointFields), so matching by labelKey here would miss the
+     * very common case of, say, wavelength being the X-axis. Forwarded
+     * as-is to UnitConverterPopover's "Insert" target. */
+    wavelengthColumn?: string | null;
+    sensitivityColumn?: string | null;
   }>(),
   {
     mode: "create",
@@ -627,6 +646,8 @@ const props = withDefaults(
     initialNotes: "",
     initialShape: "diamond",
     materialsByClass: () => ({}),
+    wavelengthColumn: null,
+    sensitivityColumn: null,
   },
 );
 
@@ -733,7 +754,9 @@ const isStructureNodeLocked = (index: number): boolean => {
 const structureNodeSummary = (field: ManualPointField): string | null => {
   if (field.kind === "tags") {
     const n = (tagsValues.value[field.column] ?? []).length;
-    return n > 0 ? t("fomcharts.addPoint.tagsSelectedCount", { n }) : null;
+    return n > 0
+      ? t("fomcharts.addPoint.tagsSelectedCount", { n }, { plural: n })
+      : null;
   }
   if (field.kind === "layers") {
     const layers = (layersValues.value[field.column] ?? []).filter(

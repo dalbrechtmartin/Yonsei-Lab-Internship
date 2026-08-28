@@ -1,7 +1,26 @@
 import { type Ref, computed, onMounted, onUnmounted, ref } from "vue";
 import { FileIcon, FileCheckCorner, FileExclamationPoint } from "@lucide/vue";
-import type { JobFileStatus, JobStatusResponse } from "@/services/api";
+import type { JobEvent, JobFileStatus, JobStatusResponse } from "@/services/api";
 import { ESTIMATED_MS_PER_FILE, formatDuration } from "@/utils/extractionEta";
+
+// backend's extractRetryQuota event (see llm.py) announces a concrete
+// "retrying in {seconds}s" window for the file currently being processed --
+// real wall-clock time the pace-based estimate below has no way to predict
+// in advance. The backend processes one file at a time and sleeps through
+// each retry synchronously before ever emitting the next event, so at most
+// one such window is genuinely still open for a given file at once; this
+// just finds it (the most recent matching event whose window hasn't
+// elapsed yet) rather than assuming which one that is.
+function pendingRetryDelayMs(events: JobEvent[], filename: string, nowMs: number): number {
+  let remaining = 0;
+  for (const event of events) {
+    if (event.key !== "extractRetryQuota" || event.params.filename !== filename) continue;
+    const seconds = Number(event.params.seconds);
+    if (!Number.isFinite(seconds)) continue;
+    remaining = Math.max(0, event.atMs + seconds * 1000 - nowMs);
+  }
+  return remaining;
+}
 
 // A loading bar should never render fully empty -- start it slightly filled
 // so it always reads as "in progress" from the first frame.
@@ -38,24 +57,58 @@ export function useExtractionProgressDisplay(
     return Math.max(MIN_OVERALL_PCT, Math.round(pct));
   });
 
-  // Counts down against each file's own estimate instead of an average of
-  // files finished so far -- an average-based estimate stays frozen while
-  // the very first file is still in flight (nothing has completed yet to
-  // average), then can jump upward if that file happens to run long. This
-  // ticks steadily: time left on whichever file is in flight, plus a flat
-  // estimate for every file that hasn't started yet.
+  // The flat ESTIMATED_MS_PER_FILE guess is only ever right by coincidence:
+  // real per-file time depends on which model tier got pinned (a rate-
+  // limited "Flash" file sleeps far longer between its 3 consensus calls
+  // than a "Flash Lite" one), the PDF's length, and whether this job has
+  // hit any quota backoff at all. The moment at least one file has actually
+  // resolved (done or failed -- completedCount counts both, see main.py),
+  // this job's own observed pace already reflects all of that for real,
+  // so it replaces the blind guess instead of running alongside it forever.
+  const observedMsPerFile = computed(() => {
+    const j = job.value;
+    if (!j || j.completedCount <= 0) return ESTIMATED_MS_PER_FILE;
+    const elapsedMs = nowMs.value - new Date(j.createdAt).getTime();
+    return elapsedMs / j.completedCount;
+  });
+
+  // Counts down against the current per-file pace (flat guess before
+  // anything has finished, this job's own observed average after) instead
+  // of an average of files finished so far being applied only to remaining
+  // files -- ticks steadily: time left on whichever file is in flight, plus
+  // that same pace for every file that hasn't started yet.
   const etaLabel = computed(() => {
     const j = job.value;
     if (!j) return null;
     const remainingFiles = j.totalFiles - j.completedCount;
     if (remainingFiles <= 0) return null;
+    const msPerFile = observedMsPerFile.value;
     const processingFile = j.files.find((f) => f.status === "processing");
-    let msLeft = remainingFiles * ESTIMATED_MS_PER_FILE;
+    let msLeft = remainingFiles * msPerFile;
     if (processingFile?.startedAt) {
       const elapsed = nowMs.value - new Date(processingFile.startedAt).getTime();
-      msLeft -= Math.min(elapsed, ESTIMATED_MS_PER_FILE);
+      msLeft -= Math.min(elapsed, msPerFile);
+      // The subtraction above floors the current file's own contribution at
+      // zero once it runs past msPerFile -- as if it were about to finish,
+      // even while it's still actively waiting out a Google-announced 429
+      // retry. Adding the concrete remaining window back (see
+      // pendingRetryDelayMs) is what makes the countdown grow instead of
+      // silently sitting there while real time keeps passing -- this was
+      // the main source of the estimate always running short during a
+      // file stuck retrying.
+      msLeft += pendingRetryDelayMs(j.events, processingFile.filename, nowMs.value);
     }
-    return formatDuration(msLeft);
+    // A quota/backoff pause (see ExtractionNoticeBanner) is real wall-clock
+    // time the per-file pace above has no way to know about in advance --
+    // without this, the countdown keeps ticking down through a multi-minute
+    // pause as if nothing were happening, then quietly blows past zero.
+    // Only covers the pause that's actively showing; it can't predict a
+    // later retry pass needing one too (though once that pass's own file
+    // resolves, it folds into observedMsPerFile like any other).
+    if (j.notice) {
+      msLeft += Math.max(0, new Date(j.notice.retryAt).getTime() - nowMs.value);
+    }
+    return formatDuration(Math.max(0, msLeft));
   });
 
   // Files process one at a time server-side (see jobs.py), so at most one
@@ -92,22 +145,33 @@ export function useExtractionProgressDisplay(
     );
   });
 
+  // A file genuinely waiting out a backend-announced 429 retry (see
+  // pendingRetryDelayMs) is never "overtime" in the misleading sense
+  // fileLabelKey uses this for -- it hasn't stalled, it's doing exactly
+  // what it's supposed to. Without this check, that pill used to read
+  // "Almost done" for as long as the retry lasted, the opposite of what
+  // was actually happening.
   const isOvertime = (file: JobFileStatus) => {
     if (file.status !== "processing" || !file.startedAt) return false;
-    return nowMs.value - new Date(file.startedAt).getTime() >= ESTIMATED_MS_PER_FILE;
+    const overPace = nowMs.value - new Date(file.startedAt).getTime() >= observedMsPerFile.value;
+    if (!overPace) return false;
+    return pendingRetryDelayMs(job.value?.events ?? [], file.filename, nowMs.value) <= 0;
   };
 
-  // Counts down against the same flat per-file estimate the overall ETA and
-  // progress bar use (see fileProgressPct below) -- null once the file runs
-  // past that estimate, since "almostDone" (see fileLabelKey) already
-  // covers that state and a "0s left" that never resolves would just look
-  // broken.
+  // Counts down against the same per-file pace the overall ETA and progress
+  // bar use (see fileProgressPct below) -- null once the file runs past
+  // that estimate with no active retry to explain it (see isOvertime),
+  // since "almostDone" (see fileLabelKey) already covers that state and a
+  // "0s left" that never resolves would just look broken. While an
+  // announced retry IS running, shows that concrete countdown instead of
+  // the pace-based one -- a real number tied to what's actually happening.
   const fileEtaLabel = (file: JobFileStatus): string | null => {
-    if (file.status !== "processing" || !file.startedAt || isOvertime(file)) {
-      return null;
-    }
+    if (file.status !== "processing" || !file.startedAt) return null;
+    const retryMs = pendingRetryDelayMs(job.value?.events ?? [], file.filename, nowMs.value);
+    if (retryMs > 0) return formatDuration(retryMs);
+    if (isOvertime(file)) return null;
     const elapsed = nowMs.value - new Date(file.startedAt).getTime();
-    return formatDuration(Math.max(0, ESTIMATED_MS_PER_FILE - elapsed));
+    return formatDuration(Math.max(0, observedMsPerFile.value - elapsed));
   };
 
   const fileLabelKey = (file: JobFileStatus) => {
@@ -138,15 +202,15 @@ export function useExtractionProgressDisplay(
   };
 
   // The backend never reports a numeric progress fraction (Gemini gives no
-  // per-call progress), so this fills the bar toward the same ~2 min/file
-  // estimate used for the ETA -- real enough to feel alive, but explicitly
-  // capped below 100% while still processing so it never falsely claims the
-  // file is done a beat before the server actually says so.
+  // per-call progress), so this fills the bar toward the same per-file pace
+  // used for the ETA -- real enough to feel alive, but explicitly capped
+  // below 100% while still processing so it never falsely claims the file
+  // is done a beat before the server actually says so.
   const fileProgressPct = (file: JobFileStatus) => {
     if (file.status === "done" || file.status === "failed") return 100;
     if (file.status !== "processing" || !file.startedAt) return 0;
     const elapsedMs = nowMs.value - new Date(file.startedAt).getTime();
-    const pct = (elapsedMs / ESTIMATED_MS_PER_FILE) * PROCESSING_BAR_CAP_PCT;
+    const pct = (elapsedMs / observedMsPerFile.value) * PROCESSING_BAR_CAP_PCT;
     return Math.min(PROCESSING_BAR_CAP_PCT, Math.max(0, Math.round(pct)));
   };
 

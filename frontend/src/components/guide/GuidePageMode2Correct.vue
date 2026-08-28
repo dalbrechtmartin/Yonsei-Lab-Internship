@@ -22,8 +22,8 @@
       <ExtractionStepper :steps="extractionStepperSteps" :current-step="3" :furthest-step="3" />
     </div>
 
-    <div ref="editPanelWrap" class="relative mx-auto w-full max-w-125 guide-callout-region">
-      <ExtractionReviewEditPanel :record="flaggedRecord" />
+    <div ref="detailWrap" class="relative mx-auto w-full max-w-125 guide-callout-region">
+      <ExtractionReviewDetail :record="flaggedRecord" />
       <GuideMarkRing
         v-for="(m, i) in correctMarks"
         :key="i"
@@ -37,16 +37,16 @@
       class="mx-auto mt-2 max-w-125"
       :items="[
         {
-          label: t('guide.steps.mode2Correct.marks.primary.label'),
-          body: t('guide.steps.mode2Correct.marks.primary.body'),
+          label: t('guide.steps.mode2Correct.marks.banner.label'),
+          body: t('guide.steps.mode2Correct.marks.banner.body'),
         },
         {
-          label: t('guide.steps.mode2Correct.marks.more.label'),
-          body: t('guide.steps.mode2Correct.marks.more.body'),
+          label: t('guide.steps.mode2Correct.marks.sources.label'),
+          body: t('guide.steps.mode2Correct.marks.sources.body'),
         },
         {
-          label: t('guide.steps.mode2Correct.marks.save.label'),
-          body: t('guide.steps.mode2Correct.marks.save.body'),
+          label: t('guide.steps.mode2Correct.marks.pencil.label'),
+          body: t('guide.steps.mode2Correct.marks.pencil.body'),
         },
       ]"
     />
@@ -65,7 +65,7 @@
 import { useTemplateRef } from "vue";
 import { useI18n } from "vue-i18n";
 import ExtractionStepper from "@/components/extraction/ExtractionStepper.vue";
-import ExtractionReviewEditPanel from "@/components/extraction/ExtractionReviewEditPanel.vue";
+import ExtractionReviewDetail from "@/components/extraction/ExtractionReviewDetail.vue";
 import GuideHeader from "./GuideHeader.vue";
 import GuideFooter from "./GuideFooter.vue";
 import GuideMarkRing from "./GuideMarkRing.vue";
@@ -82,7 +82,7 @@ defineProps<{
 
 const { t } = useI18n();
 
-const editPanelWrap = useTemplateRef<HTMLDivElement>("editPanelWrap");
+const detailWrap = useTemplateRef<HTMLDivElement>("detailWrap");
 
-defineExpose({ editPanelWrap });
+defineExpose({ detailWrap });
 </script>
