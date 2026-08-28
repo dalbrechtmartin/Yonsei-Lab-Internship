@@ -41,6 +41,7 @@
           v-model:active-filter="activeFilter"
           :job-id="jobStatus.jobId"
           :records="filteredRecords"
+          :all-records="records"
           :cursor="cursor"
           :counts="counts"
           :loading="recordsLoading"

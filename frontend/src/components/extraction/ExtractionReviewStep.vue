@@ -41,12 +41,16 @@
 
         <ExtractionReviewDetail
           :record="cursor"
+          :all-records="allRecords"
           :page-labels="pageLabels"
           :job-id="jobId"
-          @select-source="activeSource = $event"
+          :confirmed-field-keys="confirmedFields"
+          @select-source="handleSelectSource"
           @save="handleSave"
           @record-updated="emit('record-updated', $event)"
           @recompute-applied="(before, after) => emit('recompute-applied', before, after)"
+          @flagged-fields="flaggedFieldKeys = $event"
+          @toggle-confirm-field="handleToggleConfirmField"
         />
       </div>
 
@@ -77,6 +81,23 @@
             {{ t("extraction.review.actions.redo") }}
           </Button>
         </div>
+        <!-- Soft, non-blocking reminder -- never disables Valider, matching
+             this app's existing "flag, never force" convention (e.g. an
+             unrecognized formula never blocks saving, it's marked Edit and
+             left to the reviewer). Disappears entirely once every currently
+             flagged field on this record has been confirmed. -->
+        <span
+          v-if="unconfirmedCount > 0"
+          class="self-start rounded-full bg-amber-500/12 px-2 py-0.5 text-[11px] font-medium text-amber-800"
+        >
+          {{
+            t(
+              "extraction.review.actions.unconfirmedCount",
+              { count: unconfirmedCount },
+              { plural: unconfirmedCount },
+            )
+          }}
+        </span>
         <ExtractionReviewActions
           :disabled="!cursor || loading"
           @validate="handleValidate"
@@ -109,8 +130,9 @@
         :job-id="jobId"
         :file-id="cursor.fileId"
         :filename="cursor.filename"
-        :location="pdfLocation"
-        :evidence="pdfEvidence"
+        :sources="sources"
+        :active-source-index="activeSourceIndex"
+        :focus-value="activeFocusValue"
         :get-page-count="getPageCount"
         :get-page-labels="getPageLabels"
       />
@@ -150,6 +172,11 @@ const props = defineProps<{
   /** Already filtered by activeFilter (see useExtractionRecords.filteredRecords)
    * -- this component composes the table/tabs/actions, it doesn't re-filter. */
   records: ExtractionRecord[];
+  /** The job's full, unfiltered record list -- used only to derive
+   * job-wide autocomplete suggestions (Sensing Medium, Material Class, Base
+   * Materials) in ExtractionReviewDetail, which need every record's values
+   * regardless of the active review-status tab. */
+  allRecords: ExtractionRecord[];
   cursor: ExtractionRecord | null;
   activeFilter: ReviewFilter;
   /** Tab counts, computed off the full unfiltered list. */
@@ -203,12 +230,74 @@ const selectedIndex = computed(() =>
 // Exclure/field-save PATCH even while staying on the same logical record,
 // and resetting on that would snap the viewer back to source 1 on every save.
 const activeSource = ref<EvidenceSource | null>(null);
+// The specific field value (as text) a per-field "jump to source" click
+// asked to be pinpointed within activeSource's own passage -- null for any
+// click that isn't about one specific field (a "Source N" pill, the
+// Provenance list's own Location link), which should always show the whole
+// passage. See ExtractionReviewDetail's own `select-source` emit doc.
+const activeFocusValue = ref<string | null>(null);
+function handleSelectSource(source: EvidenceSource, focusValue?: string | null) {
+  activeSource.value = source;
+  activeFocusValue.value = focusValue ?? null;
+}
 watch(
   () => (props.cursor ? recordKey(props.cursor) : null),
   () => {
     activeSource.value = null;
+    activeFocusValue.value = null;
   },
 );
+
+// Per-field "confirmed" state for the flagged-fields checklist -- session
+// local only (never sent to the backend, never in the export), keyed
+// `${recordKey}:${fieldKey}` so the same Set can hold entries for every
+// record visited this session without them colliding. Owned here (not
+// inside ExtractionReviewDetail) because the unconfirmed-count badge below
+// is a SIBLING of the detail card, not a descendant -- this component is
+// their common ancestor.
+const confirmedFields = ref<Set<string>>(new Set());
+// Which field keys ExtractionReviewDetail currently considers flagged on
+// the record on screen -- reported via its own `flagged-fields` emit rather
+// than duplicated here, so this component never needs its own copy of
+// fieldNote's warning logic.
+const flaggedFieldKeys = ref<string[]>([]);
+watch(
+  () => (props.cursor ? recordKey(props.cursor) : null),
+  () => {
+    confirmedFields.value = new Set();
+  },
+);
+
+const unconfirmedCount = computed(() => {
+  if (!props.cursor) return 0;
+  const prefix = `${recordKey(props.cursor)}:`;
+  return flaggedFieldKeys.value.filter((key) => !confirmedFields.value.has(prefix + key)).length;
+});
+
+function handleToggleConfirmField(fieldKey: string) {
+  if (!props.cursor) return;
+  const full = `${recordKey(props.cursor)}:${fieldKey}`;
+  const next = new Set(confirmedFields.value);
+  const wasConfirmed = next.has(full);
+  if (wasConfirmed) next.delete(full);
+  else next.add(full);
+  confirmedFields.value = next;
+  // Confirming the LAST outstanding flagged field auto-validates the record
+  // -- reading through and ticking off every flagged item already IS the
+  // review; a further manual click on "Valider" right after would just be
+  // repeating a decision already made. Only fires on the >0 -> 0 transition
+  // (never on an un-confirm, and never for a record with no flagged fields
+  // at all -- unconfirmedCount is already 0 there with nothing to complete),
+  // and never overrides a record a reviewer already excluded on purpose.
+  if (
+    !wasConfirmed &&
+    flaggedFieldKeys.value.length > 0 &&
+    unconfirmedCount.value === 0 &&
+    props.cursor.reviewStatus !== "Exclude"
+  ) {
+    emit("validate");
+  }
+}
 
 // Resolved page labels for the cursor's own file, for ExtractionReviewDetail
 // to annotate its Location text with (ExtractionPdfViewer fetches its own
@@ -230,24 +319,29 @@ watch(
   { immediate: true },
 );
 
-const defaultSource = computed(
-  () =>
-    parseEvidenceSources(
-      props.cursor?.evidence ?? null,
-      props.cursor?.location ?? null,
-      props.cursor?.evidenceFieldMap ?? null,
-    )[0] ?? null,
+// Every evidence source for the cursor record -- ExtractionPdfViewer now
+// renders all of them (lightly tinted) plus the active one (accented)
+// itself, rather than this component pre-resolving down to a single
+// {location, evidence} pair the way it used to.
+const sources = computed(() =>
+  parseEvidenceSources(
+    props.cursor?.evidence ?? null,
+    props.cursor?.location ?? null,
+    props.cursor?.evidenceFieldMap ?? null,
+  ),
 );
-// Never pass the raw cursor.location/cursor.evidence straight through: once
-// a record has 2+ sources those are the whole "[...]"-joined strings, and
-// searching the PDF's text layer for that joined string would never match
-// anything real -- the viewer needs one source's own quote/location.
-const pdfLocation = computed(
-  () => (activeSource.value ?? defaultSource.value)?.location ?? null,
-);
-const pdfEvidence = computed(
-  () => (activeSource.value ?? defaultSource.value)?.quote ?? null,
-);
+// `activeSource` holds the selected EvidenceSource *object* (unchanged
+// contract from ExtractionReviewDetail's @select-source) -- resolved back
+// to an index by VALUE, not reference, since ExtractionReviewDetail computes
+// its own independent `sources` array from the same pure function and the
+// two are never `===`. Defaults to the first source.
+const activeSourceIndex = computed(() => {
+  if (!activeSource.value) return 0;
+  const idx = sources.value.findIndex(
+    (s) => s.quote === activeSource.value!.quote && s.location === activeSource.value!.location,
+  );
+  return idx === -1 ? 0 : idx;
+});
 
 const cursorPosition = computed(() => {
   if (!props.cursor) return 0;

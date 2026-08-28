@@ -268,13 +268,14 @@
           "calculated": "Valeur calculée, non extraite directement du texte : {detail}"
         },
         "editField": "Modifier {field}",
+        "confirmField": "Marquer {field} comme vérifié",
+        "unconfirmField": "Retirer la vérification de {field}",
         "rawValue": "Valeur brute",
         "conversionMethod": "Conversion",
         "calculatedFields": "Valeur calculée",
         "saveLayers": "Enregistrer les couches",
         "recompute": {
           "label": "Recalculer la sensibilité",
-          "toggle": "Recalculer",
           "formulaPlaceholder": "Choisir une formule",
           "gasGroup": "Gaz",
           "liquidGroup": "Liquide",
@@ -289,12 +290,29 @@
           "fomLabel": "Recalculer le FOM",
           "fwhmLabel": "Recalculer le FWHM",
           "calculate": "Calculer",
-          "autoFill": "Calculer {field} à partir des deux autres valeurs"
+          "fomFormula": "FOM = Sensibilité / FWHM",
+          "fomHint": "Remplit le FOM à partir de la Sensibilité et du FWHM. Corrigez l'une des deux valeurs si besoin avant de calculer.",
+          "fwhmFormula": "FWHM = Sensibilité / FOM",
+          "fwhmHint": "Remplit le FWHM à partir de la Sensibilité et du FOM. Corrigez l'une des deux valeurs si besoin avant de calculer.",
+          "relationFormula": "Sensibilité = FOM × FWHM",
+          "sensitivityHint": "Convertit une valeur brute dans l'unité du papier (ex. nm/%RH) en nm/RIU, ou déduit la Sensibilité du FOM et du FWHM.",
+          "unitLabel": "Unité",
+          "successMessage": "{field} mis à jour : {value}"
+        },
+        "definition": {
+          "recognized": "Formule reconnue (FOM = Sensitivity / FWHM)",
+          "custom": "Autre / personnalisée"
+        },
+        "tags": {
+          "searchPlaceholder": "Chercher ou ajouter une valeur",
+          "addNew": "Ajouter",
+          "noMatches": "Aucun résultat"
         },
         "status": {
           "editHeading": "À vérifier",
           "excludeHeading": "Exclu",
-          "noReason": "Aucune raison enregistrée."
+          "noReason": "Aucune raison enregistrée.",
+          "noFieldFlag": "Aucun champ précis n'est marqué ci-dessous. Lisez la note, puis validez ou excluez."
         }
       },
       "actions": {
@@ -304,6 +322,7 @@
         "next": "Suivant",
         "undo": "Annuler",
         "redo": "Rétablir",
+        "unconfirmedCount": "{count} champ à confirmer | {count} champs à confirmer",
         "shortcuts": {
           "validate": "(V)",
           "next": "⏎"

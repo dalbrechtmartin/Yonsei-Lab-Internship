@@ -268,13 +268,14 @@
           "calculated": "계산된 값이며 본문에서 직접 추출되지 않았습니다: {detail}"
         },
         "editField": "{field} 수정",
+        "confirmField": "{field} 확인 완료로 표시",
+        "unconfirmField": "{field} 확인 완료 표시 해제",
         "rawValue": "원본 값",
         "conversionMethod": "변환 방법",
         "calculatedFields": "계산된 값",
         "saveLayers": "층 저장",
         "recompute": {
           "label": "감도 재계산",
-          "toggle": "재계산",
           "formulaPlaceholder": "공식 선택",
           "gasGroup": "기체",
           "liquidGroup": "액체",
@@ -289,12 +290,29 @@
           "fomLabel": "FOM 재계산",
           "fwhmLabel": "FWHM 재계산",
           "calculate": "계산",
-          "autoFill": "다른 두 값으로 {field} 계산"
+          "fomFormula": "FOM = 감도 / FWHM",
+          "fomHint": "감도와 FWHM으로 FOM을 채웁니다. 필요하면 계산 전에 두 값을 수정하세요.",
+          "fwhmFormula": "FWHM = 감도 / FOM",
+          "fwhmHint": "감도와 FOM으로 FWHM을 채웁니다. 필요하면 계산 전에 두 값을 수정하세요.",
+          "relationFormula": "감도 = FOM × FWHM",
+          "sensitivityHint": "논문에 표기된 단위(예: nm/%RH)의 원시 값을 nm/RIU로 변환하거나, FOM과 FWHM으로부터 감도를 계산합니다.",
+          "unitLabel": "단위",
+          "successMessage": "{field} 업데이트됨: {value}"
+        },
+        "definition": {
+          "recognized": "인식된 공식 (FOM = Sensitivity / FWHM)",
+          "custom": "기타 / 사용자 지정"
+        },
+        "tags": {
+          "searchPlaceholder": "검색 또는 값 추가",
+          "addNew": "추가",
+          "noMatches": "일치하는 항목 없음"
         },
         "status": {
           "editHeading": "확인 필요",
           "excludeHeading": "제외됨",
-          "noReason": "기록된 이유 없음."
+          "noReason": "기록된 이유 없음.",
+          "noFieldFlag": "아래에 표시된 특정 필드가 없습니다. 메모를 읽은 후 승인하거나 제외하세요."
         }
       },
       "actions": {
@@ -304,6 +322,7 @@
         "next": "다음",
         "undo": "실행 취소",
         "redo": "다시 실행",
+        "unconfirmedCount": "확인할 필드 {count}개",
         "shortcuts": {
           "validate": "(V)",
           "next": "⏎"

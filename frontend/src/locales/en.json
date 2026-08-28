@@ -268,13 +268,14 @@
           "calculated": "Calculated value, not extracted directly from the text: {detail}"
         },
         "editField": "Edit {field}",
+        "confirmField": "Mark {field} as checked",
+        "unconfirmField": "Unmark {field} as checked",
         "rawValue": "Raw value",
         "conversionMethod": "Conversion",
         "calculatedFields": "Calculated value",
         "saveLayers": "Save layers",
         "recompute": {
           "label": "Recompute sensitivity",
-          "toggle": "Recompute",
           "formulaPlaceholder": "Select a formula",
           "gasGroup": "Gas",
           "liquidGroup": "Liquid",
@@ -289,12 +290,29 @@
           "fomLabel": "Recompute FOM",
           "fwhmLabel": "Recompute FWHM",
           "calculate": "Calculate",
-          "autoFill": "Calculate {field} from the other two values"
+          "fomFormula": "FOM = Sensitivity / FWHM",
+          "fomHint": "Fills in FOM from Sensitivity and FWHM. Edit either value first if needed.",
+          "fwhmFormula": "FWHM = Sensitivity / FOM",
+          "fwhmHint": "Fills in FWHM from Sensitivity and FOM. Edit either value first if needed.",
+          "relationFormula": "Sensitivity = FOM × FWHM",
+          "sensitivityHint": "Converts a raw value in the paper's own unit (e.g. nm/%RH) into nm/RIU, or derives Sensitivity from FOM and FWHM.",
+          "unitLabel": "Unit",
+          "successMessage": "{field} updated: {value}"
+        },
+        "definition": {
+          "recognized": "Recognized formula (FOM = Sensitivity / FWHM)",
+          "custom": "Other / custom"
+        },
+        "tags": {
+          "searchPlaceholder": "Search or add a value",
+          "addNew": "Add",
+          "noMatches": "No matches"
         },
         "status": {
           "editHeading": "Needs review",
           "excludeHeading": "Excluded",
-          "noReason": "No reason recorded."
+          "noReason": "No reason recorded.",
+          "noFieldFlag": "No specific field is flagged below. Read the note, then validate or exclude."
         }
       },
       "actions": {
@@ -304,6 +322,7 @@
         "next": "Next",
         "undo": "Undo",
         "redo": "Redo",
+        "unconfirmedCount": "{count} field to confirm | {count} fields to confirm",
         "shortcuts": {
           "validate": "(V)",
           "next": "⏎"
