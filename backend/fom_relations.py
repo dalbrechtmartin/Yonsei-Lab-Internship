@@ -46,6 +46,17 @@ def is_recognized_definition(definition: str | None) -> bool:
     return _normalize_definition(definition) in _RECOGNIZED_DEFINITIONS
 
 
+def _clean(value: float) -> float:
+    """Strips IEEE-754 division noise (e.g. 350 / 0.35 == 1000.0000000000001,
+    not 1000.0) without touching any real measurement precision -- no paper
+    ever states a value to 10+ significant decimal digits, so rounding at
+    that scale only ever removes arithmetic noise, never real data. Without
+    this, a clean-looking recomputed value would display (and get exported)
+    with a long trail of spurious digits that make it look wrong even though
+    the arithmetic is correct."""
+    return round(value, 10)
+
+
 def solve(
     target_field: str, *, fom: float | None, sensitivity: float | None, fwhm: float | None
 ) -> float | None:
@@ -62,15 +73,15 @@ def solve(
         if target_field == FIELD_FOM:
             if sensitivity is None or fwhm is None or fwhm == 0:
                 return None
-            return sensitivity / fwhm
+            return _clean(sensitivity / fwhm)
         if target_field == FIELD_SENSITIVITY:
             if fom is None or fwhm is None:
                 return None
-            return fom * fwhm
+            return _clean(fom * fwhm)
         if target_field == FIELD_FWHM:
             if sensitivity is None or fom is None or fom == 0:
                 return None
-            return sensitivity / fom
+            return _clean(sensitivity / fom)
     except (TypeError, ZeroDivisionError):
         return None
     return None
