@@ -86,6 +86,7 @@ def load_jobs_from_disk() -> list[str]:
         except (json.JSONDecodeError, OSError):
             continue
         job.setdefault("notice", None)
+        job.setdefault("events", [])
         for file_state in job["files"].values():
             file_state.setdefault("started_at", None)
             if file_state["status"] == "processing":
@@ -125,6 +126,7 @@ def create_job(model_choice: str, available_models: list[str], filenames: list[s
         "updated_at": _now(),
         "error_message": None,
         "notice": None,
+        "events": [],
         "files": files,
     }
     JOBS[job_id] = job
@@ -172,9 +174,20 @@ def add_job_file_run(
     model: str | None,
     outcome: str,
     records: list[dict] | None,
+    reason: str | None = None,
 ) -> None:
+    """`reason` (see llm._classify_error: "quota", "unavailable", "error")
+    is only meaningful when outcome != "ok" -- it's what lets the
+    frontend's journal say *why* a run failed (a 429 or 503) instead of
+    just that it did, see GET /jobs/{id}/status."""
     JOBS[job_id]["files"][file_id]["runs"].append(
-        {"run_index": run_index, "model": model, "outcome": outcome, "records": records}
+        {
+            "run_index": run_index,
+            "model": model,
+            "outcome": outcome,
+            "records": records,
+            "reason": reason,
+        }
     )
     _persist_job(job_id)
 
@@ -200,7 +213,7 @@ def set_record_review_status(
 ) -> dict:
     """A human reviewer overriding one record's "Review status" after
     checking an AI-flagged "Edit" row -- the only path allowed to write
-    "Approve (Manual)" (the model itself never does, see prompt.txt).
+    "Approve (Manual)" (the model itself never does, see prompts/extraction.txt).
     `fields`, when given, overwrites specific extracted values (e.g. a
     "Corriger" edit) before the status is set -- caller is responsible for
     only passing editable columns (see schema.EDITABLE_RECORD_FIELDS).
@@ -215,6 +228,23 @@ def set_record_review_status(
     # unconditionally on every call. Extra dict key, harmless for the
     # xlsx export (_build_xlsx_response selects only COLUMN_ORDER).
     record["Reviewed At"] = _now()
+    _persist_job(job_id)
+    return record
+
+
+def set_record_fields(job_id: str, file_id: str, record_index: int, fields: dict[str, Any]) -> dict:
+    """Unconditionally overwrites the given record fields, bypassing the
+    EDITABLE_RECORD_FIELDS allowlist that guards the review-status PATCH
+    above -- used only by main.py's recompute-field/restore-recompute-fields
+    endpoints, which write "Sensitivity (nm/RIU)"/"FOM (RIU^-1)"/
+    "FWHM (nm)"/"Conversion Method"/"Raw Value"/"Calculated Fields" (all
+    machine-only, never a free-text edit) after running a deterministic
+    conversion/relation formula (see sensing_medium_conversion,
+    fom_relations). Raises IndexError if record_index is out of range for
+    this file."""
+    records = JOBS[job_id]["files"][file_id]["records"]
+    record = records[record_index]
+    record.update(fields)
     _persist_job(job_id)
     return record
 
@@ -238,6 +268,33 @@ def set_job_notice(job_id: str, notice: dict | None) -> None:
     a quota cooldown before its next automatic retry pass. `None` clears
     it (there's nothing unusual to report)."""
     JOBS[job_id]["notice"] = notice
+    _persist_job(job_id)
+
+
+def append_job_event(job_id: str | None, level: str, key: str, **params: Any) -> None:
+    """Appends one entry to this job's persisted, human-readable event log
+    (job["events"]) -- the source of truth for the frontend's "Journal"
+    panel (see useExtractionEventLog.ts), instead of that panel guessing
+    from diffs between status polls. Every meaningful thing the job does
+    (a model attempt, a 429/503/404, a fallback switch, a reconciliation
+    result) should call this alongside its existing logger.* call, not
+    instead of it -- this is for the end user, the logger.* calls stay for
+    server-side debugging. No-ops if job_id is None (e.g. a call path with
+    no job behind it) or the job no longer exists (e.g. a slow background
+    retry outliving a job that was somehow removed)."""
+    if not job_id or job_id not in JOBS:
+        return
+    job = JOBS[job_id]
+    events = job.setdefault("events", [])
+    events.append(
+        {
+            "seq": len(events),
+            "at": _now(),
+            "level": level,
+            "key": key,
+            "params": params,
+        }
+    )
     _persist_job(job_id)
 
 

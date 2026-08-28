@@ -74,6 +74,22 @@ class TestModeLabelDrift:
         assert notes_reconciliation_lines(merged) == []
 
 
+class TestShortTitleDrift:
+    def test_short_title_is_never_voted_on(self):
+        runs = [
+            [make_record(**{"Short Title": "High-Q Fano resonances in metastructures"})],
+            [make_record(**{"Short Title": "High-Q Fano resonances in all-dielectric metastructures"})],
+            [make_record(**{"Short Title": "High-Q Fano resonances in metastructures"})],
+        ]
+        [merged] = reconcile_runs(runs)
+        # Primary (first run)'s paraphrase wins verbatim, no disagreement
+        # noise -- a shortened title varying slightly in wording across runs
+        # is not a real disagreement worth flagging (see reconcile.py).
+        assert merged["Short Title"] == "High-Q Fano resonances in metastructures"
+        assert notes_reconciliation_lines(merged) == []
+        assert merged["Review status"] == "Approve (AI)"
+
+
 class TestDomainDrift:
     def test_majority_wins_and_is_annotated(self):
         runs = [
@@ -166,6 +182,93 @@ class TestMaterialSetFields:
         [merged] = reconcile_runs(runs)
         assert merged["Material Class"] == "Dielectric;Semiconductor"
         assert any("Material Class" in line for line in notes_reconciliation_lines(merged))
+
+
+class TestForcedEditOnDisagreement:
+    """A record a reviewer would see as "Approve (AI)" must not hide that
+    some other field is actually contested -- see reconcile.py's
+    _reconcile_slot has_warning handling."""
+
+    def test_field_disagreement_downgrades_approve_ai_to_edit(self):
+        runs = [
+            [make_record(**{"Q-factor": 54})],
+            [make_record(**{"Q-factor": 23})],
+            [make_record(**{"Q-factor": None})],
+        ]
+        [merged] = reconcile_runs(runs)
+        assert merged["Review status"] == "Edit"
+        assert merged["Notes"]  # explanatory fallback since primary wrote none
+        lines = notes_reconciliation_lines(merged)
+        assert any("forced to Edit" in line for line in lines)
+
+    def test_partial_agreement_alone_does_not_force_edit(self):
+        runs = [
+            [make_record(**{"Q-factor": None})],
+            [make_record(**{"Q-factor": None})],
+            [make_record(**{"Q-factor": 23})],
+        ]
+        [merged] = reconcile_runs(runs)
+        assert merged["Review status"] == "Approve (AI)"
+
+    def test_exclude_is_not_overridden_by_disagreement(self):
+        runs = [
+            [make_record(**{"Q-factor": 54, "Review status": "Exclude"})],
+            [make_record(**{"Q-factor": 23, "Review status": "Exclude"})],
+            [make_record(**{"Q-factor": None, "Review status": "Exclude"})],
+        ]
+        [merged] = reconcile_runs(runs)
+        assert merged["Review status"] == "Exclude"
+
+    def test_existing_notes_are_preserved_not_overwritten(self):
+        runs = [
+            [make_record(**{"Q-factor": 54, "Notes": "Own note from primary run."})],
+            [make_record(**{"Q-factor": 23})],
+            [make_record(**{"Q-factor": None})],
+        ]
+        [merged] = reconcile_runs(runs)
+        assert merged["Review status"] == "Edit"
+        assert merged["Notes"] == "Own note from primary run."
+
+
+class TestCalculatedFieldSurvivesMajorityVote:
+    """Primary's own "Calculated Fields" (never voted, see
+    _FREE_TEXT_PRIMARY_ONLY_FIELDS) must not be left paired with a
+    majority-voted "Approve (AI)" borrowed from OTHER runs that didn't
+    derive the value themselves -- see reconcile.py's has_warning check
+    right after the free-text copy loop."""
+
+    def test_primarys_calculated_field_forces_edit_even_if_other_runs_voted_approve(self):
+        runs = [
+            [
+                make_record(
+                    **{
+                        "Calculated Fields": "FWHM = Sensitivity / FOM (not stated directly)",
+                        "Review status": "Edit",
+                    }
+                )
+            ],
+            [make_record(**{"Review status": "Approve (AI)"})],
+            [make_record(**{"Review status": "Approve (AI)"})],
+        ]
+        [merged] = reconcile_runs(runs)
+        # Without the has_warning guard, the 2/3 majority for "Approve (AI)"
+        # would win the scalar vote and silently pair it with primary's own
+        # (never-voted) "Calculated Fields".
+        assert merged["Calculated Fields"] == "FWHM = Sensitivity / FOM (not stated directly)"
+        assert merged["Review status"] == "Edit"
+
+
+class TestEvidenceFieldMapDrift:
+    def test_evidence_field_map_is_never_voted_on(self):
+        runs = [
+            [make_record(**{"Evidence Field Map": "FOM (RIU^-1), FWHM (nm); Sensitivity (nm/RIU)"})],
+            [make_record(**{"Evidence Field Map": "FOM (RIU^-1); Sensitivity (nm/RIU), FWHM (nm)"})],
+            [make_record(**{"Evidence Field Map": ""})],
+        ]
+        [merged] = reconcile_runs(runs)
+        # Primary (first run)'s value wins verbatim, no disagreement noise.
+        assert merged["Evidence Field Map"] == "FOM (RIU^-1), FWHM (nm); Sensitivity (nm/RIU)"
+        assert notes_reconciliation_lines(merged) == []
 
 
 class TestOriginAlignment:

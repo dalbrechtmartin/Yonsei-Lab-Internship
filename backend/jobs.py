@@ -39,12 +39,7 @@ def start_job(job_id: str) -> None:
 
 
 async def _sleep_for(model: str | None) -> None:
-    if model is None:
-        seconds = llm.DEFAULT_SLEEP_SECONDS
-    else:
-        seconds = llm.MODEL_SLEEP_SECONDS.get(model, llm.DEFAULT_SLEEP_SECONDS)
-
-    await asyncio.sleep(seconds)
+    await asyncio.sleep(llm.sleep_seconds_for(model))
 
 
 async def _process_one_file(job_id: str, job_file: dict, any_call_made: bool) -> tuple[bool, bool]:
@@ -61,30 +56,34 @@ async def _process_one_file(job_id: str, job_file: dict, any_call_made: bool) ->
     available_models = llm.filter_models_by_quota(list(job["available_models"]))
 
     state.update_job_file_status(job_id, file_id, "processing")
+    state.append_job_event(job_id, "info", "fileProcessing", filename=filename)
 
     with open(job_file["pdf_path"], "rb") as f:
         pdf_bytes = f.read()
     text = await asyncio.to_thread(llm.extract_text_from_pdf, pdf_bytes)
+    page_count = text.count("=== PAGE ")
+    state.append_job_event(job_id, "info", "pdfRead", filename=filename, pages=page_count)
 
     # Early-exit triage: rejects a paper with no optical-resonance FOM
     # metric at all (wrong field entirely) before spending the 3-call
     # consensus budget below on it. See llm.check_domain_relevance for
     # why this is safe to run unconditionally (fails open, cheap model).
     if any_call_made:
-        await _sleep_for(llm.DOMAIN_CHECK_MODEL)
+        await _sleep_for(llm.domain_check_model())
     in_domain = await asyncio.to_thread(
         llm.check_domain_relevance, text, filename, job_id, file_id
     )
     any_call_made = True
     if not in_domain:
         state.update_job_file_status(job_id, file_id, "failed", error_reason="out_of_domain")
+        state.append_job_event(job_id, "warn", "fileFailed", filename=filename, reason="out_of_domain")
         return True, any_call_made
 
     if any_call_made:
         await _sleep_for(available_models[0] if available_models else None)
     try:
         run1_records = await asyncio.to_thread(
-            llm.analyze_paper_with_llm, text, filename, available_models
+            llm.analyze_paper_with_llm, text, filename, available_models, job_id
         )
     except llm.ModelChainExhaustedError as e:
         state.set_available_models(job_id, available_models)
@@ -94,15 +93,17 @@ async def _process_one_file(job_id: str, job_file: dict, any_call_made: bool) ->
 
     pinned_model = available_models[0]  # guaranteed non-empty: no exception was raised above
     state.set_available_models(job_id, available_models)
-    state.add_job_file_run(
-        job_id,
-        file_id,
-        0,
-        pinned_model,
-        "ok" if run1_records else "error",
-        run1_records,
-    )
-    state.log_usage(pinned_model, job_id, file_id, "ok" if run1_records else "error")
+    run1_outcome = "ok" if run1_records else "error"
+    state.add_job_file_run(job_id, file_id, 0, pinned_model, run1_outcome, run1_records)
+    state.log_usage(pinned_model, job_id, file_id, run1_outcome)
+    if run1_outcome == "ok":
+        state.append_job_event(
+            job_id, "info", "runDone", filename=filename, model=pinned_model, run=1, count=len(run1_records)
+        )
+    else:
+        state.append_job_event(
+            job_id, "warn", "runFailed", filename=filename, model=pinned_model, run=1, reason="error"
+        )
 
     runs: list[list[dict]] = []
     if run1_records:
@@ -111,12 +112,32 @@ async def _process_one_file(job_id: str, job_file: dict, any_call_made: bool) ->
     # --- Runs 2 and 3: pinned to the same model, no fallback walk ---
     for run_index in (1, 2):
         await _sleep_for(pinned_model)
-        result = await asyncio.to_thread(
-            llm.analyze_paper_with_llm_pinned, text, filename, pinned_model
+        result, reason = await asyncio.to_thread(
+            llm.analyze_paper_with_llm_pinned, text, filename, pinned_model, job_id
         )
         outcome = "ok" if result is not None else "error"
-        state.add_job_file_run(job_id, file_id, run_index, pinned_model, outcome, result)
+        state.add_job_file_run(job_id, file_id, run_index, pinned_model, outcome, result, reason=reason)
         state.log_usage(pinned_model, job_id, file_id, outcome)
+        if outcome == "ok":
+            state.append_job_event(
+                job_id,
+                "info",
+                "runDone",
+                filename=filename,
+                model=pinned_model,
+                run=run_index + 1,
+                count=len(result or []),
+            )
+        else:
+            state.append_job_event(
+                job_id,
+                "warn",
+                "runFailed",
+                filename=filename,
+                model=pinned_model,
+                run=run_index + 1,
+                reason=reason or "error",
+            )
         if result:
             runs.append([schema.normalize_result(r) for r in result])
         elif pinned_model in available_models:
@@ -125,11 +146,23 @@ async def _process_one_file(job_id: str, job_file: dict, any_call_made: bool) ->
 
     if not runs:
         state.update_job_file_status(job_id, file_id, "failed", error_reason="no_data")
+        state.append_job_event(job_id, "warn", "fileFailed", filename=filename, reason="no_data")
         return True, any_call_made
 
+    state.append_job_event(job_id, "info", "reconcileStart", filename=filename, run_count=len(runs))
     merged = reconcile.reconcile_runs(runs)
+    flagged_count = sum(1 for r in merged if r.get("Reconciliation Log"))
+    state.append_job_event(
+        job_id,
+        "info",
+        "reconcileDone",
+        filename=filename,
+        count=len(merged),
+        flagged=flagged_count,
+    )
     state.add_job_records(job_id, file_id, merged)
     state.update_job_file_status(job_id, file_id, "done", model_used=pinned_model)
+    state.append_job_event(job_id, "info", "fileDone", filename=filename, count=len(merged))
     return True, any_call_made
 
 
@@ -145,7 +178,12 @@ async def run_job(job_id: str) -> None:
                 logger.warning("Job %s not found.", job_id)
                 break
 
-            state.set_available_models(job_id, llm.build_available_models(job["model_choice"]))
+            state.set_available_models(
+                job_id,
+                llm.build_available_models(job["model_choice"], file_count=job["total_files"]),
+            )
+            if job.get("notice"):
+                state.append_job_event(job_id, "info", "noticeCleared")
             state.set_job_notice(job_id, None)
 
             deferred_reasons: list[str] = []
@@ -179,12 +217,21 @@ async def run_job(job_id: str) -> None:
                     "retry_at": retry_at,
                 },
             )
+            state.append_job_event(
+                job_id, "warn", "noticeStarted", count=len(still_pending), seconds=backoff
+            )
             await asyncio.sleep(backoff)
             attempt += 1
 
         for job_file in state.list_job_files(job_id, status="pending"):
             state.update_job_file_status(job_id, job_file["id"], "failed", error_reason="quota")
+            state.append_job_event(
+                job_id, "warn", "fileFailed", filename=job_file["filename"], reason="quota"
+            )
 
+        job = state.get_job(job_id)
+        if job and job.get("notice"):
+            state.append_job_event(job_id, "info", "noticeCleared")
         state.set_job_notice(job_id, None)
         state.set_job_status(job_id, "done")
     except Exception as e:
