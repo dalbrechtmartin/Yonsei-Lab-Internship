@@ -282,6 +282,18 @@ export interface SensingMediumFormula {
   medium: "gas" | "liquid";
 }
 
+// One turn in a Photon conversation, in the shape the backend's multi-turn
+// chat endpoint expects for `history` -- "model" (not "assistant") because
+// the backend builds its turns as a Gemini `contents` list, which names the
+// non-user role "model" (see chatWithPhoton below; the composable that owns
+// the actual running conversation, composables/usePhotonContext.ts, defines
+// its own identical PhotonMessage type rather than importing this one, to
+// keep this lower-level service file from depending on a composable).
+export interface PhotonChatTurn {
+  role: "user" | "model";
+  content: string;
+}
+
 export class QuotaExceededError extends Error {}
 
 // Thrown when the uploaded workbook has more than one sheet -- the backend
@@ -771,5 +783,42 @@ export const apiService = {
       pageHeight: r.page_height,
       matches: r.matches ?? [],
     }));
+  },
+
+  /**
+   * Sends one message to the Photon assistant, scoped to a single record
+   * under review (job/file/recordIndex) -- the backend builds its system
+   * prompt from that record's own fields (values, Evidence, Notes,
+   * Definition) plus the current PDF page's already-extracted text, so
+   * Photon can explain why a value matters, how it was found/calculated, or
+   * a passage of the paper, without a new text-selection layer. There's no
+   * server-side conversation state: `history` is every prior turn of THIS
+   * conversation, resent in full on each call, with the caller (see
+   * composables/usePhotonContext.ts) the one that owns and grows it -- this
+   * method itself is stateless from one call to the next. Throws with the
+   * backend's own message when available (e.g. a quota hit) rather than a
+   * generic one, same reasoning as recomputeField above.
+   */
+  async chatWithPhoton(
+    jobId: string,
+    fileId: string,
+    recordIndex: number,
+    message: string,
+    history: PhotonChatTurn[],
+  ): Promise<{ reply: string }> {
+    const response = await fetch(
+      `${API_URL}jobs/${jobId}/files/${fileId}/records/${recordIndex}/chat`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message, history }),
+      },
+    );
+    if (!response.ok) {
+      const body = await response.json().catch(() => null);
+      throw new Error(body?.detail || "Server error while asking Photon.");
+    }
+    const body = await response.json();
+    return { reply: body.reply };
   },
 };

@@ -123,6 +123,7 @@
     <div class="hidden w-px shrink-0 bg-secondary/10 lg:block" />
 
     <div
+      ref="pdfViewerWrapperEl"
       class="flex min-h-105 flex-[1.3] flex-col p-5 sm:p-7 lg:min-h-0 lg:min-w-120"
     >
       <ExtractionPdfViewer
@@ -161,6 +162,10 @@ import {
   parseEvidenceSources,
   type EvidenceSource,
 } from "@/utils/parseLocation";
+import {
+  providePhotonContext,
+  provideShowEvidenceHandler,
+} from "@/composables/usePhotonContext";
 import ExtractionReviewTabs from "@/components/extraction/ExtractionReviewTabs.vue";
 import ExtractionReviewTable from "@/components/extraction/ExtractionReviewTable.vue";
 import ExtractionReviewDetail from "@/components/extraction/ExtractionReviewDetail.vue";
@@ -240,6 +245,17 @@ function handleSelectSource(source: EvidenceSource, focusValue?: string | null) 
   activeSource.value = source;
   activeFocusValue.value = focusValue ?? null;
 }
+
+// Only Photon's "show me the proof" chip needs this (see the
+// provideShowEvidenceHandler callback below) -- every other way of picking a
+// source (a "Source N" pill, a per-field source icon, the Provenance list's
+// own Location link) already happens with the PDF viewer already in the
+// reader's line of sight, since the reviewer just clicked something inside
+// this same column. Below this view's own `lg` breakpoint the viewer sits
+// stacked below the detail card in a shared scroll region, so without this
+// the jump was invisible -- ExtractionPdfViewer's own scrollToBoxIndex only
+// scrolls *inside* its own container, never the page around it.
+const pdfViewerWrapperEl = ref<HTMLElement | null>(null);
 watch(
   () => (props.cursor ? recordKey(props.cursor) : null),
   () => {
@@ -341,6 +357,51 @@ const activeSourceIndex = computed(() => {
     (s) => s.quote === activeSource.value!.quote && s.location === activeSource.value!.location,
   );
   return idx === -1 ? 0 : idx;
+});
+
+// Scopes Photon's conversation to whichever record is under review here --
+// this is the only view that currently owns a review "cursor", so it's the
+// only caller of provide*. usePhotonContext.ts's providePhotonContext takes
+// a getter (not a plain context snapshot) so a stale closure can never be
+// read after the cursor moves on; we still re-register a fresh getter on
+// EVERY change (not just gated by recordKey) since providePhotonContext
+// itself already no-ops the conversation reset when the effective
+// job/file/record identity hasn't actually changed.
+watch(
+  () => props.cursor,
+  (cursor) => {
+    providePhotonContext(
+      cursor
+        ? () => ({
+            jobId: props.jobId,
+            fileId: cursor.fileId,
+            recordIndex: cursor.index,
+            record: cursor,
+          })
+        : null,
+    );
+    provideShowEvidenceHandler(
+      cursor
+        ? (sourceIndex) => {
+            // Same "jump to source" behavior the Provenance list's own
+            // Location link already triggers -- reuse handleSelectSource
+            // rather than re-deriving viewer state here.
+            const source = sources.value[sourceIndex ?? 0];
+            if (source) handleSelectSource(source);
+            // See pdfViewerWrapperEl's own comment -- brings the viewer into
+            // view on layouts where it isn't already. `nextTick`-free: a
+            // scroll triggered from an event handler doesn't need to wait
+            // for anything to (re)render first, unlike the highlight itself.
+            pdfViewerWrapperEl.value?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          }
+        : null,
+    );
+  },
+  { immediate: true },
+);
+onUnmounted(() => {
+  providePhotonContext(null);
+  provideShowEvidenceHandler(null);
 });
 
 const cursorPosition = computed(() => {

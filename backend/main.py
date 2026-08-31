@@ -115,6 +115,24 @@ def _apply_page_labels_to_location(location: str | None, labels: list[str | None
     return _PAGE_TOKEN_RE.sub(_sub, location)
 
 
+def _first_location_page(location: str | None) -> int | None:
+    """The physical page number of a record's OWN citation -- for Photon's
+    chat endpoint below, which grounds extra context on the page that
+    citation is on rather than the whole paper. Reuses _PAGE_TOKEN_RE, the
+    same "Page N" convention _apply_page_labels_to_location parses above.
+
+    A Location with several ";"-separated entries (multiple Evidence
+    fragments, possibly from different pages) only ever yields the FIRST
+    entry's page -- an MVP simplification; disambiguating which fragment a
+    given chat question is actually about isn't attempted.
+    """
+    if not location:
+        return None
+    first_entry = location.split(";")[0]
+    match = _PAGE_TOKEN_RE.search(first_entry)
+    return int(match.group(1)) if match else None
+
+
 def _build_xlsx_response(job: dict) -> StreamingResponse:
     records: list[dict] = []
     for job_file in state.list_job_files(job["id"]):
@@ -759,6 +777,67 @@ async def restore_recompute_fields(
     except (KeyError, IndexError) as e:
         raise HTTPException(status_code=404, detail="File or record not found.") from e
     return {"record": {**record, "index": record_index}}
+
+
+class PhotonChatMessage(BaseModel):
+    role: str
+    content: str
+
+
+class PhotonChatRequest(BaseModel):
+    message: str
+    history: list[PhotonChatMessage] = []
+
+
+@app.post("/jobs/{job_id}/files/{file_id}/records/{record_index}/chat")
+async def chat_with_photon(job_id: str, file_id: str, record_index: int, body: PhotonChatRequest):
+    """Photon: a chat assistant grounded on the ONE extraction record a
+    reviewer currently has open -- for a quick "why does this metric
+    matter" or "where did this number come from" without leaving the
+    review screen to go re-read the whole paper by hand.
+
+    Grounds every answer in the record's own fields (see
+    llm._format_record_context) plus, when the record's own Location
+    resolves to a real page, the raw text of the PDF page its own citation
+    is on (see _first_location_page) -- never the whole paper, and never a
+    live look at its figures (see prompts/photon_system.txt's NO VISUAL
+    ACCESS rule). A page that can't be resolved or read is not fatal to the
+    request: Photon still works fine grounded on the record's own fields
+    alone, so `page_text` just comes back None in that case.
+
+    Always uses llm.domain_check_model() (the cheap/highest-RPD tier),
+    same reasoning as check_domain_relevance -- a chat aside must never
+    compete with the real extraction pipeline for the tight default-chain
+    quota. Any failure calling the model is surfaced as a 502 rather than
+    a generic 500, since "the model didn't answer this time" is a normal,
+    user-facing outcome here, not a bug to page anyone about.
+    """
+    job_file = _job_file_or_404(job_id, file_id)
+    records = job_file.get("records") or []
+    if not 0 <= record_index < len(records):
+        raise HTTPException(status_code=404, detail="Record not found.")
+    record = records[record_index]
+
+    page_number = _first_location_page(record.get("Location"))
+
+    def _load_page_text() -> str | None:
+        if page_number is None:
+            return None
+        with fitz.open(job_file["pdf_path"]) as doc:
+            if page_number < 1 or page_number > doc.page_count:
+                return None
+            return doc[page_number - 1].get_text("text")
+
+    page_text = await asyncio.to_thread(_load_page_text)
+
+    try:
+        reply = llm.chat_about_record(
+            record, page_text, body.message, [m.model_dump() for m in body.history]
+        )
+    except Exception as e:
+        raise HTTPException(status_code=502, detail="Photon couldn't answer right now.") from e
+
+    return {"reply": reply}
 
 
 @app.get("/usage")

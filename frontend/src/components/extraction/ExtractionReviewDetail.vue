@@ -198,6 +198,7 @@
           editable
           :note="fieldNote('spectralRange')"
           :reset-token="resetToken"
+          :options="spectralRangeOptions"
           :show-confirm="canConfirmFields"
           :confirmed="isConfirmed('spectralRange')"
           @save="(v) => saveField('spectralRange', v)"
@@ -730,7 +731,6 @@ import {
   type ReconciliationNote,
 } from "@/utils/parseReconciliationLog";
 import { recordKey } from "@/composables/useExtractionRecords";
-import { useAccordionPanel } from "@/composables/useAccordionPanel";
 
 const props = defineProps<{
   record: ExtractionRecord | null;
@@ -740,11 +740,17 @@ const props = defineProps<{
    * real job behind it -- every suggestion list just degrades to whatever
    * canonical/hardcoded values exist on their own (see materialClassOptions). */
   allRecords?: ExtractionRecord[];
-  /** Used by the guide's static worked example: opens only the Provenance
-   * section by default (identification/measurements/materials collapsed)
-   * so the printed page shows the interesting "why is this flagged" part
-   * without needing the full card's height. The live review screen never
-   * sets this -- a real reviewer gets Measurements open by default. */
+  /** Used by the guide's static worked example: starts with only the
+   * Provenance section open (identification/measurements/materials
+   * collapsed) so the printed page shows the interesting "why is this
+   * flagged" part without needing the full card's height. The live review
+   * screen never sets this -- a real reviewer gets every section open, so
+   * every field's edit affordance is reachable without first having to
+   * discover which section it lives in (a fully collapsed section's fields
+   * are still in the DOM, just visually clipped, so clicking where an
+   * invisible field's pencil "should" be silently does nothing -- this is
+   * exactly what a real reviewer hit before this prop's default changed:
+   * everything outside "Mesures" looked entirely unresponsive). */
   compact?: boolean;
   /** One entry per physical page of the record's own file (see
    * useExtractionRecords.getPageLabels) -- annotates the displayed Location
@@ -811,17 +817,18 @@ function saveField(key: keyof EditableRecordFields, value: string | number | nul
 // a different record entirely.
 const resetToken = computed(() => (props.record ? recordKey(props.record) : null));
 
-// Only one of Identification/Measurements/Materials/Provenance stays open
-// at a time -- same accordion pattern as VisualizationView's right-side
-// panels (see composables/useAccordionPanel.ts), so this card never grows
-// tall enough to force a long scroll.
-const { panel } = useAccordionPanel<
-  "identification" | "measurements" | "materials" | "provenance"
->(props.compact ? "provenance" : "measurements");
-const identificationOpen = panel("identification");
-const measurementsOpen = panel("measurements");
-const materialsOpen = panel("materials");
-const provenanceOpen = panel("provenance");
+// Every section starts open on a real review screen -- see `compact`'s own
+// doc comment above for why this must NOT be an exclusive accordion (a
+// collapsed section's fields are unreachable, not just visually tucked
+// away). Independent per-section state (not the exclusive
+// useAccordionPanel.ts pattern VisualizationView's own side panels use) so
+// opening one never silently closes another. Only the guide's static
+// example (`compact`) starts with anything collapsed, to keep its printed
+// page short.
+const identificationOpen = ref(!props.compact);
+const measurementsOpen = ref(!props.compact);
+const materialsOpen = ref(!props.compact);
+const provenanceOpen = ref(true);
 
 const sources = computed(() =>
   parseEvidenceSources(
@@ -841,6 +848,21 @@ const sensingMediumOptions = computed(() =>
     new Set(
       (props.allRecords ?? [])
         .map((r) => r.sensingMedium)
+        .filter((v): v is string => !!v),
+    ),
+  ).sort(),
+);
+
+// Same reasoning as sensingMediumOptions -- Spectral Range is free text too
+// (prompts/extraction.txt gives it no fixed vocabulary, papers phrase it as
+// anything from "Visible" to "800-1000 nm" to "Near-infrared"), so
+// suggestions come only from what this job's own other records already
+// used, not a hardcoded list.
+const spectralRangeOptions = computed(() =>
+  Array.from(
+    new Set(
+      (props.allRecords ?? [])
+        .map((r) => r.spectralRange)
         .filter((v): v is string => !!v),
     ),
   ).sort(),

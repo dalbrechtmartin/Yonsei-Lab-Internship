@@ -1430,5 +1430,42 @@
       "pointSizeBy": "La mesure qui détermine la taille des points quand « Taille selon une mesure » est activé.",
       "pointSize": "Taille des points : maximale en mode « selon une mesure », unique en mode fixe."
     }
+  },
+  "photon": {
+    "panel": {
+      "title": "Photon",
+      "closeAria": "Fermer Photon",
+      "emptyHint": "Choisissez une suggestion ci-dessous ou posez une question sur ce record.",
+      "placeholder": "Posez une question sur ce record",
+      "sendAria": "Envoyer",
+      "errorGeneric": "Photon n'a pas pu répondre. Réessayez."
+    },
+    "chips": {
+      "ariaLabel": "Questions suggérées",
+      "whyExcluded": {
+        "label": "Pourquoi exclu ?",
+        "prompt": "Pourquoi ce record est-il exclu ?"
+      },
+      "explainConversion": {
+        "label": "Explique la conversion",
+        "prompt": "Explique la conversion appliquée à ce record."
+      },
+      "showEvidence": {
+        "label": "Montre-moi la preuve"
+      },
+      "whyMatters": {
+        "label": "Pourquoi cette métrique compte",
+        "prompt": "Pourquoi cette métrique est-elle importante, et comment a-t-elle été calculée ?"
+      }
+    },
+    "messages": {
+      "empty": "Bonjour, je suis Photon. Posez une question sur ce record.",
+      "thinking": "Photon réfléchit",
+      "failed": "Photon n'a pas pu répondre.",
+      "retry": "Réessayer"
+    },
+    "fab": {
+      "openAria": "Ouvrir Photon"
+    }
   }
 }

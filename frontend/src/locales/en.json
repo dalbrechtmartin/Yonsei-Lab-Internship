@@ -1430,5 +1430,42 @@
       "pointSizeBy": "The measurement that drives point size while \"Size by a measurement\" is on.",
       "pointSize": "Point size: the maximum size in \"by measurement\" mode, or the single flat size in constant mode."
     }
+  },
+  "photon": {
+    "panel": {
+      "title": "Photon",
+      "closeAria": "Close Photon",
+      "emptyHint": "Pick a suggestion below or ask a question about this record.",
+      "placeholder": "Ask a question about this record",
+      "sendAria": "Send",
+      "errorGeneric": "Photon couldn't answer. Try again."
+    },
+    "chips": {
+      "ariaLabel": "Suggested questions",
+      "whyExcluded": {
+        "label": "Why excluded?",
+        "prompt": "Why is this record excluded?"
+      },
+      "explainConversion": {
+        "label": "Explain the conversion",
+        "prompt": "Explain the conversion applied to this record."
+      },
+      "showEvidence": {
+        "label": "Show me the evidence"
+      },
+      "whyMatters": {
+        "label": "Why this metric matters",
+        "prompt": "Why does this metric matter, and how was it calculated?"
+      }
+    },
+    "messages": {
+      "empty": "Hi, I'm Photon. Ask a question about this record.",
+      "thinking": "Photon is thinking",
+      "failed": "Photon couldn't answer.",
+      "retry": "Retry"
+    },
+    "fab": {
+      "openAria": "Open Photon"
+    }
   }
 }

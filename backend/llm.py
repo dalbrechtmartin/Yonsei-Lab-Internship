@@ -43,6 +43,14 @@ def _load_prompt(filename: str) -> str:
 PROMPT_TEMPLATE = _load_prompt("extraction.txt")
 VIZ_CONVERSION_PROMPT = _load_prompt("viz_conversion.txt")
 DOMAIN_CHECK_PROMPT = _load_prompt("domain_check.txt")
+PHOTON_SYSTEM_TEMPLATE = _load_prompt("photon_system.txt")
+
+# Last-resort string when the model returns empty text for a Photon chat
+# turn (see chat_about_record) -- not itself localized: this is a backend
+# fallback, and the frontend has no way to know what language a *real*
+# reply would have come back in anyway, so there's no single "right"
+# language to translate this into ahead of time either.
+PHOTON_FALLBACK_REPLY = "I couldn't come up with a good answer to that. Could you rephrase?"
 
 
 def extract_text_from_pdf(file_bytes: bytes) -> str:
@@ -790,3 +798,104 @@ def convert_table_to_viz_schema(columns: list[str], rows: list[dict]) -> list[di
     raise ModelChainExhaustedError(
         "All models in fallback chain failed for viz conversion", reason=last_reason
     )
+
+
+# Fields worth surfacing to Photon (see chat_about_record) -- deliberately a
+# curated subset of schema.COLUMN_ORDER (checked against it below), not
+# every column: pure workflow bookkeeping a reviewer never asked about --
+# "Ref" (the filename tag), "Short Title" (a duplicate of "Title" for UI
+# table width only), "Spectral Range" (mechanically derived FROM "Resonance
+# Wavelength (nm)", never its own fact), "Evidence Field Map" (an internal
+# fragment->field index the review UI uses for click-to-source, not
+# something worth reading as prose), "Reconciliation Log" (multi-run voting
+# bookkeeping), and "Model Used" -- would only add clutter a chat persona
+# has no reason to ever mention. Order here is a human narrative order
+# (title, then mode, then materials, then metrics, then provenance), not
+# COLUMN_ORDER's own storage order.
+_RECORD_CONTEXT_FIELDS = [
+    "Title",
+    "Mode ID",
+    "Mode Description",
+    "Material Class",
+    "Base Materials",
+    "Layer Structure",
+    "Origin",
+    "Domain",
+    "Resonance Wavelength (nm)",
+    "FOM (RIU^-1)",
+    "Definition",
+    "Sensitivity (nm/RIU)",
+    "FWHM (nm)",
+    "Q-factor",
+    "Sensing Medium",
+    "Raw Value",
+    "Conversion Method",
+    "Calculated Fields",
+    "Evidence",
+    "Location",
+    "Review status",
+    "Notes",
+]
+assert set(_RECORD_CONTEXT_FIELDS) <= set(schema.COLUMN_ORDER), "unknown field in _RECORD_CONTEXT_FIELDS"
+
+
+def _format_record_context(record: dict) -> str:
+    """Renders one extraction record -- the same raw COLUMN_ORDER-keyed dict
+    used everywhere else in main.py, e.g. job_file["records"][record_index]
+    in the recompute-field endpoint -- as a plain-text block for
+    PHOTON_SYSTEM_TEMPLATE's {record_context}. Gemini has no other window
+    into this record's data, so this block IS the ground truth
+    chat_about_record grounds every answer in.
+
+    Fields that are None or an empty string are skipped entirely rather
+    than printed as a literal "None"/"" line -- that would otherwise read
+    as the paper explicitly reporting "no value" for a metric, instead of
+    the metric simply never being extracted for this record.
+    """
+    lines = []
+    for field in _RECORD_CONTEXT_FIELDS:
+        value = record.get(field)
+        if value is None or value == "":
+            continue
+        lines.append(f"{field}: {value}")
+    return "\n".join(lines)
+
+
+def chat_about_record(
+    record: dict, page_text: str | None, message: str, history: list[dict]
+) -> str:
+    """One turn of Photon, the record-grounded chat assistant on the review
+    screen (see prompts/photon_system.txt) -- the first multi-turn call in
+    this project, everything else here is single-shot. The record's own
+    fields plus its citation's source page text go in `system_instruction`
+    (grounding/persona, not part of the visible conversation), and
+    `history` -- the prior turns of THIS conversation, each a
+    {"role": "user"|"model", "content": ...} dict -- is replayed as
+    `contents` ahead of the new `message` so Gemini can follow a multi-turn
+    back-and-forth rather than re-answering `message` in isolation each
+    time.
+
+    Always uses domain_check_model() (the cheap/highest-RPD tier), same
+    reasoning as check_domain_relevance: a chat aside must never compete
+    with the real extraction pipeline for the tight default-chain quota.
+    Exceptions are left to propagate -- the caller (main.py's chat endpoint)
+    turns them into a 502, this function does not swallow them itself.
+    """
+    system_instruction = PHOTON_SYSTEM_TEMPLATE.format(
+        record_context=_format_record_context(record), page_text=page_text or ""
+    )
+    contents = [
+        types.Content(role=turn["role"], parts=[types.Part(text=turn["content"])])
+        for turn in history
+    ]
+    contents.append(types.Content(role="user", parts=[types.Part(text=message)]))
+
+    response = client.models.generate_content(
+        model=domain_check_model(),
+        contents=contents,
+        config=types.GenerateContentConfig(
+            system_instruction=system_instruction,
+            temperature=0.4,
+        ),
+    )
+    return (response.text or "").strip() or PHOTON_FALLBACK_REPLY

@@ -1430,5 +1430,42 @@
       "pointSizeBy": "\"측정값에 따라 크기 지정\"이 켜져 있을 때 점 크기를 결정하는 측정값입니다.",
       "pointSize": "점 크기: \"측정값에 따라\" 모드에서는 최대 크기, 고정 모드에서는 단일 크기입니다."
     }
+  },
+  "photon": {
+    "panel": {
+      "title": "Photon",
+      "closeAria": "Photon 닫기",
+      "emptyHint": "아래 제안을 선택하거나 이 레코드에 대해 질문하세요.",
+      "placeholder": "이 레코드에 대해 질문하세요",
+      "sendAria": "보내기",
+      "errorGeneric": "Photon이 답변하지 못했습니다. 다시 시도하세요."
+    },
+    "chips": {
+      "ariaLabel": "추천 질문",
+      "whyExcluded": {
+        "label": "왜 제외되었나요?",
+        "prompt": "이 레코드는 왜 제외되었나요?"
+      },
+      "explainConversion": {
+        "label": "변환 설명",
+        "prompt": "이 레코드에 적용된 변환을 설명해 주세요."
+      },
+      "showEvidence": {
+        "label": "근거 보여주기"
+      },
+      "whyMatters": {
+        "label": "이 지표가 중요한 이유",
+        "prompt": "이 지표는 왜 중요하며 어떻게 계산되었나요?"
+      }
+    },
+    "messages": {
+      "empty": "안녕하세요, Photon입니다. 이 레코드에 대해 질문하세요.",
+      "thinking": "Photon이 생각하는 중",
+      "failed": "Photon이 답변하지 못했습니다.",
+      "retry": "다시 시도"
+    },
+    "fab": {
+      "openAria": "Photon 열기"
+    }
   }
 }

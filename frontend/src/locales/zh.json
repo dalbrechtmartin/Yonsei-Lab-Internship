@@ -1430,5 +1430,42 @@
       "pointSizeBy": "「按测量值设置大小」开启时，决定点大小的测量值。",
       "pointSize": "点的大小：「按测量值」模式下为最大尺寸，固定模式下为统一尺寸。"
     }
+  },
+  "photon": {
+    "panel": {
+      "title": "Photon",
+      "closeAria": "关闭 Photon",
+      "emptyHint": "选择下方建议，或就此记录提问。",
+      "placeholder": "就此记录提问",
+      "sendAria": "发送",
+      "errorGeneric": "Photon 未能回答，请重试。"
+    },
+    "chips": {
+      "ariaLabel": "建议问题",
+      "whyExcluded": {
+        "label": "为何被排除？",
+        "prompt": "此记录为何被排除？"
+      },
+      "explainConversion": {
+        "label": "解释转换",
+        "prompt": "请解释应用于此记录的转换。"
+      },
+      "showEvidence": {
+        "label": "显示证据"
+      },
+      "whyMatters": {
+        "label": "为何此指标重要",
+        "prompt": "此指标为何重要，又是如何计算的？"
+      }
+    },
+    "messages": {
+      "empty": "你好，我是 Photon。就此记录提问吧。",
+      "thinking": "Photon 正在思考",
+      "failed": "Photon 未能回答。",
+      "retry": "重试"
+    },
+    "fab": {
+      "openAria": "打开 Photon"
+    }
   }
 }

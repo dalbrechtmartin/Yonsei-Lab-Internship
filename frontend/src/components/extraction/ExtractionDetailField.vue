@@ -258,7 +258,14 @@ function cancel() {
 }
 
 function commit() {
-  const raw = draft.value.trim();
+  // draft is declared/typed as a plain string, but Vue's own v-model runtime
+  // auto-casts a native <input type="number"> to an actual number on every
+  // keystroke regardless of the `.number` modifier -- so for a numeric
+  // field, draft.value is a number by the time this runs, and calling
+  // .trim() straight on it throws (TypeError, uncaught, right here at the
+  // top of commit -- so neither `editing.value = false` nor the `save` emit
+  // below ever ran: the input looked permanently stuck open with no save).
+  const raw = String(draft.value).trim();
   const value = raw === "" ? null : props.type === "number" ? Number(raw) : raw;
   editing.value = false;
   emit("save", value);
