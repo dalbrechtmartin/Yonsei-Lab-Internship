@@ -372,7 +372,7 @@ const { t, locale } = useI18n();
 // Kept as a plain constant (rather than importing package.json, which sits
 // outside the tsconfig `src` root) -- release-please rewrites this line, see
 // x-release-please-version below.
-const appVersion = "1.2.0"; // x-release-please-version
+const appVersion = "1.3.0"; // x-release-please-version
 const rootEl = useTemplateRef<HTMLDivElement>("rootEl");
 
 // Fixed page numbers -- referenced both in each page's own footer and by
