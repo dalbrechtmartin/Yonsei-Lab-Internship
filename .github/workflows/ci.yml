@@ -12,6 +12,12 @@ jobs:
     defaults:
       run:
         working-directory: backend
+    env:
+      # llm.py raises at import time if this is unset (a deliberate fail-fast
+      # check for real deployments) -- every test that imports it (directly,
+      # or via a module that imports it) mocks the actual Gemini calls, so
+      # this only needs to be a non-empty placeholder, never a real key.
+      GEMINI_API_KEY: ci-placeholder-key
     steps:
       - uses: actions/checkout@v7
 
