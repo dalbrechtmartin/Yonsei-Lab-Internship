@@ -5,7 +5,14 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from fom_relations import FIELD_FOM, FIELD_FWHM, FIELD_SENSITIVITY, describe, is_recognized_definition, solve
+from fom_relations import (
+    FIELD_FOM,
+    FIELD_FWHM,
+    FIELD_SENSITIVITY,
+    describe,
+    is_recognized_definition,
+    solve,
+)
 
 
 class TestIsRecognizedDefinition:

@@ -541,7 +541,7 @@ async def get_evidence_matches(
             page = doc[page_number - 1]
             matches_by_query = []
             focus_by_query = []
-            for query, focus_text in zip(q, focus_list):
+            for query, focus_text in zip(q, focus_list, strict=True):
                 quote_rects = _find_evidence_rects(page, query)
                 matches_by_query.append([[r.x0, r.y0, r.x1, r.y1] for r in quote_rects])
                 focus_rects = (
