@@ -51,14 +51,14 @@
                 <Combobox
                   :model-value="layer.material"
                   :options="materialOptions"
-                  :allow-create="false"
+                  :allow-create="allowCreateMaterial"
                   :placeholder="
                     t('fomcharts.addPoint.layerMaterialPlaceholder')
                   "
                   :create-label="t('fomcharts.addPoint.addNew')"
                   :empty-label="t('fomcharts.addPoint.noMatches')"
                   @update:model-value="
-                    (v) => updateLayer(index, { material: v })
+                    (v) => handleMaterialChange(index, v)
                   "
                 />
               </div>
@@ -173,9 +173,39 @@ import type { StructureLayer } from "@/utils/layerStructure";
  * Combobox is closed (no "add new") -- a layer can't be made of a material
  * this point didn't already declare as one of its Base Materials.
  */
-const props = defineProps<{ materialOptions: string[] }>();
+const props = withDefaults(
+  defineProps<{
+    materialOptions: string[];
+    /** Lets a layer's material be a value NOT in `materialOptions` -- off by
+     * default (AddPointDialog's Visualization flow, where a layer can only
+     * be built from this point's own already-declared Base Materials).
+     * Extraction review turns this on so a reviewer can add a material the
+     * AI never detected, since its own classification isn't infallible. */
+    allowCreateMaterial?: boolean;
+  }>(),
+  { allowCreateMaterial: false },
+);
+
+const emit = defineEmits<{
+  /** A genuinely new material name (case-insensitively absent from
+   * `materialOptions`) was typed in, when allowCreateMaterial is on --
+   * the parent decides what to do with it (e.g. add it to Base Materials so
+   * it isn't left "unplaced", see ExtractionReviewDetail). */
+  "material-created": [name: string];
+}>();
 
 const modelValue = defineModel<StructureLayer[]>({ default: () => [] });
+
+function handleMaterialChange(index: number, value: string) {
+  if (
+    props.allowCreateMaterial &&
+    value &&
+    !props.materialOptions.some((m) => m.toLowerCase() === value.toLowerCase())
+  ) {
+    emit("material-created", value);
+  }
+  updateLayer(index, { material: value });
+}
 
 const { t } = useI18n();
 

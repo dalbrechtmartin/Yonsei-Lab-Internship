@@ -26,11 +26,11 @@
       <div class="flex min-w-0 flex-1 flex-col gap-1.5">
         <div ref="reviewTableWrap" class="guide-callout-region flex flex-col gap-1.5">
           <ExtractionReviewTabs model-value="all" :counts="reviewCounts" />
-          <ExtractionReviewTable :records="extractionRecords" :selected-index="selectedIndex" />
+          <ExtractionReviewTable :records="extractionRecords" :selected-index="selectedIndex" :sort-by-ref="null" />
         </div>
 
         <div ref="reviewCalloutWrap" class="guide-callout-region">
-          <ExtractionReviewCallout :record="flaggedRecord" />
+          <ExtractionReviewDetail :record="flaggedRecord" compact />
         </div>
 
         <div ref="reviewActionsWrap" class="guide-callout-region">
@@ -128,7 +128,7 @@ import { Button } from "@/components/ui/button";
 import ExtractionStepper from "@/components/extraction/ExtractionStepper.vue";
 import ExtractionReviewTabs from "@/components/extraction/ExtractionReviewTabs.vue";
 import ExtractionReviewTable from "@/components/extraction/ExtractionReviewTable.vue";
-import ExtractionReviewCallout from "@/components/extraction/ExtractionReviewCallout.vue";
+import ExtractionReviewDetail from "@/components/extraction/ExtractionReviewDetail.vue";
 import ExtractionReviewActions from "@/components/extraction/ExtractionReviewActions.vue";
 import { parseEvidenceSources } from "@/utils/parseLocation";
 import GuideHeader from "./GuideHeader.vue";
@@ -154,7 +154,12 @@ const { t } = useI18n();
 
 const selectedIndex = `${flaggedRecord.fileId}:${flaggedRecord.index}`;
 const firstSource = computed(
-  () => parseEvidenceSources(flaggedRecord.evidence, flaggedRecord.location)[0],
+  () =>
+    parseEvidenceSources(
+      flaggedRecord.evidence,
+      flaggedRecord.location,
+      flaggedRecord.evidenceFieldMap,
+    )[0],
 );
 
 const reviewWrap = useTemplateRef<HTMLDivElement>("reviewWrap");

@@ -95,7 +95,7 @@ function onDrop(event: DragEvent) {
 const pagesLabel = computed(() => {
   if (props.loading) return "…";
   if (props.pageCount == null) return "—";
-  return t("extraction.drop.pages", { count: props.pageCount });
+  return t("extraction.drop.pages", { count: props.pageCount }, { plural: props.pageCount });
 });
 
 const etaLabel = computed(() => {

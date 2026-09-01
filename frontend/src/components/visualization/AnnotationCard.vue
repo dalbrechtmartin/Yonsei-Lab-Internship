@@ -98,9 +98,11 @@
               size="icon-xs"
               class="shrink-0 text-primary hover:bg-primary/8 hover:text-primary/80"
               :aria-label="
-                t('fomcharts.annotations.pinSiblings', {
-                  count: siblings.length,
-                })
+                t(
+                  'fomcharts.annotations.pinSiblings',
+                  { count: siblings.length },
+                  { plural: siblings.length },
+                )
               "
               @click="$emit('pin-siblings', siblings)"
             >
@@ -108,7 +110,11 @@
             </Button>
           </TooltipTrigger>
           <TooltipContent>{{
-            t("fomcharts.annotations.pinSiblings", { count: siblings.length })
+            t(
+              "fomcharts.annotations.pinSiblings",
+              { count: siblings.length },
+              { plural: siblings.length },
+            )
           }}</TooltipContent>
         </Tooltip>
       </div>

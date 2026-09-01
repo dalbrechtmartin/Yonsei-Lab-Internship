@@ -41,13 +41,23 @@
           v-model:active-filter="activeFilter"
           :job-id="jobStatus.jobId"
           :records="filteredRecords"
+          :all-records="records"
           :cursor="cursor"
           :counts="counts"
           :loading="recordsLoading"
+          :sort-by-ref="sortByRef"
           :get-page-count="getPageCount"
+          :get-page-labels="getPageLabels"
+          :recompute-can-undo="!!recomputeUndo"
+          :recompute-can-redo="!!recomputeRedo"
+          @toggle-sort-by-ref="toggleSortByRef"
           @select-record="selectRecord"
           @validate="handleValidate"
           @correct="handleCorrect"
+          @record-updated="replaceRecord"
+          @recompute-applied="commitRecompute"
+          @undo-recompute="handleUndoRecompute"
+          @redo-recompute="handleRedoRecompute"
           @exclude="handleExclude"
           @previous="previousRecord"
           @next="nextRecord"
@@ -72,15 +82,6 @@
         :warning-count="warningCount"
         @continue="handleSummaryContinue"
       />
-
-      <StatusToast
-        :status-key="statusKey"
-        :status-class="statusClass"
-        :fade-style="statusStyle"
-        :duration-ms="ringDurationMs"
-        :token="statusToken"
-        @dismiss="dismissStatus"
-      />
     </div>
   </main>
 </template>
@@ -90,7 +91,6 @@ import { onMounted, onUnmounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { Card } from "@/components/ui/card";
 import ToolActionsBar from "@/components/layout/ToolActionsBar.vue";
-import StatusToast from "@/components/shared/StatusToast.vue";
 import ExtractionStepper from "@/components/extraction/ExtractionStepper.vue";
 import ExtractionDropStep from "@/components/extraction/ExtractionDropStep.vue";
 import ExtractionRunningStep from "@/components/extraction/ExtractionRunningStep.vue";
@@ -102,12 +102,11 @@ import {
   type EditableRecordFields,
   type ModelChoice,
 } from "@/services/api";
-import { useTransientStatus } from "@/composables/useTransientStatus";
+import { useToastQueue } from "@/composables/useToastQueue";
 import { useExtractionJob } from "@/composables/useExtractionJob";
 import { useExtractionEventLog } from "@/composables/useExtractionEventLog";
 import { useExtractionRecords } from "@/composables/useExtractionRecords";
 
-const STATUS_VISIBLE_MS = 15000;
 const ERROR_STATUS_CLASS = "border-rose-500/20 bg-rose-500/12 text-rose-950";
 
 const { t } = useI18n();
@@ -119,16 +118,7 @@ const STEPS = [
   { key: "export", labelKey: "extraction.stepper.exporter" },
 ];
 
-const {
-  statusKey,
-  statusClass,
-  statusStyle,
-  statusToken,
-  ringDurationMs,
-  setTransientStatus,
-  dismissStatus,
-  clearStatus,
-} = useTransientStatus(STATUS_VISIBLE_MS);
+const { setTransientStatus, clearStatus } = useToastQueue();
 
 const currentStep = ref(1);
 const furthestStep = ref(1);
@@ -165,6 +155,8 @@ const {
   records,
   loading: recordsLoading,
   activeFilter,
+  sortByRef,
+  toggleSortByRef,
   filteredRecords,
   counts,
   cursor,
@@ -173,7 +165,14 @@ const {
   next: nextRecord,
   previous: previousRecord,
   updateReviewStatus,
+  replaceRecord,
   getPageCount,
+  getPageLabels,
+  recomputeUndo,
+  recomputeRedo,
+  commitRecompute,
+  undoRecompute,
+  redoRecompute,
   reset: resetRecords,
 } = useExtractionRecords();
 
@@ -268,6 +267,24 @@ async function handleCorrect(fields: Partial<EditableRecordFields>) {
     await updateReviewStatus(record, "Approve (Manual)", fields);
   } catch (error) {
     console.error("Failed to save correction:", error);
+    setTransientStatus("extraction.error", ERROR_STATUS_CLASS);
+  }
+}
+
+async function handleUndoRecompute() {
+  try {
+    await undoRecompute();
+  } catch (error) {
+    console.error("Failed to undo recompute:", error);
+    setTransientStatus("extraction.error", ERROR_STATUS_CLASS);
+  }
+}
+
+async function handleRedoRecompute() {
+  try {
+    await redoRecompute();
+  } catch (error) {
+    console.error("Failed to redo recompute:", error);
     setTransientStatus("extraction.error", ERROR_STATUS_CLASS);
   }
 }

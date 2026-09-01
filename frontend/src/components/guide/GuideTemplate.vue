@@ -1017,7 +1017,7 @@ async function captureGuideArtifacts() {
         r3Card,
         "button",
         "aria-label",
-        t("fomcharts.annotations.pinSiblings", { count: 1 }),
+        t("fomcharts.annotations.pinSiblings", { count: 1 }, { plural: 1 }),
       );
       push(annotationMarks, siblingsBtn ? markRect(c, siblingsBtn, 4) : null);
       const layerBox = findByText(
@@ -1216,7 +1216,11 @@ async function captureGuideArtifacts() {
     const chart = addPoint3ChartRef;
     const badgesEl = chart.getBadgesRow();
     const manualBadge = badgesEl
-      ? findByText(badgesEl, "span", t("fomcharts.manualCount", { count: 1 }))
+      ? findByText(
+          badgesEl,
+          "span",
+          t("fomcharts.manualCount", { count: 1 }, { plural: 1 }),
+        )
       : null;
     push(addPoint3Marks, manualBadge ? markRect(c, manualBadge, 4) : null);
     const chartDom = chart.getChartDom();
@@ -1339,22 +1343,23 @@ async function captureGuideArtifacts() {
     push(mode2ReviewMarks, pdfWrap ? markRect(c, pdfWrap, 4) : null);
   }
 
-  // Page 22 (Mode 2 -- correct a record): the primary fields grid, the
-  // "More fields" disclosure (opened above, see the openSection call), and
-  // the Save/Cancel row -- ExtractionReviewEditPanel exposes no refs of its
-  // own (it's mounted as-is, not hand-assembled), so these are found the
-  // same way Compare Groups' own detail tile grid is: a plain selector on
-  // its real rendered DOM.
-  const editPanelWrap = pageMode2CorrectRef.value?.editPanelWrap;
-  if (editPanelWrap) {
-    const c = editPanelWrap;
-    const primaryGrid = c.querySelector(".grid.grid-cols-2") as HTMLElement | null;
-    push(mode2CorrectMarks, primaryGrid ? markRect(c, primaryGrid, 4) : null);
-    const moreBtn = findByText(c, "button", t("extraction.review.edit.moreFields"));
-    const moreSection = moreBtn?.parentElement as HTMLElement | null;
-    push(mode2CorrectMarks, moreSection ? markRect(c, moreSection, 4) : null);
-    const saveRow = c.querySelector(".mt-auto.flex") as HTMLElement | null;
-    push(mode2CorrectMarks, saveRow ? markRect(c, saveRow, 4) : null);
+  // Page 22 (Mode 2 -- correct a record): the reason banner and the source
+  // strip -- ExtractionReviewDetail exposes no refs of its own (it's
+  // mounted as-is, not hand-assembled), so these are found the same way
+  // Compare Groups' own detail tile grid is: real translated text already
+  // unique on this page.
+  const detailWrap = pageMode2CorrectRef.value?.detailWrap;
+  if (detailWrap) {
+    const c = detailWrap;
+    const banner = findByText(c, "p", t("extraction.review.detail.status.editHeading"));
+    const bannerRow = banner?.parentElement?.parentElement as HTMLElement | null;
+    push(mode2CorrectMarks, bannerRow ? markRect(c, bannerRow, 4) : null);
+    const sourcesLabel = findByText(c, "span", t("extraction.review.detail.sources.label"));
+    const sourcesRow = sourcesLabel?.parentElement as HTMLElement | null;
+    push(mode2CorrectMarks, sourcesRow ? markRect(c, sourcesRow, 4) : null);
+    const fwhmLabel = findByText(c, "dt", t("extraction.review.edit.fields.fwhmNm"));
+    const fwhmField = fwhmLabel?.parentElement as HTMLElement | null;
+    push(mode2CorrectMarks, fwhmField ? markRect(c, fwhmField, 4) : null);
   }
 
   // Page 23 (Mode 2 -- export): the preview badge + reviewed-by legend

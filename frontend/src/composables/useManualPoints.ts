@@ -3,6 +3,8 @@ import {
   applyRowEdit,
   buildManualPointFields,
   findNotesColumn,
+  findResonanceWavelengthColumn,
+  findSensitivityColumn,
   MANUAL_ROW_FLAG,
   pointShape,
   POINT_SHAPE_FLAG,
@@ -48,6 +50,18 @@ export function useManualPoints(deps: {
       selectedYAxis.value,
       numericColumns.value,
     ),
+  );
+
+  // Resolved independently of manualPointFields -- a field there loses its
+  // labelKey the moment its column is also the chart's current X/Y axis
+  // (see buildManualPointFields), so matching "the wavelength field" by
+  // labelKey would miss that common case. Used by AddPointDialog to tell
+  // UnitConverterPopover's "Insert" button which `values` key to write into.
+  const wavelengthColumn = computed(() =>
+    findResonanceWavelengthColumn(fomColumns.value),
+  );
+  const sensitivityColumn = computed(() =>
+    findSensitivityColumn(fomColumns.value),
   );
 
   let manualPointSeq = 0;
@@ -174,6 +188,8 @@ export function useManualPoints(deps: {
 
   return {
     manualPointFields,
+    wavelengthColumn,
+    sensitivityColumn,
     pulseTargetRef,
     removeCustomPoint,
     handleAddPointSubmit,

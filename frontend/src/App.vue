@@ -13,6 +13,9 @@
       <RouterView />
     </div>
     <AppFooter />
+
+    <ToastStack />
+    <PhotonFab />
   </div>
 </template>
 
@@ -20,4 +23,6 @@
 import { RouterView } from "vue-router";
 import AppNavbar from "./components/layout/AppNavbar.vue";
 import AppFooter from "./components/layout/AppFooter.vue";
+import ToastStack from "./components/shared/ToastStack.vue";
+import PhotonFab from "./components/extraction/PhotonFab.vue";
 </script>

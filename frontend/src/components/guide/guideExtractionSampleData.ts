@@ -54,6 +54,10 @@ export const runningJob: JobStatusResponse = {
     pendingCount: 1,
     retryAt: new Date(now + 38_000).toISOString(),
   },
+  // The guide's journal panel renders the hand-authored runningLogEntries
+  // below directly (it never goes through useExtractionEventLog), so this
+  // only needs to satisfy JobStatusResponse's shape, not carry real events.
+  events: [],
   files: [
     {
       id: "file-1",
@@ -63,6 +67,7 @@ export const runningJob: JobStatusResponse = {
       recordCount: 1,
       errorReason: null,
       startedAt: new Date(now - 6 * 60_000).toISOString(),
+      runs: [],
     },
     {
       id: "file-2",
@@ -72,6 +77,7 @@ export const runningJob: JobStatusResponse = {
       recordCount: 0,
       errorReason: "quota",
       startedAt: null,
+      runs: [],
     },
     {
       id: "file-3",
@@ -81,6 +87,7 @@ export const runningJob: JobStatusResponse = {
       recordCount: 0,
       errorReason: null,
       startedAt: null,
+      runs: [],
     },
   ],
 };
@@ -129,6 +136,7 @@ export const finishedJob: JobStatusResponse = {
   errorMessage: null,
   createdAt: new Date(now - 12 * 60_000).toISOString(),
   notice: null,
+  events: [],
   files: [
     {
       id: "file-1",
@@ -138,6 +146,7 @@ export const finishedJob: JobStatusResponse = {
       recordCount: 1,
       errorReason: null,
       startedAt: new Date(now - 9 * 60_000).toISOString(),
+      runs: [],
     },
     {
       id: "file-2",
@@ -147,6 +156,7 @@ export const finishedJob: JobStatusResponse = {
       recordCount: 2,
       errorReason: null,
       startedAt: new Date(now - 7 * 60_000).toISOString(),
+      runs: [],
     },
     {
       id: "file-3",
@@ -156,6 +166,7 @@ export const finishedJob: JobStatusResponse = {
       recordCount: 1,
       errorReason: null,
       startedAt: new Date(now - 4 * 60_000).toISOString(),
+      runs: [],
     },
   ],
 };
@@ -182,8 +193,13 @@ function record(data: Partial<ExtractionRecord>): ExtractionRecord {
     sensitivityNmPerRiu: null,
     fwhmNm: null,
     qFactor: null,
+    sensingMedium: null,
+    rawValue: null,
+    conversionMethod: null,
+    calculatedFields: null,
     evidence: null,
     location: null,
+    evidenceFieldMap: null,
     reviewStatus: "Approve (AI)",
     notes: null,
     reconciliationLog: null,

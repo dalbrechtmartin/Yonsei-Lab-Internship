@@ -61,6 +61,18 @@
                 : t("fomcharts.addPoint.converter.copy")
             }}
           </button>
+          <button
+            v-if="insertTargetColumn"
+            type="button"
+            class="shrink-0 text-[10.5px] font-medium text-primary hover:underline"
+            @click="insertResult"
+          >
+            {{
+              inserted
+                ? t("fomcharts.addPoint.converter.inserted")
+                : t("fomcharts.addPoint.converter.insert", { field: insertTargetLabel })
+            }}
+          </button>
         </div>
       </div>
     </PopoverContent>
@@ -89,12 +101,32 @@ import {
  * Standalone scratch converter, opened from the Add Point dialog's footer --
  * every measurement field in that form is always edited in its canonical
  * unit now (nm / nm/RIU, see AddPointField, which dropped its old per-field
- * unit toggle), so a paper stating a value in µm or pm gets converted HERE
- * and typed into the field by hand. Deliberately read-only/disconnected from
- * any field: opening it can never silently overwrite whatever the researcher
- * is mid-typing elsewhere in the form.
+ * unit toggle), so a paper stating a value in µm or pm gets converted HERE.
+ * Never writes to a field on its own -- converting/reopening/closing this
+ * popover can't silently overwrite whatever the researcher is mid-typing
+ * elsewhere in the form. "Copy" only ever touches the clipboard; "Insert"
+ * (below) is the one deliberate, explicit action that writes a value, and
+ * only into the ONE field this conversion's target unit actually matches
+ * (wavelength for nm, sensitivity for nm/RIU) -- never a guess at some other
+ * field, and never before the researcher clicks it themselves.
  */
 const { t } = useI18n();
+
+const props = defineProps<{
+  /** This dataset's actual wavelength/sensitivity column keys (see
+   * columnTypes.ts's buildManualPointFields labelKey), so "Insert" can
+   * write into AddPointDialog's `values` under the right key -- null when
+   * the loaded dataset doesn't have that field at all, which hides the
+   * Insert button for conversions targeting it. */
+  wavelengthColumn?: string | null;
+  sensitivityColumn?: string | null;
+}>();
+
+const emit = defineEmits<{
+  /** (column, value) -- see AddPointDialog, which applies this straight to
+   * `values[column]`, the same shape AddPointField itself writes. */
+  insert: [column: string, value: string];
+}>();
 
 const open = defineModel<boolean>("open", { default: false });
 
@@ -141,12 +173,39 @@ const copyResult = () => {
   copiedTimer = setTimeout(() => (copied.value = false), 1500);
 };
 
+// Which field this conversion's target unit matches, if the loaded dataset
+// has one -- "nm" (µm/pm conversions) always means the wavelength field,
+// "nm/RIU" always means the sensitivity field, since those are the only two
+// canonical units this converter ever produces.
+const insertTargetColumn = computed(() =>
+  activeUnit.value.targetLabel === "nm"
+    ? (props.wavelengthColumn ?? null)
+    : (props.sensitivityColumn ?? null),
+);
+const insertTargetLabelKey = computed(() =>
+  activeUnit.value.targetLabel === "nm" ? "resonanceWavelength" : "sensitivity",
+);
+const insertTargetLabel = computed(() =>
+  t(`fomcharts.addPoint.fields.${insertTargetLabelKey.value}`),
+);
+
+const inserted = ref(false);
+let insertedTimer: ReturnType<typeof setTimeout> | null = null;
+const insertResult = () => {
+  if (result.value === null || !insertTargetColumn.value) return;
+  emit("insert", insertTargetColumn.value, result.value);
+  inserted.value = true;
+  if (insertedTimer) clearTimeout(insertedTimer);
+  insertedTimer = setTimeout(() => (inserted.value = false), 1500);
+};
+
 // Fresh every time it's reopened -- this is a scratch calculator, not a
 // field that should remember what was last converted.
 watch(open, (isOpen) => {
   if (isOpen) {
     rawValue.value = "";
     copied.value = false;
+    inserted.value = false;
   }
 });
 </script>

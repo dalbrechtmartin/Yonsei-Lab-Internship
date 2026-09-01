@@ -29,9 +29,17 @@ const forwardedProps = useForwardProps(delegatedProps);
     "
   >
     <span class="flex min-w-0 flex-col gap-0.5">
-      <SelectItemText>
-        <slot />
-      </SelectItemText>
+      <span class="flex items-center gap-1.5">
+        <!-- SelectItemText's rendered content is what Radix/reka-ui mirrors
+             into the closed trigger's SelectValue -- keep it to just the
+             plain label, so a decoration like a "Recommandé" badge (see
+             #suffix below) shows in the dropdown list without also getting
+             echoed into the trigger once that item is the selected value. -->
+        <SelectItemText>
+          <slot />
+        </SelectItemText>
+        <slot name="suffix" />
+      </span>
       <slot name="description" />
     </span>
   </SelectItem>

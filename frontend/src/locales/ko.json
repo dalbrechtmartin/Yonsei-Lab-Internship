@@ -49,7 +49,14 @@
         "title": "데이터 시각화",
         "description": "엑셀 파일을 가져와 데이터를 살펴보고, 비교하고, 내보내세요."
       },
-      "mobileBlocked": "시각화는 모바일에서 사용할 수 없습니다. 더 나은 경험을 위해 PC를 사용하세요."
+      "mobileBlocked": "시각화는 모바일에서 사용할 수 없습니다. 더 나은 경험을 위해 PC를 사용하세요.",
+      "conversionPreview": {
+        "title": "자동 변환 미리보기",
+        "summary": "전체 {rows}행 중 {shown}행을 변환 전후로 표시합니다. 열이 올바르게 맞는지 확인하세요.",
+        "before": "변환 전",
+        "after": "변환 후",
+        "dismiss": "미리보기 닫기"
+      }
     },
     "extraction": {
       "batchExtraction": {
@@ -130,14 +137,14 @@
         "description": "가장 강력한 모델을 먼저 시도하고, 할당량이 소진되면 더 빠른 모델로 전환합니다.",
         "warning": "속도 제한에 따라 배치 중간에 모델이 바뀔 수 있습니다. 내보내기의 \"Model Used\" 열에서 확인하세요."
       },
-      "flash": {
-        "title": "gemini-3.5-flash",
-        "description": "정확도와 속도의 균형이 가장 좋습니다. 대부분의 배치에 권장됩니다."
+      "pinned": {
+        "description": "이 모델을 먼저 시도하고, 할당량이 소진되면 자동으로 다른 모델로 전환합니다."
       },
-      "lite": {
-        "title": "gemini-3.5-flash-lite",
-        "description": "가장 빠르고 저렴하지만, 추론 오류가 더 자주 발생합니다."
-      }
+      "group": {
+        "flash": "Flash",
+        "flashLite": "Flash Lite"
+      },
+      "recommended": "추천"
     },
     "progress": {
       "file": {
@@ -160,21 +167,48 @@
       "journal": {
         "title": "로그",
         "warnings": "경고 {count}건",
-        "empty": "아직 기록이 없습니다."
+        "empty": "아직 기록이 없습니다.",
+        "download": "로그 다운로드"
       }
     },
     "log": {
       "fileProcessing": "{filename}: 처리 중",
       "fileDone": "{filename}: {count}행 추출됨",
-      "fileFailed": "{filename}: 실패",
-      "noticeStarted": "{count}개 파일에서 할당량에 도달해 재시도가 예약되었습니다.",
+      "fileFailed": {
+        "out_of_domain": "{filename}: 대상 주제가 아니라 제외됨",
+        "no_data": "{filename}: 3회 시도 후에도 사용 가능한 데이터 없음, 실패 처리됨",
+        "quota": "{filename}: 자동 재시도를 모두 마쳤지만 계속 막힘, 실패 처리됨",
+        "error": "{filename}: 실패"
+      },
+      "runFailed": {
+        "quota": "{filename}: {model} 요청이 거부되었습니다 (할당량 초과, 429). 자동으로 재시도합니다.",
+        "unavailable": "{filename}: {model} 모델을 일시적으로 사용할 수 없습니다 (503). 자동으로 재시도합니다.",
+        "error": "{filename}: {model} 시도가 실패했습니다. 자동으로 재시도합니다."
+      },
+      "pdfRead": "{filename}: PDF 읽음 ({pages}페이지)",
+      "domainCheckStart": "{filename}: {model}로 주제 확인 중…",
+      "domainCheckOut": "{filename}: 광공진 센싱 주제로 보이지 않음",
+      "extractAttempt": "{filename}: {model}로 시도 중…",
+      "extractRetryQuota": "{filename}: {model} 포화 상태, {seconds}초 후 재시도 (시도 {attempt}/{maxAttempts}, 429)",
+      "extractQuotaDay": "{filename}: {model}의 일일 할당량 도달 (429), 오늘은 제외",
+      "extractGiveUp": "{filename}: {model}이(가) {seconds}초 후에도 계속 사용 불가, 이번 시도에서 포기 (503)",
+      "extractSwitch": {
+        "next": "{filename}: {model} 실패, {nextModel}(으)로 전환",
+        "exhausted": "{filename}: {model} 실패, 지금 시도할 수 있는 모델이 더 이상 없음"
+      },
+      "extractRetired": "{model}을(를) 더 이상 사용할 수 없음 (404), 오늘은 제외",
+      "runDone": "{filename}: {model}로 분석 {run}/3 완료 ({count}행)",
+      "reconcileStart": "{filename}: 분석 {runCount}개 비교 중…",
+      "reconcileDone": "{filename}: {count}행 채택, {flagged}개 확인 필요",
+      "noticeStarted": "{count}개 파일에서 할당량에 도달해 {seconds}초 후 재시도합니다.",
       "noticeCleared": "정상적으로 처리가 재개되었습니다."
     },
     "summary": {
       "heading": "추출 완료",
       "subheading": "검토 화면으로 이동합니다.",
       "stats": {
-        "files": "{files}개 파일 처리 · {records}행",
+        "filesProcessed": "{files}개 파일 처리",
+        "rowsExtracted": "{records}행 추출",
         "warnings": "경고 {count}건"
       },
       "cta": "지금 검토하기"
@@ -190,8 +224,10 @@
         "excluded": "제외됨 · {count}"
       },
       "table": {
+        "sortByRef": "참조로 정렬",
         "columns": {
           "ref": "참조",
+          "modeId": "모드 ID",
           "wavelength": "λ (nm)",
           "fom": "FOM",
           "fwhm": "FWHM",
@@ -204,20 +240,95 @@
         "locationLabel": "위치:",
         "sourceOf": "출처 {current}/{total}"
       },
+      "detail": {
+        "sections": {
+          "identification": "식별 정보",
+          "measurements": "측정값",
+          "materials": "재료",
+          "provenance": "출처 정보"
+        },
+        "fields": {
+          "modelUsed": "사용된 모델"
+        },
+        "sources": {
+          "label": "출처",
+          "single": "출처 보기",
+          "item": "출처 {n}",
+          "hint": "클릭하면 PDF로 이동"
+        },
+        "jumpToSource": "{field}의 출처로 이동",
+        "reconciliation": {
+          "aria": "상세 보기",
+          "disagreement": "AI 실행 결과가 서로 달랐습니다: {values}.",
+          "partialAgreement": "{total}회 중 {agreed}회 AI 실행에서 확인됨.",
+          "fullDisagreement": "AI 실행 결과가 일치하지 않습니다 ({values}). 확인이 필요합니다.",
+          "rowCount": "이 행은 {total}회 중 {count}회 AI 실행에서만 나타났습니다.",
+          "extraRow": "{total}회 중 1회 AI 실행에서만 발견된 추가 행입니다.",
+          "converted": "{rawValue}에서 변환됨 ({method}).",
+          "calculated": "계산된 값이며 본문에서 직접 추출되지 않았습니다: {detail}"
+        },
+        "editField": "{field} 수정",
+        "confirmField": "{field} 확인 완료로 표시",
+        "unconfirmField": "{field} 확인 완료 표시 해제",
+        "rawValue": "원본 값",
+        "conversionMethod": "변환 방법",
+        "calculatedFields": "계산된 값",
+        "saveLayers": "층 저장",
+        "recompute": {
+          "label": "감도 재계산",
+          "formulaPlaceholder": "공식 선택",
+          "gasGroup": "기체",
+          "liquidGroup": "액체",
+          "rawMagnitude": "값 (단위당 nm)",
+          "unitPlaceholder": "단위, 예: %, kPa, mg/mL",
+          "customConstant": "상수",
+          "apply": "적용",
+          "noConversion": "변환하지 않음",
+          "error": "이 공식으로는 이 단위를 변환할 수 없습니다.",
+          "relationGroup": "정의로부터",
+          "relationOption": "FOM과 FWHM으로부터",
+          "fomLabel": "FOM 재계산",
+          "fwhmLabel": "FWHM 재계산",
+          "calculate": "계산",
+          "fomFormula": "FOM = 감도 / FWHM",
+          "fomHint": "감도와 FWHM으로 FOM을 채웁니다. 필요하면 계산 전에 두 값을 수정하세요.",
+          "fwhmFormula": "FWHM = 감도 / FOM",
+          "fwhmHint": "감도와 FOM으로 FWHM을 채웁니다. 필요하면 계산 전에 두 값을 수정하세요.",
+          "relationFormula": "감도 = FOM × FWHM",
+          "sensitivityHint": "논문에 표기된 단위(예: nm/%RH)의 원시 값을 nm/RIU로 변환하거나, FOM과 FWHM으로부터 감도를 계산합니다.",
+          "unitLabel": "단위",
+          "successMessage": "{field} 업데이트됨: {value}"
+        },
+        "definition": {
+          "recognized": "인식된 공식 (FOM = Sensitivity / FWHM)",
+          "custom": "기타 / 사용자 지정"
+        },
+        "tags": {
+          "searchPlaceholder": "검색 또는 값 추가",
+          "addNew": "추가",
+          "noMatches": "일치하는 항목 없음"
+        },
+        "status": {
+          "editHeading": "확인 필요",
+          "excludeHeading": "제외됨",
+          "noReason": "기록된 이유 없음.",
+          "noFieldFlag": "아래에 표시된 특정 필드가 없습니다. 메모를 읽은 후 승인하거나 제외하세요."
+        }
+      },
       "actions": {
         "validate": "승인",
-        "correct": "수정",
         "exclude": "제외",
         "previous": "이전",
         "next": "다음",
+        "undo": "실행 취소",
+        "redo": "다시 실행",
+        "unconfirmedCount": "확인할 필드 {count}개",
         "shortcuts": {
           "validate": "(V)",
           "next": "⏎"
         }
       },
       "edit": {
-        "title": "행 수정",
-        "moreFields": "더 많은 필드",
         "save": "저장",
         "cancel": "취소",
         "fields": {
@@ -238,6 +349,7 @@
           "sensitivityNmPerRiu": "감도 (nm/RIU)",
           "fwhmNm": "FWHM (nm)",
           "qFactor": "Q 인자",
+          "sensingMedium": "감지 매질",
           "notes": "메모"
         }
       },
@@ -247,8 +359,15 @@
       },
       "pdf": {
         "pageOf": "p. {current} / {total}",
+        "printedAs": "(인쇄: {label})",
         "prevPage": "이전 페이지",
         "nextPage": "다음 페이지",
+        "searchToggleAria": "문서에서 검색",
+        "searchPlaceholder": "이 문서에서 검색",
+        "searchCount": "{current} / {total}",
+        "searchPrevAria": "이전 결과",
+        "searchNextAria": "다음 결과",
+        "searchCloseAria": "검색 닫기",
         "zoomOut": "축소",
         "zoomIn": "확대"
       }
@@ -257,7 +376,9 @@
       "preview": "미리보기 · {count}행",
       "reviewedByLegend": "회색 = 제외됨, 기록으로 보관",
       "reviewedByColumn": "검토자",
-      "summaryLine": "{ready}행 준비됨 · {excluded}행 제외 · {confirmed}행 확인됨",
+      "readyCount": "{ready}행 준비됨",
+      "excludedCount": "{excluded}행 제외",
+      "confirmedCount": "{confirmed}행 확인됨",
       "visualizeError": "시각화 화면에 결과를 불러오지 못했습니다."
     },
     "minigame": {
@@ -862,20 +983,20 @@
       },
       "mode2Correct": {
         "title": "표시된 항목 수정하기",
-        "body": "행을 수정하면 검토 표의 \"수정\" 작업으로 편집 양식이 열립니다. 표에 이미 보이는 필드가 먼저 나오고, 나머지는 \"추가 필드\" 뒤에 숨어 있습니다. 이 작업은 위쪽 단계 표시기를 진행시키지 않습니다: 수정은 별도 단계가 아니라 항목 검토하기 단계의 일부이기 때문입니다.",
-        "note": "손으로 수정할 수 있는 필드는 이뿐입니다. Evidence, Location, Review status는 모델이 생성한 그대로 남습니다.",
+        "body": "카드의 모든 필드는 그 자리에서 바로 수정합니다: 연필 아이콘을 클릭하고 값을 고친 뒤 Enter(또는 ✓ 아이콘)로 확정합니다. Esc(또는 ✕)는 취소합니다. 별도로 열어야 할 양식이 없습니다. 이 작업은 위쪽 단계 표시기를 진행시키지 않습니다: 수정은 별도 단계가 아니라 항목 검토하기 단계의 일부이기 때문입니다.",
+        "note": "손으로 수정할 수 있는 필드는 일부뿐입니다. Evidence, Location, Review status, 원본 값, 변환 방법은 모델이 생성한 그대로 남습니다.",
         "marks": {
-          "primary": {
-            "label": "주요 필드",
-            "body": "검토 표에 이미 표시된 값들과, 표에는 없는 Material Class, Base Materials, Notes입니다."
+          "banner": {
+            "label": "표시 이유",
+            "body": "확인이 필요하거나 제외된 항목은 아무것도 열지 않아도 카드 맨 위에 바로 표시됩니다."
           },
-          "more": {
-            "label": "추가 필드",
-            "body": "제목, 구조, 정의 등 나머지 항목으로, 기본적으로 숨겨져 있습니다."
+          "sources": {
+            "label": "출처",
+            "body": "클릭 한 번으로 PDF 안의 해당 인용 부분으로 바로 이동합니다."
           },
-          "save": {
-            "label": "저장 / 취소",
-            "body": "저장은 수정 내용을 저장하고 해당 행을 승인 처리합니다. 취소는 수정을 버리고 검토 표로 돌아갑니다."
+          "pencil": {
+            "label": "필드 수정",
+            "body": "모든 필드에는 자체 연필 아이콘이 있습니다: 클릭하고, 값을 고치고, Enter로 확정합니다."
           }
         }
       },
@@ -1227,10 +1348,12 @@
       "converter": {
         "trigger": "단위 변환기",
         "title": "단위 변환기",
-        "hint": "이 폼의 모든 필드는 표준 단위(nm / nm/RIU)를 사용합니다. 여기서 변환한 뒤 결과를 해당 필드에 입력하세요.",
+        "hint": "이 폼의 모든 필드는 표준 단위(nm / nm/RIU)를 사용합니다. 여기서 변환한 뒤 결과를 복사하거나 해당 필드에 바로 삽입하세요.",
         "valuePlaceholder": "값",
         "copy": "복사",
-        "copied": "복사됨!"
+        "copied": "복사됨!",
+        "insert": "{field}에 삽입",
+        "inserted": "삽입됨!"
       },
       "tagsPlaceholder": "값 검색 또는 추가...",
       "addNew": "추가",
@@ -1306,6 +1429,43 @@
       "pointSizeMode": "켜면 선택한 측정값에 따라 각 점의 크기가 달라지고, 끄면 모든 점이 동일한 크기로 표시됩니다.",
       "pointSizeBy": "\"측정값에 따라 크기 지정\"이 켜져 있을 때 점 크기를 결정하는 측정값입니다.",
       "pointSize": "점 크기: \"측정값에 따라\" 모드에서는 최대 크기, 고정 모드에서는 단일 크기입니다."
+    }
+  },
+  "photon": {
+    "panel": {
+      "title": "Photon",
+      "closeAria": "Photon 닫기",
+      "emptyHint": "아래 제안을 선택하거나 이 레코드에 대해 질문하세요.",
+      "placeholder": "이 레코드에 대해 질문하세요",
+      "sendAria": "보내기",
+      "errorGeneric": "Photon이 답변하지 못했습니다. 다시 시도하세요."
+    },
+    "chips": {
+      "ariaLabel": "추천 질문",
+      "whyExcluded": {
+        "label": "왜 제외되었나요?",
+        "prompt": "이 레코드는 왜 제외되었나요?"
+      },
+      "explainConversion": {
+        "label": "변환 설명",
+        "prompt": "이 레코드에 적용된 변환을 설명해 주세요."
+      },
+      "showEvidence": {
+        "label": "근거 보여주기"
+      },
+      "whyMatters": {
+        "label": "이 지표가 중요한 이유",
+        "prompt": "이 지표는 왜 중요하며 어떻게 계산되었나요?"
+      }
+    },
+    "messages": {
+      "empty": "안녕하세요, Photon입니다. 이 레코드에 대해 질문하세요.",
+      "thinking": "Photon이 생각하는 중",
+      "failed": "Photon이 답변하지 못했습니다.",
+      "retry": "다시 시도"
+    },
+    "fab": {
+      "openAria": "Photon 열기"
     }
   }
 }

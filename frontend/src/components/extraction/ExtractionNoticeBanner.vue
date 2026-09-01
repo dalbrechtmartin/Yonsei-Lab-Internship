@@ -6,9 +6,11 @@
     <span class="mt-px text-sm leading-none">⚠</span>
     <p class="text-xs leading-relaxed text-amber-900">
       {{
-        t(`extraction.notice.${job.notice.reason}`, {
-          count: job.notice.pendingCount,
-        })
+        t(
+          `extraction.notice.${job.notice.reason}`,
+          { count: job.notice.pendingCount },
+          { plural: job.notice.pendingCount },
+        )
       }}
       {{ t("extraction.notice.retryIn", { seconds: retrySecondsLeft }) }}
     </p>

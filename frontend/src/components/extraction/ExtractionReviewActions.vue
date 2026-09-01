@@ -17,16 +17,6 @@
     <Button
       type="button"
       variant="outline"
-      class="gap-1.5"
-      :disabled="disabled"
-      @click="emit('correct')"
-    >
-      <Pencil class="size-3.5" />
-      {{ t("extraction.review.actions.correct") }}
-    </Button>
-    <Button
-      type="button"
-      variant="outline"
       class="gap-1.5 border-rose-300 text-rose-600 hover:border-rose-400 hover:bg-rose-500/8 hover:text-rose-700"
       :disabled="disabled"
       @click="emit('exclude')"
@@ -66,13 +56,12 @@
 
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
-import { ArrowLeft, ArrowRight, Check, Pencil, X } from "@lucide/vue";
+import { ArrowLeft, ArrowRight, Check, X } from "@lucide/vue";
 import { Button } from "@/components/ui/button";
 
 withDefaults(defineProps<{ disabled?: boolean }>(), { disabled: false });
 const emit = defineEmits<{
   validate: [];
-  correct: [];
   exclude: [];
   previous: [];
   next: [];

@@ -18,7 +18,7 @@ const ZOOM_ANIM_MS = 180;
  * frames (chartOption sets animation: false globally, so a dataZoom step
  * needs its own tween or it'd jump instantly), plus a lock toggle and the
  * wheel listener that drives it. Owns and self-cleans its wheel listener and
- * animation frame, same pattern as useTransientStatus's timer.
+ * animation frame, same pattern as useToastQueue's timer.
  */
 export function useFomChartZoom(chartRef: Ref<InstanceType<typeof VChart> | null>) {
   // Toggled by the lock button next to the zoom controls -- guards the wheel

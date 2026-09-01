@@ -1,20 +1,29 @@
 import asyncio
 import io
 import logging
+import re
 from contextlib import asynccontextmanager
 from typing import Any, cast
 
 import fitz  # PyMuPDF
 import polars as pl
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response, StreamingResponse
 from pydantic import BaseModel
 
+import fom_relations
 import jobs
 import llm
+import sensing_medium_conversion
 import state
-from schema import COLUMN_ORDER, EDITABLE_RECORD_FIELDS, VIZ_COLUMN_ORDER, normalize_viz_result
+from schema import (
+    COLUMN_ORDER,
+    EDITABLE_RECORD_FIELDS,
+    VIZ_COLUMN_ORDER,
+    normalize_result,
+    normalize_viz_result,
+)
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
@@ -53,8 +62,96 @@ def _job_file_or_404(job_id: str, file_id: str) -> dict:
     return job_file
 
 
+def _decode_page_labels(doc: fitz.Document) -> list[str | None]:
+    """Physical 0-indexed page -> its printed page label, only when that
+    label differs from the plain physical page number (1-indexed). A PDF
+    with numbered front matter (e.g. an unnumbered cover, then "1, 2, 3..."
+    starting a few physical pages in) is exactly the case this exists for --
+    the app's own page numbering stays physical-index-only everywhere else
+    (see prompts/extraction.txt's Location convention), this only affects
+    what a human reads. Precise decoding is only attempted for the common
+    decimal style; roman/alpha-numbered front matter (essentially never
+    seen in journal papers, this app's actual input) is left unlabeled
+    rather than guessing a numeral formatter for a case with no real-world
+    payoff here.
+    """
+    rules = doc.get_page_labels()
+    if not rules:
+        return [None] * doc.page_count
+    rules = sorted(rules, key=lambda r: r["startpage"])
+    labels: list[str | None] = [None] * doc.page_count
+    for i, rule in enumerate(rules):
+        if rule.get("style") != "D":
+            continue
+        start = rule["startpage"]
+        end = rules[i + 1]["startpage"] if i + 1 < len(rules) else doc.page_count
+        prefix = rule.get("prefix") or ""
+        first = rule.get("firstpagenum", 1)
+        for physical in range(start, min(end, doc.page_count)):
+            label = f"{prefix}{first + (physical - start)}"
+            if label != str(physical + 1):
+                labels[physical] = label
+    return labels
+
+
+_PAGE_TOKEN_RE = re.compile(r"\bPage\s+(\d+)\b")
+
+
+def _apply_page_labels_to_location(location: str | None, labels: list[str | None]) -> str | None:
+    """Rewrites every "Page N" token in a Location string to the PDF's own
+    printed label for that physical page, when it has one -- so a human
+    reading this outside the app (e.g. in the exported spreadsheet) can
+    find the page by the number actually printed on it. Never touches the
+    stored record itself: the underlying Location stays physical-index
+    based, which is what the in-app viewer's click-to-jump still needs."""
+    if not location:
+        return location
+
+    def _sub(match: re.Match) -> str:
+        physical = int(match.group(1))
+        label = labels[physical - 1] if 0 < physical <= len(labels) else None
+        return f"Page {label}" if label else match.group(0)
+
+    return _PAGE_TOKEN_RE.sub(_sub, location)
+
+
+def _first_location_page(location: str | None) -> int | None:
+    """The physical page number of a record's OWN citation -- for Photon's
+    chat endpoint below, which grounds extra context on the page that
+    citation is on rather than the whole paper. Reuses _PAGE_TOKEN_RE, the
+    same "Page N" convention _apply_page_labels_to_location parses above.
+
+    A Location with several ";"-separated entries (multiple Evidence
+    fragments, possibly from different pages) only ever yields the FIRST
+    entry's page -- an MVP simplification; disambiguating which fragment a
+    given chat question is actually about isn't attempted.
+    """
+    if not location:
+        return None
+    first_entry = location.split(";")[0]
+    match = _PAGE_TOKEN_RE.search(first_entry)
+    return int(match.group(1)) if match else None
+
+
 def _build_xlsx_response(job: dict) -> StreamingResponse:
-    records = state.get_job_records(job["id"])
+    records: list[dict] = []
+    for job_file in state.list_job_files(job["id"]):
+        file_records = job_file.get("records") or []
+        if not file_records:
+            continue
+        with fitz.open(job_file["pdf_path"]) as doc:
+            labels = _decode_page_labels(doc)
+        for r in file_records:
+            # normalize_result fills in any COLUMN_ORDER key missing from an
+            # older job's stored record (e.g. one extracted before "Raw
+            # Value"/"Conversion Method" existed) as None -- without this,
+            # pl.DataFrame(records) below raises ColumnNotFoundError the
+            # moment a whole job predates a newly-added column, since none
+            # of its records carry that key at all for Polars to infer.
+            r = normalize_result(r)
+            r["Location"] = _apply_page_labels_to_location(r.get("Location"), labels)
+            records.append(r)
+
     if not records:
         raise HTTPException(status_code=400, detail="No data extracted.")
 
@@ -121,15 +218,41 @@ async def convert_excel(body: ConvertExcelRequest):
     return {"columns": VIZ_COLUMN_ORDER + ["Spectral Range"], "data": records}
 
 
+@app.get("/models")
+async def get_models(file_count: int = 0):
+    """Model choices for the extraction dropdown (see ModelSelector.vue),
+    discovered live from Gemini's own catalog -- see llm.get_selectable_tiers
+    -- rather than hand-maintained, since Google ships new flash models
+    every few weeks. Grouped by tier (flash / flash_lite) so the frontend
+    can show them as two short lists instead of one long flat one; each
+    list is already capped to the newest few (see
+    llm.MAX_SELECTABLE_PER_TIER) and excludes preview/retired-generation
+    models. "default" isn't in here -- it's not a real model id, it's the
+    fallback-walking chain (see llm.build_fallback_chain), which also
+    reaches older models kept out of this list as a hidden last resort.
+
+    `file_count` (the number of staged files, so far -- see the Deposer
+    step) drives `recommended_model`: the model "default" itself will try
+    first for a batch this size, per llm.recommend_tier's RPD-budget check.
+    """
+    tiers = llm.get_selectable_tiers()
+    return {
+        "tiers": tiers,
+        "default_resolves_to": tiers["flash"][0] if tiers["flash"] else None,
+        "recommended_model": llm.recommended_model(file_count),
+    }
+
+
 @app.post("/extract-pdfs/", status_code=202)
 async def extract_data_from_pdfs(
     files: list[UploadFile] = File(...),
     model: str = Form("default"),
 ):
-    if model not in llm.MODEL_CHOICES:
+    model_choices = llm.get_model_choices()
+    if model not in model_choices:
         raise HTTPException(
             status_code=400,
-            detail=f"Unknown model '{model}'. Expected one of {llm.MODEL_CHOICES}.",
+            detail=f"Unknown model '{model}'. Expected one of {model_choices}.",
         )
 
     pdf_files = [f for f in files if f.filename and f.filename.lower().endswith(".pdf")]
@@ -137,7 +260,7 @@ async def extract_data_from_pdfs(
         raise HTTPException(status_code=400, detail="No PDF files provided.")
 
     filenames = [cast(str, f.filename).rsplit(".", 1)[0] for f in pdf_files]
-    available_models = llm.build_available_models(model)
+    available_models = llm.build_available_models(model, file_count=len(pdf_files))
     job = state.create_job(model, available_models, filenames)
 
     job_files = state.list_job_files(job["id"])
@@ -186,6 +309,7 @@ async def get_job_status(job_id: str):
         "error_message": job["error_message"],
         "created_at": job["created_at"],
         "notice": job.get("notice"),
+        "events": job.get("events", []),
         "files": [
             {
                 "id": f["id"],
@@ -195,6 +319,20 @@ async def get_job_status(job_id: str):
                 "record_count": len(f.get("records") or []),
                 "error_reason": f["error_reason"],
                 "started_at": f.get("started_at"),
+                # Slim view of each consensus run (no "records" -- that's
+                # the full extracted payload, not needed for a status poll
+                # and already available via GET .../records once done) so
+                # the frontend journal can explain a mid-batch 429/503
+                # instead of just going quiet -- see useExtractionEventLog.
+                "runs": [
+                    {
+                        "run_index": r["run_index"],
+                        "model": r["model"],
+                        "outcome": r["outcome"],
+                        "reason": r.get("reason"),
+                    }
+                    for r in f.get("runs") or []
+                ],
             }
             for f in files
         ],
@@ -236,6 +374,21 @@ async def get_file_page_count(job_id: str, file_id: str):
             return doc.page_count
 
     return {"total_pages": await asyncio.to_thread(_count)}
+
+
+@app.get("/jobs/{job_id}/files/{file_id}/page-labels")
+async def get_file_page_labels(job_id: str, file_id: str):
+    """Printed page labels, one entry per physical page (null where the PDF
+    has none, or its label equals the plain physical page number) -- used to
+    annotate the viewer's "p. X / Y" badge and a record's Location text with
+    what's actually printed on the page. See _decode_page_labels."""
+    job_file = _job_file_or_404(job_id, file_id)
+
+    def _labels() -> list[str | None]:
+        with fitz.open(job_file["pdf_path"]) as doc:
+            return _decode_page_labels(doc)
+
+    return {"labels": await asyncio.to_thread(_labels)}
 
 
 @app.get("/jobs/{job_id}/files/{file_id}/pages/{page_number}")
@@ -293,33 +446,120 @@ def _find_evidence_rects(page: fitz.Page, text: str) -> list[fitz.Rect]:
     return rects
 
 
-@app.get("/jobs/{job_id}/files/{file_id}/pages/{page_number}/evidence-matches")
-async def get_evidence_matches(job_id: str, file_id: str, page_number: int, q: str):
-    """So the review UI can jump straight to a record's cited passage
-    instead of making the researcher hunt for it on the page themselves.
-    Returns match rectangles in PDF point space (independent of render DPI
-    and of the frontend's zoom level) alongside the page's own point-space
-    size, so the frontend can convert to a percentage-based overlay that
-    stays correctly positioned at any zoom."""
+def _find_focus_rect(
+    page: fitz.Page, quote_rects: list[fitz.Rect], focus_text: str
+) -> list[fitz.Rect]:
+    """Pinpoints one specific field's own value within the passage it was
+    already confirmed to belong to -- e.g. clicking FOM's own source icon on
+    a sentence that reports wavelength, FOM and sensitivity together should
+    highlight just "2877", not the whole sentence. The search is clipped to
+    the quote's own bounding box on purpose: an unclipped page-wide search
+    for a bare number could just as easily land on an unrelated occurrence
+    (a page number, a different table row). No match inside that boundary is
+    a normal, silent outcome (e.g. the paper writes "2,877" but the stored
+    value is "2877") -- the caller falls back to the full-quote highlight,
+    never a wrong one."""
+    if not quote_rects:
+        return []
+    needle = " ".join(focus_text.split())
+    if not needle:
+        return []
+    clip = quote_rects[0]
+    for r in quote_rects[1:]:
+        clip |= r
+    clip = fitz.Rect(clip.x0 - 2, clip.y0 - 2, clip.x1 + 2, clip.y1 + 2)
+    return page.search_for(needle, clip=clip)
+
+
+_MIN_SEARCH_QUERY_LENGTH = 2
+
+
+@app.get("/jobs/{job_id}/files/{file_id}/search")
+async def search_file_text(job_id: str, file_id: str, q: str):
+    """Literal, document-wide text search for the review screen's Ctrl+F --
+    unlike _find_evidence_rects below (used to auto-highlight a record's
+    quoted Evidence), this never falls back to word-chunk matching: a
+    reviewer's typed query should only ever highlight exactly what they
+    typed, not stray partial-word matches recovered from a paraphrased
+    citation. Only pages with at least one hit are included."""
     job_file = _job_file_or_404(job_id, file_id)
+    if len(q.strip()) < _MIN_SEARCH_QUERY_LENGTH:
+        return {"results": []}
+
+    def _search() -> dict:
+        results = []
+        with fitz.open(job_file["pdf_path"]) as doc:
+            for i, page in enumerate(doc):
+                hits = page.search_for(q)
+                if not hits:
+                    continue
+                results.append(
+                    {
+                        "page": i + 1,
+                        "page_width": page.rect.width,
+                        "page_height": page.rect.height,
+                        "matches": [[r.x0, r.y0, r.x1, r.y1] for r in hits],
+                    }
+                )
+        return {"results": results}
+
+    return await asyncio.to_thread(_search)
+
+
+@app.get("/jobs/{job_id}/files/{file_id}/pages/{page_number}/evidence-matches")
+async def get_evidence_matches(
+    job_id: str,
+    file_id: str,
+    page_number: int,
+    q: list[str] = Query(...),
+    focus: list[str] | None = Query(None),
+):
+    """So the review UI can jump straight to a record's cited passage(s)
+    instead of making the researcher hunt for them on the page themselves.
+    Accepts one query per evidence source on this page so the reviewer's
+    citations can all be located in a single round trip (avoiding both a
+    query-per-source race and one PDF re-open per source) -- `matches_by_query[i]`
+    is the rect list for `q[i]`, in PDF point space (independent of render
+    DPI and of the frontend's zoom level), alongside the page's own
+    point-space size, so the frontend can convert to a percentage-based
+    overlay that stays correctly positioned at any zoom.
+
+    `focus` is an optional, same-length parallel list -- a non-empty
+    `focus[i]` additionally pinpoints that one value's own location within
+    `q[i]`'s own passage (see _find_focus_rect), for the "jump to this
+    field's source" affordance that shouldn't highlight the whole sentence
+    just because a click was on FOM specifically, not the sentence around
+    it. `focus_by_query[i]` is empty when no focus was requested or none was
+    found -- callers are expected to fall back to `matches_by_query[i]`."""
+    job_file = _job_file_or_404(job_id, file_id)
+    focus_list = focus if focus is not None and len(focus) == len(q) else [""] * len(q)
 
     def _search() -> dict:
         with fitz.open(job_file["pdf_path"]) as doc:
             if page_number < 1 or page_number > doc.page_count:
                 raise HTTPException(status_code=404, detail="Page not found.")
             page = doc[page_number - 1]
-            rects = _find_evidence_rects(page, q)
+            matches_by_query = []
+            focus_by_query = []
+            for query, focus_text in zip(q, focus_list, strict=True):
+                quote_rects = _find_evidence_rects(page, query)
+                matches_by_query.append([[r.x0, r.y0, r.x1, r.y1] for r in quote_rects])
+                focus_rects = (
+                    _find_focus_rect(page, quote_rects, focus_text) if focus_text else []
+                )
+                focus_by_query.append([[r.x0, r.y0, r.x1, r.y1] for r in focus_rects])
             return {
                 "page_width": page.rect.width,
                 "page_height": page.rect.height,
-                "matches": [[r.x0, r.y0, r.x1, r.y1] for r in rects],
+                "matches_by_query": matches_by_query,
+                "focus_by_query": focus_by_query,
             }
 
     return await asyncio.to_thread(_search)
 
 
 # The model itself only ever emits "Approve (AI)", "Edit", or "Exclude"
-# (see prompt.txt) -- "Approve (Manual)" is reserved for a human
+# (see prompts/extraction.txt) -- "Approve (Manual)" is reserved for a human
 # reviewer confirming a value after checking an "Edit"-flagged record,
 # which is what this endpoint is for. Re-flagging back to "Edit" or
 # "Exclude" is also allowed, so a reviewer can walk a decision back.
@@ -358,7 +598,246 @@ async def update_record_review_status(
         )
     except (KeyError, IndexError) as e:
         raise HTTPException(status_code=404, detail="File or record not found.") from e
-    return {"record": record}
+    # The stored record dict never carries its own positional index (only
+    # GET .../records injects it, via enumerate -- see get_file_records) --
+    # without re-adding it here, the frontend's ExtractionRecord.index comes
+    # back undefined, which breaks a second Valider/Corriger/Exclure on the
+    # same record right after this one (its PATCH URL becomes .../undefined/...).
+    return {"record": {**record, "index": record_index}}
+
+
+@app.get("/sensing-medium-formulas")
+async def get_sensing_medium_formulas():
+    """Formula options for the review screen's "recompute sensitivity"
+    picker -- see sensing_medium_conversion.list_formulas."""
+    return {"formulas": sensing_medium_conversion.list_formulas()}
+
+
+# Fields the recompute-field/restore-recompute-fields endpoints below may
+# ever write -- restore-recompute-fields validates against this allowlist so
+# a frontend undo/redo bug can only ever touch what a recompute itself could
+# already have changed, never Evidence/Location/Ref/Title/etc regardless of
+# what the caller sends.
+RECOMPUTE_TOUCHED_FIELDS = {
+    "Sensitivity (nm/RIU)",
+    "FOM (RIU^-1)",
+    "FWHM (nm)",
+    "Conversion Method",
+    "Raw Value",
+    "Calculated Fields",
+    "Review status",
+    "Notes",
+}
+
+_RECOMPUTABLE_TARGET_FIELDS = {
+    fom_relations.FIELD_FOM,
+    fom_relations.FIELD_SENSITIVITY,
+    fom_relations.FIELD_FWHM,
+}
+
+
+class RecomputeFieldRequest(BaseModel):
+    target_field: str
+    # None means "clear this value, needs manual verification" (the
+    # explicit "don't apply" choice) -- see the endpoint below.
+    method: str | None = None
+    # "sensing_medium" method inputs (only valid when target_field is
+    # Sensitivity) -- see sensing_medium_conversion.convert.
+    formula_key: str | None = None
+    raw_magnitude: float | None = None
+    raw_unit: str | None = None
+    custom_constant: float | None = None
+    # "fom_relation" method inputs -- the CURRENT values of the two
+    # non-target fields (the frontend pre-fills these from the record's own
+    # fields, editable before applying; this endpoint never re-reads them
+    # from storage itself, so what you pass is exactly what gets used).
+    fom: float | None = None
+    sensitivity: float | None = None
+    fwhm: float | None = None
+
+
+@app.post("/jobs/{job_id}/files/{file_id}/records/{record_index}/recompute-field")
+async def recompute_field(
+    job_id: str, file_id: str, record_index: int, body: RecomputeFieldRequest
+):
+    """Deterministically recomputes one of FOM/Sensitivity/FWHM -- never
+    calls the LLM, so a reviewer can try a different formula/value as many
+    times as needed. Two independent methods:
+    - "sensing_medium": Gladstone-Dale/dn-dc unit conversion (only valid for
+      Sensitivity) -- see sensing_medium_conversion.
+    - "fom_relation": algebraic solve from the record's own stated
+      Definition (FOM = Sensitivity / FWHM) -- see fom_relations. Requires
+      the STORED record's Definition to normalize to a recognized relation;
+      the two non-target *values* come from the request body, not storage.
+    `method: null` clears the target field and marks the record "Edit",
+    same "don't guess" escape hatch the sensing-medium panel already had.
+    """
+    _job_or_404(job_id)
+    if body.target_field not in _RECOMPUTABLE_TARGET_FIELDS:
+        raise HTTPException(
+            status_code=400, detail=f"Unknown/non-recomputable field '{body.target_field}'."
+        )
+
+    if body.method is None:
+        fields: dict[str, Any] = {
+            body.target_field: None,
+            "Review status": "Edit",
+            "Notes": "Value cleared -- needs manual verification.",
+        }
+        if body.target_field == fom_relations.FIELD_SENSITIVITY:
+            fields["Conversion Method"] = None
+            fields["Raw Value"] = None
+
+    elif body.method == "sensing_medium":
+        if body.target_field != fom_relations.FIELD_SENSITIVITY:
+            raise HTTPException(
+                status_code=400,
+                detail="The sensing_medium method only applies to Sensitivity (nm/RIU).",
+            )
+        if body.raw_magnitude is None or not body.raw_unit:
+            raise HTTPException(
+                status_code=400, detail="raw_magnitude and raw_unit are required for a formula."
+            )
+        try:
+            result = sensing_medium_conversion.convert(
+                body.formula_key, body.raw_magnitude, body.raw_unit, body.custom_constant
+            )
+        except sensing_medium_conversion.UnknownFormulaError as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+        if result is None:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot convert unit '{body.raw_unit}' with formula '{body.formula_key}'.",
+            )
+        sensitivity_riu, conversion_method = result
+        fields = {
+            body.target_field: sensitivity_riu,
+            "Conversion Method": conversion_method,
+            "Raw Value": f"{body.raw_magnitude} {body.raw_unit}",
+            "Review status": "Approve (Manual)",
+        }
+
+    elif body.method == "fom_relation":
+        job_file = _job_file_or_404(job_id, file_id)
+        records = job_file.get("records") or []
+        if not 0 <= record_index < len(records):
+            raise HTTPException(status_code=404, detail="Record not found.")
+        definition = records[record_index].get("Definition")
+        if not fom_relations.is_recognized_definition(definition):
+            raise HTTPException(
+                status_code=400,
+                detail="This record's Definition isn't a recognized FOM/Sensitivity/FWHM relation.",
+            )
+        value = fom_relations.solve(
+            body.target_field, fom=body.fom, sensitivity=body.sensitivity, fwhm=body.fwhm
+        )
+        if value is None:
+            raise HTTPException(
+                status_code=400, detail="Missing or invalid input values for this calculation."
+            )
+        fields = {
+            body.target_field: value,
+            "Calculated Fields": fom_relations.describe(
+                body.target_field, fom=body.fom, sensitivity=body.sensitivity, fwhm=body.fwhm
+            ),
+            "Review status": "Edit",
+        }
+    else:
+        raise HTTPException(status_code=400, detail=f"Unknown method '{body.method}'.")
+
+    try:
+        record = state.set_record_fields(job_id, file_id, record_index, fields)
+    except (KeyError, IndexError) as e:
+        raise HTTPException(status_code=404, detail="File or record not found.") from e
+    return {"record": {**record, "index": record_index}}
+
+
+class RestoreRecomputeFieldsRequest(BaseModel):
+    fields: dict[str, Any]
+
+
+@app.post("/jobs/{job_id}/files/{file_id}/records/{record_index}/restore-recompute-fields")
+async def restore_recompute_fields(
+    job_id: str, file_id: str, record_index: int, body: RestoreRecomputeFieldsRequest
+):
+    """Single-level undo/redo for recompute_field/the old sensing-medium
+    flow -- the frontend snapshots RECOMPUTE_TOUCHED_FIELDS before AND after
+    every recompute call, then replays one of those two snapshots here to
+    undo or redo. Restricted to RECOMPUTE_TOUCHED_FIELDS (not a general
+    field-patch endpoint) so a frontend bug can only ever touch what a
+    recompute itself could already have changed."""
+    _job_or_404(job_id)
+    unknown = set(body.fields) - RECOMPUTE_TOUCHED_FIELDS
+    if unknown:
+        raise HTTPException(
+            status_code=400, detail=f"Unknown/non-restorable field(s): {sorted(unknown)}."
+        )
+    try:
+        record = state.set_record_fields(job_id, file_id, record_index, body.fields)
+    except (KeyError, IndexError) as e:
+        raise HTTPException(status_code=404, detail="File or record not found.") from e
+    return {"record": {**record, "index": record_index}}
+
+
+class PhotonChatMessage(BaseModel):
+    role: str
+    content: str
+
+
+class PhotonChatRequest(BaseModel):
+    message: str
+    history: list[PhotonChatMessage] = []
+
+
+@app.post("/jobs/{job_id}/files/{file_id}/records/{record_index}/chat")
+async def chat_with_photon(job_id: str, file_id: str, record_index: int, body: PhotonChatRequest):
+    """Photon: a chat assistant grounded on the ONE extraction record a
+    reviewer currently has open -- for a quick "why does this metric
+    matter" or "where did this number come from" without leaving the
+    review screen to go re-read the whole paper by hand.
+
+    Grounds every answer in the record's own fields (see
+    llm._format_record_context) plus, when the record's own Location
+    resolves to a real page, the raw text of the PDF page its own citation
+    is on (see _first_location_page) -- never the whole paper, and never a
+    live look at its figures (see prompts/photon_system.txt's NO VISUAL
+    ACCESS rule). A page that can't be resolved or read is not fatal to the
+    request: Photon still works fine grounded on the record's own fields
+    alone, so `page_text` just comes back None in that case.
+
+    Always uses llm.domain_check_model() (the cheap/highest-RPD tier),
+    same reasoning as check_domain_relevance -- a chat aside must never
+    compete with the real extraction pipeline for the tight default-chain
+    quota. Any failure calling the model is surfaced as a 502 rather than
+    a generic 500, since "the model didn't answer this time" is a normal,
+    user-facing outcome here, not a bug to page anyone about.
+    """
+    job_file = _job_file_or_404(job_id, file_id)
+    records = job_file.get("records") or []
+    if not 0 <= record_index < len(records):
+        raise HTTPException(status_code=404, detail="Record not found.")
+    record = records[record_index]
+
+    page_number = _first_location_page(record.get("Location"))
+
+    def _load_page_text() -> str | None:
+        if page_number is None:
+            return None
+        with fitz.open(job_file["pdf_path"]) as doc:
+            if page_number < 1 or page_number > doc.page_count:
+                return None
+            return doc[page_number - 1].get_text("text")
+
+    page_text = await asyncio.to_thread(_load_page_text)
+
+    try:
+        reply = llm.chat_about_record(
+            record, page_text, body.message, [m.model_dump() for m in body.history]
+        )
+    except Exception as e:
+        raise HTTPException(status_code=502, detail="Photon couldn't answer right now.") from e
+
+    return {"reply": reply}
 
 
 @app.get("/usage")

@@ -49,7 +49,14 @@
         "title": "Visualize your data",
         "description": "Import an Excel file to explore, compare and export your data."
       },
-      "mobileBlocked": "Visualization isn't available on mobile. Use a PC for a better experience."
+      "mobileBlocked": "Visualization isn't available on mobile. Use a PC for a better experience.",
+      "conversionPreview": {
+        "title": "Automatic conversion preview",
+        "summary": "Showing {shown} of {rows} rows, before and after. Check that the columns line up correctly.",
+        "before": "Before",
+        "after": "After",
+        "dismiss": "Dismiss preview"
+      }
     },
     "extraction": {
       "batchExtraction": {
@@ -96,17 +103,17 @@
     "drop": {
       "removeFileAria": "Remove {filename}",
       "resuming": "Resuming an extraction in progress…",
-      "stagedCount": "{count} file(s) selected",
+      "stagedCount": "{count} file selected | {count} files selected",
       "etaEstimate": "~{eta} estimated",
       "fileEta": "~{eta}",
-      "pages": "{count} page(s)",
+      "pages": "{count} page | {count} pages",
       "maxReached": "maximum reached",
       "addFile": "Add",
       "empty": "No files selected yet.",
       "launch": "Start extraction",
       "resumedToast": "Resuming your extraction in progress."
     },
-    "processing": "Extracting {count} paper(s)...",
+    "processing": "Extracting {count} paper... | Extracting {count} papers...",
     "success": "Extraction done. Your Excel file has been saved.",
     "partialSuccess": "Some files were skipped. The export only includes the ones that succeeded.",
     "error": "Something went wrong extracting those PDFs.",
@@ -117,9 +124,9 @@
       "save": "Save as…"
     },
     "notice": {
-      "quota": "Gemini's free-tier quota was reached for {count} file(s).",
-      "unavailable": "The model was temporarily unavailable for {count} file(s).",
-      "error": "An unexpected error occurred for {count} file(s).",
+      "quota": "Gemini's free-tier quota was reached for {count} file. | Gemini's free-tier quota was reached for {count} files.",
+      "unavailable": "The model was temporarily unavailable for {count} file. | The model was temporarily unavailable for {count} files.",
+      "error": "An unexpected error occurred for {count} file. | An unexpected error occurred for {count} files.",
       "retryIn": "Retrying in {seconds}s. Nothing is lost."
     },
     "modelSelector": {
@@ -130,14 +137,14 @@
         "description": "Tries the most capable model first, then falls back to a faster one if the quota runs out.",
         "warning": "The model can change mid-batch due to rate limits. Check the \"Model Used\" column in the export for details."
       },
-      "flash": {
-        "title": "gemini-3.5-flash",
-        "description": "Best balance of accuracy and speed. Recommended for most batches."
+      "pinned": {
+        "description": "Tries this model first, then automatically falls back to another if the quota runs out."
       },
-      "lite": {
-        "title": "gemini-3.5-flash-lite",
-        "description": "Fastest and cheapest, but more prone to reasoning mistakes."
-      }
+      "group": {
+        "flash": "Flash",
+        "flashLite": "Flash Lite"
+      },
+      "recommended": "Recommended"
     },
     "progress": {
       "file": {
@@ -159,23 +166,50 @@
       },
       "journal": {
         "title": "Journal",
-        "warnings": "{count} warning(s)",
-        "empty": "No events yet."
+        "warnings": "{count} warning | {count} warnings",
+        "empty": "No events yet.",
+        "download": "Download the journal"
       }
     },
     "log": {
       "fileProcessing": "{filename}: processing",
-      "fileDone": "{filename}: {count} row(s) extracted",
-      "fileFailed": "{filename}: failed",
-      "noticeStarted": "Quota reached for {count} file(s), retry scheduled.",
+      "fileDone": "{filename}: {count} row extracted | {filename}: {count} rows extracted",
+      "fileFailed": {
+        "out_of_domain": "{filename}: set aside, out of scope",
+        "no_data": "{filename}: no usable data after 3 attempts, marked as failed",
+        "quota": "{filename}: still stuck after every automatic retry, marked as failed",
+        "error": "{filename}: failed"
+      },
+      "runFailed": {
+        "quota": "{filename}: attempt on {model} rejected (quota reached, 429). Retrying automatically.",
+        "unavailable": "{filename}: {model} temporarily unavailable (503). Retrying automatically.",
+        "error": "{filename}: attempt on {model} failed. Retrying automatically."
+      },
+      "pdfRead": "{filename}: PDF read ({pages} page) | {filename}: PDF read ({pages} pages)",
+      "domainCheckStart": "{filename}: checking the topic with {model}…",
+      "domainCheckOut": "{filename}: doesn't look like it's about optical resonance sensing",
+      "extractAttempt": "{filename}: trying {model}…",
+      "extractRetryQuota": "{filename}: {model} saturated, retrying in {seconds}s (attempt {attempt}/{maxAttempts}, 429)",
+      "extractQuotaDay": "{filename}: {model}'s daily quota is reached (429), set aside for the rest of today",
+      "extractGiveUp": "{filename}: {model} still unavailable after {seconds}s, giving up on it for this attempt (503)",
+      "extractSwitch": {
+        "next": "{filename}: {model} failed, switching to {nextModel}",
+        "exhausted": "{filename}: {model} failed, no model left to try right now"
+      },
+      "extractRetired": "{model} is no longer available (404), set aside for today",
+      "runDone": "{filename}: analysis {run}/3 done with {model} ({count} row) | {filename}: analysis {run}/3 done with {model} ({count} rows)",
+      "reconcileStart": "{filename}: comparing {runCount} analyses…",
+      "reconcileDone": "{filename}: {count} row kept, {flagged} to review | {filename}: {count} rows kept, {flagged} to review",
+      "noticeStarted": "Quota reached for {count} file, retrying in {seconds}s. | Quota reached for {count} files, retrying in {seconds}s.",
       "noticeCleared": "Back to normal processing."
     },
     "summary": {
       "heading": "Extraction done",
       "subheading": "Moving on to review.",
       "stats": {
-        "files": "{files} file(s) processed · {records} row(s)",
-        "warnings": "{count} warning(s)"
+        "filesProcessed": "{files} file processed | {files} files processed",
+        "rowsExtracted": "{records} row extracted | {records} rows extracted",
+        "warnings": "{count} warning | {count} warnings"
       },
       "cta": "Review now"
     },
@@ -190,8 +224,10 @@
         "excluded": "Excluded · {count}"
       },
       "table": {
+        "sortByRef": "Sort by reference",
         "columns": {
           "ref": "Reference",
+          "modeId": "Mode ID",
           "wavelength": "λ (nm)",
           "fom": "FOM",
           "fwhm": "FWHM",
@@ -204,20 +240,95 @@
         "locationLabel": "Location:",
         "sourceOf": "Source {current} of {total}"
       },
+      "detail": {
+        "sections": {
+          "identification": "Identification",
+          "measurements": "Measurements",
+          "materials": "Materials",
+          "provenance": "Provenance"
+        },
+        "fields": {
+          "modelUsed": "Model used"
+        },
+        "sources": {
+          "label": "Sources",
+          "single": "View source",
+          "item": "Source {n}",
+          "hint": "Click to view in the PDF"
+        },
+        "jumpToSource": "Jump to source for {field}",
+        "reconciliation": {
+          "aria": "View detail",
+          "disagreement": "AI runs disagreed: {values}.",
+          "partialAgreement": "Confirmed by {agreed} of {total} AI runs.",
+          "fullDisagreement": "No agreement between AI runs ({values}). Please verify.",
+          "rowCount": "This row appears in {count} of {total} AI runs.",
+          "extraRow": "Extra row found in 1 of {total} AI runs.",
+          "converted": "Converted from {rawValue} ({method}).",
+          "calculated": "Calculated value, not extracted directly from the text: {detail}"
+        },
+        "editField": "Edit {field}",
+        "confirmField": "Mark {field} as checked",
+        "unconfirmField": "Unmark {field} as checked",
+        "rawValue": "Raw value",
+        "conversionMethod": "Conversion",
+        "calculatedFields": "Calculated value",
+        "saveLayers": "Save layers",
+        "recompute": {
+          "label": "Recompute sensitivity",
+          "formulaPlaceholder": "Select a formula",
+          "gasGroup": "Gas",
+          "liquidGroup": "Liquid",
+          "rawMagnitude": "Value (nm per unit)",
+          "unitPlaceholder": "Unit, e.g. %, kPa, mg/mL",
+          "customConstant": "Constant",
+          "apply": "Apply",
+          "noConversion": "Don't convert",
+          "error": "Could not convert this unit with this formula.",
+          "relationGroup": "From definition",
+          "relationOption": "From FOM and FWHM",
+          "fomLabel": "Recompute FOM",
+          "fwhmLabel": "Recompute FWHM",
+          "calculate": "Calculate",
+          "fomFormula": "FOM = Sensitivity / FWHM",
+          "fomHint": "Fills in FOM from Sensitivity and FWHM. Edit either value first if needed.",
+          "fwhmFormula": "FWHM = Sensitivity / FOM",
+          "fwhmHint": "Fills in FWHM from Sensitivity and FOM. Edit either value first if needed.",
+          "relationFormula": "Sensitivity = FOM × FWHM",
+          "sensitivityHint": "Converts a raw value in the paper's own unit (e.g. nm/%RH) into nm/RIU, or derives Sensitivity from FOM and FWHM.",
+          "unitLabel": "Unit",
+          "successMessage": "{field} updated: {value}"
+        },
+        "definition": {
+          "recognized": "Recognized formula (FOM = Sensitivity / FWHM)",
+          "custom": "Other / custom"
+        },
+        "tags": {
+          "searchPlaceholder": "Search or add a value",
+          "addNew": "Add",
+          "noMatches": "No matches"
+        },
+        "status": {
+          "editHeading": "Needs review",
+          "excludeHeading": "Excluded",
+          "noReason": "No reason recorded.",
+          "noFieldFlag": "No specific field is flagged below. Read the note, then validate or exclude."
+        }
+      },
       "actions": {
         "validate": "Approve",
-        "correct": "Correct",
         "exclude": "Exclude",
         "previous": "Previous",
         "next": "Next",
+        "undo": "Undo",
+        "redo": "Redo",
+        "unconfirmedCount": "{count} field to confirm | {count} fields to confirm",
         "shortcuts": {
           "validate": "(V)",
           "next": "⏎"
         }
       },
       "edit": {
-        "title": "Correct this row",
-        "moreFields": "More fields",
         "save": "Save",
         "cancel": "Cancel",
         "fields": {
@@ -238,6 +349,7 @@
           "sensitivityNmPerRiu": "Sensitivity (nm/RIU)",
           "fwhmNm": "FWHM (nm)",
           "qFactor": "Q-factor",
+          "sensingMedium": "Sensing medium",
           "notes": "Notes"
         }
       },
@@ -247,17 +359,26 @@
       },
       "pdf": {
         "pageOf": "p. {current} / {total}",
+        "printedAs": "(printed: {label})",
         "prevPage": "Previous page",
         "nextPage": "Next page",
+        "searchToggleAria": "Search in document",
+        "searchPlaceholder": "Search this document",
+        "searchCount": "{current} / {total}",
+        "searchPrevAria": "Previous match",
+        "searchNextAria": "Next match",
+        "searchCloseAria": "Close search",
         "zoomOut": "Zoom out",
         "zoomIn": "Zoom in"
       }
     },
     "export": {
-      "preview": "Preview · {count} row(s)",
+      "preview": "Preview · {count} row | Preview · {count} rows",
       "reviewedByLegend": "Grayed out = excluded, kept for traceability",
       "reviewedByColumn": "Reviewed by",
-      "summaryLine": "{ready} row(s) ready · {excluded} excluded · {confirmed} confirmed",
+      "readyCount": "{ready} row ready | {ready} rows ready",
+      "excludedCount": "{excluded} excluded",
+      "confirmedCount": "{confirmed} confirmed",
       "visualizeError": "Couldn't load the export into visualization."
     },
     "minigame": {
@@ -862,20 +983,20 @@
       },
       "mode2Correct": {
         "title": "Correcting a flagged record",
-        "body": "Correcting a row opens an editable form for it, reached from the Review table's own \"Correct\" action. The fields already shown in the table come first. Everything else sits behind \"More fields\". This doesn't advance the stepper above: correcting is part of the Review step, not a stage of its own.",
-        "note": "Only these fields can be edited by hand. Evidence, Location and Review status stay machine authored.",
+        "body": "Every field on the card is corrected in place: click its pencil, edit the value, then confirm with Enter (or the ✓ icon); Escape (or ✕) cancels. No separate form to open. This doesn't advance the stepper above: correcting is part of the Review step, not a stage of its own.",
+        "note": "Only some fields can be edited by hand. Evidence, Location, Review status, Raw Value and Conversion Method stay machine authored.",
         "marks": {
-          "primary": {
-            "label": "Core fields",
-            "body": "The values already visible in the review table, plus Material Class, Base Materials and Notes, which aren't."
+          "banner": {
+            "label": "Flag reason",
+            "body": "Shown right at the top of the card the moment a record needs review or is excluded, with nothing to open."
           },
-          "more": {
-            "label": "More fields",
-            "body": "The rest of the record: title, structure and definitions, tucked away by default."
+          "sources": {
+            "label": "Sources",
+            "body": "One click jumps straight to the matching quote in the PDF."
           },
-          "save": {
-            "label": "Save / Cancel",
-            "body": "Save records the correction and approves the row; Cancel discards it and returns to the review table."
+          "pencil": {
+            "label": "Edit a field",
+            "body": "Every field has its own pencil: click, edit the value, confirm with Enter."
           }
         }
       },
@@ -1055,7 +1176,7 @@
       "clearAll": "Clear all",
       "showOnlyPinned": "Pinned points only",
       "showOnlyPinnedTooltip": "Hides every point except the ones pinned below. Stats narrow down to this same selection too.",
-      "pinSiblings": "+ Pin {count} other point(s)",
+      "pinSiblings": "+ Pin {count} other point | + Pin {count} other points",
       "compareLabel": "Select to compare",
       "notePlaceholder": "Add a note...",
       "sort": {
@@ -1227,10 +1348,12 @@
       "converter": {
         "trigger": "Unit converter",
         "title": "Unit converter",
-        "hint": "Every field here is in its canonical unit (nm / nm/RIU). Convert here, then type the result into the field.",
+        "hint": "Every field here is in its canonical unit (nm / nm/RIU). Convert here, then copy the result or insert it directly into the matching field.",
         "valuePlaceholder": "Value",
         "copy": "Copy",
-        "copied": "Copied!"
+        "copied": "Copied!",
+        "insert": "Insert into {field}",
+        "inserted": "Inserted!"
       },
       "tagsPlaceholder": "Search or add a value...",
       "addNew": "Add",
@@ -1306,6 +1429,43 @@
       "pointSizeMode": "Turn on to size each point by a chosen measurement; off for one flat size everywhere.",
       "pointSizeBy": "The measurement that drives point size while \"Size by a measurement\" is on.",
       "pointSize": "Point size: the maximum size in \"by measurement\" mode, or the single flat size in constant mode."
+    }
+  },
+  "photon": {
+    "panel": {
+      "title": "Photon",
+      "closeAria": "Close Photon",
+      "emptyHint": "Pick a suggestion below or ask a question about this record.",
+      "placeholder": "Ask a question about this record",
+      "sendAria": "Send",
+      "errorGeneric": "Photon couldn't answer. Try again."
+    },
+    "chips": {
+      "ariaLabel": "Suggested questions",
+      "whyExcluded": {
+        "label": "Why excluded?",
+        "prompt": "Why is this record excluded?"
+      },
+      "explainConversion": {
+        "label": "Explain the conversion",
+        "prompt": "Explain the conversion applied to this record."
+      },
+      "showEvidence": {
+        "label": "Show me the evidence"
+      },
+      "whyMatters": {
+        "label": "Why this metric matters",
+        "prompt": "Why does this metric matter, and how was it calculated?"
+      }
+    },
+    "messages": {
+      "empty": "Hi, I'm Photon. Ask a question about this record.",
+      "thinking": "Photon is thinking",
+      "failed": "Photon couldn't answer.",
+      "retry": "Retry"
+    },
+    "fab": {
+      "openAria": "Open Photon"
     }
   }
 }
