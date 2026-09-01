@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.3.0](https://github.com/dalbrechtmartin/Yonsei-Lab-Internship/compare/v1.2.0...v1.3.0) (2026-09-01)
+
+
+### Features
+
+* add Photon chat feature with components for message list, panel, and chips ([0eb8819](https://github.com/dalbrechtmartin/Yonsei-Lab-Internship/commit/0eb88198e8278ff898b4f63ec67b41e94839f453))
+* **backend:** sensing-medium and FOM-relation recompute, per-field evidence sourcing ([0f39018](https://github.com/dalbrechtmartin/Yonsei-Lab-Internship/commit/0f390180db74a873bf7615e9784db7ebddbc6ddb))
+* **extraction:** comprehensive traceable review card with recompute panels and per-field sources ([eb1d977](https://github.com/dalbrechtmartin/Yonsei-Lab-Internship/commit/eb1d97746eddc3fe39f11e4bcda2bd82966db305))
+* **extraction:** per-field confirm workflow and assisted editing ([87c72c2](https://github.com/dalbrechtmartin/Yonsei-Lab-Internship/commit/87c72c2c7bc230707468d7757bd8d6e838c5cdf6))
+
+
+### Bug Fixes
+
+* **backend:** clean floating-point noise in recomputed FOM/FWHM/Sensitivity ([d4f40b3](https://github.com/dalbrechtmartin/Yonsei-Lab-Internship/commit/d4f40b3176e50cc307ee03914102e53d08ef271f))
+* **backend:** reduce near-empty extraction rows, clarify unfillable gaps ([2dc83b1](https://github.com/dalbrechtmartin/Yonsei-Lab-Internship/commit/2dc83b1dfefad2f080a7aa9975388fa7a708aeb1))
+* **ci:** add GEMINI_API_KEY placeholder for backend job ([bf613ec](https://github.com/dalbrechtmartin/Yonsei-Lab-Internship/commit/bf613ecac412b2e54ba295763598d69d90892729))
+* **extraction:** batch per-page evidence lookups, pinpoint per-field sources ([7ea112c](https://github.com/dalbrechtmartin/Yonsei-Lab-Internship/commit/7ea112c9dbf706da545a1ccb9a1617e85b2141bd))
+* update for loop to use strict mode in evidence matches function ([70290e4](https://github.com/dalbrechtmartin/Yonsei-Lab-Internship/commit/70290e41d796e70fa6667762d7afee9f3050b935))
+
 ## [1.2.0](https://github.com/dalbrechtmartin/Yonsei-Lab-Internship/compare/v1.1.0...v1.2.0) (2026-08-25)
 
 
