@@ -38,6 +38,7 @@
         :key="i"
         :mark="m"
         :number="i + 1"
+        :side="i === 1 || i === 2 ? 'top' : undefined"
       />
     </div>
     <p
@@ -54,6 +55,10 @@
           body: t('guide.steps.dataTable.marks.filters.body'),
         },
         {
+          label: t('guide.steps.dataTable.marks.sort.label'),
+          body: t('guide.steps.dataTable.marks.sort.body'),
+        },
+        {
           label: t('guide.steps.dataTable.marks.addData.label'),
           body: t('guide.steps.dataTable.marks.addData.body'),
         },
@@ -68,9 +73,15 @@
       <h3 class="mb-1.5 text-sm font-semibold text-primary">
         {{ t("guide.steps.dataTable.actionsTitle") }}
       </h3>
-      <ul class="flex flex-col gap-1 text-sm text-ink">
-        <li>{{ t("guide.steps.dataTable.actions.click") }}</li>
-        <li>{{ t("guide.steps.dataTable.actions.menu") }}</li>
+      <ul class="flex flex-col gap-1.5 text-sm text-ink">
+        <li class="flex items-start gap-1.5">
+          <MousePointerClick class="mt-0.5 size-3.5 shrink-0 text-primary" />
+          <span>{{ t("guide.steps.dataTable.actions.click") }}</span>
+        </li>
+        <li class="flex items-start gap-1.5">
+          <MoreHorizontal class="mt-0.5 size-3.5 shrink-0 text-primary" />
+          <span>{{ t("guide.steps.dataTable.actions.menu") }}</span>
+        </li>
       </ul>
     </div>
 
@@ -87,6 +98,7 @@
 <script setup lang="ts">
 import { useTemplateRef } from "vue";
 import { useI18n } from "vue-i18n";
+import { MousePointerClick, MoreHorizontal } from "@lucide/vue";
 import DataPointsTable from "@/components/visualization/DataPointsTable.vue";
 import GuideHeader from "./GuideHeader.vue";
 import GuideFooter from "./GuideFooter.vue";

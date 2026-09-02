@@ -141,39 +141,6 @@
       ]"
     />
 
-    <div class="mt-3 grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
-      <p>
-        <strong class="text-primary">{{
-          t("guide.steps.reading.interactions.hover.label")
-        }}</strong>
-        — {{ t("guide.steps.reading.interactions.hover.body") }}
-      </p>
-      <p>
-        <strong class="text-primary">{{
-          t("guide.steps.reading.interactions.zoom.label")
-        }}</strong>
-        — {{ t("guide.steps.reading.interactions.zoom.body") }}
-      </p>
-      <p>
-        <strong class="text-primary">{{
-          t("guide.steps.reading.interactions.click.label")
-        }}</strong>
-        — {{ t("guide.steps.reading.interactions.click.body") }}
-      </p>
-      <p>
-        <strong class="text-primary">{{
-          t("guide.steps.reading.interactions.rightClick.label")
-        }}</strong>
-        — {{ t("guide.steps.reading.interactions.rightClick.body") }}
-      </p>
-    </div>
-
-    <div class="mt-3 rounded-xl border border-border bg-muted/30 px-4 py-2.5">
-      <p class="text-sm leading-relaxed text-justify text-ink">
-        {{ t("guide.steps.reading.flaggedNote") }}
-      </p>
-    </div>
-
     <GuideFooter :page="page" :total-pages="totalPages" />
   </section>
 </template>

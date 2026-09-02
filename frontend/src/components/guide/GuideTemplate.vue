@@ -110,6 +110,12 @@
       :reading-size-legend-rect="readingSizeLegendRect"
     />
 
+    <GuidePageReadingInteract
+      :app-version="appVersion"
+      :page="PAGE_MODE1_READING_INTERACT"
+      :total-pages="TOTAL_PAGES"
+    />
+
     <GuidePageCompareGroups
       ref="pageCompareGroupsRef"
       :app-version="appVersion"
@@ -224,6 +230,14 @@
       :correct-marks="mode2CorrectMarks"
     />
 
+    <GuidePagePhoton
+      ref="pagePhotonRef"
+      :app-version="appVersion"
+      :page="PAGE_MODE2_PHOTON"
+      :total-pages="TOTAL_PAGES"
+      :photon-marks="photonMarks"
+    />
+
     <GuidePageMode2Export
       ref="pageMode2ExportRef"
       :app-version="appVersion"
@@ -301,6 +315,8 @@ import {
   Info,
   Layers,
   LineChart,
+  MessageCircle,
+  MousePointerClick,
   Pencil,
   Pin,
   PlusCircle,
@@ -332,6 +348,7 @@ import GuidePageControlsChart from "./GuidePageControlsChart.vue";
 import GuidePageControlsDisplay from "./GuidePageControlsDisplay.vue";
 import GuidePageFilters from "./GuidePageFilters.vue";
 import GuidePageReading from "./GuidePageReading.vue";
+import GuidePageReadingInteract from "./GuidePageReadingInteract.vue";
 import GuidePageCompareGroups from "./GuidePageCompareGroups.vue";
 import GuidePageDataTable from "./GuidePageDataTable.vue";
 import GuidePageAddPoint1 from "./GuidePageAddPoint1.vue";
@@ -346,6 +363,7 @@ import GuidePageMode2Drop from "./GuidePageMode2Drop.vue";
 import GuidePageMode2Running from "./GuidePageMode2Running.vue";
 import GuidePageMode2Review from "./GuidePageMode2Review.vue";
 import GuidePageMode2Correct from "./GuidePageMode2Correct.vue";
+import GuidePagePhoton from "./GuidePagePhoton.vue";
 import GuidePageMode2Export from "./GuidePageMode2Export.vue";
 import GuidePageAbout from "./GuidePageAbout.vue";
 import {
@@ -372,7 +390,7 @@ const { t, locale } = useI18n();
 // Kept as a plain constant (rather than importing package.json, which sits
 // outside the tsconfig `src` root) -- release-please rewrites this line, see
 // x-release-please-version below.
-const appVersion = "1.1.0"; // x-release-please-version
+const appVersion = "1.3.0"; // x-release-please-version
 const rootEl = useTemplateRef<HTMLDivElement>("rootEl");
 
 // Fixed page numbers -- referenced both in each page's own footer and by
@@ -391,31 +409,41 @@ const PAGE_MODE1_CONTROLS_CHART = 7;
 const PAGE_MODE1_CONTROLS_DISPLAY = 8;
 const PAGE_MODE1_FILTERS = 9;
 const PAGE_MODE1_READING = 10;
-const PAGE_MODE1_COMPARE = 11;
-const PAGE_MODE1_DATATABLE = 12;
-const PAGE_MODE1_ADDPOINT1 = 13;
-const PAGE_MODE1_ADDPOINT2 = 14;
-const PAGE_MODE1_ADDPOINT3 = 15;
-const PAGE_MODE1_ANNOTATE = 16;
-const PAGE_MODE1_COMPARE_PINS = 17;
-const PAGE_MODE1_EXPORT_CHART = 18;
-const PAGE_MODE1_EXPORT_PIN = 19;
-const PAGE_MODE2_DIVIDER = 20;
-const PAGE_MODE2_DROP = 21;
-const PAGE_MODE2_RUNNING = 22;
-const PAGE_MODE2_REVIEW = 23;
-// PAGE_MODE2_CORRECT (24) has no numbered "step" of its own -- correcting a
+// PAGE_MODE1_READING_INTERACT (11), like PAGE_MODE2_CORRECT/PAGE_MODE2_PHOTON
+// below, has no numbered "step" of its own -- interacting with the chart is
+// part of reading it, not a distinct wizard stage -- but it's still a real
+// page with its own PDF bookmark, footer and TOC entry.
+const PAGE_MODE1_READING_INTERACT = 11;
+const PAGE_MODE1_COMPARE = 12;
+const PAGE_MODE1_DATATABLE = 13;
+const PAGE_MODE1_ADDPOINT1 = 14;
+const PAGE_MODE1_ADDPOINT2 = 15;
+const PAGE_MODE1_ADDPOINT3 = 16;
+const PAGE_MODE1_ANNOTATE = 17;
+const PAGE_MODE1_COMPARE_PINS = 18;
+const PAGE_MODE1_EXPORT_CHART = 19;
+const PAGE_MODE1_EXPORT_PIN = 20;
+const PAGE_MODE2_DIVIDER = 21;
+const PAGE_MODE2_DROP = 22;
+const PAGE_MODE2_RUNNING = 23;
+const PAGE_MODE2_REVIEW = 24;
+// PAGE_MODE2_CORRECT (25) has no numbered "step" of its own -- correcting a
 // row is an inline mode of the Review step, not a distinct wizard stage the
 // real ExtractionStepper ever shows (see guide.outline.mode2Correct's own
 // unnumbered label) -- but it's still a real page with its own PDF bookmark,
 // footer and TOC entry, so it keeps a PAGE_ constant like every other page.
-const PAGE_MODE2_CORRECT = 24;
-const PAGE_MODE2_EXPORT = 25;
-// Page 26 (About the author) is a colophon: it gets its own PDF bookmark
+const PAGE_MODE2_CORRECT = 25;
+// PAGE_MODE2_PHOTON (26), like PAGE_MODE2_CORRECT above, has no numbered
+// "step" of its own -- Photon is a companion available throughout Review,
+// not a wizard stage -- but it's still a real page with its own PDF
+// bookmark, footer and TOC entry.
+const PAGE_MODE2_PHOTON = 26;
+const PAGE_MODE2_EXPORT = 27;
+// Page 28 (About the author) is a colophon: it gets its own PDF bookmark
 // (data-outline-title, like every other page) but no GuideFooter/page
 // number and no tocEntries listing, matching a book colophon's usual quiet,
 // unlisted convention -- so it has no PAGE_ constant of its own here.
-const TOTAL_PAGES = 26;
+const TOTAL_PAGES = 28;
 
 // Every outline label follows "<Mode N> — <rest>" in all four locales
 // (checked en/fr/ko/zh -- always the same em-dash separator), so the
@@ -469,6 +497,13 @@ const tocEntries = computed(() => [
     desc: t("guide.toc.desc.mode1Reading"),
     page: PAGE_MODE1_READING,
     icon: LineChart,
+    group: "mode1" as const,
+  },
+  {
+    label: tocLabel(t("guide.outline.mode1ReadingInteract")),
+    desc: t("guide.toc.desc.mode1ReadingInteract"),
+    page: PAGE_MODE1_READING_INTERACT,
+    icon: MousePointerClick,
     group: "mode1" as const,
   },
   {
@@ -563,6 +598,13 @@ const tocEntries = computed(() => [
     group: "mode2" as const,
   },
   {
+    label: tocLabel(t("guide.outline.mode2Photon")),
+    desc: t("guide.toc.desc.mode2Photon"),
+    page: PAGE_MODE2_PHOTON,
+    icon: MessageCircle,
+    group: "mode2" as const,
+  },
+  {
     label: tocLabel(t("guide.outline.mode2Export")),
     desc: t("guide.toc.desc.mode2Export"),
     page: PAGE_MODE2_EXPORT,
@@ -637,37 +679,38 @@ const pageReadingRef =
 const pageCompareGroupsRef = useTemplateRef<
   InstanceType<typeof GuidePageCompareGroups>
 >("pageCompareGroupsRef");
-const pageDataTableRef = useTemplateRef<
-  InstanceType<typeof GuidePageDataTable>
->("pageDataTableRef");
-const pageAddPoint1Ref = useTemplateRef<
-  InstanceType<typeof GuidePageAddPoint1>
->("pageAddPoint1Ref");
-const pageAddPoint2Ref = useTemplateRef<
-  InstanceType<typeof GuidePageAddPoint2>
->("pageAddPoint2Ref");
-const pageAddPoint3Ref = useTemplateRef<
-  InstanceType<typeof GuidePageAddPoint3>
->("pageAddPoint3Ref");
+const pageDataTableRef =
+  useTemplateRef<InstanceType<typeof GuidePageDataTable>>("pageDataTableRef");
+const pageAddPoint1Ref =
+  useTemplateRef<InstanceType<typeof GuidePageAddPoint1>>("pageAddPoint1Ref");
+const pageAddPoint2Ref =
+  useTemplateRef<InstanceType<typeof GuidePageAddPoint2>>("pageAddPoint2Ref");
+const pageAddPoint3Ref =
+  useTemplateRef<InstanceType<typeof GuidePageAddPoint3>>("pageAddPoint3Ref");
 const pageAnnotateRef =
   useTemplateRef<InstanceType<typeof GuidePageAnnotate>>("pageAnnotateRef");
-const pageComparePinsRef = useTemplateRef<
-  InstanceType<typeof GuidePageComparePins>
->("pageComparePinsRef");
+const pageComparePinsRef =
+  useTemplateRef<InstanceType<typeof GuidePageComparePins>>(
+    "pageComparePinsRef",
+  );
 const pageMode2DropRef =
   useTemplateRef<InstanceType<typeof GuidePageMode2Drop>>("pageMode2DropRef");
 const pageMode2RunningRef = useTemplateRef<
   InstanceType<typeof GuidePageMode2Running>
 >("pageMode2RunningRef");
-const pageMode2ReviewRef = useTemplateRef<
-  InstanceType<typeof GuidePageMode2Review>
->("pageMode2ReviewRef");
+const pageMode2ReviewRef =
+  useTemplateRef<InstanceType<typeof GuidePageMode2Review>>(
+    "pageMode2ReviewRef",
+  );
 const pageMode2CorrectRef = useTemplateRef<
   InstanceType<typeof GuidePageMode2Correct>
 >("pageMode2CorrectRef");
-const pageMode2ExportRef = useTemplateRef<
-  InstanceType<typeof GuidePageMode2Export>
->("pageMode2ExportRef");
+const pagePhotonRef =
+  useTemplateRef<InstanceType<typeof GuidePagePhoton>>("pagePhotonRef");
+const pageMode2ExportRef =
+  useTemplateRef<InstanceType<typeof GuidePageMode2Export>>(
+    "pageMode2ExportRef",
+  );
 
 // See the point-size-legend "peephole" patch's own template comment (in
 // GuidePageReading.vue) for why these exist -- readingChartFullRect is the
@@ -694,6 +737,7 @@ const mode2DropMarks = ref<GuideMark[]>([]);
 const mode2RunningMarks = ref<GuideMark[]>([]);
 const mode2ReviewMarks = ref<GuideMark[]>([]);
 const mode2CorrectMarks = ref<GuideMark[]>([]);
+const photonMarks = ref<GuideMark[]>([]);
 const mode2ExportMarks = ref<GuideMark[]>([]);
 // Badges are real DOM (measured the normal way, via FomChart's exposed
 // getBadgesRow); the legend and median line are pixels ECharts draws
@@ -752,12 +796,22 @@ async function captureGuideArtifacts() {
     pageFiltersRef.value?.filtersWrap ?? null,
     t("fomcharts.sections.filters"),
   );
+  // Page 24 (Mode 2 -- correct a record): ExtractionReviewDetail now mounts
+  // `compact` here (see GuidePageMode2Correct.vue's own comment) so
+  // Identification/Materials stay collapsed and this page doesn't overflow,
+  // but the fwhmField ring below needs Measurements visible -- click it back
+  // open, the same technique used for GraphControls' own sections above.
+  openSection(
+    pageMode2CorrectRef.value?.detailWrap ?? null,
+    t("extraction.review.detail.sections.measurements"),
+  );
   // Also open the Y-axis column picker -- the actual mechanism for changing
   // an axis, otherwise never shown (see the Chart page's own body text,
   // which now describes clicking a row to open it). Guarded by
   // aria-expanded so a later locale-switch re-run of this whole function
   // doesn't toggle it back closed.
-  const chartControlsWrapForOpen = pageControlsChartRef.value?.chartControlsWrap;
+  const chartControlsWrapForOpen =
+    pageControlsChartRef.value?.chartControlsWrap;
   if (chartControlsWrapForOpen) {
     const yAxisBtn = findByAttr(
       chartControlsWrapForOpen,
@@ -792,6 +846,7 @@ async function captureGuideArtifacts() {
     mode2RunningMarks,
     mode2ReviewMarks,
     mode2CorrectMarks,
+    photonMarks,
     mode2ExportMarks,
   ]) {
     marks.value = [];
@@ -849,9 +904,7 @@ async function captureGuideArtifacts() {
     // its button column's next (and only other) sibling within its root.
     const axisSelectorRoot = yBtn?.parentElement?.parentElement?.parentElement;
     const pickerPanel = axisSelectorRoot?.lastElementChild as
-      | HTMLElement
-      | null
-      | undefined;
+      HTMLElement | null | undefined;
     push(chartMarks, pickerPanel ? markRect(c, pickerPanel, 4) : null);
   }
 
@@ -952,8 +1005,9 @@ async function captureGuideArtifacts() {
   }
 
   // Annotations: sort select, "show only pinned" row, compare selection bar,
-  // R3's own card header, then -- once R3 is expanded below -- its siblings
-  // shortcut, Layer Structure box, Metrics box and Notes box, in the same
+  // R3's own card header, its Export/Remove buttons (same header row), then
+  // -- once R3 is expanded below -- its siblings shortcut, Origin box, Mode
+  // ID box, Layer Structure box, Metrics box and Notes box, in the same
   // top-to-bottom order they actually render in (see AnnotationCard.vue), so
   // the numbered rings stay in sync.
   const annotationsWrap = pageAnnotateRef.value?.annotationsWrap;
@@ -989,9 +1043,36 @@ async function captureGuideArtifacts() {
       ?.parentElement as HTMLElement | null;
     push(annotationMarks, compareRow ? markRect(c, compareRow, 4) : null);
 
+    // cardHeader, Export and Remove sit in one row only 6px (gap-1.5) apart
+    // -- markRect's default 4px outward pad on two touching edges would
+    // overlap (4+4 > 6), so these three specifically use a tighter 2px pad
+    // to leave a sliver of daylight between each ring.
     const cardRef = findByText(c, "span", "R3");
     const cardHeader = cardRef?.closest("button") as HTMLElement | null;
-    push(annotationMarks, cardHeader ? markRect(c, cardHeader, 4) : null);
+    push(annotationMarks, cardHeader ? markRect(c, cardHeader, 2) : null);
+
+    // Export/Remove sit in the same header row as cardHeader, as two more
+    // icon buttons -- scoped to that row (not the whole panel) since R1's
+    // collapsed card carries its own same-aria-label pair in the DOM too.
+    const headerRow = cardHeader?.parentElement as HTMLElement | null;
+    const exportBtn = headerRow
+      ? findByAttr(
+          headerRow,
+          "button",
+          "aria-label",
+          t("fomcharts.annotations.exportPin"),
+        )
+      : null;
+    push(annotationMarks, exportBtn ? markRect(c, exportBtn, 2) : null);
+    const removeBtn = headerRow
+      ? findByAttr(
+          headerRow,
+          "button",
+          "aria-label",
+          t("fomcharts.annotations.remove"),
+        )
+      : null;
+    push(annotationMarks, removeBtn ? markRect(c, removeBtn, 2) : null);
 
     // Expand R3 for real -- the same click a researcher would make -- rather
     // than only describing what's inside in prose. Guarded by its own
@@ -1020,6 +1101,18 @@ async function captureGuideArtifacts() {
         t("fomcharts.annotations.pinSiblings", { count: 1 }, { plural: 1 }),
       );
       push(annotationMarks, siblingsBtn ? markRect(c, siblingsBtn, 4) : null);
+      // Origin and Mode ID box labels are raw column names (not translated
+      // strings -- see findOriginColumn/findModeIdColumn), so they're
+      // matched by that literal text the same way "R3" is above, rather
+      // than through a t(...) lookup.
+      const originBox = findByText(r3Card, "span", "Origin")?.closest(
+        ".rounded-md",
+      ) as HTMLElement | null;
+      push(annotationMarks, originBox ? markRect(c, originBox, 4) : null);
+      const modeBox = findByText(r3Card, "span", "Mode ID")?.closest(
+        ".rounded-md",
+      ) as HTMLElement | null;
+      push(annotationMarks, modeBox ? markRect(c, modeBox, 4) : null);
       const layerBox = findByText(
         r3Card,
         "span",
@@ -1112,10 +1205,11 @@ async function captureGuideArtifacts() {
     );
   }
 
-  // Page 10: Data points tab -- filter chips (boxed as one row), the Add
-  // data button, then the Pinned group's header -- in the same top-to-bottom
-  // order DataPointsTable actually renders them in (filters+search+add sit
-  // above the group list), so the numbered rings read top to bottom too.
+  // Page 10: Data points tab -- filter chips (boxed as one row), the sort
+  // button, the Add data button, then the Pinned group's header -- in the
+  // same top-to-bottom order DataPointsTable actually renders them in
+  // (filters+search+sort+add sit above the group list), so the numbered
+  // rings read top to bottom too.
   const dataTableWrap = pageDataTableRef.value?.dataTableWrap;
   if (dataTableWrap) {
     const c = dataTableWrap;
@@ -1126,6 +1220,13 @@ async function captureGuideArtifacts() {
     );
     const filterRow = allBtn?.parentElement as HTMLElement | null;
     push(dataTableMarks, filterRow ? markRect(c, filterRow, 4) : null);
+    const sortBtn = findByAttr(
+      c,
+      "button",
+      "aria-label",
+      t("fomcharts.pointsTable.sortLabel"),
+    );
+    push(dataTableMarks, sortBtn ? markRect(c, sortBtn, 4) : null);
     const addBtn = findByAttr(
       c,
       "button",
@@ -1328,7 +1429,7 @@ async function captureGuideArtifacts() {
     push(mode2RunningMarks, gameWrap ? markRect(c, gameWrap, 4) : null);
   }
 
-  // Page 21 (Mode 2 -- review a record): tabs+table, evidence callout,
+  // Page 23 (Mode 2 -- review a record): tabs+table, evidence callout,
   // action row, and the (hand-mocked) PDF viewer, one ring each.
   const reviewWrap = pageMode2ReviewRef.value?.reviewWrap;
   if (reviewWrap) {
@@ -1343,7 +1444,7 @@ async function captureGuideArtifacts() {
     push(mode2ReviewMarks, pdfWrap ? markRect(c, pdfWrap, 4) : null);
   }
 
-  // Page 22 (Mode 2 -- correct a record): the reason banner and the source
+  // Page 24 (Mode 2 -- correct a record): the reason banner and the source
   // strip -- ExtractionReviewDetail exposes no refs of its own (it's
   // mounted as-is, not hand-assembled), so these are found the same way
   // Compare Groups' own detail tile grid is: real translated text already
@@ -1351,18 +1452,49 @@ async function captureGuideArtifacts() {
   const detailWrap = pageMode2CorrectRef.value?.detailWrap;
   if (detailWrap) {
     const c = detailWrap;
-    const banner = findByText(c, "p", t("extraction.review.detail.status.editHeading"));
-    const bannerRow = banner?.parentElement?.parentElement as HTMLElement | null;
+    const banner = findByText(
+      c,
+      "p",
+      t("extraction.review.detail.status.editHeading"),
+    );
+    const bannerRow = banner?.parentElement
+      ?.parentElement as HTMLElement | null;
     push(mode2CorrectMarks, bannerRow ? markRect(c, bannerRow, 4) : null);
-    const sourcesLabel = findByText(c, "span", t("extraction.review.detail.sources.label"));
+    const sourcesLabel = findByText(
+      c,
+      "span",
+      t("extraction.review.detail.sources.label"),
+    );
     const sourcesRow = sourcesLabel?.parentElement as HTMLElement | null;
     push(mode2CorrectMarks, sourcesRow ? markRect(c, sourcesRow, 4) : null);
-    const fwhmLabel = findByText(c, "dt", t("extraction.review.edit.fields.fwhmNm"));
+    const fwhmLabel = findByText(
+      c,
+      "dt",
+      t("extraction.review.edit.fields.fwhmNm"),
+    );
     const fwhmField = fwhmLabel?.parentElement as HTMLElement | null;
     push(mode2CorrectMarks, fwhmField ? markRect(c, fwhmField, 4) : null);
   }
 
-  // Page 23 (Mode 2 -- export): the preview badge + reviewed-by legend
+  // Page 26 (Mode 2 -- ask Photon): header, message thread, suggested
+  // chips -- plain refs on markup hand-written in GuidePagePhoton.vue (same
+  // technique as the AddPoint pages), not a text search, since this stand-in
+  // has no pre-existing live component layout to reverse engineer. These
+  // three sit flush against each other (no gap, just a border), so a 2px
+  // pad (rather than markRect's 4px default) keeps adjacent rings from
+  // overlapping where they touch.
+  const photonWrap = pagePhotonRef.value?.photonWrap;
+  if (photonWrap) {
+    const c = photonWrap;
+    const headerWrap = pagePhotonRef.value?.photonHeaderWrap;
+    const messagesWrap = pagePhotonRef.value?.photonMessagesWrap;
+    const chipsWrap = pagePhotonRef.value?.photonChipsWrap;
+    push(photonMarks, headerWrap ? markRect(c, headerWrap, 2) : null);
+    push(photonMarks, messagesWrap ? markRect(c, messagesWrap, 2) : null);
+    push(photonMarks, chipsWrap ? markRect(c, chipsWrap, 2) : null);
+  }
+
+  // Page 26 (Mode 2 -- export): the preview badge + reviewed-by legend
   // row, the records table, and the summary/save footer --
   // ExtractionExportStep is mounted whole (no network call fires until a
   // real click), so these are found the same way, via real translated
@@ -1370,7 +1502,11 @@ async function captureGuideArtifacts() {
   const exportStepWrap = pageMode2ExportRef.value?.exportStepWrap;
   if (exportStepWrap) {
     const c = exportStepWrap;
-    const legendSpan = findByText(c, "span", t("extraction.export.reviewedByLegend"));
+    const legendSpan = findByText(
+      c,
+      "span",
+      t("extraction.export.reviewedByLegend"),
+    );
     const legendRow = legendSpan?.parentElement as HTMLElement | null;
     push(mode2ExportMarks, legendRow ? markRect(c, legendRow, 4) : null);
     const table = legendRow?.nextElementSibling as HTMLElement | null;
@@ -1382,10 +1518,12 @@ async function captureGuideArtifacts() {
 }
 
 // See composables/useGuideCaptureReadiness.ts.
-const { waitUntilReady } = useGuideCaptureReadiness(captureGuideArtifacts, locale);
+const { waitUntilReady } = useGuideCaptureReadiness(
+  captureGuideArtifacts,
+  locale,
+);
 
 defineExpose({ rootEl, waitUntilReady });
-
 </script>
 
 <!-- Unscoped (not `scoped`) -- Vue's scoped CSS only reaches a child

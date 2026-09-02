@@ -23,7 +23,11 @@
          their own comments). Reuses R3/R1, the two demo pins already
          pinned on page 13 and shown in the comparison figure, so the chips
          here visibly refer to the same points. -->
-    <div ref="comparePinsTopWrap" class="guide-callout-region relative">
+    <!-- mt-6: the callout ring above uses side="top", so its numbered badge
+         floats above the ring's own top edge -- needs more clearance from
+         the body text above than the page's normal paragraph spacing gives,
+         or the badge crowds into that text. -->
+    <div ref="comparePinsTopWrap" class="guide-callout-region relative mt-6">
       <div
         ref="comparePinsChipsRowWrap"
         class="flex flex-wrap items-center gap-1.5"
@@ -445,9 +449,7 @@ const { t } = useI18n();
 const markupPenColors = ["#0072b2", "#e69f00", "#009e73", "#cc79a7"];
 const markupPenColor = markupPenColors[0];
 
-const comparePinsTopWrap = useTemplateRef<HTMLDivElement>(
-  "comparePinsTopWrap",
-);
+const comparePinsTopWrap = useTemplateRef<HTMLDivElement>("comparePinsTopWrap");
 const comparePinsChipsRowWrap = useTemplateRef<HTMLDivElement>(
   "comparePinsChipsRowWrap",
 );

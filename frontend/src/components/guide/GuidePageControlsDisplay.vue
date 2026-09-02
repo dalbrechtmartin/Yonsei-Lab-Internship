@@ -17,58 +17,63 @@
       {{ t("guide.steps.controlsDisplay.body") }}
     </p>
 
-    <div class="flex flex-1 items-start justify-center gap-8">
-      <div
-        ref="displayControlsWrap"
-        class="guide-callout-region relative shrink-0"
-        style="width: 280px"
-      >
-        <GraphControls
-          v-model:y-axis="selectedYAxis"
-          v-model:x-axis="selectedXAxis"
-          v-model:scale="yAxisScale"
-          v-model:chart-title="chartTitle"
-          v-model:show-legend="showLegend"
-          v-model:show-median="showMedian"
-          v-model:show-trend="showTrend"
-          v-model:trend-type="trendType"
-          v-model:selected-domains="selectedDomains"
-          v-model:selected-origins="selectedOrigins"
-          v-model:selected-material-classes="selectedMaterialClasses"
-          v-model:selected-base-materials="selectedBaseMaterials"
-          v-model:composite-filter-mode="compositeFilterMode"
-          v-model:show-pareto="showPareto"
-          v-model:exclude-needs-review="excludeNeedsReview"
-          v-model:point-size-mode="pointSizeMode"
-          v-model:point-size-by="pointSizeBy"
-          v-model:point-size="pointSize"
-          :numeric-columns="numericColumns"
-          :categorical-columns="xAxisCategoricalColumns"
-          :domain-column="domainColumn"
-          :domain-values="domainValues"
-          :domain-counts="domainCounts"
-          :origin-column="originColumn"
-          :origin-values="originValues"
-          :origin-counts="originCounts"
-          :material-class-column="materialClassColumn"
-          :material-class-values="materialClassValues"
-          :material-class-counts="materialClassCounts"
-          :base-materials-column="baseMaterialsColumn"
-          :base-materials-values="baseMaterialsValues"
-          :base-materials-counts="baseMaterialsCounts"
-          :needs-review-column="reviewStatusColumn"
-          :needs-review-count="needsReviewCount"
-        />
-        <GuideMarkRing
-          v-for="(m, i) in displayMarks"
-          :key="i"
-          :mark="m"
-          :number="i + 1"
-        />
+    <div class="flex items-start justify-center gap-8">
+      <div class="flex shrink-0 flex-col items-center" style="width: 280px">
+        <div
+          ref="displayControlsWrap"
+          class="guide-callout-region relative w-full"
+        >
+          <GraphControls
+            v-model:y-axis="selectedYAxis"
+            v-model:x-axis="selectedXAxis"
+            v-model:scale="yAxisScale"
+            v-model:chart-title="chartTitle"
+            v-model:show-legend="showLegend"
+            v-model:show-median="showMedian"
+            v-model:show-trend="showTrend"
+            v-model:trend-type="trendType"
+            v-model:selected-domains="selectedDomains"
+            v-model:selected-origins="selectedOrigins"
+            v-model:selected-material-classes="selectedMaterialClasses"
+            v-model:selected-base-materials="selectedBaseMaterials"
+            v-model:composite-filter-mode="compositeFilterMode"
+            v-model:show-pareto="showPareto"
+            v-model:exclude-needs-review="excludeNeedsReview"
+            v-model:point-size-mode="pointSizeMode"
+            v-model:point-size-by="pointSizeBy"
+            v-model:point-size="pointSize"
+            :numeric-columns="numericColumns"
+            :categorical-columns="xAxisCategoricalColumns"
+            :domain-column="domainColumn"
+            :domain-values="domainValues"
+            :domain-counts="domainCounts"
+            :origin-column="originColumn"
+            :origin-values="originValues"
+            :origin-counts="originCounts"
+            :material-class-column="materialClassColumn"
+            :material-class-values="materialClassValues"
+            :material-class-counts="materialClassCounts"
+            :base-materials-column="baseMaterialsColumn"
+            :base-materials-values="baseMaterialsValues"
+            :base-materials-counts="baseMaterialsCounts"
+            :needs-review-column="reviewStatusColumn"
+            :needs-review-count="needsReviewCount"
+          />
+          <GuideMarkRing
+            v-for="(m, i) in displayMarks"
+            :key="i"
+            :mark="m"
+            :number="i + 1"
+          />
+        </div>
+        <p class="mt-2 text-center text-[11px] leading-snug text-secondary">
+          {{ t("guide.steps.controlsDisplay.figureCaption") }}
+        </p>
       </div>
 
       <div class="w-64 shrink-0 pt-1">
         <GuideMarkLegend
+          :compact="true"
           :items="[
             {
               label: t('guide.steps.controlsDisplay.display.scale.label'),
@@ -98,9 +103,6 @@
         />
       </div>
     </div>
-    <p class="mt-2 text-center text-[11px] leading-snug text-secondary">
-      {{ t("guide.steps.controlsDisplay.figureCaption") }}
-    </p>
 
     <GuideFooter :page="page" :total-pages="totalPages" />
   </section>
