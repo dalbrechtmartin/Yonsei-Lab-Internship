@@ -249,6 +249,7 @@ async function handleValidate() {
   if (!record) return;
   try {
     await updateReviewStatus(record, "Approve (Manual)");
+    nextRecord();
   } catch (error) {
     console.error("Failed to validate record:", error);
     setTransientStatus("extraction.error", ERROR_STATUS_CLASS);
