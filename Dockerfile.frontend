@@ -12,6 +12,13 @@ RUN npm run build
 
 FROM nginxinc/nginx-unprivileged:alpine
 
+# The alpine tag is only rebuilt periodically, so packages baked into it can
+# trail Alpine's own security fixes -- apk upgrade at build time closes that
+# gap regardless of how stale the upstream image is (Trivy scan gate in CI).
+USER root
+RUN apk update && apk upgrade --no-cache
+USER nginx
+
 COPY --from=builder /app/dist /usr/share/nginx/html
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
