@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.3.1](https://github.com/dalbrechtmartin/Yonsei-Lab-Internship/compare/v1.3.0...v1.3.1) (2026-09-03)
+
+
+### Bug Fixes
+
+* **ci:** keep frontend image OS packages patched at build time ([7980ef1](https://github.com/dalbrechtmartin/Yonsei-Lab-Internship/commit/7980ef188808ece5722765d04a918dd88f4bea05))
+* **extraction:** advance to the next record after validating it ([e9baa06](https://github.com/dalbrechtmartin/Yonsei-Lab-Internship/commit/e9baa06e350f8fe59b5dbb3f263619034e83d2f9))
+* **extraction:** avoid stranding the wizard on a blank step 2 ([aa356a1](https://github.com/dalbrechtmartin/Yonsei-Lab-Internship/commit/aa356a1f6c11944a165f21a9009eaea4233ea7a0))
+* **visualization:** truncate layer labels in the compare canvas export ([c19873c](https://github.com/dalbrechtmartin/Yonsei-Lab-Internship/commit/c19873c2f985f1b8b814b63223e45ceba397abb0))
+
 ## [1.3.0](https://github.com/dalbrechtmartin/Yonsei-Lab-Internship/compare/v1.2.0...v1.3.0) (2026-09-01)
 
 
