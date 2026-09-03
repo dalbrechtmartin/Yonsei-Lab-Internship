@@ -464,6 +464,7 @@
       "mode1ControlsDisplay": "3. Display settings",
       "mode1Filters": "4. Filters",
       "mode1Reading": "5. Reading the chart",
+      "mode1ReadingInteract": "Interacting with the chart",
       "mode1Compare": "6. Compare groups",
       "mode1DataTable": "7. Manage your data points",
       "mode1AddPoint1": "8. Add a point: the essentials",
@@ -477,6 +478,7 @@
       "mode2Running": "2. Follow the extraction",
       "mode2Review": "3. Review a record",
       "mode2Correct": "Correct a flagged record",
+      "mode2Photon": "Ask Photon a question",
       "mode2Export": "4. Export your data",
       "about": "About the author"
     },
@@ -498,7 +500,6 @@
     "toc": {
       "title": "Table of contents",
       "title2": "Table of contents (continued)",
-      "hint": "Click any entry to jump there.",
       "desc": {
         "intro": "Why λLens, at a glance.",
         "mode1Import": "Drop in an Excel or CSV file.",
@@ -506,6 +507,7 @@
         "mode1ControlsDisplay": "Scale, trend line, legend and more.",
         "mode1Filters": "Narrow the data without touching the file.",
         "mode1Reading": "Read every point on the chart.",
+        "mode1ReadingInteract": "Hover, zoom, pin, and right-click a point.",
         "mode1Compare": "Group and compare by category.",
         "mode1DataTable": "Search, sort, hide, pin.",
         "mode1AddPoint1": "Name, axes and metrics for a new point.",
@@ -519,6 +521,7 @@
         "mode2Running": "Watch the batch process live.",
         "mode2Review": "Check a flagged value against its source.",
         "mode2Correct": "Fix a value by hand.",
+        "mode2Photon": "Ask Photon to explain a value or a flag.",
         "mode2Export": "Save a validated file."
       }
     },
@@ -591,7 +594,7 @@
           },
           "trendLine": {
             "label": "Trend line",
-            "body": "fits a curve to the points. A dropdown picks the curve type. Disabled unless both axes are numeric."
+            "body": "fits a curve to the points: linear, exponential, logarithmic, power, or polynomial. \"Auto\" keeps whichever fits best (highest R²). Disabled unless both axes are numeric."
           },
           "pareto": {
             "label": "Pareto frontier",
@@ -615,7 +618,13 @@
         "title": "4. Filters",
         "body": "Filters narrow the dataset without changing the file. Each category is a dropdown: click to check or uncheck values. A summary strip always shows what's active. A category only appears if the file has that column, and \"Hide needs-review\" only appears if at least one row is flagged.",
         "figureCaption": "Fig. 5: Filters section open.",
-        "note": "Material Class and Base Materials are composite filters: a cell like \"Dielectric;Semiconductor\" counts toward every value it lists. The exclusion mode above decides what happens if only some listed values stay checked: Lenient (default) keeps a row if one value is checked; Strict requires all of them.",
+        "note": {
+          "lead": "Material Class and Base Materials are composite filters: a cell like \"Dielectric;Semiconductor\" counts toward every value it lists. The exclusion mode above decides what happens if only some of those values stay checked.",
+          "lenientLabel": "Lenient (default)",
+          "lenientBody": "keeps a row if at least one listed value is checked.",
+          "strictLabel": "Strict",
+          "strictBody": "requires every listed value to be checked."
+        },
         "marks": {
           "needsReview": {
             "label": "Hide needs-review",
@@ -672,7 +681,11 @@
             "label": "Zoom controls",
             "body": "lock/unlock, zoom in/out, reset. Locked by default, so an accidental scroll doesn't zoom the chart instead of the page."
           }
-        },
+        }
+      },
+      "readingInteract": {
+        "title": "Interacting with the chart",
+        "body": "Beyond reading values, the chart responds to the mouse. Each interaction below is available at any time while working in Mode 1.",
         "interactions": {
           "hover": {
             "label": "Hover",
@@ -723,6 +736,10 @@
             "label": "All / Visible / Hidden",
             "body": "filter chips with live counts. Search and sort narrow the list further."
           },
+          "sort": {
+            "label": "Sort",
+            "body": "by reference, title, or value (highest/lowest first)."
+          },
           "pinnedGroup": {
             "label": "Pinned group",
             "body": "pulls every pinned point out of its normal group, so it's never lost behind a filter or a collapsed group."
@@ -742,8 +759,8 @@
       "addPoint1": {
         "title": "8. Add a point manually",
         "body": "\"Add data\", in the Data points tab, opens a 4-step wizard to plot your own sensor design, measured or simulated, alongside the literature. It never touches the imported file, but it does appear in exports.",
-        "stepperCaption": "Fig. 9: step indicator. Only the current step is picked out; the others aren't a done/undone trail.",
-        "footerCaption": "Back, Next and (step 1 only) \"Save without more details\" sit in a footer that stays visible across all 4 steps; on step 4 the button reads \"Save\" instead.",
+        "stepperCaption": "Fig. 9: step indicator — only the current step is picked out.",
+        "footerCaption": "Back/Next stay visible across all 4 steps; step 4's button reads \"Save\" instead.",
         "essentialsTitle": "Step 1: Essentials",
         "essentialsBody": "Fill in a label and this chart's current axis values (always required, so the point can be placed), then optionally Domain, Origin, and marker shape.",
         "metricsTitle": "Step 2: Metrics",
@@ -751,19 +768,19 @@
         "marks": {
           "label": {
             "label": "Sensor label",
-            "body": "required. Shown in the chart tooltip and the data points list."
+            "body": "required — shown in the chart tooltip and the data points list."
           },
           "axes": {
             "label": "Axis values",
-            "body": "required: the Y and X columns currently plotted. Every other field on this step is optional."
+            "body": "required: the Y and X columns currently plotted."
           },
           "domainOrigin": {
             "label": "Domain & Origin",
-            "body": "Origin defaults to SIM: a manually entered point is more often a design than a measurement."
+            "body": "Origin defaults to SIM for a manually entered point."
           },
           "shape": {
             "label": "Point shape",
-            "body": "circle, diamond, or star. Manual points default to diamond."
+            "body": "circle, diamond, or star — manual points default to diamond."
           },
           "metrics": {
             "label": "Measurements",
@@ -771,7 +788,7 @@
           },
           "qFactor": {
             "label": "Q-factor",
-            "body": "auto-computed as λ / FWHM once both are filled in. \"Enter a different value\" hands back manual control."
+            "body": "auto-computed as λ / FWHM once both are filled in."
           }
         }
       },
@@ -836,9 +853,25 @@
             "label": "Pinned card",
             "body": "reference, title and plotted axis values. Click to expand."
           },
+          "export": {
+            "label": "Export this pin",
+            "body": "downloads every field of this card as a PNG."
+          },
+          "remove": {
+            "label": "Remove",
+            "body": "unpins the card. Doesn't touch the underlying data point."
+          },
           "siblings": {
             "label": "Pin this paper's other rows",
             "body": "shown while any of the paper's other records remain unpinned; one click pins them all."
+          },
+          "origin": {
+            "label": "Origin",
+            "body": "whether the record is measured (EXP) or simulated (SIM)."
+          },
+          "modeId": {
+            "label": "Mode ID",
+            "body": "the Mode ID and, when present, its description (click to expand)."
           },
           "layerStructure": {
             "label": "Layer Structure",
@@ -997,6 +1030,29 @@
           "pencil": {
             "label": "Edit a field",
             "body": "Every field has its own pencil: click, edit the value, confirm with Enter."
+          }
+        }
+      },
+      "mode2Photon": {
+        "title": "Ask Photon a question",
+        "body": "On the review screen, a bubble in the bottom-right corner opens Photon: an assistant that knows the record on screen (values, status, citations) and explains a value, a conversion, or a flag in plain language, backed by evidence.",
+        "note": "Photon never edits the record. Its answers stay informational; corrections still go through each field's own pencil.",
+        "demo": {
+          "userQuestion": "Why is FWHM flagged for review?",
+          "answer": "The paper only gives the linewidth (FWHM) as a figure-estimated reading (page 7, Fig. S2), not a precise reported number. The model flagged it for a second look instead of approving it on its own."
+        },
+        "marks": {
+          "header": {
+            "label": "Context",
+            "body": "Photon knows the record on screen: every answer stays scoped to that one entry."
+          },
+          "messages": {
+            "label": "Sourced answer",
+            "body": "The explanation is grounded in the quote extracted from the paper, not a generic reply."
+          },
+          "chips": {
+            "label": "Suggested questions",
+            "body": "Ready-made prompts, shown only for what this record actually has (evidence, conversion, exclusion)."
           }
         }
       },

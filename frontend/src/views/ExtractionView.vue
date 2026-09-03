@@ -188,8 +188,14 @@ async function handleLaunch(files: File[]) {
   pendingSummary.value = false;
   try {
     await startExtraction(files, modelChoice.value);
-    currentStep.value = 2;
-    furthestStep.value = 2;
+    // A job that finished (or was found empty) before this resolves already
+    // ran its own terminal handling above -- onNoData reset the wizard back
+    // to step 1, and forcing step 2 here would strand it on a blank screen
+    // (jobStatus is null once resetJob has run).
+    if (jobStatus.value) {
+      currentStep.value = 2;
+      furthestStep.value = 2;
+    }
   } catch (error) {
     setTransientStatus(
       error instanceof QuotaExceededError
@@ -243,6 +249,7 @@ async function handleValidate() {
   if (!record) return;
   try {
     await updateReviewStatus(record, "Approve (Manual)");
+    nextRecord();
   } catch (error) {
     console.error("Failed to validate record:", error);
     setTransientStatus("extraction.error", ERROR_STATUS_CLASS);

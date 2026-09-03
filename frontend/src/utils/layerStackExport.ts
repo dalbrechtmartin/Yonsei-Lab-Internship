@@ -142,7 +142,12 @@ export function drawLayerStack(
       ctx.strokeRect(x, iy, width, h);
       ctx.font = labelFont;
       ctx.fillStyle = "rgba(0,0,0,0.72)";
-      ctx.fillText(layerLabel(layer), x + labelOffsetX, iy + h / 2 + 4);
+      const label = ellipsisTruncate(
+        ctx,
+        layerLabel(layer),
+        mainW - labelOffsetX - 6,
+      );
+      ctx.fillText(label, x + labelOffsetX, iy + h / 2 + 4);
     }
     iy += h;
   });

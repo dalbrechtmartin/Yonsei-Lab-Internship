@@ -14,7 +14,9 @@
       >
         <template v-for="(entry, idx) in entries" :key="entry.page">
           <div
-            v-if="entry.group === 'mode1' && entries[idx - 1]?.group !== 'mode1'"
+            v-if="
+              entry.group === 'mode1' && entries[idx - 1]?.group !== 'mode1'
+            "
             class="flex items-center gap-2 border-b border-border bg-primary/[0.07] px-4 py-1.5 text-xs font-semibold tracking-[0.2em] text-primary uppercase"
           >
             {{ t("guide.mode1.eyebrow") }} — {{ t("guide.mode1.title") }}
@@ -23,8 +25,6 @@
         </template>
       </div>
     </div>
-
-    <p class="mt-2 text-xs text-secondary">{{ t("guide.toc.hint") }}</p>
 
     <GuideFooter :page="page" :total-pages="totalPages" />
   </section>

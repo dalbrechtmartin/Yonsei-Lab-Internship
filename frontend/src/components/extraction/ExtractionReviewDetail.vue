@@ -50,7 +50,9 @@
          tooltip); the full per-source detail (quote + clickable location)
          still lives in Provenance below for a permanent, non-hover view. -->
     <div v-if="sources.length" class="flex flex-wrap items-center gap-1.5">
-      <span class="text-[10px] font-semibold tracking-wide text-secondary uppercase">
+      <span
+        class="text-[10px] font-semibold tracking-wide text-secondary uppercase"
+      >
         {{ t("extraction.review.detail.sources.label") }}
       </span>
       <button
@@ -190,7 +192,9 @@
           :confirmed="isConfirmed('resonanceWavelengthNm')"
           @save="(v) => saveField('resonanceWavelengthNm', v)"
           @select-source="emitSelectSourceForField('resonanceWavelengthNm')"
-          @toggle-confirm="emit('toggle-confirm-field', 'resonanceWavelengthNm')"
+          @toggle-confirm="
+            emit('toggle-confirm-field', 'resonanceWavelengthNm')
+          "
         />
         <ExtractionDetailField
           :label="t('extraction.review.edit.fields.spectralRange')"
@@ -206,7 +210,9 @@
         />
         <ExtractionDetailField
           type="number"
-          :label="formatUnitSuperscripts(t('extraction.review.edit.fields.fomRiuInv'))"
+          :label="
+            formatUnitSuperscripts(t('extraction.review.edit.fields.fomRiuInv'))
+          "
           :value="record.fomRiuInv"
           editable
           :note="fieldNote('fomRiuInv')"
@@ -234,7 +240,10 @@
                   <Calculator class="size-3.5" />
                 </button>
               </PopoverTrigger>
-              <PopoverContent align="start" class="flex w-80 flex-col gap-2.5 p-3">
+              <PopoverContent
+                align="start"
+                class="flex w-80 flex-col gap-2.5 p-3"
+              >
                 <div>
                   <p class="font-mono text-[13px] font-semibold text-ink">
                     {{ t("extraction.review.detail.recompute.fomFormula") }}
@@ -245,25 +254,41 @@
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                   <div class="flex flex-col gap-0.5">
-                    <Label class="text-[9.5px] font-medium tracking-wide text-secondary uppercase">
-                      {{ t("extraction.review.edit.fields.sensitivityNmPerRiu") }}
+                    <Label
+                      class="text-[9.5px] font-medium tracking-wide text-secondary uppercase"
+                    >
+                      {{
+                        t("extraction.review.edit.fields.sensitivityNmPerRiu")
+                      }}
                     </Label>
                     <Input v-model.number="fomInputSensitivity" type="number" />
                   </div>
                   <div class="flex flex-col gap-0.5">
-                    <Label class="text-[9.5px] font-medium tracking-wide text-secondary uppercase">
+                    <Label
+                      class="text-[9.5px] font-medium tracking-wide text-secondary uppercase"
+                    >
                       {{ t("extraction.review.edit.fields.fwhmNm") }}
                     </Label>
                     <Input v-model.number="fomInputFwhm" type="number" />
                   </div>
                 </div>
-                <p v-if="fomError" class="text-xs text-rose-700">{{ fomError }}</p>
-                <p v-if="fomSuccessMessage" class="flex items-center gap-1 text-xs text-emerald-700">
+                <p v-if="fomError" class="text-xs text-rose-700">
+                  {{ fomError }}
+                </p>
+                <p
+                  v-if="fomSuccessMessage"
+                  class="flex items-center gap-1 text-xs text-emerald-700"
+                >
                   <Check class="size-3.5 shrink-0" />
                   {{ fomSuccessMessage }}
                 </p>
                 <div class="flex justify-end">
-                  <Button type="button" size="sm" :disabled="fomSubmitting" @click="applyFomRecompute">
+                  <Button
+                    type="button"
+                    size="sm"
+                    :disabled="fomSubmitting"
+                    @click="applyFomRecompute"
+                  >
                     {{ t("extraction.review.detail.recompute.calculate") }}
                   </Button>
                 </div>
@@ -313,7 +338,10 @@
                   <Calculator class="size-3.5" />
                 </button>
               </PopoverTrigger>
-              <PopoverContent align="start" class="flex w-96 flex-col gap-2.5 p-3">
+              <PopoverContent
+                align="start"
+                class="flex w-96 flex-col gap-2.5 p-3"
+              >
                 <div>
                   <p class="text-[13px] font-semibold text-ink">
                     {{ t("extraction.review.detail.recompute.label") }}
@@ -321,36 +349,68 @@
                   <p class="text-[11px] leading-snug text-secondary">
                     {{
                       isFomRelationFormula
-                        ? t("extraction.review.detail.recompute.relationFormula")
-                        : t("extraction.review.detail.recompute.sensitivityHint")
+                        ? t(
+                            "extraction.review.detail.recompute.relationFormula",
+                          )
+                        : t(
+                            "extraction.review.detail.recompute.sensitivityHint",
+                          )
                     }}
                   </p>
                 </div>
                 <div class="flex flex-col gap-0.5">
-                  <Label class="text-[9.5px] font-medium tracking-wide text-secondary uppercase">
-                    {{ t("extraction.review.detail.recompute.formulaPlaceholder") }}
+                  <Label
+                    class="text-[9.5px] font-medium tracking-wide text-secondary uppercase"
+                  >
+                    {{
+                      t("extraction.review.detail.recompute.formulaPlaceholder")
+                    }}
                   </Label>
                   <Select v-model="recomputeFormula">
                     <SelectTrigger class="bg-card/80">
-                      <SelectValue :placeholder="t('extraction.review.detail.recompute.formulaPlaceholder')" />
+                      <SelectValue
+                        :placeholder="
+                          t(
+                            'extraction.review.detail.recompute.formulaPlaceholder',
+                          )
+                        "
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup v-if="gasFormulas.length">
-                        <SelectLabel>{{ t("extraction.review.detail.recompute.gasGroup") }}</SelectLabel>
-                        <SelectItem v-for="f in gasFormulas" :key="f.key" :value="f.key">
+                        <SelectLabel>{{
+                          t("extraction.review.detail.recompute.gasGroup")
+                        }}</SelectLabel>
+                        <SelectItem
+                          v-for="f in gasFormulas"
+                          :key="f.key"
+                          :value="f.key"
+                        >
                           {{ f.label }}
                         </SelectItem>
                       </SelectGroup>
                       <SelectGroup v-if="liquidFormulas.length">
-                        <SelectLabel>{{ t("extraction.review.detail.recompute.liquidGroup") }}</SelectLabel>
-                        <SelectItem v-for="f in liquidFormulas" :key="f.key" :value="f.key">
+                        <SelectLabel>{{
+                          t("extraction.review.detail.recompute.liquidGroup")
+                        }}</SelectLabel>
+                        <SelectItem
+                          v-for="f in liquidFormulas"
+                          :key="f.key"
+                          :value="f.key"
+                        >
                           {{ f.label }}
                         </SelectItem>
                       </SelectGroup>
                       <SelectGroup v-if="fomDefinitionRecognized">
-                        <SelectLabel>{{ t("extraction.review.detail.recompute.relationGroup") }}</SelectLabel>
+                        <SelectLabel>{{
+                          t("extraction.review.detail.recompute.relationGroup")
+                        }}</SelectLabel>
                         <SelectItem value="fom_relation">
-                          {{ t("extraction.review.detail.recompute.relationOption") }}
+                          {{
+                            t(
+                              "extraction.review.detail.recompute.relationOption",
+                            )
+                          }}
                         </SelectItem>
                       </SelectGroup>
                     </SelectContent>
@@ -359,45 +419,80 @@
                 <div class="grid grid-cols-2 gap-2">
                   <template v-if="isFomRelationFormula">
                     <div class="flex flex-col gap-0.5">
-                      <Label class="text-[9.5px] font-medium tracking-wide text-secondary uppercase">
+                      <Label
+                        class="text-[9.5px] font-medium tracking-wide text-secondary uppercase"
+                      >
                         {{ t("extraction.review.edit.fields.fomRiuInv") }}
                       </Label>
-                      <Input v-model.number="recomputeRelationFom" type="number" />
+                      <Input
+                        v-model.number="recomputeRelationFom"
+                        type="number"
+                      />
                     </div>
                     <div class="flex flex-col gap-0.5">
-                      <Label class="text-[9.5px] font-medium tracking-wide text-secondary uppercase">
+                      <Label
+                        class="text-[9.5px] font-medium tracking-wide text-secondary uppercase"
+                      >
                         {{ t("extraction.review.edit.fields.fwhmNm") }}
                       </Label>
-                      <Input v-model.number="recomputeRelationFwhm" type="number" />
+                      <Input
+                        v-model.number="recomputeRelationFwhm"
+                        type="number"
+                      />
                     </div>
                   </template>
                   <template v-else>
                     <div class="flex flex-col gap-0.5">
-                      <Label class="text-[9.5px] font-medium tracking-wide text-secondary uppercase">
-                        {{ t("extraction.review.detail.recompute.rawMagnitude") }}
+                      <Label
+                        class="text-[9.5px] font-medium tracking-wide text-secondary uppercase"
+                      >
+                        {{
+                          t("extraction.review.detail.recompute.rawMagnitude")
+                        }}
                       </Label>
-                      <Input v-model.number="recomputeMagnitude" type="number" />
+                      <Input
+                        v-model.number="recomputeMagnitude"
+                        type="number"
+                      />
                     </div>
                     <div class="flex flex-col gap-0.5">
-                      <Label class="text-[9.5px] font-medium tracking-wide text-secondary uppercase">
+                      <Label
+                        class="text-[9.5px] font-medium tracking-wide text-secondary uppercase"
+                      >
                         {{ t("extraction.review.detail.recompute.unitLabel") }}
                       </Label>
                       <Input
                         v-model="recomputeUnit"
                         type="text"
-                        :placeholder="t('extraction.review.detail.recompute.unitPlaceholder')"
+                        :placeholder="
+                          t(
+                            'extraction.review.detail.recompute.unitPlaceholder',
+                          )
+                        "
                       />
                     </div>
-                    <div v-if="isCustomFormula" class="col-span-2 flex flex-col gap-0.5">
-                      <Label class="text-[9.5px] font-medium tracking-wide text-secondary uppercase">
-                        {{ t("extraction.review.detail.recompute.customConstant") }}
+                    <div
+                      v-if="isCustomFormula"
+                      class="col-span-2 flex flex-col gap-0.5"
+                    >
+                      <Label
+                        class="text-[9.5px] font-medium tracking-wide text-secondary uppercase"
+                      >
+                        {{
+                          t("extraction.review.detail.recompute.customConstant")
+                        }}
                       </Label>
                       <Input v-model.number="recomputeConstant" type="number" />
                     </div>
                   </template>
                 </div>
-                <p v-if="recomputeError" class="text-xs text-rose-700">{{ recomputeError }}</p>
-                <p v-if="recomputeSuccessMessage" class="flex items-center gap-1 text-xs text-emerald-700">
+                <p v-if="recomputeError" class="text-xs text-rose-700">
+                  {{ recomputeError }}
+                </p>
+                <p
+                  v-if="recomputeSuccessMessage"
+                  class="flex items-center gap-1 text-xs text-emerald-700"
+                >
                   <Check class="size-3.5 shrink-0" />
                   {{ recomputeSuccessMessage }}
                 </p>
@@ -450,12 +545,17 @@
                       ? 'text-primary hover:bg-primary/10'
                       : 'text-secondary/70 hover:bg-secondary/15 hover:text-ink'
                   "
-                  :aria-label="t('extraction.review.detail.recompute.fwhmLabel')"
+                  :aria-label="
+                    t('extraction.review.detail.recompute.fwhmLabel')
+                  "
                 >
                   <Calculator class="size-3.5" />
                 </button>
               </PopoverTrigger>
-              <PopoverContent align="start" class="flex w-80 flex-col gap-2.5 p-3">
+              <PopoverContent
+                align="start"
+                class="flex w-80 flex-col gap-2.5 p-3"
+              >
                 <div>
                   <p class="font-mono text-[13px] font-semibold text-ink">
                     {{ t("extraction.review.detail.recompute.fwhmFormula") }}
@@ -466,25 +566,44 @@
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                   <div class="flex flex-col gap-0.5">
-                    <Label class="text-[9.5px] font-medium tracking-wide text-secondary uppercase">
+                    <Label
+                      class="text-[9.5px] font-medium tracking-wide text-secondary uppercase"
+                    >
                       {{ t("extraction.review.edit.fields.fomRiuInv") }}
                     </Label>
                     <Input v-model.number="fwhmInputFom" type="number" />
                   </div>
                   <div class="flex flex-col gap-0.5">
-                    <Label class="text-[9.5px] font-medium tracking-wide text-secondary uppercase">
-                      {{ t("extraction.review.edit.fields.sensitivityNmPerRiu") }}
+                    <Label
+                      class="text-[9.5px] font-medium tracking-wide text-secondary uppercase"
+                    >
+                      {{
+                        t("extraction.review.edit.fields.sensitivityNmPerRiu")
+                      }}
                     </Label>
-                    <Input v-model.number="fwhmInputSensitivity" type="number" />
+                    <Input
+                      v-model.number="fwhmInputSensitivity"
+                      type="number"
+                    />
                   </div>
                 </div>
-                <p v-if="fwhmError" class="text-xs text-rose-700">{{ fwhmError }}</p>
-                <p v-if="fwhmSuccessMessage" class="flex items-center gap-1 text-xs text-emerald-700">
+                <p v-if="fwhmError" class="text-xs text-rose-700">
+                  {{ fwhmError }}
+                </p>
+                <p
+                  v-if="fwhmSuccessMessage"
+                  class="flex items-center gap-1 text-xs text-emerald-700"
+                >
                   <Check class="size-3.5 shrink-0" />
                   {{ fwhmSuccessMessage }}
                 </p>
                 <div class="flex justify-end">
-                  <Button type="button" size="sm" :disabled="fwhmSubmitting" @click="applyFwhmRecompute">
+                  <Button
+                    type="button"
+                    size="sm"
+                    :disabled="fwhmSubmitting"
+                    @click="applyFwhmRecompute"
+                  >
                     {{ t("extraction.review.detail.recompute.calculate") }}
                   </Button>
                 </div>
@@ -561,8 +680,12 @@
             @toggle-confirm="emit('toggle-confirm-field', 'baseMaterials')"
           />
         </dl>
-        <div class="flex flex-col gap-1 rounded-md border border-secondary/20 bg-card px-2.5 py-1.5">
-          <Label class="text-[10px] font-medium tracking-wide text-secondary uppercase">
+        <div
+          class="flex flex-col gap-1 rounded-md border border-secondary/20 bg-card px-2.5 py-1.5"
+        >
+          <Label
+            class="text-[10px] font-medium tracking-wide text-secondary uppercase"
+          >
             {{ t("extraction.review.edit.fields.layerStructure") }}
           </Label>
           <LayerStructureField
@@ -572,7 +695,12 @@
             @material-created="handleMaterialCreated"
           />
           <div v-if="layersDirty" class="flex justify-end">
-            <Button type="button" variant="outline" size="sm" @click="saveLayerStructure">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              @click="saveLayerStructure"
+            >
               {{ t("extraction.review.detail.saveLayers") }}
             </Button>
           </div>
@@ -586,7 +714,10 @@
     >
       <div class="flex flex-col gap-2.5 pt-2">
         <dl class="grid grid-cols-2 gap-2">
-          <ExtractionDetailField :label="t('extraction.review.detail.fields.modelUsed')" :value="record.modelUsed" />
+          <ExtractionDetailField
+            :label="t('extraction.review.detail.fields.modelUsed')"
+            :value="record.modelUsed"
+          />
           <ExtractionDetailField
             wide
             :emphasize="!!record.notes"
@@ -598,7 +729,10 @@
           />
         </dl>
 
-        <div v-if="record.rawValue" class="rounded-md bg-secondary/8 px-2.5 py-2 text-xs">
+        <div
+          v-if="record.rawValue"
+          class="rounded-md bg-secondary/8 px-2.5 py-2 text-xs"
+        >
           <p class="text-secondary">
             {{ t("extraction.review.detail.rawValue") }}:
             <span class="text-ink">{{ record.rawValue }}</span>
@@ -619,7 +753,9 @@
         >
           <AlertTriangle class="mt-0.5 size-3 shrink-0" />
           <p class="leading-relaxed">
-            <span class="font-medium">{{ t("extraction.review.detail.calculatedFields") }}:</span>
+            <span class="font-medium"
+              >{{ t("extraction.review.detail.calculatedFields") }}:</span
+            >
             {{ record.calculatedFields }}
           </p>
         </div>
@@ -634,9 +770,16 @@
             v-for="(note, i) in generalNotes"
             :key="i"
             class="flex items-start gap-1.5 rounded-md px-2.5 py-1.5 text-xs leading-relaxed"
-            :class="note.severity === 'warning' ? 'bg-amber-500/8 text-amber-900' : 'bg-secondary/6 text-secondary'"
+            :class="
+              note.severity === 'warning'
+                ? 'bg-amber-500/8 text-amber-900'
+                : 'bg-secondary/6 text-secondary'
+            "
           >
-            <AlertTriangle v-if="note.severity === 'warning'" class="mt-0.5 size-3 shrink-0" />
+            <AlertTriangle
+              v-if="note.severity === 'warning'"
+              class="mt-0.5 size-3 shrink-0"
+            />
             <Info v-else class="mt-0.5 size-3 shrink-0" />
             <span>{{ noteText(note) }}</span>
           </li>
@@ -692,7 +835,11 @@ import { AlertTriangle, Calculator, Check, Info, Quote } from "@lucide/vue";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -740,17 +887,19 @@ const props = defineProps<{
    * real job behind it -- every suggestion list just degrades to whatever
    * canonical/hardcoded values exist on their own (see materialClassOptions). */
   allRecords?: ExtractionRecord[];
-  /** Used by the guide's static worked example: starts with only the
-   * Provenance section open (identification/measurements/materials
-   * collapsed) so the printed page shows the interesting "why is this
-   * flagged" part without needing the full card's height. The live review
-   * screen never sets this -- a real reviewer gets every section open, so
-   * every field's edit affordance is reachable without first having to
-   * discover which section it lives in (a fully collapsed section's fields
-   * are still in the DOM, just visually clipped, so clicking where an
-   * invisible field's pencil "should" be silently does nothing -- this is
-   * exactly what a real reviewer hit before this prop's default changed:
-   * everything outside "Mesures" looked entirely unresponsive). */
+  /** Used by the guide's static worked example: starts with all four
+   * sections (identification/measurements/materials/provenance) collapsed,
+   * so the printed page shows just the always-visible status banner/source
+   * strip plus whichever section a given guide page's own rings need open
+   * (see GuideTemplate's openSection calls), without needing the full
+   * card's height. The live review screen never sets this -- a real
+   * reviewer gets every section open, so every field's edit affordance is
+   * reachable without first having to discover which section it lives in (a
+   * fully collapsed section's fields are still in the DOM, just visually
+   * clipped, so clicking where an invisible field's pencil "should" be
+   * silently does nothing -- this is exactly what a real reviewer hit
+   * before this prop's default changed: everything outside "Mesures"
+   * looked entirely unresponsive). */
   compact?: boolean;
   /** One entry per physical page of the record's own file (see
    * useExtractionRecords.getPageLabels) -- annotates the displayed Location
@@ -805,7 +954,10 @@ const { t } = useI18n();
 // event -- there is no separate "Corriger" form to route through; a click
 // on a field's pencil, an Enter/checkmark in its own inline input, and this
 // record being PATCHed are the same single step.
-function saveField(key: keyof EditableRecordFields, value: string | number | null) {
+function saveField(
+  key: keyof EditableRecordFields,
+  value: string | number | null,
+) {
   emit("save", { [key]: value } as Partial<EditableRecordFields>);
 }
 
@@ -815,7 +967,9 @@ function saveField(key: keyof EditableRecordFields, value: string | number | nul
 // component instance across records instead of remounting it; without this
 // an uncommitted draft in field A could still be "open" after navigating to
 // a different record entirely.
-const resetToken = computed(() => (props.record ? recordKey(props.record) : null));
+const resetToken = computed(() =>
+  props.record ? recordKey(props.record) : null,
+);
 
 // Every section starts open on a real review screen -- see `compact`'s own
 // doc comment above for why this must NOT be an exclusive accordion (a
@@ -828,7 +982,7 @@ const resetToken = computed(() => (props.record ? recordKey(props.record) : null
 const identificationOpen = ref(!props.compact);
 const measurementsOpen = ref(!props.compact);
 const materialsOpen = ref(!props.compact);
-const provenanceOpen = ref(true);
+const provenanceOpen = ref(!props.compact);
 
 const sources = computed(() =>
   parseEvidenceSources(
@@ -914,7 +1068,9 @@ const SOURCE_FIELD_LABELS = {
   qFactor: "Q-factor",
 } as const;
 
-function sourceForField(key: keyof typeof SOURCE_FIELD_LABELS): EvidenceSource | null {
+function sourceForField(
+  key: keyof typeof SOURCE_FIELD_LABELS,
+): EvidenceSource | null {
   const label = SOURCE_FIELD_LABELS[key];
   return sources.value.find((s) => s.fields.includes(label)) ?? null;
 }
@@ -923,7 +1079,11 @@ function emitSelectSourceForField(key: keyof typeof SOURCE_FIELD_LABELS) {
   const source = sourceForField(key);
   if (!source) return;
   const value = props.record?.[key] ?? null;
-  emit("select-source", source, typeof value === "number" ? String(value) : null);
+  emit(
+    "select-source",
+    source,
+    typeof value === "number" ? String(value) : null,
+  );
 }
 
 // A stale hover highlight must never bleed into a newly-selected record --
@@ -954,7 +1114,12 @@ const baseMaterialOptions = computed(() =>
 // synced back into Base Materials itself so it isn't left "unplaced"
 // relative to that field's own reminder text once this save round-trips.
 function handleMaterialCreated(name: string) {
-  if (baseMaterialOptions.value.some((m) => m.toLowerCase() === name.toLowerCase())) return;
+  if (
+    baseMaterialOptions.value.some(
+      (m) => m.toLowerCase() === name.toLowerCase(),
+    )
+  )
+    return;
   saveField("baseMaterials", [...baseMaterialOptions.value, name].join("; "));
 }
 
@@ -973,7 +1138,9 @@ const sensingMediumFormulas = ref<SensingMediumFormula[]>([]);
 onMounted(async () => {
   sensingMediumFormulas.value = await apiService.getSensingMediumFormulas();
 });
-const gasFormulas = computed(() => sensingMediumFormulas.value.filter((f) => f.medium === "gas"));
+const gasFormulas = computed(() =>
+  sensingMediumFormulas.value.filter((f) => f.medium === "gas"),
+);
 const liquidFormulas = computed(() =>
   sensingMediumFormulas.value.filter((f) => f.medium === "liquid"),
 );
@@ -1003,9 +1170,13 @@ let recomputeSuccessTimer: ReturnType<typeof setTimeout> | null = null;
 const fomDefinitionRecognized = computed(() =>
   isRecognizedFomDefinition(props.record?.definition ?? null),
 );
-const isFomRelationFormula = computed(() => recomputeFormula.value === "fom_relation");
+const isFomRelationFormula = computed(
+  () => recomputeFormula.value === "fom_relation",
+);
 const isCustomFormula = computed(
-  () => !isFomRelationFormula.value && (recomputeFormula.value?.endsWith(":custom") ?? false),
+  () =>
+    !isFomRelationFormula.value &&
+    (recomputeFormula.value?.endsWith(":custom") ?? false),
 );
 const canApplyRecompute = computed(() => {
   if (isFomRelationFormula.value) {
@@ -1037,7 +1208,9 @@ const canApplyRecompute = computed(() => {
 // This pattern captures the full numeric literal, sign and exponent
 // included, before the unit starts.
 const RAW_VALUE_RE = /^\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)\s*(.+)$/;
-function parseRawValue(raw: string | null): { magnitude: number; unit: string } | null {
+function parseRawValue(
+  raw: string | null,
+): { magnitude: number; unit: string } | null {
   if (!raw) return null;
   const match = raw.match(RAW_VALUE_RE);
   if (!match) return null;
@@ -1095,7 +1268,10 @@ function prefillSensitivityPanel() {
     );
     if (match) recomputeFormula.value = match.key;
   }
-  if (!recomputeFormula.value && autoFillTarget.value === "sensitivityNmPerRiu") {
+  if (
+    !recomputeFormula.value &&
+    autoFillTarget.value === "sensitivityNmPerRiu"
+  ) {
     recomputeFormula.value = "fom_relation";
     sensitivityFormulaIsAutoFallback.value = true;
   }
@@ -1180,7 +1356,9 @@ const autoFillTarget = computed<FomFieldKey | null>(() => {
     sensitivityNmPerRiu: record.sensitivityNmPerRiu,
     fwhmNm: record.fwhmNm,
   };
-  const nullKeys = (Object.keys(values) as FomFieldKey[]).filter((k) => values[k] === null);
+  const nullKeys = (Object.keys(values) as FomFieldKey[]).filter(
+    (k) => values[k] === null,
+  );
   return nullKeys.length === 1 ? nullKeys[0] : null;
 });
 
@@ -1244,10 +1422,13 @@ async function runRecomputeSensitivity(formulaKey: string | null) {
       // closes immediately, same as before, no success message to show.
       recomputeOpen.value = false;
     } else {
-      recomputeSuccessMessage.value = t("extraction.review.detail.recompute.successMessage", {
-        field: t("extraction.review.edit.fields.sensitivityNmPerRiu"),
-        value: updated.sensitivityNmPerRiu ?? "—",
-      });
+      recomputeSuccessMessage.value = t(
+        "extraction.review.detail.recompute.successMessage",
+        {
+          field: t("extraction.review.edit.fields.sensitivityNmPerRiu"),
+          value: updated.sensitivityNmPerRiu ?? "—",
+        },
+      );
       if (recomputeSuccessTimer) clearTimeout(recomputeSuccessTimer);
       recomputeSuccessTimer = setTimeout(() => {
         recomputeOpen.value = false;
@@ -1255,7 +1436,9 @@ async function runRecomputeSensitivity(formulaKey: string | null) {
     }
   } catch (error) {
     recomputeError.value =
-      error instanceof Error ? error.message : t("extraction.review.detail.recompute.error");
+      error instanceof Error
+        ? error.message
+        : t("extraction.review.detail.recompute.error");
   } finally {
     recomputeSubmitting.value = false;
   }
@@ -1291,17 +1474,22 @@ async function applyFomRecompute() {
     );
     emit("record-updated", updated);
     emit("recompute-applied", record, updated);
-    fomSuccessMessage.value = t("extraction.review.detail.recompute.successMessage", {
-      field: t("extraction.review.edit.fields.fomRiuInv"),
-      value: updated.fomRiuInv ?? "—",
-    });
+    fomSuccessMessage.value = t(
+      "extraction.review.detail.recompute.successMessage",
+      {
+        field: t("extraction.review.edit.fields.fomRiuInv"),
+        value: updated.fomRiuInv ?? "—",
+      },
+    );
     if (fomSuccessTimer) clearTimeout(fomSuccessTimer);
     fomSuccessTimer = setTimeout(() => {
       fomPanelOpen.value = false;
     }, 1400);
   } catch (error) {
     fomError.value =
-      error instanceof Error ? error.message : t("extraction.review.detail.recompute.error");
+      error instanceof Error
+        ? error.message
+        : t("extraction.review.detail.recompute.error");
   } finally {
     fomSubmitting.value = false;
   }
@@ -1328,31 +1516,44 @@ async function applyFwhmRecompute() {
     );
     emit("record-updated", updated);
     emit("recompute-applied", record, updated);
-    fwhmSuccessMessage.value = t("extraction.review.detail.recompute.successMessage", {
-      field: t("extraction.review.edit.fields.fwhmNm"),
-      value: updated.fwhmNm ?? "—",
-    });
+    fwhmSuccessMessage.value = t(
+      "extraction.review.detail.recompute.successMessage",
+      {
+        field: t("extraction.review.edit.fields.fwhmNm"),
+        value: updated.fwhmNm ?? "—",
+      },
+    );
     if (fwhmSuccessTimer) clearTimeout(fwhmSuccessTimer);
     fwhmSuccessTimer = setTimeout(() => {
       fwhmPanelOpen.value = false;
     }, 1400);
   } catch (error) {
     fwhmError.value =
-      error instanceof Error ? error.message : t("extraction.review.detail.recompute.error");
+      error instanceof Error
+        ? error.message
+        : t("extraction.review.detail.recompute.error");
   } finally {
     fwhmSubmitting.value = false;
   }
 }
 
 const layersDirty = computed(
-  () => formatLayerStructure(layers.value) !== (props.record?.layerStructure ?? ""),
+  () =>
+    formatLayerStructure(layers.value) !== (props.record?.layerStructure ?? ""),
 );
 
 function saveLayerStructure() {
   emit("save", { layerStructure: formatLayerStructure(layers.value) });
 }
 
-const IDENTIFICATION_KEYS = ["ref", "origin", "title", "shortTitle", "modeId", "domain"];
+const IDENTIFICATION_KEYS = [
+  "ref",
+  "origin",
+  "title",
+  "shortTitle",
+  "modeId",
+  "domain",
+];
 const MEASUREMENT_KEYS = [
   "resonanceWavelengthNm",
   "spectralRange",
@@ -1368,7 +1569,9 @@ const MATERIALS_KEYS = ["materialClass", "baseMaterials"];
 // notes that are about one specific field (shown right on that field, see
 // fieldNote) vs. record-level bookkeeping with nowhere else to go (shown in
 // Provenance, see generalNotes below).
-const parsedNotes = computed(() => parseReconciliationLog(props.record?.reconciliationLog));
+const parsedNotes = computed(() =>
+  parseReconciliationLog(props.record?.reconciliationLog),
+);
 const grouped = computed(() => groupReconciliationNotes(parsedNotes.value));
 const generalNotes = computed(() => grouped.value.general);
 
@@ -1385,13 +1588,17 @@ const generalNotes = computed(() => grouped.value.general);
 // reading "À vérifier" even after every flagged field in the section has
 // been individually checked off.
 function sectionHasWarning(keys: string[]): boolean {
-  return keys.some((key) => flaggedFieldKeys.value.includes(key) && !isConfirmed(key));
+  return keys.some(
+    (key) => flaggedFieldKeys.value.includes(key) && !isConfirmed(key),
+  );
 }
 
 function noteText(note: ReconciliationNote): string {
   switch (note.kind) {
     case "disagreement":
-      return t("extraction.review.detail.reconciliation.disagreement", { values: note.raw });
+      return t("extraction.review.detail.reconciliation.disagreement", {
+        values: note.raw,
+      });
     case "partialAgreement":
       return t(
         "extraction.review.detail.reconciliation.partialAgreement",
@@ -1399,7 +1606,9 @@ function noteText(note: ReconciliationNote): string {
         { plural: note.agreed },
       );
     case "fullDisagreement":
-      return t("extraction.review.detail.reconciliation.fullDisagreement", { values: note.raw });
+      return t("extraction.review.detail.reconciliation.fullDisagreement", {
+        values: note.raw,
+      });
     case "rowCount":
       return t(
         "extraction.review.detail.reconciliation.rowCount",
@@ -1407,7 +1616,9 @@ function noteText(note: ReconciliationNote): string {
         { plural: note.count },
       );
     case "extraRow":
-      return t("extraction.review.detail.reconciliation.extraRow", { total: note.total });
+      return t("extraction.review.detail.reconciliation.extraRow", {
+        total: note.total,
+      });
     case "raw":
       return note.raw;
   }
@@ -1417,7 +1628,10 @@ function noteText(note: ReconciliationNote): string {
 // prompt ever converts (see backend/prompts/extraction.txt) -- a "Raw Value"/
 // "Conversion Method" pair is never attributed to one of the two specifically,
 // so both fields surface the same conversion note when present.
-const CONVERTIBLE_KEYS = new Set(["resonanceWavelengthNm", "sensitivityNmPerRiu"]);
+const CONVERTIBLE_KEYS = new Set([
+  "resonanceWavelengthNm",
+  "sensitivityNmPerRiu",
+]);
 
 // FWHM is currently the only metric the extraction prompt's Calculation
 // Fallback can ever derive from other extracted values instead of reading
@@ -1430,9 +1644,12 @@ const CALCULATED_KEYS = new Set(["fwhmNm"]);
 // (equally warning-level: this value isn't in the paper's text at all),
 // over a plain unit-conversion FYI -- the conversion detail is still
 // visible in full in Provenance either way.
-function fieldNote(key: string): { severity: "info" | "warning"; text: string } | null {
+function fieldNote(
+  key: string,
+): { severity: "info" | "warning"; text: string } | null {
   const notes = grouped.value.byField.get(key);
-  if (notes?.length) return { severity: notes[0].severity, text: noteText(notes[0]) };
+  if (notes?.length)
+    return { severity: notes[0].severity, text: noteText(notes[0]) };
   if (CALCULATED_KEYS.has(key) && props.record?.calculatedFields) {
     return {
       severity: "warning",
@@ -1499,13 +1716,17 @@ const flaggedFieldKeys = computed(() => {
   if (props.record?.reviewStatus !== "Edit") return [];
   return FLAGGABLE_KEYS.filter((key) => fieldNote(key)?.severity === "warning");
 });
-watch(flaggedFieldKeys, (keys) => emit("flagged-fields", keys), { immediate: true });
+watch(flaggedFieldKeys, (keys) => emit("flagged-fields", keys), {
+  immediate: true,
+});
 
 // Gates every field's confirm affordance (the `showConfirm` prop passed to
 // each ExtractionDetailField/ExtractionTagsField/ExtractionDefinitionField
 // below) -- kept as one shared computed so it can never drift out of sync
 // with flaggedFieldKeys' own reviewStatus condition above.
-const canConfirmFields = computed(() => !!props.jobId && props.record?.reviewStatus === "Edit");
+const canConfirmFields = computed(
+  () => !!props.jobId && props.record?.reviewStatus === "Edit",
+);
 
 function isConfirmed(key: string): boolean {
   if (!props.record || !props.confirmedFieldKeys) return false;

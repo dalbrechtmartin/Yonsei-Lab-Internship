@@ -23,34 +23,33 @@
            so Layer Structure / Metrics / Notes render at native size
            instead of only being described in prose (see
            captureGuideArtifacts). -->
-      <div
-        ref="annotationsWrap"
-        class="guide-callout-region relative shrink-0"
-        style="width: 300px"
-      >
-        <AnnotationsPanel
-          ref="annotationsPanelRef"
-          v-model:open="annotationsOpen"
-          v-model:show-only-annotated="showOnlyAnnotated"
-          :annotations="annotations"
-          :columns="sampleColumns"
-          :rows="plottableRows"
-          :x-axis="selectedXAxis"
-          :y-axis="selectedYAxis"
-          :group-by="groupBy"
-          :unbounded-list="true"
-        />
-        <GuideMarkRing
-          v-for="(m, i) in annotationMarks"
-          :key="i"
-          :mark="m"
-          :number="i + 1"
-        />
-      </div>
-      <div class="flex-1 pt-1">
-        <p class="mb-2 text-xs leading-snug text-secondary">
+      <div class="flex shrink-0 flex-col items-center" style="width: 300px">
+        <div ref="annotationsWrap" class="guide-callout-region relative w-full">
+          <AnnotationsPanel
+            ref="annotationsPanelRef"
+            v-model:open="annotationsOpen"
+            v-model:show-only-annotated="showOnlyAnnotated"
+            :annotations="annotations"
+            :columns="sampleColumns"
+            :rows="plottableRows"
+            :x-axis="selectedXAxis"
+            :y-axis="selectedYAxis"
+            :group-by="groupBy"
+            :unbounded-list="true"
+          />
+          <GuideMarkRing
+            v-for="(m, i) in annotationMarks"
+            :key="i"
+            :mark="m"
+            :number="i + 1"
+            :side="i === 3 || i === 4 ? 'top' : undefined"
+          />
+        </div>
+        <p class="mt-2 text-center text-[11px] leading-snug text-secondary">
           {{ t("guide.steps.annotate.figureCaption") }}
         </p>
+      </div>
+      <div class="flex-1 pt-1">
         <GuideMarkLegend
           :compact="true"
           :items="[
@@ -71,8 +70,24 @@
               body: t('guide.steps.annotate.marks.card.body'),
             },
             {
+              label: t('guide.steps.annotate.marks.export.label'),
+              body: t('guide.steps.annotate.marks.export.body'),
+            },
+            {
+              label: t('guide.steps.annotate.marks.remove.label'),
+              body: t('guide.steps.annotate.marks.remove.body'),
+            },
+            {
               label: t('guide.steps.annotate.marks.siblings.label'),
               body: t('guide.steps.annotate.marks.siblings.body'),
+            },
+            {
+              label: t('guide.steps.annotate.marks.origin.label'),
+              body: t('guide.steps.annotate.marks.origin.body'),
+            },
+            {
+              label: t('guide.steps.annotate.marks.modeId.label'),
+              body: t('guide.steps.annotate.marks.modeId.body'),
             },
             {
               label: t('guide.steps.annotate.marks.layerStructure.label'),

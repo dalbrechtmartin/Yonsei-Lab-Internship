@@ -464,6 +464,7 @@
       "mode1ControlsDisplay": "3. Réglages d'affichage",
       "mode1Filters": "4. Filtres",
       "mode1Reading": "5. Lire le graphique",
+      "mode1ReadingInteract": "Interagir avec le graphique",
       "mode1Compare": "6. Comparer les groupes",
       "mode1DataTable": "7. Gérer vos points de données",
       "mode1AddPoint1": "8. Ajouter un point : l'essentiel",
@@ -477,6 +478,7 @@
       "mode2Running": "2. Suivre l'extraction",
       "mode2Review": "3. Vérifier une fiche",
       "mode2Correct": "Corriger une fiche signalée",
+      "mode2Photon": "Poser une question à Photon",
       "mode2Export": "4. Exporter vos données",
       "about": "À propos de l'auteure"
     },
@@ -498,7 +500,6 @@
     "toc": {
       "title": "Sommaire",
       "title2": "Sommaire (suite)",
-      "hint": "Cliquez sur une entrée pour y accéder directement.",
       "desc": {
         "intro": "Pourquoi λLens, en un coup d'œil.",
         "mode1Import": "Déposer un fichier Excel ou CSV.",
@@ -506,6 +507,7 @@
         "mode1ControlsDisplay": "Échelle, tendance, légende et plus.",
         "mode1Filters": "Restreindre les données sans les modifier.",
         "mode1Reading": "Lire chaque point du nuage.",
+        "mode1ReadingInteract": "Survol, zoom, épinglage, clic droit.",
         "mode1Compare": "Regrouper et comparer par catégorie.",
         "mode1DataTable": "Chercher, trier, masquer, épingler.",
         "mode1AddPoint1": "Nom, axes et mesures d'un nouveau point.",
@@ -519,6 +521,7 @@
         "mode2Running": "Suivez le traitement du lot en direct.",
         "mode2Review": "Vérifiez une valeur signalée face à sa source.",
         "mode2Correct": "Corrigez une valeur à la main.",
+        "mode2Photon": "Demandez à Photon d'expliquer une valeur ou un signalement.",
         "mode2Export": "Enregistrez un fichier validé."
       }
     },
@@ -591,7 +594,7 @@
           },
           "trendLine": {
             "label": "Ligne de tendance",
-            "body": "ajuste une courbe aux points. Un menu permet de choisir sa forme. Désactivé sauf si les deux axes sont numériques."
+            "body": "ajuste une courbe aux points : linéaire, exponentielle, logarithmique, puissance ou polynomiale. « Auto » garde la forme dont le R² est le plus élevé. Désactivé sauf si les deux axes sont numériques."
           },
           "pareto": {
             "label": "Frontière de Pareto",
@@ -615,7 +618,13 @@
         "title": "4. Filtres",
         "body": "Les filtres restreignent les données sans modifier le fichier. Chaque catégorie est un menu déroulant : cliquez pour cocher ou décocher des valeurs. Une bande résumé montre toujours ce qui est actif. Une catégorie n'apparaît que si le fichier a la colonne correspondante, et « Masquer à vérifier » seulement si au moins une ligne est signalée.",
         "figureCaption": "Fig. 5 : section Filtres ouverte.",
-        "note": "Classe de matériau et Matériaux de base sont des filtres composites : une cellule comme « Diélectrique;Semi-conducteur » compte pour chaque valeur listée. Le mode d'exclusion règle ce qui se passe si seules certaines valeurs restent cochées : Permissif (par défaut) garde la ligne si une seule valeur est cochée ; Strict exige que toutes le soient.",
+        "note": {
+          "lead": "Classe de matériau et Matériaux de base sont des filtres composites : une cellule comme « Diélectrique;Semi-conducteur » compte pour chaque valeur listée. Le mode d'exclusion règle ce qui se passe si seules certaines de ces valeurs restent cochées.",
+          "lenientLabel": "Permissif (par défaut)",
+          "lenientBody": "garde la ligne si au moins une valeur listée est cochée.",
+          "strictLabel": "Strict",
+          "strictBody": "exige que toutes les valeurs listées soient cochées."
+        },
         "marks": {
           "needsReview": {
             "label": "Masquer à vérifier",
@@ -672,7 +681,11 @@
             "label": "Contrôles de zoom",
             "body": "verrouiller/déverrouiller, zoom avant/arrière, réinitialiser. Verrouillé par défaut, pour qu'un défilement accidentel ne zoome pas le graphique au lieu de la page."
           }
-        },
+        }
+      },
+      "readingInteract": {
+        "title": "Interagir avec le graphique",
+        "body": "Au-delà de la lecture des valeurs, le graphique répond à la souris. Chaque interaction ci-dessous est disponible à tout moment en Mode 1.",
         "interactions": {
           "hover": {
             "label": "Survol",
@@ -723,6 +736,10 @@
             "label": "Tout / Visibles / Masqués",
             "body": "puces de filtre avec effectifs en direct. La recherche et le tri affinent encore la liste."
           },
+          "sort": {
+            "label": "Tri",
+            "body": "par référence, titre, ou valeur (croissante/décroissante)."
+          },
           "pinnedGroup": {
             "label": "Groupe Épinglés",
             "body": "sort chaque point épinglé de son groupe habituel, pour qu'il ne se perde jamais derrière un filtre ou un groupe replié."
@@ -742,8 +759,8 @@
       "addPoint1": {
         "title": "8. Ajouter un point manuellement",
         "body": "« Ajouter des données », dans l'onglet Points de données, ouvre un assistant en 4 étapes pour tracer votre propre design de capteur, mesuré ou simulé, aux côtés de la littérature. Cela ne touche jamais le fichier importé, mais apparaît dans les exports.",
-        "stepperCaption": "Fig. 9 : indicateur d'étapes. Seule l'étape en cours est mise en avant ; les autres ne forment pas une piste fait/pas fait.",
-        "footerCaption": "Précédent, Suivant et (étape 1 seulement) « Enregistrer sans plus de détails » restent visibles dans un pied de formulaire sur les 4 étapes ; à l'étape 4 le bouton devient « Enregistrer ».",
+        "stepperCaption": "Fig. 9 : indicateur d'étapes — seule l'étape en cours est mise en avant.",
+        "footerCaption": "Précédent/Suivant restent visibles sur les 4 étapes ; à l'étape 4 le bouton devient « Enregistrer ».",
         "essentialsTitle": "Étape 1 : Essentiel",
         "essentialsBody": "Renseignez un nom et les valeurs d'axes actuelles du graphique (toujours requises, pour que le point puisse être placé), puis optionnellement Domaine, Origine, et forme du repère.",
         "metricsTitle": "Étape 2 : Métriques",
@@ -751,19 +768,19 @@
         "marks": {
           "label": {
             "label": "Nom du capteur",
-            "body": "requis. Affiché dans l'infobulle du graphique et la liste des points de données."
+            "body": "requis — affiché dans l'infobulle du graphique et la liste des points."
           },
           "axes": {
             "label": "Valeurs d'axes",
-            "body": "requises : les colonnes Y et X actuellement tracées. Tout autre champ de cette étape est optionnel."
+            "body": "requises : les colonnes Y et X actuellement tracées."
           },
           "domainOrigin": {
             "label": "Domaine et Origine",
-            "body": "Origine vaut SIM par défaut : un point saisi manuellement est plus souvent un design qu'une mesure."
+            "body": "Origine vaut SIM par défaut pour un point saisi manuellement."
           },
           "shape": {
             "label": "Forme du point",
-            "body": "cercle, losange ou étoile. Les points manuels prennent un losange par défaut."
+            "body": "cercle, losange ou étoile — losange par défaut pour un point manuel."
           },
           "metrics": {
             "label": "Mesures",
@@ -771,7 +788,7 @@
           },
           "qFactor": {
             "label": "Facteur Q",
-            "body": "calculé automatiquement en λ / FWHM une fois les deux renseignés. « Saisir une autre valeur » rend la main."
+            "body": "calculé automatiquement en λ / FWHM une fois les deux renseignés."
           }
         }
       },
@@ -836,9 +853,25 @@
             "label": "Carte épinglée",
             "body": "référence, titre et valeurs des axes tracés. Cliquez pour déplier."
           },
+          "export": {
+            "label": "Exporter cette carte",
+            "body": "télécharge tous les champs de cette carte sous forme de PNG."
+          },
+          "remove": {
+            "label": "Retirer",
+            "body": "désépingle la carte. Ne touche pas au point de données lui-même."
+          },
           "siblings": {
             "label": "Épingler les autres lignes de cet article",
             "body": "affiché tant qu'il reste des enregistrements non épinglés de cet article ; un clic les épingle tous."
+          },
+          "origin": {
+            "label": "Origin",
+            "body": "si l'enregistrement est mesuré (EXP) ou simulé (SIM)."
+          },
+          "modeId": {
+            "label": "Mode ID",
+            "body": "le Mode ID et, si présente, sa description (cliquez pour déplier)."
           },
           "layerStructure": {
             "label": "Structure de couches",
@@ -997,6 +1030,29 @@
           "pencil": {
             "label": "Modifier un champ",
             "body": "Chaque champ a son propre crayon : cliquez, corrigez la valeur, validez avec Entrée."
+          }
+        }
+      },
+      "mode2Photon": {
+        "title": "Poser une question à Photon",
+        "body": "Sur l'écran de vérification, une bulle en bas à droite ouvre Photon : un assistant qui connaît la fiche affichée (valeurs, statut, citations) et explique une valeur, une conversion ou un signalement en langage clair, preuve à l'appui.",
+        "note": "Photon ne modifie jamais la fiche. Ses réponses restent informatives ; la correction reste manuelle, via le crayon de chaque champ.",
+        "demo": {
+          "userQuestion": "Pourquoi la FWHM est-elle signalée à vérifier ?",
+          "answer": "L'article ne donne la largeur de raie (FWHM) qu'à partir d'une lecture de figure (page 7, Fig. S2), pas d'une valeur chiffrée précise. Le modèle l'a donc signalée pour un second regard plutôt que de la valider seule."
+        },
+        "marks": {
+          "header": {
+            "label": "Contexte",
+            "body": "Photon connaît la fiche affichée : chaque réponse porte sur cet enregistrement précis."
+          },
+          "messages": {
+            "label": "Réponse sourcée",
+            "body": "L'explication s'appuie sur la citation extraite de l'article, pas une réponse générique."
+          },
+          "chips": {
+            "label": "Questions suggérées",
+            "body": "Des questions prêtes à l'emploi, proposées selon ce que la fiche a réellement (preuve, conversion, exclusion)."
           }
         }
       },

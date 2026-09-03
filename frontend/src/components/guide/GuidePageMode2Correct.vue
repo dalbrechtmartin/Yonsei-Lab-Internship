@@ -19,22 +19,43 @@
     </p>
 
     <div class="mb-3 overflow-hidden rounded-2xl border border-secondary/10">
-      <ExtractionStepper :steps="extractionStepperSteps" :current-step="3" :furthest-step="3" />
+      <ExtractionStepper
+        :steps="extractionStepperSteps"
+        :current-step="3"
+        :furthest-step="3"
+      />
     </div>
 
-    <div ref="detailWrap" class="relative mx-auto w-full max-w-125 guide-callout-region">
-      <ExtractionReviewDetail :record="flaggedRecord" />
+    <!-- compact: every section opens independently on the real review screen
+         (see ExtractionReviewDetail's own compact doc comment), so without
+         this all four render open at once and overflow this fixed-height
+         page. GuideTemplate's captureGuideArtifacts clicks Measurements back
+         open (the section the fwhmField ring below needs visible); the
+         status banner and source strip above the sections stay visible
+         either way, since they're not part of any collapsible section. -->
+    <div
+      ref="detailWrap"
+      class="relative mx-auto w-full max-w-125 guide-callout-region"
+    >
+      <ExtractionReviewDetail :record="flaggedRecord" compact />
+      <!-- fwhmField (i === 2) sits in the RIGHT column of the Measurements
+           grid, with its Sensitivity neighbor immediately to the left --
+           "left" (used by the other two, wider rings) would float its badge
+           straight into that neighbor's pencil icon, so this one keeps the
+           default right-side badge instead, where the grid's own edge
+           leaves it room. -->
       <GuideMarkRing
         v-for="(m, i) in correctMarks"
         :key="i"
         :mark="m"
         :number="i + 1"
-        side="left"
+        :side="i === 2 ? undefined : 'left'"
       />
     </div>
 
     <GuideMarkLegend
       class="mx-auto mt-2 max-w-125"
+      :compact="true"
       :items="[
         {
           label: t('guide.steps.mode2Correct.marks.banner.label'),
@@ -71,7 +92,10 @@ import GuideFooter from "./GuideFooter.vue";
 import GuideMarkRing from "./GuideMarkRing.vue";
 import GuideMarkLegend from "./GuideMarkLegend.vue";
 import type { GuideMark } from "./guideAnnotate";
-import { extractionStepperSteps, flaggedRecord } from "./guideExtractionSampleData";
+import {
+  extractionStepperSteps,
+  flaggedRecord,
+} from "./guideExtractionSampleData";
 
 defineProps<{
   appVersion: string;

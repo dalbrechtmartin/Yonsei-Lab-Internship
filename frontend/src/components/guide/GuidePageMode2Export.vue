@@ -19,16 +19,28 @@
     </p>
 
     <div class="mb-3 overflow-hidden rounded-2xl border border-secondary/10">
-      <ExtractionStepper :steps="extractionStepperSteps" :current-step="4" :furthest-step="4" />
+      <ExtractionStepper
+        :steps="extractionStepperSteps"
+        :current-step="4"
+        :furthest-step="4"
+      />
     </div>
 
-    <div ref="exportStepWrap" class="relative flex flex-1 flex-col guide-callout-region overflow-hidden">
-      <ExtractionExportStep
-        :job="finishedJob"
-        :records="extractionRecords"
-        :default-export-name="exportDefaultName"
-        :partial="false"
-      />
+    <!-- Split into an outer, unclipped wrapper (hosts the rings) and an
+         inner, overflow-hidden wrapper (the actual export step, clipped to
+         guide-callout-region's own rounded corners) -- same technique
+         GuidePagePhoton.vue uses for the identical problem: the "save"
+         footer sits flush against this box's own right edge, so a ring
+         badge on the SAME overflow-hidden element gets clipped away. -->
+    <div ref="exportStepWrap" class="relative flex flex-1 flex-col">
+      <div class="guide-callout-region flex flex-1 flex-col overflow-hidden">
+        <ExtractionExportStep
+          :job="finishedJob"
+          :records="extractionRecords"
+          :default-export-name="exportDefaultName"
+          :partial="false"
+        />
+      </div>
       <GuideMarkRing
         v-for="(m, i) in exportMarks"
         :key="i"
